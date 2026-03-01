@@ -1,35 +1,46 @@
-<html>
-<head>
-    <title>HexForge</title>
-</head>
-<body>
-    <script>
-// Game code implementation
-let playerState = {
-    landPlaced: false,
-    // other player state properties
-};
+// Assuming you have the `index.html` structured correctly, make the following changes:
 
-function _runPhase() {
-    // Implementation of the phase system
-    if (currentPhase === 'DRAW') {
-        // Handle draw phase
-    } else if (currentPhase === 'MAIN') {
-        // Handle main phase
-    } else if (currentPhase === 'END') {
-        // Handle end phase
-    }
-}
+<script>
+    const PHASES = ['DRAW', 'MAIN', 'END']; // Change PHASES constant
 
-function _canP() {
-    // Logic to determine if an action can be performed
-}
+    const mkState = () => {
+        return {
+            // Other existing state properties...
+            landPlaced: false, // Add landPlaced flag
+        };
+    };
 
-function _rBtns() {
-    // Update relevant buttons based on the current state
-}
+    const _runPhase = () => {
+        // Handle DRAW -> MAIN -> END flow
+        if (currentPhase === 'DRAW') {
+            // Logic for DRAW phase
+            currentPhase = 'MAIN';
+        } else if (currentPhase === 'MAIN') {
+            // Logic for MAIN phase
+            currentPhase = 'END';
+        } else if (currentPhase === 'END') {
+            // Logic for END phase
+            currentPhase = 'DRAW';
+        }
+    };
 
-// Game loop or initialization
-    </script>
-</body>
-</html>
+    const _canP = () => {
+        return !state.landPlaced; // Check landPlaced instead of lobDone
+    };
+
+    const _rBtns = () => {
+        // Update for new phase system
+        if (currentPhase === 'DRAW') {
+            // Update button state for DRAW
+        } else if (currentPhase === 'MAIN') {
+            // Update button state for MAIN
+        } else if (currentPhase === 'END') {
+            // Update button state for END
+        }
+    };
+
+    const placeLand = () => {
+        // Existing logic to place land
+        state.landPlaced = true; // Set landPlaced to true when land is placed
+    };
+</script>
