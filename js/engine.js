@@ -849,4 +849,60 @@ class Engine{
       txt.setAttribute('font-weight','bold');
       txt.setAttribute('pointer-events','none');
       txt.textContent=cd.name.substring(0,2).toUpperCase();
-      svg.appendChild(txt);_
+      svg.appendChild(txt);
+
+      const barW=22, barX=cx-barW/2, barY=cy+15;
+      const bg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      bg.setAttribute('x',barX); bg.setAttribute('y',barY);
+      bg.setAttribute('width',barW); bg.setAttribute('height','3');
+      bg.setAttribute('fill','#111'); bg.setAttribute('rx','1.5');
+      bg.setAttribute('pointer-events','none'); svg.appendChild(bg);
+      const hpBar=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      hpBar.setAttribute('x',barX); hpBar.setAttribute('y',barY);
+      hpBar.setAttribute('width',(u.hp/u.maxHp*barW).toFixed(1));
+      hpBar.setAttribute('height','3');
+      hpBar.setAttribute('fill',u.own==='A'?'#aa2222':'#2244aa');
+      hpBar.setAttribute('rx','1.5');
+      hpBar.setAttribute('pointer-events','none'); svg.appendChild(hpBar);
+
+      if(u.moved||u.atked){
+        const ex=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ex.setAttribute('cx',cx+11); ex.setAttribute('cy',cy-11);
+        ex.setAttribute('r','4');
+        ex.setAttribute('fill','#882222'); ex.setAttribute('stroke','#cc4444');
+        ex.setAttribute('stroke-width','1'); ex.setAttribute('pointer-events','none');
+        svg.appendChild(ex);
+      }
+      if(vt && this.pact==='atk'){
+        const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ring.setAttribute('cx',cx); ring.setAttribute('cy',cy);
+        ring.setAttribute('r','17');
+        ring.setAttribute('fill','none');
+        ring.setAttribute('stroke','#cc3333');
+        ring.setAttribute('stroke-width','2.5');
+        ring.setAttribute('pointer-events','none');
+        svg.appendChild(ring);
+      }
+    });
+
+    /* Base‑Highlight im Angriffs‑Modus */
+    if(this.pact==='atk'){
+      const [bq,br,bs]=this.ap==='A'?BASE_B:BASE_A;
+      if(vtSet.has(cK(bq,br))){
+        const [px,py]=c2p(bq,br);
+        const cx=px+ox, cy=py+oy;
+        const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ring.setAttribute('cx',cx); ring.setAttribute('cy',cy);
+        ring.setAttribute('r','20');
+        ring.setAttribute('fill','none');
+        ring.setAttribute('stroke','#cc3333');
+        ring.setAttribute('stroke-width','3');
+        ring.setAttribute('pointer-events','none');
+        svg.appendChild(ring);
+      }
+    }
+  }
+}
+
+/* ---------- Engine‑Instanz starten ---------- */
+const G = new Engine();
