@@ -5,13 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HexForge</title>
 
-  <!--   CSS   -->
+  <!-- -------------- CSS -------------- -->
   <link rel="stylesheet" href="css/style.css">
-
-  <!--   JS (deferred, weil wir im <head> sein wollen)   -->
-  <script src="js/engine.js" defer></script>
 </head>
-
 <body>
 
 <div id="hdr">
@@ -21,6 +17,7 @@
 </div>
 
 <div id="main">
+  <!-- ---------- PLAYER A SIDE ---------- -->
   <div class="sp">
     <div class="pt">Spieler A</div>
     <div class="ps A">
@@ -35,6 +32,7 @@
     <div id="hand-area"></div>
   </div>
 
+  <!-- ---------- BOARD ---------- -->
   <div id="bw">
     <svg id="board"></svg>
     <div id="abar">
@@ -44,6 +42,7 @@
     </div>
   </div>
 
+  <!-- ---------- PLAYER B SIDE ---------- -->
   <div class="sp">
     <div class="pt">Spieler B</div>
     <div class="ps B">
@@ -61,7 +60,7 @@
   </div>
 </div>
 
-<!-- Radial Land/Action Menu -->
+<!-- ---------- RADIAL MENU ---------- -->
 <div id="rmenu">
   <div id="rmenu-bg" onclick="G.closeLandMenu()"></div>
   <div id="rmenu-wrap">
@@ -70,7 +69,7 @@
   </div>
 </div>
 
-<!-- Player Switch Overlay -->
+<!-- ---------- PLAYER SWITCH OVERLAY ---------- -->
 <div id="sw-ov">
   <div id="sw-card">
     <div class="sc-sub">Jetzt am Zug</div>
@@ -80,7 +79,7 @@
   </div>
 </div>
 
-<!-- Win Overlay -->
+<!-- ---------- WIN OVERLAY ---------- -->
 <div id="win-ov">
   <div id="win-card">
     <h2 id="win-title">Spieler A gewinnt!</h2>
@@ -89,5 +88,8 @@
   </div>
 </div>
 
+<!-- ---------- SCRIPTS (klassisch, kein type="module") ---------- -->
+<script src="js/data.js"></script>          <!-- zuerst: liefert DB, Farben, Phasen -->
+<script src="js/engine.js" defer></script>  <!-- danach: die Engine nutzt die globalen Konstanten -->
 </body>
 </html>
