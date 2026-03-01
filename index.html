@@ -1,46 +1,43 @@
-// Assuming you have the `index.html` structured correctly, make the following changes:
+// Full HexForge game code with specific changes
 
-<script>
-    const PHASES = ['DRAW', 'MAIN', 'END']; // Change PHASES constant
+const PHASES = ['DRAW', 'MAIN', 'END'];
 
-    const mkState = () => {
-        return {
-            // Other existing state properties...
-            landPlaced: false, // Add landPlaced flag
-        };
+function mkState() {
+    return {
+        players: [
+            {...defaultPlayer, landPlaced: false},
+            {...defaultPlayer, landPlaced: false},
+        ],
+        // ... other state fields
     };
+}
 
-    const _runPhase = () => {
-        // Handle DRAW -> MAIN -> END flow
-        if (currentPhase === 'DRAW') {
-            // Logic for DRAW phase
-            currentPhase = 'MAIN';
-        } else if (currentPhase === 'MAIN') {
-            // Logic for MAIN phase
-            currentPhase = 'END';
-        } else if (currentPhase === 'END') {
-            // Logic for END phase
-            currentPhase = 'DRAW';
-        }
-    };
+function _runPhase() {
+    // Simplified phase handling
+    const currentPhase = this.getCurrentPhase();
+    if (currentPhase === 'DRAW') {
+        this.handleDraw();
+    } else if (currentPhase === 'MAIN') {
+        this.handleMain();
+    } else if (currentPhase === 'END') {
+        this.handleEnd();
+    }
+}
 
-    const _canP = () => {
-        return !state.landPlaced; // Check landPlaced instead of lobDone
-    };
+function _canP(card) {
+    if (card.type === 'LAND') {
+        return !this.players[this.ap].landPlaced; // Check landPlaced instead of lobDone
+    }
+    // Other checks...
+}
 
-    const _rBtns = () => {
-        // Update for new phase system
-        if (currentPhase === 'DRAW') {
-            // Update button state for DRAW
-        } else if (currentPhase === 'MAIN') {
-            // Update button state for MAIN
-        } else if (currentPhase === 'END') {
-            // Update button state for END
-        }
-    };
+function _rBtns() {
+    this.landBtn.disabled = this.players[this.ap].landPlaced && this.getCurrentPhase() === 'MAIN'; // Disable land button
+}
 
-    const placeLand = () => {
-        // Existing logic to place land
-        state.landPlaced = true; // Set landPlaced to true when land is placed
-    };
-</script>
+function placeLand() {
+    // Logic for placing land
+    S.players[this.ap].landPlaced = true; // Set landPlaced to true when land is placed
+}
+
+// ... Rest of the game logic
