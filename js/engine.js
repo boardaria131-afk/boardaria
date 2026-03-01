@@ -4,12 +4,7 @@
    zu unterstützen)
    ------------------------------------------------------------------ */
 
-/* ---------- Imports (falls du ES‑Modules nutzt) ----------
-   Falls du das Projekt ohne `<script type="module">` laufen lässt,
-   kannst du die Zeile unten auskommentieren und die DB‑Daten aus
-   data.js einfach vorher in das globale Fenster legen (z.B. über
-   ein weiteres <script>-Tag). */
-import { DB, LF, LS, PHASES, PN } from './data.js';
+
 
 /* ---------- Konstanten & Hilfsfunktionen ---------- */
 const BOARD_R = 3;                     // radius‑3‑Board
