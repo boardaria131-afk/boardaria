@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HexForge</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
+:root {
+  --bg:#0a0c0f; --bg2:#111418; --bg3:#1a1f26; --border:#2a3040;
+  --text:#c8d4e0; --dim:#5a6a7a; --gold:#c8a84b; --goldd:#7a6030;
+  --F:#4a9e40; --D:#d4982a; --M:#8a8aaa; --W:#3a8acc; --N:#4a5a70;
+  --well:#cc44ff; --bA:#c84040; --bB:#4070c8;
+  --hp:#4aaa44; --atk:#cc4444; --mana:#4488cc;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Crimson Pro',Georgia,serif;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+#hdr{display:flex;align-items:center;justify-content:space-between;padding:5px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;height:42px;}
+#hdr h1{font-family:'Cinzel',serif;font-size:1.25rem;color:var(--gold);letter-spacing:4px;text-shadow:0 0 18px rgba(200,168,75,.4);}
+#phdis{font-family:'Cinzel',serif;font-size:.68rem;color:var(--dim);letter-spacing:2px;text-align:center;}
+#phdis .ap{color:var(--gold);font-size:.82rem;}
+#turdis{font-family:'Cinzel',serif;font-size:.72rem;color:var(--dim);text-align:right;}
+#turdis .pn{font-size:.9rem;font-weight:600;}
+#turdis .pn.A{color:var(--bA);} #turdis .pn.B{color:var(--bB);}
+#main{display:grid;grid-template-columns:180px 1fr 180px;flex:1;overflow:hidden;}
+.sp{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;padding:8px;gap:5px;}
+.sp:last-child{border-right:none;border-left:1px solid var(--border);}
+.pt{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:3px;color:var(--dim);text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:4px;}
+.ps{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:6px;}
+.ps .nm{font-family:'Cinzel',serif;font-size:.72rem;font-weight:600;margin-bottom:4px;}
+.ps.A .nm{color:var(--bA);} .ps.B .nm{color:var(--bB);}
+.sr{display:flex;justify-content:space-between;margin:2px 0;font-size:.72rem;}
+.sl{color:var(--dim);} .sv{font-weight:600;}
+.sv.hp{color:var(--hp);} .sv.mn{color:var(--mana);} .sv.cd{color:var(--gold);}
+.hbw{background:#1a1a1a;border-radius:2px;height:4px;margin:3px 0;overflow:hidden;}
+.hb{height:100%;border-radius:2px;transition:width .3s;}
+.A .hb{background:var(--bA);} .B .hb{background:var(--bB);}
+#hand-area{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:3px;}
+#hand-area::-webkit-scrollbar{width:3px;}
+#hand-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.hc{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:4px 6px;cursor:pointer;transition:all .12s;font-size:.72rem;}
+.hc:hover{border-color:var(--goldd);background:#1e2530;}
+.hc.sel{border-color:var(--gold);box-shadow:0 0 7px rgba(200,168,75,.3);}
+.hc.np{opacity:.35;cursor:not-allowed;}
+.hc.np:hover{border-color:var(--border);background:var(--bg3);}
+.ch{display:flex;justify-content:space-between;margin-bottom:2px;}
+.cn{font-family:'Cinzel',serif;font-size:.66rem;color:var(--text);line-height:1.2;}
+.cc{font-family:'Cinzel',serif;font-size:.72rem;color:var(--mana);font-weight:600;margin-left:3px;}
+.cb{font-size:.56rem;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:1px;}
+.cs{display:flex;gap:4px;font-size:.64rem;margin-top:1px;}
+.cra{color:var(--atk);} .crh{color:var(--hp);}
+.creq{font-size:.56rem;color:var(--dim);}
+.ctx{font-size:.61rem;color:var(--dim);font-style:italic;line-height:1.3;}
+.lF{border-left:2px solid var(--F);} .lD{border-left:2px solid var(--D);}
+.lM{border-left:2px solid var(--M);} .lW{border-left:2px solid var(--W);}
+.lN{border-left:2px solid var(--N);} .lU{border-left:2px solid var(--gold);}
+.lI{border-left:2px solid #cc44aa;}
+#bw{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;background:radial-gradient(ellipse at center,#0c1822 0%,#060a0e 100%);}
+svg#board{display:block;overflow:visible;}
+#abar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px;background:rgba(8,10,14,.93);border:1px solid var(--border);border-radius:6px;padding:6px 10px;backdrop-filter:blur(6px);white-space:nowrap;}
+.ab{font-family:'Cinzel',serif;font-size:.63rem;letter-spacing:1.5px;padding:4px 10px;border:1px solid var(--border);background:var(--bg3);color:var(--dim);cursor:pointer;border-radius:3px;transition:all .12s;text-transform:uppercase;}
+.ab:hover:not(:disabled){border-color:var(--goldd);color:var(--text);background:#1e2530;}
+.ab.pr{border-color:var(--goldd);color:var(--gold);background:rgba(200,168,75,.08);}
+.ab.pr:hover:not(:disabled){border-color:var(--gold);background:rgba(200,168,75,.15);}
+.ab:disabled{opacity:.25;cursor:not-allowed;}
+.ab.dn{border-color:#5a2020;color:#cc5555;}
+.ab.dn:hover:not(:disabled){border-color:var(--atk);background:rgba(204,68,68,.1);}
+.pdot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--border);margin:0 2px;vertical-align:middle;transition:background .2s;}
+.pdot.done{background:var(--goldd);} .pdot.cur{background:var(--gold);box-shadow:0 0 5px var(--gold);}
+#ud{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:6px;font-size:.72rem;min-height:65px;}
+#ud .udn{font-family:'Cinzel',serif;font-size:.73rem;color:var(--gold);margin-bottom:3px;}
+#lp{flex:1;overflow-y:auto;font-size:.66rem;color:var(--dim);line-height:1.5;}
+#lp::-webkit-scrollbar{width:3px;}
+#lp::-webkit-scrollbar-thumb{background:var(--border);}
+.le{padding:1px 0;border-bottom:1px solid #131820;}
+.lA{color:#e07070;} .lB{color:#7090e0;} .lS{color:#5a8a5a;}
+
+/* RADIAL MENU */
+#rmenu{display:none;position:fixed;inset:0;z-index:150;align-items:center;justify-content:center;}
+#rmenu.on{display:flex;}
+#rmenu-bg{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);}
+#rmenu-wrap{position:relative;z-index:1;}
+#rmenu-svg .mhex{cursor:pointer;transition:all .15s;}
+#rmenu-svg .mhex polygon{transition:filter .15s;}
+#rmenu-svg .mhex:hover polygon{filter:brightness(1.4);}
+#rmenu-svg .mhex:hover .mhex-ring{opacity:1;}
+.rm-cancel{position:absolute;bottom:-50px;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:2px;padding:5px 18px;border:1px solid #5a2020;background:rgba(80,10,10,.7);color:#cc5555;cursor:pointer;border-radius:3px;text-transform:uppercase;white-space:nowrap;}
+.rm-cancel:hover{border-color:var(--atk);background:rgba(120,20,20,.9);}
+
+/* SWITCH OVERLAY */
+#sw-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(5px);}
+#sw-ov.on{display:flex;}
+#sw-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:40px 60px;text-align:center;animation:fis .25s ease;}
+@keyframes fis{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.sc-sub{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:4px;color:var(--dim);text-transform:uppercase;margin-bottom:8px;}
+.sc-nm{font-family:'Cinzel',serif;font-size:2.1rem;font-weight:900;letter-spacing:6px;margin-bottom:5px;text-shadow:0 0 28px currentColor;}
+.sc-nm.A{color:var(--bA);} .sc-nm.B{color:var(--bB);}
+.sc-yt{font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold);letter-spacing:3px;margin-bottom:26px;}
+#sw-card button{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:3px;padding:9px 28px;border:1px solid var(--goldd);background:rgba(200,168,75,.1);color:var(--gold);cursor:pointer;border-radius:4px;transition:all .15s;text-transform:uppercase;}
+#sw-card button:hover{background:rgba(200,168,75,.2);border-color:var(--gold);}
+
+/* WIN */
+#win-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;align-items:center;justify-content:center;}
+#win-ov.on{display:flex;}
+#win-card{background:var(--bg2);border:1px solid var(--goldd);border-radius:8px;padding:34px 48px;text-align:center;}
+#win-card h2{font-family:'Cinzel',serif;font-size:1.7rem;color:var(--gold);margin-bottom:8px;}
+#win-card p{color:var(--dim);margin-bottom:20px;font-size:.88rem;}
+#win-card button{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:2px;padding:9px 22px;border:1px solid var(--goldd);background:rgba(200,168,75,.1);color:var(--gold);cursor:pointer;border-radius:3px;transition:all .15s;}
+#win-card button:hover{background:rgba(200,168,75,.2);border-color:var(--gold);}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <h1>HEX<span style="color:#5a6a7a">FORGE</span></h1>
+  <div id="phdis"><div class="ap" id="ph-name">DRAW</div><div id="ph-dots"></div></div>
+  <div id="turdis">Runde <span id="rnd">1</span> &nbsp;<span class="pn A" id="apn">SPIELER A</span></div>
+</div>
+
+<div id="main">
+  <div class="sp">
+    <div class="pt">Spieler A</div>
+    <div class="ps A">
+      <div class="nm">⚔ SPIELER A</div>
+      <div class="hbw"><div class="hb A" id="hpbar-A" style="width:100%"></div></div>
+      <div class="sr"><span class="sl">Basis HP</span><span class="sv hp" id="hp-A">20</span></div>
+      <div class="sr"><span class="sl">Mana</span><span class="sv mn" id="mana-A">3</span></div>
+      <div class="sr"><span class="sl">Hand/Deck</span><span class="sv cd" id="cards-A">5/25</span></div>
+      <div class="sr"><span class="sl">Wells</span><span class="sv" id="wells-A" style="color:var(--well)">0</span></div>
+    </div>
+    <div class="pt">Hand</div>
+    <div id="hand-area"></div>
+  </div>
+
+  <div id="bw">
+    <svg id="board"></svg>
+    <div id="abar">
+      <button class="ab" id="btn-land" onclick="G.openLandMenu()">⬡ Land/Aktion</button>
+      <button class="ab pr" id="btn-next" onclick="G.nextPhase()">Phase ▶</button>
+      <button class="ab dn" id="btn-cancel" onclick="G.cancelSel()">✕ Abbruch</button>
+    </div>
+  </div>
+
+  <div class="sp">
+    <div class="pt">Spieler B</div>
+    <div class="ps B">
+      <div class="nm">⚔ SPIELER B</div>
+      <div class="hbw"><div class="hb B" id="hpbar-B" style="width:100%"></div></div>
+      <div class="sr"><span class="sl">Basis HP</span><span class="sv hp" id="hp-B">20</span></div>
+      <div class="sr"><span class="sl">Mana</span><span class="sv mn" id="mana-B">3</span></div>
+      <div class="sr"><span class="sl">Hand/Deck</span><span class="sv cd" id="cards-B">5/25</span></div>
+      <div class="sr"><span class="sl">Wells</span><span class="sv" id="wells-B" style="color:var(--well)">0</span></div>
+    </div>
+    <div class="pt">Einheit</div>
+    <div id="ud"><span style="color:var(--dim);font-size:.68rem">Einheit auswählen…</span></div>
+    <div class="pt">Log</div>
+    <div id="lp"></div>
+  </div>
+</div>
+
+<!-- Radial Land/Action Menu -->
+<div id="rmenu">
+  <div id="rmenu-bg" onclick="G.closeLandMenu()"></div>
+  <div id="rmenu-wrap">
+    <svg id="rmenu-svg" width="340" height="340" viewBox="0 0 340 340"></svg>
+    <button class="rm-cancel" onclick="G.closeLandMenu()">✕ Abbrechen</button>
+  </div>
+</div>
+
+<!-- Player Switch -->
+<div id="sw-ov">
+  <div id="sw-card">
+    <div class="sc-sub">Jetzt am Zug</div>
+    <div class="sc-nm A" id="sc-nm">SPIELER A</div>
+    <div class="sc-yt">Your Turn!</div>
+    <button onclick="G.dismissSwitch()">Bereit ▶</button>
+  </div>
+</div>
+
+<!-- Win -->
+<div id="win-ov">
+  <div id="win-card">
+    <h2 id="win-title">Spieler A gewinnt!</h2>
+    <p>Die gegnerische Basis wurde zerstört.</p>
+    <button onclick="location.reload()">Neues Spiel</button>
+  </div>
+</div>
+
+<script>
+// ╔══════════════════════════════════════════════════╗
+//  HEXFORGE ENGINE  — radius-3 board, radial menu
+// ╚══════════════════════════════════════════════════╝
+
+const BOARD_R = 3;   // radius 3 → Wells at corners, Bases at top/bottom
+const HS = 34;
+const BASE_HP = 20, BASE_MANA = 3, WELL_MANA = 2, HAND_MAX = 7;
+
+// ── Cube helpers ────────────────────────────────────
+const CDIRS = [[1,-1,0],[-1,1,0],[1,0,-1],[-1,0,1],[0,1,-1],[0,-1,1]];
+function cK(q,r){return `${q},${r},${-q-r}`;}
+function pK(k){return k.split(',').map(Number);}
+function cDist(a,b){return Math.max(Math.abs(a[0]-b[0]),Math.abs(a[1]-b[1]),Math.abs(a[2]-b[2]));}
+function cNbr(q,r,s){return CDIRS.map(([a,b,c])=>[q+a,r+b,s+c]);}
+function inB(q,r,s){return Math.abs(q)<=BOARD_R&&Math.abs(r)<=BOARD_R&&Math.abs(s)<=BOARD_R;}
+// flat-top pixel
+function c2p(q,r){return [HS*(1.5*q), HS*(Math.sqrt(3)/2*q+Math.sqrt(3)*r)];}
+
+// Board layout (radius 3):
+//   Bases: [0,-3,3] (top) and [0,3,-3] (bottom)
+//   Wells positioned so dist(Base,Well)=2 AND dist(Well,Well)=2
+//   Verification: BASE_A=[0,-3,3], WELL=[-1,-1,2] → dist=max(1,2,1)=2 ✓
+//                 WELL=[ 1,-1,2]  → dist=max(1,2,1)=2 ✓  dist(W,W)=max(2,0,2)=2 ✓
+const BASE_A=[0,-BOARD_R,BOARD_R];
+const BASE_B=[0, BOARD_R,-BOARD_R];
+const WELLS=[[-1,-1,2],[1,-1,2],[-1,1,-2],[1,1,-2]];
+
+function isWell(q,r,s){return WELLS.some(([a,b,c])=>a===q&&b===r&&c===s);}
+function isBaseA(q,r,s){return q===BASE_A[0]&&r===BASE_A[1]&&s===BASE_A[2];}
+function isBaseB(q,r,s){return q===BASE_B[0]&&r===BASE_B[1]&&s===BASE_B[2];}
+
+function allCells(){
+  const o=[];
+  for(let q=-BOARD_R;q<=BOARD_R;q++)
+    for(let r=-BOARD_R;r<=BOARD_R;r++){const s=-q-r;if(Math.abs(s)<=BOARD_R)o.push([q,r,s]);}
+  return o;
+}
+
+// ── Card DB ─────────────────────────────────────────
+const DB={
+  land_F:{id:'land_F',name:'Waldlichtung',type:'LAND',landType:'F',cost:0,req:{},text:'Platziert ein Waldfeld.'},
+  land_D:{id:'land_D',name:'Wüstenoase',  type:'LAND',landType:'D',cost:0,req:{},text:'Platziert ein Wüstenfeld.'},
+  land_M:{id:'land_M',name:'Bergpass',    type:'LAND',landType:'M',cost:0,req:{},text:'Platziert ein Bergfeld.'},
+  land_W:{id:'land_W',name:'Flachufer',   type:'LAND',landType:'W',cost:0,req:{},text:'Platziert ein Seefeld.'},
+  land_N:{id:'land_N',name:'Grasland',    type:'LAND',landType:'N',cost:0,req:{},text:'Platziert 2 neutrale Felder.'},
+  scout_F:   {id:'scout_F',   name:'Waldläufer',   type:'UNIT',cost:2,req:{F:1},native:'F',atk:2,hp:4,bew:2,rei:1,text:'Auf Wald: +1 BEW.'},
+  guardian_M:{id:'guardian_M',name:'Steinwächter', type:'UNIT',cost:4,req:{M:2},native:'M',atk:3,hp:6,bew:1,rei:1,text:'Min. 1 Schaden pro Treffer.'},
+  rider_D:   {id:'rider_D',   name:'Wüstenreiter', type:'UNIT',cost:3,req:{D:1},native:'D',atk:3,hp:3,bew:3,rei:1,text:'Nach Angriff: Rückzug.'},
+  sprite_W:  {id:'sprite_W',  name:'Seenixe',      type:'UNIT',cost:3,req:{W:1},native:'W',atk:2,hp:2,bew:2,rei:2,text:'Auf See: REI+1.'},
+  archer_M:  {id:'archer_M',  name:'Bergschütze',  type:'UNIT',cost:3,req:{M:1},native:'M',atk:2,hp:3,bew:1,rei:2,text:'Fernkampf, kein Gegenschlag.'},
+  brawler_N: {id:'brawler_N', name:'Söldner',      type:'UNIT',cost:2,req:{},   native:null,atk:2,hp:3,bew:2,rei:1,text:'Keine Landrequirements.'},
+  emissary:  {id:'emissary',  name:'Dualist',      type:'UNIT',cost:5,req:{F:1,D:1},native:null,atk:4,hp:4,bew:2,rei:1,text:'Terrain-Bonus F+D.'},
+  wellkeeper:{id:'wellkeeper',name:'Brunnenwächter',type:'UNIT',cost:3,req:{},  native:null,atk:1,hp:5,bew:2,rei:1,text:'Adj. Well: +1 Mana.'},
+  veil:{id:'veil',name:'Tarnschleier',type:'INSTANT',cost:1,req:{F:1},text:'-2 Schaden (min 0).'},
+  gust:{id:'gust',name:'Sandschwall', type:'INSTANT',cost:2,req:{D:2},text:'Schiebe Gegner 1 Feld, 1 Schaden.'},
+};
+
+const LF={N:'#1e2530',F:'#1a3a18',D:'#3a2810',M:'#22222e',W:'#0d1e3a'};
+const LS={N:'#3a4a60',F:'#2d5a27',D:'#6a4a18',M:'#4a4a60',W:'#1a4a7a'};
+
+const PHASES=['DRAW','LAND_OR_BOOST','MANA','PLAY','MOVE','ATTACK','CLEANUP'];
+const PN={DRAW:'Ziehen',LAND_OR_BOOST:'Land/Boost',MANA:'Mana',PLAY:'Spielen',MOVE:'Bewegen',ATTACK:'Angriff',CLEANUP:'Aufräumen'};
+
+// ── Deck ────────────────────────────────────────────
+function mkDeck(p){
+  const d=[];const a=(id,n)=>{for(let i=0;i<n;i++)d.push(id);};
+  if(p==='A'){a('land_F',3);a('land_M',3);a('land_N',1);a('scout_F',3);a('guardian_M',2);a('archer_M',2);a('brawler_N',3);a('emissary',1);a('wellkeeper',3);a('veil',3);a('land_F',1);a('land_M',1);a('brawler_N',1);a('scout_F',1);}
+  else{a('land_D',3);a('land_W',3);a('land_N',1);a('rider_D',3);a('sprite_W',3);a('brawler_N',3);a('wellkeeper',3);a('gust',3);a('land_D',1);a('land_W',1);a('archer_M',2);a('scout_F',1);a('brawler_N',1);}
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+
+// ── State ───────────────────────────────────────────
+function mkState(){
+  const S={turn:1,ap:'A',phase:'DRAW',phaseStep:0,lobDone:false,
+    players:{
+      A:{hp:BASE_HP,mana:BASE_MANA,deck:mkDeck('A'),hand:[],grave:[],boostUsed:false},
+      B:{hp:BASE_HP,mana:BASE_MANA,deck:mkDeck('B'),hand:[],grave:[],boostUsed:false},
+    },
+    cells:{},units:{},uid:1,log:[],winner:null};
+  allCells().forEach(([q,r,s])=>{
+    const k=cK(q,r);
+    if(isBaseA(q,r,s))     S.cells[k]={type:'BASE',owner:'A'};
+    else if(isBaseB(q,r,s))S.cells[k]={type:'BASE',owner:'B'};
+    else if(isWell(q,r,s)) S.cells[k]={type:'WELL',ctrl:null};
+    else                   S.cells[k]={type:'EMPTY'};
+  });
+  deal(S,'A',5);deal(S,'B',5);
+  return S;
+}
+
+function deal(S,p,n){const pl=S.players[p];for(let i=0;i<n;i++){if(!pl.deck.length||pl.hand.length>=HAND_MAX)break;pl.hand.push(pl.deck.shift());}}
+function landCnt(S,p,lt){return Object.values(S.cells).filter(c=>c.owner===p&&c.type==='LAND'&&c.landType===lt).length;}
+function ctrlWells(S,p){return WELLS.filter(([q,r,s])=>{const c=S.cells[cK(q,r)];return c&&c.ctrl===p;}).length;}
+function canPlay(S,p,id){const cd=DB[id];if(!cd)return false;if(S.players[p].mana<cd.cost)return false;for(const[lt,n]of Object.entries(cd.req||{}))if(landCnt(S,p,lt)<n)return false;return true;}
+function unitAt(S,q,r,s){return Object.values(S.units).find(u=>u.q===q&&u.r===r&&u.s===s)||null;}
+function lg(S,p,m){S.log.unshift({p,m,t:S.turn});if(S.log.length>60)S.log.pop();}
+
+function updWells(S){
+  WELLS.forEach(([wq,wr,ws])=>{
+    const k=cK(wq,wr);let a=0,b=0;
+    cNbr(wq,wr,ws).forEach(([q,r,s])=>{const u=unitAt(S,q,r,s);if(u){if(u.own==='A')a++;else b++;}});
+    S.cells[k].ctrl=a>0&&b===0?'A':b>0&&a===0?'B':null;
+  });
+}
+
+function manaInc(S,p){
+  updWells(S);const w=ctrlWells(S,p);let bns=0;
+  Object.values(S.units).forEach(u=>{
+    if(u.own===p&&u.cid==='wellkeeper'){
+      const adj=WELLS.some(([wq,wr,ws])=>{const c=S.cells[cK(wq,wr)];return cDist([u.q,u.r,u.s],[wq,wr,ws])===1&&c&&c.ctrl===p;});
+      if(adj)bns++;
+    }
+  });
+  return BASE_MANA+w*WELL_MANA+bns;
+}
+
+function adjPlace(S,p){
+  const v=new Set();
+  for(const[k,c]of Object.entries(S.cells)){
+    if(c.owner===p&&(c.type==='LAND'||c.type==='BASE')){
+      const[q,r,s]=pK(k);
+      cNbr(q,r,s).forEach(([nq,nr,ns])=>{
+        if(!inB(nq,nr,ns))return;
+        const nk=cK(nq,nr);const nc=S.cells[nk];
+        if(nc&&nc.type==='EMPTY')v.add(nk);
+      });
+    }
+  }
+  return[...v].map(pK);
+}
+
+function validMoves(S,uid){
+  const u=S.units[uid];if(!u||u.moved||u.atked)return[];
+  const vis=new Set([cK(u.q,u.r)]);let fr=[[u.q,u.r,u.s,0]];const res=[];
+  while(fr.length){
+    const[q,r,s,d]=fr.shift();if(d>=u.bew)continue;
+    cNbr(q,r,s).forEach(([nq,nr,ns])=>{
+      if(!inB(nq,nr,ns))return;
+      const k=cK(nq,nr);if(vis.has(k))return;vis.add(k);
+      const c=S.cells[k];
+      if(!c||c.type==='EMPTY'||c.type==='WELL')return;
+      if(c.type==='BASE'&&c.owner!==u.own)return;
+      if(unitAt(S,nq,nr,ns))return;
+      res.push([nq,nr,ns]);fr.push([nq,nr,ns,d+1]);
+    });
+  }
+  return res;
+}
+
+function validAtks(S,uid){
+  const u=S.units[uid];if(!u||u.atked)return[];const res=[];
+  Object.values(S.units).forEach(t=>{if(t.own===u.own)return;if(cDist([u.q,u.r,u.s],[t.q,t.r,t.s])<=u.rei)res.push({type:'unit',id:t.id,q:t.q,r:t.r,s:t.s});});
+  const[bq,br,bs]=u.own==='A'?BASE_B:BASE_A;
+  if(cDist([u.q,u.r,u.s],[bq,br,bs])<=u.rei)res.push({type:'base',own:u.own==='A'?'B':'A',q:bq,r:br,s:bs});
+  return res;
+}
+
+function doAtk(S,aid,tt,tid){
+  const a=S.units[aid];if(!a||a.atked)return;
+  lg(S,a.own,`${DB[a.cid].name} greift an`);
+  if(tt==='unit'){
+    const d=S.units[tid];if(!d)return;
+    d.hp-=a.atk;lg(S,a.own,`→${DB[d.cid].name}:-${a.atk}HP`);
+    if(a.rei===1){a.hp-=d.atk;lg(S,d.own,`↩Gegenschlag-${d.atk}HP`);}
+    if(d.hp<=0){lg(S,'sys',`${DB[d.cid].name} stirbt`);S.players[d.own].grave.push(d.cid);delete S.units[tid];}
+    if(a.hp<=0){lg(S,'sys',`${DB[a.cid].name} stirbt`);S.players[a.own].grave.push(a.cid);delete S.units[aid];return;}
+  }else{
+    S.players[tid].hp-=a.atk;
+    lg(S,a.own,`⚔Basis ${tid}:-${a.atk}HP(${S.players[tid].hp})`);
+    if(S.players[tid].hp<=0)S.winner=a.own;
+  }
+  if(S.units[aid])S.units[aid].atked=true;
+}
+
+function doPlay(S,p,id,q,r,s){
+  const cd=DB[id];const pl=S.players[p];
+  if(!canPlay(S,p,id))return false;
+  pl.mana-=cd.cost;pl.hand.splice(pl.hand.indexOf(id),1);
+  if(cd.type==='LAND'){
+    // Double-neutral: place 2 neutral fields
+    if(id==='land_N'){
+      const spots=adjPlace(S,p);
+      const first=spots.find(([qq,rr,ss])=>!unitAt(S,qq,rr,ss));
+      if(first){const[fq,fr,fs]=first;S.cells[cK(fq,fr)]={type:'LAND',owner:p,landType:'N'};}
+      const spots2=adjPlace(S,p);
+      const second=spots2.find(([qq,rr,ss])=>cK(qq,rr)!==cK(first[0],first[1]));
+      if(second){const[sq,sr,ss]=second;S.cells[cK(sq,sr)]={type:'LAND',owner:p,landType:'N'};}
+    } else {
+      S.cells[cK(q,r)]={type:'LAND',owner:p,landType:cd.landType};
+    }
+    lg(S,p,`Platziert ${cd.name}`);S.lobDone=true;return true;
+  }
+  if(cd.type==='UNIT'){const uid=`u${S.uid++}`;S.units[uid]={id:uid,own:p,cid:id,q,r,s,hp:cd.hp,maxHp:cd.hp,atk:cd.atk,bew:cd.bew,rei:cd.rei,moved:false,atked:false};lg(S,p,`Beschwört ${cd.name}`);return true;}
+  if(cd.type==='INSTANT'){
+    if(id==='veil'){const u=unitAt(S,q,r,s);if(u&&u.own===p)u._sh=(u._sh||0)+2;lg(S,p,'Tarnschleier!');}
+    if(id==='gust'){const u=unitAt(S,q,r,s);if(u&&u.own!==p){const nb=cNbr(q,r,s).filter(([nq,nr,ns])=>inB(nq,nr,ns)&&!unitAt(S,nq,nr,ns));if(nb.length){const[nq,nr,ns]=nb[0];u.q=nq;u.r=nr;u.s=ns;const c=S.cells[cK(nq,nr)];if(!c||c.landType!=='D')u.hp--;}lg(S,p,'Sandschwall!');}}
+    pl.grave.push(id);return true;
+  }
+  return false;
+}
+
+// ── RADIAL MENU OPTIONS ─────────────────────────────
+// Center hex + 6 around — like the reference image
+// Positions: flat-top hex grid, center=0,0; ring at dist 1
+const MENU_OPTS=[
+  {id:'land_F', label:'Wald',      sub:'🌲', fill:'#1c4a14',stroke:'#4a9e40', textCol:'#7dd870'},
+  {id:'land_D', label:'Wüste',     sub:'🏜', fill:'#5a2e08',stroke:'#d4982a', textCol:'#f0b84a'},
+  {id:'land_M', label:'Berg',      sub:'⛰',  fill:'#282838',stroke:'#8a8aaa', textCol:'#aaaacc'},
+  {id:'land_W', label:'Wasser',    sub:'🌊', fill:'#083050',stroke:'#3a8acc', textCol:'#60aaee'},
+  {id:'land_N', label:'2×Neutral', sub:'··', fill:'#1a2236',stroke:'#4a5a70', textCol:'#7a9ab0'},
+  {id:'_draw',  label:'Karte+1',   sub:'🃏', fill:'#2a1c08',stroke:'#c8a84b', textCol:'#e8c870'},
+  {id:'_boost', label:'+1 Mana',   sub:'◆',  fill:'#081828',stroke:'#4488cc', textCol:'#68aaee'},
+];
+
+// ── Engine ───────────────────────────────────────────
+class Engine{
+  constructor(){
+    this.S=mkState();
+    this.selCard=null;this.selUnit=null;this.pact=null;this.vt=[];
+    this._render();
+    this._showSwitch(this.S.ap);
+  }
+  get ap(){return this.S.ap;}
+
+  dismissSwitch(){document.getElementById('sw-ov').classList.remove('on');this._runPhase();}
+
+  _showSwitch(p){
+    const el=document.getElementById('sc-nm');
+    el.textContent=`SPIELER ${p}`;el.className=`sc-nm ${p}`;
+    document.getElementById('sw-ov').classList.add('on');
+  }
+
+  _runPhase(){
+    const S=this.S;if(S.winner){this._win();return;}
+    this.selCard=null;this.selUnit=null;this.pact=null;this.vt=[];
+    switch(S.phase){
+      case 'DRAW':deal(S,this.ap,1);lg(S,this.ap,'Karte gezogen');this._auto(350);break;
+      case 'MANA':{const inc=manaInc(S,this.ap);S.players[this.ap].mana+=inc;if(S.players[this.ap].boostUsed)S.players[this.ap].mana+=1;lg(S,this.ap,`+${inc}Mana→${S.players[this.ap].mana}`);this._auto(350);break;}
+      case 'CLEANUP':
+        Object.values(S.units).filter(u=>u.own===this.ap).forEach(u=>{u.moved=false;u.atked=false;});
+        S.players[this.ap].boostUsed=false;S.lobDone=false;
+        lg(S,this.ap,'— Runde Ende —');
+        if(this.ap==='B')S.turn++;
+        S.ap=this.ap==='A'?'B':'A';S.phase='DRAW';S.phaseStep=0;
+        this._render();setTimeout(()=>this._showSwitch(S.ap),200);return;
+      default:break;
+    }
+    this._render();
+  }
+
+  _auto(ms){setTimeout(()=>this._adv(),ms);}
+  _adv(){const S=this.S;const i=PHASES.indexOf(S.phase);S.phase=PHASES[i+1]||'CLEANUP';S.phaseStep=i+1;this._runPhase();}
+  nextPhase(){this._adv();}
+
+  // ── Land/Action Radial Menu (SVG) ───────────────────
+  openLandMenu(){
+    const S=this.S;
+    if(S.phase!=='LAND_OR_BOOST'||S.lobDone)return;
+    this._buildSVGMenu();
+    document.getElementById('rmenu').classList.add('on');
+  }
+
+  closeLandMenu(){document.getElementById('rmenu').classList.remove('on');}
+
+  _buildSVGMenu(){
+    const svg=document.getElementById('rmenu-svg');
+    svg.innerHTML='';
+    const W=340,H=340,cx=W/2,cy=H/2;
+    const R=38;   // hex radius
+    const RR=88;  // ring distance center-to-center
+
+    // Defs: filters
+    const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+    defs.innerHTML=`
+      <filter id="mhover"><feGaussianBlur stdDeviation="3" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <radialGradient id="ringGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="60%" stop-color="rgba(160,30,30,0)"/>
+        <stop offset="100%" stop-color="rgba(200,50,50,0.45)"/>
+      </radialGradient>`;
+    svg.appendChild(defs);
+
+    // Outer decorative ring
+    const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    ring.setAttribute('cx',cx);ring.setAttribute('cy',cy);ring.setAttribute('r',H/2-8);
+    ring.setAttribute('fill','url(#ringGrad)');
+    ring.setAttribute('stroke','#aa2525');ring.setAttribute('stroke-width','4');
+    svg.appendChild(ring);
+    const ring2=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    ring2.setAttribute('cx',cx);ring2.setAttribute('cy',cy);ring2.setAttribute('r',H/2-20);
+    ring2.setAttribute('fill','none');ring2.setAttribute('stroke','rgba(180,50,50,0.3)');ring2.setAttribute('stroke-width','1.5');
+    svg.appendChild(ring2);
+
+    // Positions: center + 6 ring (flat-top hex arrangement, pointy-top ring)
+    // Ring angle: start at top, go clockwise
+    const positions=[
+      [cx, cy],  // 0 = center
+      [cx, cy-RR],                                             // 1 top
+      [cx+RR*Math.sin(Math.PI/3), cy-RR*Math.cos(Math.PI/3)],// 2 top-right
+      [cx+RR*Math.sin(Math.PI/3), cy+RR*Math.cos(Math.PI/3)],// 3 bottom-right
+      [cx, cy+RR],                                             // 4 bottom
+      [cx-RR*Math.sin(Math.PI/3), cy+RR*Math.cos(Math.PI/3)],// 5 bottom-left
+      [cx-RR*Math.sin(Math.PI/3), cy-RR*Math.cos(Math.PI/3)],// 6 top-left
+    ];
+    // Assignment: center=2×Neutral, ring going clockwise: Wald,Wüste,Berg,Wasser,Draw,Boost
+    const assign=[4,0,1,2,3,5,6];
+
+    assign.forEach((optIdx,posIdx)=>{
+      const[px,py]=positions[posIdx];
+      const opt=MENU_OPTS[optIdx];
+      const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.setAttribute('class','mhex');
+      g.style.cursor='pointer';
+      g.onmouseenter=()=>{glowPoly.setAttribute('opacity','0.7');poly.setAttribute('filter','url(#mhover)');};
+      g.onmouseleave=()=>{glowPoly.setAttribute('opacity','0');poly.removeAttribute('filter');};
+      g.onclick=()=>this._selectMenuOpt(opt.id);
+
+      // Hex polygon (flat-top)
+      const hexPts=Array.from({length:6},(_,i)=>{
+        const a=Math.PI/180*(60*i);
+        return `${(px+R*Math.cos(a)).toFixed(1)},${(py+R*Math.sin(a)).toFixed(1)}`;
+      }).join(' ');
+
+      const poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      poly.setAttribute('points',hexPts);
+      poly.setAttribute('fill',opt.fill);
+      poly.setAttribute('stroke',opt.stroke);
+      poly.setAttribute('stroke-width','2.5');
+      g.appendChild(poly);
+
+      // Hover glow ring (hidden by default, shown on hover via CSS)
+      const glowPoly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      glowPoly.setAttribute('class','mhex-ring');
+      glowPoly.setAttribute('points',hexPts);
+      glowPoly.setAttribute('fill','none');
+      glowPoly.setAttribute('stroke',opt.stroke);
+      glowPoly.setAttribute('stroke-width','4');
+      glowPoly.setAttribute('opacity','0');
+      glowPoly.setAttribute('filter','url(#mhover)');
+      glowPoly.setAttribute('pointer-events','none');
+      g.appendChild(glowPoly);
+
+      // Sub-symbol (emoji/icon) — bigger
+      const sym=document.createElementNS('http://www.w3.org/2000/svg','text');
+      sym.setAttribute('x',px);sym.setAttribute('y',py-2);
+      sym.setAttribute('text-anchor','middle');sym.setAttribute('dominant-baseline','middle');
+      sym.setAttribute('font-size',R*0.75);
+      sym.setAttribute('pointer-events','none');
+      sym.textContent=opt.sub;
+      g.appendChild(sym);
+
+      // Label below symbol
+      const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+      lbl.setAttribute('x',px);lbl.setAttribute('y',py+R*0.58);
+      lbl.setAttribute('text-anchor','middle');lbl.setAttribute('dominant-baseline','middle');
+      lbl.setAttribute('font-family','Cinzel,serif');lbl.setAttribute('font-size',R*0.25);
+      lbl.setAttribute('fill',opt.textCol);lbl.setAttribute('font-weight','bold');
+      lbl.setAttribute('pointer-events','none');
+      lbl.textContent=opt.label;
+      g.appendChild(lbl);
+
+      // Add +1 / ×2 badges for special options (like the reference image)
+      if(opt.id==='land_N'){
+        const badge=this._makeBadge(svg,px+R*0.65,py-R*0.55,'×2','#4a5a70','#c8d4e0');
+        g.appendChild(badge);
+      }
+      if(opt.id==='_draw'||opt.id==='_boost'){
+        const badge=this._makeBadge(svg,px+R*0.65,py-R*0.55,'+1',opt.stroke,'#fff');
+        g.appendChild(badge);
+      }
+
+      svg.appendChild(g);
+    });
+  }
+
+  _makeBadge(svg,x,y,text,bg,fg){
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('pointer-events','none');
+    const circ=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circ.setAttribute('cx',x);circ.setAttribute('cy',y);circ.setAttribute('r','11');
+    circ.setAttribute('fill',bg);circ.setAttribute('stroke',fg);circ.setAttribute('stroke-width','1.5');
+    g.appendChild(circ);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x);t.setAttribute('y',y);
+    t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-family','Cinzel,serif');t.setAttribute('font-size','9');
+    t.setAttribute('fill',fg);t.setAttribute('font-weight','bold');
+    t.textContent=text;g.appendChild(t);
+    return g;
+  }
+
+  _selectMenuOpt(id){
+    const S=this.S;
+    this.closeLandMenu();
+    if(id==='_draw'){
+      // Draw a card (consume land/boost action)
+      deal(S,this.ap,1);
+      S.lobDone=true;
+      lg(S,this.ap,'Karte gezogen (Aktion)');
+      this._render();this._auto(300);return;
+    }
+    if(id==='_boost'){
+      S.players[this.ap].boostUsed=true;S.lobDone=true;
+      lg(S,this.ap,'+1 Mana Boost');
+      this._render();this._auto(300);return;
+    }
+    // Land card
+    if(id==='land_N'){
+      // Double neutral: place 2 neutral tiles on adjacent empty cells
+      const spots=adjPlace(S,this.ap);
+      let placed=0;
+      for(const[qq,rr,ss]of spots){
+        if(placed>=2)break;
+        if(!unitAt(S,qq,rr,ss)){S.cells[cK(qq,rr)]={type:'LAND',owner:this.ap,landType:'N'};placed++;}
+      }
+      S.lobDone=true;lg(S,this.ap,'2× Grasland platziert');
+      this._render();this._auto(300);return;
+    }
+    // Other land type: need target selection
+    this.selCard=id;
+    this.pact='land';
+    this.vt=adjPlace(S,this.ap);
+    this._render();
+  }
+
+  selCardFn(id){
+    const S=this.S;const cd=DB[id];if(!cd)return;
+    if(cd.type==='LAND'){this.openLandMenu();return;}
+    if(S.phase!=='PLAY')return;
+    if(!canPlay(S,this.ap,id))return;
+    this.selCard=id;
+    if(cd.type==='UNIT'){
+      this.pact='unit';
+      this.vt=Object.entries(S.cells).filter(([k,c])=>c.owner===this.ap&&c.type==='LAND').map(([k])=>pK(k)).filter(([q,r,s])=>!unitAt(S,q,r,s));
+    }else if(cd.type==='INSTANT'){
+      this.pact='inst';
+      if(id==='veil')this.vt=Object.values(S.units).filter(u=>u.own===this.ap).map(u=>[u.q,u.r,u.s]);
+      else if(id==='gust')this.vt=Object.values(S.units).filter(u=>u.own!==this.ap).map(u=>[u.q,u.r,u.s]);
+    }
+    this._render();
+  }
+
+  selUnitFn(uid){
+    const S=this.S;const u=S.units[uid];if(!u||u.own!==this.ap)return;
+    this.selCard=null;this.selUnit=uid;
+    if(S.phase==='MOVE'){this.pact='move';this.vt=validMoves(S,uid);}
+    else if(S.phase==='ATTACK'){this.pact='atk';this.vt=validAtks(S,uid).map(t=>[t.q,t.r,t.s]);}
+    this._showUD(u);this._render();
+  }
+
+  clickCell(q,r,s){
+    const S=this.S;
+    const isV=this.vt.some(([a,b,c])=>a===q&&b===r&&c===s);
+    if(this.pact&&isV){
+      if(this.pact==='land'){
+        const cd=DB[this.selCard];const pl=S.players[this.ap];
+        pl.hand=pl.hand.filter(x=>x!==this.selCard);// remove first occurrence if any (land from menu doesn't come from hand)
+        S.cells[cK(q,r)]={type:'LAND',owner:this.ap,landType:cd.landType};
+        S.lobDone=true;lg(S,this.ap,`Platziert ${cd.name}`);
+        this._clr();this._render();this._auto(300);return;
+      }
+      if(this.pact==='unit'||this.pact==='inst'){doPlay(S,this.ap,this.selCard,q,r,s);this._clr();}
+      if(this.pact==='move'&&this.selUnit){
+        const u=S.units[this.selUnit];
+        if(u){u.q=q;u.r=r;u.s=s;u.moved=true;updWells(S);lg(S,this.ap,`${DB[u.cid].name} bewegt`);}
+        this._clr();
+      }
+      if(this.pact==='atk'&&this.selUnit){
+        const tu=unitAt(S,q,r,s);
+        const[bq,br,bs]=this.ap==='A'?BASE_B:BASE_A;
+        if(tu&&tu.own!==this.ap)doAtk(S,this.selUnit,'unit',tu.id);
+        else if(q===bq&&r===br&&s===bs)doAtk(S,this.selUnit,'base',this.ap==='A'?'B':'A');
+        this._clr();
+      }
+      this._render();if(S.winner)this._win();return;
+    }
+    const u=unitAt(S,q,r,s);if(u)this.selUnitFn(u.id);
+  }
+
+  _clr(){this.selCard=null;this.selUnit=null;this.pact=null;this.vt=[];}
+  cancelSel(){this._clr();this._render();}
+
+  _showUD(u){
+    const cd=DB[u.cid];
+    document.getElementById('ud').innerHTML=`<div class="udn">${cd.name}</div><div style="display:flex;gap:8px;font-size:.7rem;margin-bottom:2px"><span style="color:var(--atk)">⚔${u.atk}</span><span style="color:var(--hp)">♥${u.hp}/${u.maxHp}</span><span style="color:var(--dim)">➤${u.bew}</span><span style="color:var(--W)">◎${u.rei}</span></div><div style="font-size:.6rem;color:var(--dim);font-style:italic">${cd.text}</div><div style="font-size:.58rem;margin-top:2px">${u.moved?'<span style="color:#883030">✓Bew</span> ':''}${u.atked?'<span style="color:#883030">✓Atk</span>':''}</div>`;
+  }
+
+  _win(){document.getElementById('win-title').textContent=`Spieler ${this.S.winner} gewinnt!`;document.getElementById('win-ov').classList.add('on');}
+
+  // ── Render ──────────────────────────────────────────
+  _render(){this._rStats();this._rHand();this._rPhase();this._rBtns();this._rLog();this._rBoard();}
+
+  _rStats(){
+    const S=this.S;
+    ['A','B'].forEach(p=>{
+      document.getElementById(`hp-${p}`).textContent=S.players[p].hp;
+      document.getElementById(`mana-${p}`).textContent=S.players[p].mana;
+      document.getElementById(`cards-${p}`).textContent=`${S.players[p].hand.length}/${S.players[p].deck.length}`;
+      document.getElementById(`wells-${p}`).textContent=ctrlWells(S,p);
+      document.getElementById(`hpbar-${p}`).style.width=`${S.players[p].hp/BASE_HP*100}%`;
+    });
+    document.getElementById('rnd').textContent=S.turn;
+    const n=document.getElementById('apn');n.textContent=`SPIELER ${S.ap}`;n.className=`pn ${S.ap}`;
+  }
+
+  _rPhase(){
+    const S=this.S;
+    document.getElementById('ph-name').textContent=PN[S.phase]||S.phase;
+    document.getElementById('ph-dots').innerHTML=PHASES.map((ph,i)=>`<span class="pdot ${i<S.phaseStep?'done':i===S.phaseStep?'cur':''}" title="${PN[ph]}"></span>`).join('');
+  }
+
+  _rBtns(){
+    const S=this.S;
+    document.getElementById('btn-land').disabled=S.phase!=='LAND_OR_BOOST'||S.lobDone;
+    document.getElementById('btn-cancel').disabled=!this.pact&&!this.selUnit;
+    const auto=['DRAW','MANA','CLEANUP'];
+    const nb=document.getElementById('btn-next');
+    nb.disabled=auto.includes(S.phase);
+    nb.textContent=auto.includes(S.phase)?'⟳ Auto':'Phase ▶';
+  }
+
+  _rHand(){
+    const S=this.S;const el=document.getElementById('hand-area');el.innerHTML='';
+    S.players[this.ap].hand.forEach(id=>{
+      const cd=DB[id];if(!cd)return;
+      const ok=this._canP(id);const isSel=this.selCard===id;
+      const tc=cd.type==='LAND'?`l${cd.landType}`:cd.type==='UNIT'?'lU':'lI';
+      const req=Object.entries(cd.req||{}).map(([lt,n])=>`${n}${lt}`).join(' ');
+      let stats='';
+      if(cd.type==='UNIT')stats=`<div class="cs"><span class="cra">⚔${cd.atk}</span><span class="crh">♥${cd.hp}</span><span style="color:var(--dim)">➤${cd.bew}</span><span style="color:var(--W)">◎${cd.rei}</span></div>`;
+      const d=document.createElement('div');
+      d.className=`hc ${tc} ${ok?'':'np'} ${isSel?'sel':''}`;
+      d.innerHTML=`<div class="ch"><span class="cn">${cd.name}</span><span class="cc">${cd.cost>0?cd.cost+'◆':''}</span></div><div class="cb">${cd.type==='LAND'?cd.landType+' Land':cd.type}</div>${stats}${req?`<div class="creq">Req:${req}</div>`:''}<div class="ctx">${cd.text}</div>`;
+      if(ok)d.onclick=()=>this.selCardFn(id);
+      el.appendChild(d);
+    });
+  }
+
+  _canP(id){
+    const S=this.S;const cd=DB[id];
+    if(cd.type==='LAND')return S.phase==='LAND_OR_BOOST'&&!S.lobDone;
+    if(cd.type==='UNIT')return S.phase==='PLAY'&&canPlay(S,this.ap,id);
+    if(cd.type==='INSTANT')return(S.phase==='PLAY'||S.phase==='ATTACK')&&canPlay(S,this.ap,id);
+    return false;
+  }
+
+  _rLog(){document.getElementById('lp').innerHTML=this.S.log.slice(0,30).map(e=>`<div class="le"><span class="l${e.p==='sys'?'S':e.p}">[${e.p}]</span>${e.m}</div>`).join('');}
+
+  // ── SVG Board ────────────────────────────────────────
+  _rBoard(){
+    const S=this.S;const svg=document.getElementById('board');
+
+    function corners(cx,cy){
+      return Array.from({length:6},(_,i)=>{const a=Math.PI/180*(60*i);return[cx+HS*Math.cos(a),cy+HS*Math.sin(a)];});
+    }
+    function pts(cx,cy){return corners(cx,cy).map(([x,y])=>`${x.toFixed(1)},${y.toFixed(1)}`).join(' ');}
+
+    const cells=allCells();
+    let mnX=1e9,mxX=-1e9,mnY=1e9,mxY=-1e9;
+    cells.forEach(([q,r])=>{const[px,py]=c2p(q,r);mnX=Math.min(mnX,px);mxX=Math.max(mxX,px);mnY=Math.min(mnY,py);mxY=Math.max(mxY,py);});
+    const PAD=HS*1.5;
+    const W=mxX-mnX+HS*2+PAD*2,H=mxY-mnY+HS*2+PAD*2;
+    const ox=-mnX+HS+PAD,oy=-mnY+HS+PAD;
+
+    svg.setAttribute('width',W);svg.setAttribute('height',H);svg.innerHTML='';
+
+    const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+    defs.innerHTML=`<filter id="gw"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="wg"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+    svg.appendChild(defs);
+
+    const vs=new Set(this.vt.map(([q,r,s])=>cK(q,r)));
+
+    cells.forEach(([q,r,s])=>{
+      const k=cK(q,r);const cd=S.cells[k];
+      const[px,py]=c2p(q,r);const cx=px+ox,cy=py+oy;
+      const P=pts(cx,cy);const isV=vs.has(k);
+
+      const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.style.cursor='pointer';g.onclick=()=>this.clickCell(q,r,s);
+
+      let fill='#0a0d12',stroke='#151c26',sw='1';
+      if(cd){
+        if(cd.type==='WELL')     {fill='#100818';stroke='#4a1a88';sw='1.5';}
+        else if(cd.type==='BASE'){fill=cd.owner==='A'?'#1e0808':'#08081e';stroke=cd.owner==='A'?'#882222':'#224488';sw='2';}
+        else if(cd.type==='LAND'){fill=LF[cd.landType]||'#1e2530';stroke=LS[cd.landType]||'#3a4a60';}
+        else                    {fill='#0e1520';stroke='#1a2535';}
+      }
+
+      const poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      poly.setAttribute('points',P);poly.setAttribute('fill',fill);poly.setAttribute('stroke',stroke);poly.setAttribute('stroke-width',sw);
+      g.appendChild(poly);
+
+      if(cd&&cd.type==='WELL'){
+        const glw=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        glw.setAttribute('cx',cx);glw.setAttribute('cy',cy);glw.setAttribute('r',HS*.78);
+        glw.setAttribute('fill',cd.ctrl==='A'?'rgba(160,40,255,0.22)':cd.ctrl==='B'?'rgba(40,100,255,0.22)':'rgba(80,15,140,0.15)');
+        glw.setAttribute('pointer-events','none');g.appendChild(glw);
+        const orb=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        orb.setAttribute('cx',cx);orb.setAttribute('cy',cy);orb.setAttribute('r',HS*.35);
+        orb.setAttribute('fill',cd.ctrl==='A'?'#bb33ee':cd.ctrl==='B'?'#3366ee':'#6611bb');
+        orb.setAttribute('filter','url(#wg)');orb.setAttribute('pointer-events','none');g.appendChild(orb);
+        const sym=document.createElementNS('http://www.w3.org/2000/svg','text');
+        sym.setAttribute('x',cx);sym.setAttribute('y',cy+5);sym.setAttribute('text-anchor','middle');
+        sym.setAttribute('fill','#fff');sym.setAttribute('font-size','14');sym.setAttribute('pointer-events','none');
+        sym.textContent='◎';g.appendChild(sym);
+        if(cd.ctrl){
+          const ol=document.createElementNS('http://www.w3.org/2000/svg','text');
+          ol.setAttribute('x',cx);ol.setAttribute('y',cy+HS*.85);ol.setAttribute('text-anchor','middle');
+          ol.setAttribute('fill',cd.ctrl==='A'?'#cc44ff':'#4488ff');ol.setAttribute('font-size','8');ol.setAttribute('font-weight','bold');ol.setAttribute('pointer-events','none');
+          ol.textContent=cd.ctrl;g.appendChild(ol);
+        }
+      }
+
+      if(cd&&cd.type==='BASE'){
+        const col=cd.owner==='A'?'#ff6060':'#6090ff';
+        const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x',cx);t.setAttribute('y',cy+5);t.setAttribute('text-anchor','middle');
+        t.setAttribute('fill',col);t.setAttribute('font-size','15');t.setAttribute('font-family','Cinzel,serif');t.setAttribute('font-weight','bold');t.setAttribute('pointer-events','none');
+        t.textContent=cd.owner;g.appendChild(t);
+        const hp=document.createElementNS('http://www.w3.org/2000/svg','text');
+        hp.setAttribute('x',cx);hp.setAttribute('y',cy+HS*.82);hp.setAttribute('text-anchor','middle');
+        hp.setAttribute('fill',cd.owner==='A'?'#cc5050':'#5070cc');hp.setAttribute('font-size','8');hp.setAttribute('pointer-events','none');
+        hp.textContent=`${S.players[cd.owner].hp}HP`;g.appendChild(hp);
+      }
+
+      if(cd&&cd.type==='LAND'){
+        const em={F:'🌲',D:'🏜',M:'⛰',W:'🌊',N:'·'}[cd.landType]||'';
+        const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x',cx);t.setAttribute('y',cy+6);t.setAttribute('text-anchor','middle');t.setAttribute('font-size','14');t.setAttribute('pointer-events','none');
+        t.textContent=em;g.appendChild(t);
+        const od=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        od.setAttribute('cx',cx+HS*.56);od.setAttribute('cy',cy-HS*.56);od.setAttribute('r','4');
+        od.setAttribute('fill',cd.owner==='A'?'rgba(200,60,60,.65)':'rgba(60,100,200,.65)');od.setAttribute('pointer-events','none');g.appendChild(od);
+      }
+
+      if(isV){
+        const hl=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+        hl.setAttribute('points',P);hl.setAttribute('fill','rgba(200,168,75,0.15)');
+        hl.setAttribute('stroke','#c8a84b');hl.setAttribute('stroke-width','2');hl.setAttribute('pointer-events','none');g.appendChild(hl);
+      }
+      svg.appendChild(g);
+    });
+
+    // Units
+    Object.values(S.units).forEach(u=>{
+      const[px,py]=c2p(u.q,u.r);const cx=px+ox,cy=py+oy;
+      const cd=DB[u.cid];const isSel=this.selUnit===u.id;const isVT=vs.has(cK(u.q,u.r));
+
+      const circ=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      circ.setAttribute('cx',cx);circ.setAttribute('cy',cy);circ.setAttribute('r','13');
+      circ.setAttribute('fill',u.own==='A'?'#2a0808':'#08082a');
+      circ.setAttribute('stroke',u.own==='A'?'#cc3333':'#3355cc');
+      circ.setAttribute('stroke-width',isSel?'3':'1.8');
+      if(isSel)circ.setAttribute('filter','url(#gw)');
+      circ.style.cursor='pointer';circ.onclick=(e)=>{e.stopPropagation();this.selUnitFn(u.id);};
+      svg.appendChild(circ);
+
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',cx);t.setAttribute('y',cy+4);t.setAttribute('text-anchor','middle');
+      t.setAttribute('fill',u.own==='A'?'#ff9090':'#9090ff');t.setAttribute('font-size','9');t.setAttribute('font-weight','bold');t.setAttribute('pointer-events','none');
+      t.textContent=cd.name.substring(0,2).toUpperCase();svg.appendChild(t);
+
+      const bW=22,bX=cx-bW/2,bY=cy+15;
+      const bg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      bg.setAttribute('x',bX);bg.setAttribute('y',bY);bg.setAttribute('width',bW);bg.setAttribute('height','3');bg.setAttribute('fill','#111');bg.setAttribute('rx','1.5');bg.setAttribute('pointer-events','none');svg.appendChild(bg);
+      const bar=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      bar.setAttribute('x',bX);bar.setAttribute('y',bY);bar.setAttribute('width',(u.hp/u.maxHp*bW).toFixed(1));bar.setAttribute('height','3');
+      bar.setAttribute('fill',u.own==='A'?'#aa2222':'#2244aa');bar.setAttribute('rx','1.5');bar.setAttribute('pointer-events','none');svg.appendChild(bar);
+
+      if(u.moved||u.atked){
+        const ex=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ex.setAttribute('cx',cx+11);ex.setAttribute('cy',cy-11);ex.setAttribute('r','4');
+        ex.setAttribute('fill','#882222');ex.setAttribute('stroke','#cc4444');ex.setAttribute('stroke-width','1');ex.setAttribute('pointer-events','none');svg.appendChild(ex);
+      }
+      if(isVT&&this.pact==='atk'){
+        const r2=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        r2.setAttribute('cx',cx);r2.setAttribute('cy',cy);r2.setAttribute('r','17');
+        r2.setAttribute('fill','none');r2.setAttribute('stroke','#cc3333');r2.setAttribute('stroke-width','2.5');r2.setAttribute('pointer-events','none');svg.appendChild(r2);
+      }
+    });
+
+    if(this.pact==='atk'){
+      const[bq,br,bs]=this.ap==='A'?BASE_B:BASE_A;
+      if(vs.has(cK(bq,br))){
+        const[px,py]=c2p(bq,br);const cx=px+ox,cy=py+oy;
+        const r2=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        r2.setAttribute('cx',cx);r2.setAttribute('cy',cy);r2.setAttribute('r','20');
+        r2.setAttribute('fill','none');r2.setAttribute('stroke','#cc3333');r2.setAttribute('stroke-width','3');r2.setAttribute('pointer-events','none');svg.appendChild(r2);
+      }
+    }
+  }
+}
+
+// Boot
+const G=new Engine();
+</script>
+</body>
+</html>
