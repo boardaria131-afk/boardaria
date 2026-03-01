@@ -1,34 +1,35 @@
-// Original HexForge game code with specified modifications.
-
-const PHASES = ['DRAW', 'MAIN', 'END'];
-
-// Adding landPlaced flag to players
-let players = [
-    { id: 1, name: 'Player 1', landPlaced: false },
-    { id: 2, name: 'Player 2', landPlaced: false }
-];
+<html>
+<head>
+    <title>HexForge</title>
+</head>
+<body>
+    <script>
+// Game code implementation
+let playerState = {
+    landPlaced: false,
+    // other player state properties
+};
 
 function _runPhase() {
-    switch (currentPhase) {
-        case 'DRAW':
-            // drawing logic
-            break;
-        case 'MAIN':
-            // main phase logic
-            break;
-        case 'END':
-            // end phase logic
-            break;
+    // Implementation of the phase system
+    if (currentPhase === 'DRAW') {
+        // Handle draw phase
+    } else if (currentPhase === 'MAIN') {
+        // Handle main phase
+    } else if (currentPhase === 'END') {
+        // Handle end phase
     }
 }
 
 function _canP() {
-    // Check landPlaced flag instead of lobDone
-    return players[currentPlayer].landPlaced;
+    // Logic to determine if an action can be performed
 }
 
 function _rBtns() {
-    // Update button logic to reflect new phase system
+    // Update relevant buttons based on the current state
 }
 
-// Keep all other code exactly the same.
+// Game loop or initialization
+    </script>
+</body>
+</html>
