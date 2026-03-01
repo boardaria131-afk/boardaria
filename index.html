@@ -212,7 +212,7 @@ function c2p(q,r){return [HS*(1.5*q), HS*(Math.sqrt(3)/2*q+Math.sqrt(3)*r)];}
 //                 WELL=[ 1,-1,2]  → dist=max(1,2,1)=2 ✓  dist(W,W)=max(2,0,2)=2 ✓
 const BASE_A=[0,-BOARD_R,BOARD_R];
 const BASE_B=[0, BOARD_R,-BOARD_R];
-const WELLS=[[-1,-1,2],[1,-1,2],[-1,1,-2],[1,1,-2]];
+const WELLS=[[3,-3,0],[-3,3,0],[3,0,-3],[-3,0,3]];
 
 function isWell(q,r,s){return WELLS.some(([a,b,c])=>a===q&&b===r&&c===s);}
 function isBaseA(q,r,s){return q===BASE_A[0]&&r===BASE_A[1]&&s===BASE_A[2];}
