@@ -7,6 +7,7 @@
   
 
 
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
 
@@ -558,6 +559,9 @@ svg#board { display: block; overflow: visible; }
 
 
 
+
+
+
 <script>
 // ── hexforge-cards.js ──────────────────────────────────
 // ╔══════════════════════════════════════════════════════════╗
@@ -688,7 +692,7 @@ const HS        = 34;
 const BASE_HP   = 20;
 const BASE_MANA = 3;
 const WELL_MANA = 2;
-const HAND_MAX  = 7;
+const HAND_MAX  = 9;
 
 // ── Cube Coordinate Helpers ────────────────────────────────
 const CDIRS    = [[1,-1,0],[-1,1,0],[1,0,-1],[-1,0,1],[0,1,-1],[0,-1,1]];
@@ -852,6 +856,7 @@ function mkUnit(S, p, cardId, q, r, s) {
     bew, rei, kw,
     moved: false, atked: false,
     summonSick: !kw.has('haste'),
+    noHarvest: !!(cd.text && cd.text.toLowerCase().includes("can't harvest")),
     atkBuff: 0, hpBuff: 0,
     protHit: false,
   };
@@ -1017,9 +1022,17 @@ function mkState() {
 // ── Helpers ────────────────────────────────────────────────
 function deal(S, p, n) {
   const pl = S.players[p];
-  for (let i=0;i<n;i++) {
-    if (!pl.deck.length || pl.hand.length>=HAND_MAX) break;
-    pl.hand.push(pl.deck.shift());
+  for (let i = 0; i < n; i++) {
+    if (!pl.deck.length) break;
+    const card = pl.deck.shift();
+    if (pl.hand.length >= HAND_MAX) {
+      // Hand full — card is burned
+      pl.grave.push(card);
+      const cd = cardData(card);
+      lg(S, p, `🔥 ${cd?.name || card} verbrannt (Hand voll)`);
+    } else {
+      pl.hand.push(card);
+    }
   }
 }
 
@@ -1051,13 +1064,27 @@ function lg(S, p, m) {
   if (S.log.length>60) S.log.pop();
 }
 
+function canHarvest(u) {
+  // A unit can harvest Faeria if:
+  // - it does not have summon sickness (was not just played this turn, unless haste)
+  // - it does not have the noHarvest flag (e.g. Dune Drake)
+  if (u.summonSick) return false;
+  if (u.noHarvest)  return false;
+  return true;
+}
+
 function updWells(S) {
   WELLS.forEach(([wq,wr,ws]) => {
-    const k=cK(wq,wr); let a=0, b=0;
+    const k = cK(wq,wr);
+    let a = 0, b = 0;
     cNbr(wq,wr,ws).forEach(([q,r,s]) => {
-      const u=unitAt(S,q,r,s); if(u) { if(u.own==='A') a++; else b++; }
+      const u = unitAt(S,q,r,s);
+      if (u && canHarvest(u)) {
+        if (u.own === 'A') a++;
+        else               b++;
+      }
     });
-    S.cells[k].ctrl=(a>0&&b===0)?'A':(b>0&&a===0)?'B':null;
+    S.cells[k].ctrl = (a > 0 && b === 0) ? 'A' : (b > 0 && a === 0) ? 'B' : null;
   });
 }
 
@@ -1490,12 +1517,11 @@ function doPlay(S, p, id, q, r, s) {
         if (u) { u.atk=u.hp; deal(S,p,1); lg(S,p,`Gabrischer Zauber: ATK=${u.hp}, +1 Karte`); } break;
 
       case 'explore': {
-        // Place a Prairie (Neutral land) on the chosen adjacent empty cell and gain 2 Faeria
+        // Place a Prairie (Neutral land) — does NOT consume the land action (lobDone stays false)
         const ek = cK(q,r);
         const ec = S.cells[ek];
         if (ec && ec.type === 'EMPTY') {
           S.cells[ek] = { type:'LAND', owner:p, landType:'N' };
-          S.lobDone = true;
         }
         S.players[p].mana += 2;
         lg(S, p, `Erkundung: Prärie platziert, +2 Mana → ${S.players[p].mana}`);
@@ -1720,6 +1746,7 @@ class Engine {
         S.ap    = this.ap === 'A' ? 'B' : 'A';
         S.phase = 'DRAW';
         S.phaseStep = 0;
+        this.handVisible = false; // hide hand until new player confirms
         this._render();
         setTimeout(() => this._showSwitch(S.ap), 200);
         return;
@@ -1940,11 +1967,9 @@ class Engine {
       this.vt = Object.entries(S.cells)
         .filter(([k, c]) => {
           if (c.owner !== this.ap) return false;
-          if (c.type !== 'LAND' && c.type !== 'BASE') return false;
-          // No requirements → any own land or base
+          if (c.type !== 'LAND') return false;  // BASE excluded — no spawning on base
+          // No requirements → any own land
           if (reqTypes.length === 0) return true;
-          // BASE always counts as a valid spawn point regardless of req
-          if (c.type === 'BASE') return true;
           // LAND must match at least one of the required types
           return reqTypes.includes(c.landType);
         })
