@@ -6,6 +6,7 @@
   <title>HexForge</title>
   
 
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
 
@@ -554,6 +555,9 @@ svg#board { display: block; overflow: visible; }
 
 
 
+
+
+
 <script>
 // ── hexforge-cards.js ──────────────────────────────────
 // ╔══════════════════════════════════════════════════════════╗
@@ -625,6 +629,9 @@ const CARD_DB = {
   walking_fortress:  { id:'walking_fortress',  name:'Walking Fortress',   color:'neutral', type:'creature',  subtype:null,      cost:9, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:7,    life:10,   rarity:'common',      text:'' },
   sharra_dragonslayer:{ id:'sharra_dragonslayer', name:'Sharra, Dragonslayer', color:'neutral', type:'creature', subtype:null, cost:7, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:6,    life:3,    rarity:'legendary',   text:'Sharra ignores all damage equal to 4 or more.' },
   magnus_king:       { id:'magnus_king',       name:'Magnus, King of Meroval', color:'neutral', type:'creature', subtype:null,  cost:10, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:4,   life:8,    rarity:'legendary',   text:'Charge 3. Combat - Draw a card. It costs 0.' },
+
+  // ── SPECIAL (given to Player B at game start to offset going second) ──
+  explore:           { id:'explore', name:'Explore', color:'neutral', type:'event', subtype:null, cost:0, req:{}, power:null, life:null, rarity:'common', text:'Place a Prairie on any adjacent empty space. Gain 2 Faeria.' },
 
 };
 
@@ -1002,6 +1009,8 @@ function mkState() {
   });
 
   deal(S,'A',5); deal(S,'B',5);
+  // Player B starts with Explore in hand to offset going second
+  S.players['B'].hand.unshift('explore');
   return S;
 }
 
@@ -1054,14 +1063,45 @@ function updWells(S) {
 
 function manaInc(S, p) {
   updWells(S);
-  const w=ctrlWells(S,p); let bonus=0;
-  Object.values(S.units).forEach(u => {
-    if (u.own===p&&u.cid==='wellkeeper') {
-      if (WELLS.some(([wq,wr,ws]) => { const c=S.cells[cK(wq,wr)]; return cDist([u.q,u.r,u.s],[wq,wr,ws])===1&&c&&c.ctrl===p; }))
-        bonus++;
+
+  // ── Faeria Harvest Order ─────────────────────────────────
+  // Columns left→right (from active player's perspective),
+  // within each column top→bottom (toward enemy base = top).
+  // For Player A: top = negative r (toward BASE_B at r=+3)
+  //               columns: q from negative (left) to positive (right)
+  // For Player B (mirrored): top = positive r, columns q positive→negative
+  // Wells are sorted accordingly.
+  const orderedWells = [...WELLS].sort(([q1,r1], [q2,r2]) => {
+    if (p === 'A') {
+      // Column order: q ascending (left=negative q is player A's left)
+      if (q1 !== q2) return q1 - q2;
+      // Within column: top = toward enemy (r ascending for A, enemy at r=+3)
+      return r1 - r2;
+    } else {
+      // For B, board is flipped: left side has positive q
+      if (q1 !== q2) return q2 - q1;
+      // Within column: top = toward enemy (r descending for B, enemy at r=-3)
+      return r2 - r1;
     }
   });
-  return BASE_MANA + w*WELL_MANA + bonus;
+
+  let w = 0;
+  orderedWells.forEach(([wq,wr,ws]) => {
+    const c = S.cells[cK(wq,wr)];
+    if (c && c.ctrl === p) w++;
+  });
+
+  let bonus = 0;
+  Object.values(S.units).forEach(u => {
+    if (u.own === p && u.cid === 'wellkeeper') {
+      if (WELLS.some(([wq,wr,ws]) => {
+        const c = S.cells[cK(wq,wr)];
+        return cDist([u.q,u.r,u.s],[wq,wr,ws]) === 1 && c && c.ctrl === p;
+      })) bonus++;
+    }
+  });
+
+  return BASE_MANA + w * WELL_MANA + bonus;
 }
 
 function adjPlace(S, p) {
@@ -1449,6 +1489,19 @@ function doPlay(S, p, id, q, r, s) {
       case 'gabrian_enchantment':
         if (u) { u.atk=u.hp; deal(S,p,1); lg(S,p,`Gabrischer Zauber: ATK=${u.hp}, +1 Karte`); } break;
 
+      case 'explore': {
+        // Place a Prairie (Neutral land) on the chosen adjacent empty cell and gain 2 Faeria
+        const ek = cK(q,r);
+        const ec = S.cells[ek];
+        if (ec && ec.type === 'EMPTY') {
+          S.cells[ek] = { type:'LAND', owner:p, landType:'N' };
+          S.lobDone = true;
+        }
+        S.players[p].mana += 2;
+        lg(S, p, `Erkundung: Prärie platziert, +2 Mana → ${S.players[p].mana}`);
+        break;
+      }
+
       case 'wild_growth': {
         const spots=adjPlace(S,p);
         if (spots.length) {
@@ -1541,13 +1594,15 @@ const MENU_OPTS = [
 ];
 
 // Cards that target own units
-const TARGET_OWN  = new Set(['veil','battlecry','ironbark','campfire','elderwood_embrace','gabrian_enchantment','tiki_chieftain']);
+const TARGET_OWN   = new Set(['veil','battlecry','ironbark','campfire','elderwood_embrace','tiki_chieftain']);
 // Cards that target enemy units
 const TARGET_ENEMY = new Set(['gust','firebomb','flame_burst','soul_drain','last_nightmare','falcon_dive']);
 // Cards that target any unit
 const TARGET_ANY   = new Set(['gabrian_enchantment','falcon_dive']);
 // Cards with no board target (self-effect)
 const TARGET_SELF  = new Set(['healing_song','wisdom','wild_growth','shifting_tide','tidal_force']);
+// Cards that target empty adjacent land cells
+const TARGET_LAND  = new Set(['explore']);
 
 // ── Engine ─────────────────────────────────────────────────
 class Engine {
@@ -1871,11 +1926,31 @@ class Engine {
 
     if (isUnitCard(cd)) {
       this.pact = 'unit';
-      // Valid spawns: own land/base cells that are free
+
+      // Determine which land types this unit can spawn on
+      // Rules: req = {} → any own land/base (neutral creatures)
+      //        req = {F:1} → must spawn on forest land
+      //        req = {F:1, M:1} → can spawn on forest OR mountain (multi-color)
+      const reqEntries = Object.entries(cd.req || {}).filter(([,v]) => v > 0);
+      const reqTypes   = reqEntries.map(([lt]) => {
+        // Normalize land type keys: lake→W, forest→F, mountain→M, desert→D
+        return { lake:'W', forest:'F', mountain:'M', desert:'D' }[lt] || lt;
+      });
+
       this.vt = Object.entries(S.cells)
-        .filter(([k,c]) => c.owner===this.ap && (c.type==='LAND'||c.type==='BASE'))
+        .filter(([k, c]) => {
+          if (c.owner !== this.ap) return false;
+          if (c.type !== 'LAND' && c.type !== 'BASE') return false;
+          // No requirements → any own land or base
+          if (reqTypes.length === 0) return true;
+          // BASE always counts as a valid spawn point regardless of req
+          if (c.type === 'BASE') return true;
+          // LAND must match at least one of the required types
+          return reqTypes.includes(c.landType);
+        })
         .map(([k]) => pK(k))
-        .filter(([q,r,s]) => !unitAt(S,q,r,s));
+        .filter(([q, r, s]) => !unitAt(S, q, r, s));
+
       this._render();
       return;
     }
@@ -1890,6 +1965,13 @@ class Engine {
         this._clr();
         this._render();
         if (S.winner) this._win();
+        return;
+      }
+
+      // explore: target an empty adjacent cell to place a Prairie
+      if (TARGET_LAND.has(id)) {
+        this.vt = adjPlace(S, this.ap); // empty adjacent cells
+        this._render();
         return;
       }
 
