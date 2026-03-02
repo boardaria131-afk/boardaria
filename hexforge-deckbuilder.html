@@ -683,7 +683,101 @@ header nav {
 <div id="toast"></div>
 
 <!-- Card DB must load first -->
-<script src="hexforge-cards.js"></script>
+<script>
+// ╔══════════════════════════════════════════════════════════╗
+//  HEXFORGE — CARD DATABASE (50 starter cards)
+//  color: blue | green | red | yellow | neutral
+//  type:  creature | structure | event
+//  req:   { lake, mountain, forest, desert, wild }
+//  rarity: common | exceptional | epic | legendary
+// ╚══════════════════════════════════════════════════════════╝
+
+const CARD_DB = {
+
+  // ── BLUE (10) ──────────────────────────────────────────
+  triton_warrior:    { id:'triton_warrior',    name:'Triton Warrior',     color:'blue',    type:'creature',  subtype:'Triton',  cost:4, req:{lake:2,mountain:0,forest:0,desert:0,wild:0}, power:4,    life:4,    rarity:'common',      text:'Jump.' },
+  triton_diver:      { id:'triton_diver',      name:'Triton Diver',       color:'blue',    type:'creature',  subtype:'Triton',  cost:3, req:{lake:1,mountain:0,forest:0,desert:0,wild:0}, power:2,    life:2,    rarity:'common',      text:'Aquatic, Jump.' },
+  water_elemental:   { id:'water_elemental',   name:'Water Elemental',    color:'blue',    type:'creature',  subtype:null,      cost:4, req:{lake:1,mountain:0,forest:0,desert:0,wild:0}, power:3,    life:3,    rarity:'common',      text:'Jump. Gift - Create a Lake.' },
+  ruby_fish:         { id:'ruby_fish',         name:'Ruby Fish',          color:'blue',    type:'creature',  subtype:null,      cost:1, req:{lake:1,mountain:0,forest:0,desert:0,wild:0}, power:1,    life:1,    rarity:'common',      text:'Aquatic.' },
+  gabrian_archon:    { id:'gabrian_archon',    name:'Gabrian Archon',     color:'blue',    type:'creature',  subtype:null,      cost:4, req:{lake:2,mountain:0,forest:0,desert:0,wild:0}, power:4,    life:4,    rarity:'common',      text:'Charge 2. Gains +2/+2 if you\'ve played two cards with base cost 7+ this game.' },
+  snowstorm_lancer:  { id:'snowstorm_lancer',  name:'Snowstorm Lancer',   color:'blue',    type:'creature',  subtype:'Triton',  cost:5, req:{lake:2,mountain:0,forest:0,desert:0,wild:0}, power:3,    life:5,    rarity:'common',      text:'Jump. Whenever you play an event, this gains +2/+0 this turn (limit +6/+0).' },
+  shifting_tide:     { id:'shifting_tide',     name:'Shifting Tide',      color:'blue',    type:'event',     subtype:null,      cost:1, req:{lake:1,mountain:0,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:'Choose one - Move a land. - Draw a card.' },
+  gabrian_enchantment:{ id:'gabrian_enchantment', name:'Gabrian Enchantment', color:'blue', type:'event',   subtype:null,      cost:2, req:{lake:2,mountain:0,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:"A creature's Attack becomes equal to its Life. Draw a card." },
+  aurora_myth_maker: { id:'aurora_myth_maker', name:'Aurora, Myth Maker', color:'blue',    type:'creature',  subtype:null,      cost:4, req:{lake:3,mountain:0,forest:0,desert:0,wild:0}, power:1,    life:1,    rarity:'legendary',   text:'Gift - Change another friendly creature to 6/6.' },
+  orosei:            { id:'orosei',            name:'Orosei, Dream of the Deep', color:'blue', type:'creature', subtype:null,  cost:10, req:{lake:2,mountain:0,forest:0,desert:0,wild:0}, power:6,    life:6,    rarity:'legendary',   text:'Flying, Charge 2. Gift - Transform all your other creatures into creatures that cost 2 more.' },
+
+  // ── GREEN (10) ─────────────────────────────────────────
+  tiki_chieftain:    { id:'tiki_chieftain',    name:'Tiki Chieftain',     color:'green',   type:'creature',  subtype:null,      cost:2, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:2,    life:2,    rarity:'common',      text:'Gift - Give a creature Taunt.' },
+  living_willow:     { id:'living_willow',     name:'Living Willow',      color:'green',   type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:1,    life:7,    rarity:'common',      text:'Taunt.' },
+  sagami_warrior:    { id:'sagami_warrior',    name:'Sagami Warrior',     color:'green',   type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:1,desert:0,wild:0}, power:3,    life:4,    rarity:'common',      text:'Dash 2.' },
+  deepwood_grizzly:  { id:'deepwood_grizzly',  name:'Deepwood Grizzly',   color:'green',   type:'creature',  subtype:'Beast',   cost:5, req:{lake:0,mountain:0,forest:1,desert:0,wild:0}, power:3,    life:8,    rarity:'common',      text:'' },
+  tiki_healer:       { id:'tiki_healer',       name:'Tiki Healer',        color:'green',   type:'creature',  subtype:null,      cost:4, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:2,    life:5,    rarity:'common',      text:'Gift - Gain 5 Life.' },
+  elderwood_embrace: { id:'elderwood_embrace', name:'Elderwood Embrace',  color:'green',   type:'event',     subtype:null,      cost:3, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:'Give a creature +2/+4.' },
+  wild_growth:       { id:'wild_growth',       name:'Wild Growth',        color:'green',   type:'event',     subtype:null,      cost:1, req:{lake:0,mountain:0,forest:1,desert:0,wild:0}, power:null, life:null, rarity:'exceptional', text:'Create Forest at random.' },
+  spirit_of_rebirth: { id:'spirit_of_rebirth', name:'Spirit of Rebirth',  color:'green',   type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:3,    life:3,    rarity:'exceptional', text:'Whenever another friendly creature dies, give a random creature in your hand +1/+1.' },
+  ruunin:            { id:'ruunin',            name:'Ruunin, the Relentless', color:'green', type:'creature', subtype:'Beast',  cost:5, req:{lake:0,mountain:0,forest:3,desert:0,wild:0}, power:4,    life:4,    rarity:'legendary',   text:'Dash 2. Last Words - Return Ruunin to your hand at end of turn. She gains +2/+2.' },
+  tethra:            { id:'tethra',            name:'Tethra, Soul of the Wild', color:'green', type:'creature', subtype:null,  cost:10, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:6,    life:6,    rarity:'legendary',   text:'Flying, Charge 2. Gift - Give a creature +5/+5.' },
+
+  // ── RED (10) ───────────────────────────────────────────
+  flame_spitter:     { id:'flame_spitter',     name:'Flame Spitter',      color:'red',     type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:1,forest:0,desert:0,wild:0}, power:2,    life:2,    rarity:'common',      text:'Gift - Deal 1 damage to an enemy.' },
+  underground_brigand:{ id:'underground_brigand', name:'Underground Brigand', color:'red', type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:2,    life:3,    rarity:'common',      text:'Combat - Gain 2 Faeria.' },
+  shedim_brute:      { id:'shedim_brute',      name:'Shedim Brute',       color:'red',     type:'creature',  subtype:null,      cost:5, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:3,    life:6,    rarity:'common',      text:'Combat - Deal 2 damage to your opponent.' },
+  firebomb:          { id:'firebomb',          name:'Firebomb',           color:'red',     type:'event',     subtype:null,      cost:4, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:'Deal 4 damage to a creature or structure.' },
+  axe_grinder:       { id:'axe_grinder',       name:'Axe Grinder',        color:'red',     type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:1,forest:0,desert:0,wild:0}, power:4,    life:3,    rarity:'exceptional', text:"Gift - Gains +1/+1 if summoned adjacent to an opponent's well." },
+  barbarian_ogre:    { id:'barbarian_ogre',    name:'Barbarian Ogre',     color:'red',     type:'creature',  subtype:null,      cost:7, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:7,    life:7,    rarity:'common',      text:'' },
+  flame_burst:       { id:'flame_burst',       name:'Flame Burst',        color:'red',     type:'event',     subtype:null,      cost:3, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'exceptional', text:'Deal 3 damage.' },
+  blazing_salamander:{ id:'blazing_salamander', name:'Blazing Salamander', color:'red',    type:'creature',  subtype:'Beast',   cost:5, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:2,    life:5,    rarity:'common',      text:'Gift - Deal 2 damage to all adjacent enemies.' },
+  seifer_blood_tyrant:{ id:'seifer_blood_tyrant', name:'Seifer, Blood Tyrant', color:'red', type:'creature', subtype:null,     cost:5, req:{lake:0,mountain:3,forest:0,desert:0,wild:0}, power:5,    life:6,    rarity:'legendary',   text:"When Seifer destroys a creature, he gains Attack and Life equal to the destroyed creature's base stats." },
+  garudan:           { id:'garudan',           name:'Garudan, Heart of the Mountain', color:'red', type:'creature', subtype:null, cost:10, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:6, life:6,   rarity:'legendary',   text:'Flying, Charge 2. Gift - Deal 3 damage to all enemy creatures.' },
+
+  // ── YELLOW (10) ────────────────────────────────────────
+  keldran_soldier:   { id:'keldran_soldier',   name:'Keldran Soldier',    color:'yellow',  type:'creature',  subtype:null,      cost:2, req:{lake:0,mountain:0,forest:0,desert:1,wild:0}, power:3,    life:2,    rarity:'common',      text:'' },
+  oradrim_templar:   { id:'oradrim_templar',   name:'Oradrim Templar',    color:'yellow',  type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:1,wild:0}, power:3,    life:3,    rarity:'common',      text:'Dash 1. Has +3/+0 against gods.' },
+  windborne_emissary:{ id:'windborne_emissary', name:'Windborne Emissary', color:'yellow',  type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:2,wild:0}, power:3,    life:3,    rarity:'common',      text:'Flying. Has +2/+0 while you control another flying creature.' },
+  shaytan_demon:     { id:'shaytan_demon',     name:'Shaytan Demon',      color:'yellow',  type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:2,wild:0}, power:5,    life:4,    rarity:'common',      text:'Production - Deal 2 damage to yourself.' },
+  dune_drake:        { id:'dune_drake',        name:'Dune Drake',         color:'yellow',  type:'creature',  subtype:null,      cost:4, req:{lake:0,mountain:0,forest:0,desert:2,wild:0}, power:4,    life:4,    rarity:'common',      text:"Flying, Charge 2. Can't harvest faeria." },
+  soul_drain:        { id:'soul_drain',        name:'Soul Drain',         color:'yellow',  type:'event',     subtype:null,      cost:2, req:{lake:0,mountain:0,forest:0,desert:2,wild:0}, power:null, life:null, rarity:'common',      text:'Drain 2 Life from a creature.' },
+  wind_gate:         { id:'wind_gate',         name:'Wind Gate',          color:'yellow',  type:'structure', subtype:null,      cost:1, req:{lake:0,mountain:0,forest:0,desert:1,wild:0}, power:null, life:4,    rarity:'epic',        text:'You can summon creatures on spaces adjacent to this. Activate - Move Wind Gate.' },
+  last_nightmare:    { id:'last_nightmare',    name:'Last Nightmare',     color:'yellow',  type:'event',     subtype:null,      cost:6, req:{lake:0,mountain:0,forest:0,desert:3,wild:0}, power:null, life:null, rarity:'exceptional', text:'Destroy a creature.' },
+  khalim_sky_prodigy:{ id:'khalim_sky_prodigy', name:'Khalim, Sky Prodigy', color:'yellow', type:'creature', subtype:null,     cost:5, req:{lake:0,mountain:0,forest:0,desert:3,wild:0}, power:3,    life:6,    rarity:'legendary',   text:"Flying, Charge 2. When Khalim attacks a god, add a Khalim's Follower to your hand. It costs 0." },
+  azarai:            { id:'azarai',            name:'Azarai, Wrath of the Desert', color:'yellow', type:'creature', subtype:null, cost:10, req:{lake:0,mountain:0,forest:0,desert:2,wild:0}, power:6, life:6,   rarity:'legendary',   text:'Flying, Charge 2. Gift - Azarai drains 2 Attack from each enemy creature.' },
+
+  // ── NEUTRAL (10) ──────────────────────────────────────
+  campfire:          { id:'campfire',          name:'Campfire',           color:'neutral', type:'event',     subtype:null,      cost:1, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:'Give a creature +1/+1.' },
+  imperial_guard:    { id:'imperial_guard',    name:'Imperial Guard',     color:'neutral', type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:2,    life:3,    rarity:'common',      text:'Taunt. Last Words - Gain 2 Life.' },
+  hilltop_archer:    { id:'hilltop_archer',    name:'Hilltop Archer',     color:'neutral', type:'creature',  subtype:null,      cost:4, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:2,    life:2,    rarity:'common',      text:'Ranged.' },
+  healing_song:      { id:'healing_song',      name:'Healing Song',       color:'neutral', type:'event',     subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:'Draw a card and gain 5 Life.' },
+  wisdom:            { id:'wisdom',            name:'Wisdom',             color:'neutral', type:'event',     subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'exceptional', text:'Draw 2 cards.' },
+  queens_guard:      { id:'queens_guard',      name:"Queen's Guard",      color:'neutral', type:'creature',  subtype:null,      cost:6, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:3,    life:6,    rarity:'exceptional', text:'Taunt. Combat - Gain 1 Faeria.' },
+  outland_ranger:    { id:'outland_ranger',    name:'Outland Ranger',     color:'neutral', type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:3,    life:2,    rarity:'exceptional', text:'Gift - Add a Campfire to your hand.' },
+  walking_fortress:  { id:'walking_fortress',  name:'Walking Fortress',   color:'neutral', type:'creature',  subtype:null,      cost:9, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:7,    life:10,   rarity:'common',      text:'' },
+  sharra_dragonslayer:{ id:'sharra_dragonslayer', name:'Sharra, Dragonslayer', color:'neutral', type:'creature', subtype:null, cost:7, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:6,    life:3,    rarity:'legendary',   text:'Sharra ignores all damage equal to 4 or more.' },
+  magnus_king:       { id:'magnus_king',       name:'Magnus, King of Meroval', color:'neutral', type:'creature', subtype:null,  cost:10, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:4,   life:8,    rarity:'legendary',   text:'Charge 3. Combat - Draw a card. It costs 0.' },
+
+};
+
+// ── Color metadata ──────────────────────────────────────
+const COLOR_META = {
+  blue:    { label:'Blue',    land:'Lake',     hex:'#3a8acc', bg:'#0d1e3a', border:'#1a4a7a' },
+  green:   { label:'Green',   land:'Forest',   hex:'#4a9e40', bg:'#0d1e0d', border:'#1a4a18' },
+  red:     { label:'Red',     land:'Mountain', hex:'#cc4444', bg:'#2a0808', border:'#5a1818' },
+  yellow:  { label:'Yellow',  land:'Desert',   hex:'#d4982a', bg:'#1e1408', border:'#5a3a10' },
+  neutral: { label:'Neutral', land:'Any',      hex:'#8a9ab0', bg:'#111418', border:'#2a3040' },
+};
+
+const RARITY_META = {
+  common:      { label:'Common',      color:'#8a9ab0' },
+  exceptional: { label:'Exceptional', color:'#4a9e40' },
+  epic:        { label:'Epic',        color:'#cc44ff' },
+  legendary:   { label:'Legendary',   color:'#c8a84b' },
+};
+
+// ── Helpers ─────────────────────────────────────────────
+function cardsByColor(color) { return Object.values(CARD_DB).filter(c => c.color === color); }
+function cardsByType(type)   { return Object.values(CARD_DB).filter(c => c.type  === type);  }
+function allCards()          { return Object.values(CARD_DB); }
+
+</script>
 <script>
 // ══════════════════════════════════════════════════
 //  STATE
