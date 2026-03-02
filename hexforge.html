@@ -106,9 +106,1653 @@
 </div>
 
 <!-- ── Scripts (engine first, then UI) ─────────────────── -->
-<script src="hexforge-cards.js"></script>
-<script src="hexforge-engine.js"></script>
-<script src="hexforge-ui.js"></script>
 
+
+
+
+
+<script>
+// ── hexforge-cards.js ──────────────────────────────────
+// ╔══════════════════════════════════════════════════════════╗
+//  HEXFORGE — CARD DATABASE (50 starter cards)
+//  color: blue | green | red | yellow | neutral
+//  type:  creature | structure | event
+//  req:   { lake, mountain, forest, desert, wild }
+//  rarity: common | exceptional | epic | legendary
+// ╚══════════════════════════════════════════════════════════╝
+
+const CARD_DB = {
+
+  // ── BLUE (10) ──────────────────────────────────────────
+  triton_warrior:    { id:'triton_warrior',    name:'Triton Warrior',     color:'blue',    type:'creature',  subtype:'Triton',  cost:4, req:{lake:2,mountain:0,forest:0,desert:0,wild:0}, power:4,    life:4,    rarity:'common',      text:'Jump.' },
+  triton_diver:      { id:'triton_diver',      name:'Triton Diver',       color:'blue',    type:'creature',  subtype:'Triton',  cost:3, req:{lake:1,mountain:0,forest:0,desert:0,wild:0}, power:2,    life:2,    rarity:'common',      text:'Aquatic, Jump.' },
+  water_elemental:   { id:'water_elemental',   name:'Water Elemental',    color:'blue',    type:'creature',  subtype:null,      cost:4, req:{lake:1,mountain:0,forest:0,desert:0,wild:0}, power:3,    life:3,    rarity:'common',      text:'Jump. Gift - Create a Lake.' },
+  ruby_fish:         { id:'ruby_fish',         name:'Ruby Fish',          color:'blue',    type:'creature',  subtype:null,      cost:1, req:{lake:1,mountain:0,forest:0,desert:0,wild:0}, power:1,    life:1,    rarity:'common',      text:'Aquatic.' },
+  gabrian_archon:    { id:'gabrian_archon',    name:'Gabrian Archon',     color:'blue',    type:'creature',  subtype:null,      cost:4, req:{lake:2,mountain:0,forest:0,desert:0,wild:0}, power:4,    life:4,    rarity:'common',      text:'Charge 2. Gains +2/+2 if you\'ve played two cards with base cost 7+ this game.' },
+  snowstorm_lancer:  { id:'snowstorm_lancer',  name:'Snowstorm Lancer',   color:'blue',    type:'creature',  subtype:'Triton',  cost:5, req:{lake:2,mountain:0,forest:0,desert:0,wild:0}, power:3,    life:5,    rarity:'common',      text:'Jump. Whenever you play an event, this gains +2/+0 this turn (limit +6/+0).' },
+  shifting_tide:     { id:'shifting_tide',     name:'Shifting Tide',      color:'blue',    type:'event',     subtype:null,      cost:1, req:{lake:1,mountain:0,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:'Choose one - Move a land. - Draw a card.' },
+  gabrian_enchantment:{ id:'gabrian_enchantment', name:'Gabrian Enchantment', color:'blue', type:'event',   subtype:null,      cost:2, req:{lake:2,mountain:0,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:"A creature's Attack becomes equal to its Life. Draw a card." },
+  aurora_myth_maker: { id:'aurora_myth_maker', name:'Aurora, Myth Maker', color:'blue',    type:'creature',  subtype:null,      cost:4, req:{lake:3,mountain:0,forest:0,desert:0,wild:0}, power:1,    life:1,    rarity:'legendary',   text:'Gift - Change another friendly creature to 6/6.' },
+  orosei:            { id:'orosei',            name:'Orosei, Dream of the Deep', color:'blue', type:'creature', subtype:null,  cost:10, req:{lake:2,mountain:0,forest:0,desert:0,wild:0}, power:6,    life:6,    rarity:'legendary',   text:'Flying, Charge 2. Gift - Transform all your other creatures into creatures that cost 2 more.' },
+
+  // ── GREEN (10) ─────────────────────────────────────────
+  tiki_chieftain:    { id:'tiki_chieftain',    name:'Tiki Chieftain',     color:'green',   type:'creature',  subtype:null,      cost:2, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:2,    life:2,    rarity:'common',      text:'Gift - Give a creature Taunt.' },
+  living_willow:     { id:'living_willow',     name:'Living Willow',      color:'green',   type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:1,    life:7,    rarity:'common',      text:'Taunt.' },
+  sagami_warrior:    { id:'sagami_warrior',    name:'Sagami Warrior',     color:'green',   type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:1,desert:0,wild:0}, power:3,    life:4,    rarity:'common',      text:'Dash 2.' },
+  deepwood_grizzly:  { id:'deepwood_grizzly',  name:'Deepwood Grizzly',   color:'green',   type:'creature',  subtype:'Beast',   cost:5, req:{lake:0,mountain:0,forest:1,desert:0,wild:0}, power:3,    life:8,    rarity:'common',      text:'' },
+  tiki_healer:       { id:'tiki_healer',       name:'Tiki Healer',        color:'green',   type:'creature',  subtype:null,      cost:4, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:2,    life:5,    rarity:'common',      text:'Gift - Gain 5 Life.' },
+  elderwood_embrace: { id:'elderwood_embrace', name:'Elderwood Embrace',  color:'green',   type:'event',     subtype:null,      cost:3, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:'Give a creature +2/+4.' },
+  wild_growth:       { id:'wild_growth',       name:'Wild Growth',        color:'green',   type:'event',     subtype:null,      cost:1, req:{lake:0,mountain:0,forest:1,desert:0,wild:0}, power:null, life:null, rarity:'exceptional', text:'Create Forest at random.' },
+  spirit_of_rebirth: { id:'spirit_of_rebirth', name:'Spirit of Rebirth',  color:'green',   type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:3,    life:3,    rarity:'exceptional', text:'Whenever another friendly creature dies, give a random creature in your hand +1/+1.' },
+  ruunin:            { id:'ruunin',            name:'Ruunin, the Relentless', color:'green', type:'creature', subtype:'Beast',  cost:5, req:{lake:0,mountain:0,forest:3,desert:0,wild:0}, power:4,    life:4,    rarity:'legendary',   text:'Dash 2. Last Words - Return Ruunin to your hand at end of turn. She gains +2/+2.' },
+  tethra:            { id:'tethra',            name:'Tethra, Soul of the Wild', color:'green', type:'creature', subtype:null,  cost:10, req:{lake:0,mountain:0,forest:2,desert:0,wild:0}, power:6,    life:6,    rarity:'legendary',   text:'Flying, Charge 2. Gift - Give a creature +5/+5.' },
+
+  // ── RED (10) ───────────────────────────────────────────
+  flame_spitter:     { id:'flame_spitter',     name:'Flame Spitter',      color:'red',     type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:1,forest:0,desert:0,wild:0}, power:2,    life:2,    rarity:'common',      text:'Gift - Deal 1 damage to an enemy.' },
+  underground_brigand:{ id:'underground_brigand', name:'Underground Brigand', color:'red', type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:2,    life:3,    rarity:'common',      text:'Combat - Gain 2 Faeria.' },
+  shedim_brute:      { id:'shedim_brute',      name:'Shedim Brute',       color:'red',     type:'creature',  subtype:null,      cost:5, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:3,    life:6,    rarity:'common',      text:'Combat - Deal 2 damage to your opponent.' },
+  firebomb:          { id:'firebomb',          name:'Firebomb',           color:'red',     type:'event',     subtype:null,      cost:4, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:'Deal 4 damage to a creature or structure.' },
+  axe_grinder:       { id:'axe_grinder',       name:'Axe Grinder',        color:'red',     type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:1,forest:0,desert:0,wild:0}, power:4,    life:3,    rarity:'exceptional', text:"Gift - Gains +1/+1 if summoned adjacent to an opponent's well." },
+  barbarian_ogre:    { id:'barbarian_ogre',    name:'Barbarian Ogre',     color:'red',     type:'creature',  subtype:null,      cost:7, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:7,    life:7,    rarity:'common',      text:'' },
+  flame_burst:       { id:'flame_burst',       name:'Flame Burst',        color:'red',     type:'event',     subtype:null,      cost:3, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'exceptional', text:'Deal 3 damage.' },
+  blazing_salamander:{ id:'blazing_salamander', name:'Blazing Salamander', color:'red',    type:'creature',  subtype:'Beast',   cost:5, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:2,    life:5,    rarity:'common',      text:'Gift - Deal 2 damage to all adjacent enemies.' },
+  seifer_blood_tyrant:{ id:'seifer_blood_tyrant', name:'Seifer, Blood Tyrant', color:'red', type:'creature', subtype:null,     cost:5, req:{lake:0,mountain:3,forest:0,desert:0,wild:0}, power:5,    life:6,    rarity:'legendary',   text:"When Seifer destroys a creature, he gains Attack and Life equal to the destroyed creature's base stats." },
+  garudan:           { id:'garudan',           name:'Garudan, Heart of the Mountain', color:'red', type:'creature', subtype:null, cost:10, req:{lake:0,mountain:2,forest:0,desert:0,wild:0}, power:6, life:6,   rarity:'legendary',   text:'Flying, Charge 2. Gift - Deal 3 damage to all enemy creatures.' },
+
+  // ── YELLOW (10) ────────────────────────────────────────
+  keldran_soldier:   { id:'keldran_soldier',   name:'Keldran Soldier',    color:'yellow',  type:'creature',  subtype:null,      cost:2, req:{lake:0,mountain:0,forest:0,desert:1,wild:0}, power:3,    life:2,    rarity:'common',      text:'' },
+  oradrim_templar:   { id:'oradrim_templar',   name:'Oradrim Templar',    color:'yellow',  type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:1,wild:0}, power:3,    life:3,    rarity:'common',      text:'Dash 1. Has +3/+0 against gods.' },
+  windborne_emissary:{ id:'windborne_emissary', name:'Windborne Emissary', color:'yellow',  type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:2,wild:0}, power:3,    life:3,    rarity:'common',      text:'Flying. Has +2/+0 while you control another flying creature.' },
+  shaytan_demon:     { id:'shaytan_demon',     name:'Shaytan Demon',      color:'yellow',  type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:2,wild:0}, power:5,    life:4,    rarity:'common',      text:'Production - Deal 2 damage to yourself.' },
+  dune_drake:        { id:'dune_drake',        name:'Dune Drake',         color:'yellow',  type:'creature',  subtype:null,      cost:4, req:{lake:0,mountain:0,forest:0,desert:2,wild:0}, power:4,    life:4,    rarity:'common',      text:"Flying, Charge 2. Can't harvest faeria." },
+  soul_drain:        { id:'soul_drain',        name:'Soul Drain',         color:'yellow',  type:'event',     subtype:null,      cost:2, req:{lake:0,mountain:0,forest:0,desert:2,wild:0}, power:null, life:null, rarity:'common',      text:'Drain 2 Life from a creature.' },
+  wind_gate:         { id:'wind_gate',         name:'Wind Gate',          color:'yellow',  type:'structure', subtype:null,      cost:1, req:{lake:0,mountain:0,forest:0,desert:1,wild:0}, power:null, life:4,    rarity:'epic',        text:'You can summon creatures on spaces adjacent to this. Activate - Move Wind Gate.' },
+  last_nightmare:    { id:'last_nightmare',    name:'Last Nightmare',     color:'yellow',  type:'event',     subtype:null,      cost:6, req:{lake:0,mountain:0,forest:0,desert:3,wild:0}, power:null, life:null, rarity:'exceptional', text:'Destroy a creature.' },
+  khalim_sky_prodigy:{ id:'khalim_sky_prodigy', name:'Khalim, Sky Prodigy', color:'yellow', type:'creature', subtype:null,     cost:5, req:{lake:0,mountain:0,forest:0,desert:3,wild:0}, power:3,    life:6,    rarity:'legendary',   text:"Flying, Charge 2. When Khalim attacks a god, add a Khalim's Follower to your hand. It costs 0." },
+  azarai:            { id:'azarai',            name:'Azarai, Wrath of the Desert', color:'yellow', type:'creature', subtype:null, cost:10, req:{lake:0,mountain:0,forest:0,desert:2,wild:0}, power:6, life:6,   rarity:'legendary',   text:'Flying, Charge 2. Gift - Azarai drains 2 Attack from each enemy creature.' },
+
+  // ── NEUTRAL (10) ──────────────────────────────────────
+  campfire:          { id:'campfire',          name:'Campfire',           color:'neutral', type:'event',     subtype:null,      cost:1, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:'Give a creature +1/+1.' },
+  imperial_guard:    { id:'imperial_guard',    name:'Imperial Guard',     color:'neutral', type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:2,    life:3,    rarity:'common',      text:'Taunt. Last Words - Gain 2 Life.' },
+  hilltop_archer:    { id:'hilltop_archer',    name:'Hilltop Archer',     color:'neutral', type:'creature',  subtype:null,      cost:4, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:2,    life:2,    rarity:'common',      text:'Ranged.' },
+  healing_song:      { id:'healing_song',      name:'Healing Song',       color:'neutral', type:'event',     subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'common',      text:'Draw a card and gain 5 Life.' },
+  wisdom:            { id:'wisdom',            name:'Wisdom',             color:'neutral', type:'event',     subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:null, life:null, rarity:'exceptional', text:'Draw 2 cards.' },
+  queens_guard:      { id:'queens_guard',      name:"Queen's Guard",      color:'neutral', type:'creature',  subtype:null,      cost:6, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:3,    life:6,    rarity:'exceptional', text:'Taunt. Combat - Gain 1 Faeria.' },
+  outland_ranger:    { id:'outland_ranger',    name:'Outland Ranger',     color:'neutral', type:'creature',  subtype:null,      cost:3, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:3,    life:2,    rarity:'exceptional', text:'Gift - Add a Campfire to your hand.' },
+  walking_fortress:  { id:'walking_fortress',  name:'Walking Fortress',   color:'neutral', type:'creature',  subtype:null,      cost:9, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:7,    life:10,   rarity:'common',      text:'' },
+  sharra_dragonslayer:{ id:'sharra_dragonslayer', name:'Sharra, Dragonslayer', color:'neutral', type:'creature', subtype:null, cost:7, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:6,    life:3,    rarity:'legendary',   text:'Sharra ignores all damage equal to 4 or more.' },
+  magnus_king:       { id:'magnus_king',       name:'Magnus, King of Meroval', color:'neutral', type:'creature', subtype:null,  cost:10, req:{lake:0,mountain:0,forest:0,desert:0,wild:0}, power:4,   life:8,    rarity:'legendary',   text:'Charge 3. Combat - Draw a card. It costs 0.' },
+
+};
+
+// ── Color metadata ──────────────────────────────────────
+const COLOR_META = {
+  blue:    { label:'Blue',    land:'Lake',     hex:'#3a8acc', bg:'#0d1e3a', border:'#1a4a7a' },
+  green:   { label:'Green',   land:'Forest',   hex:'#4a9e40', bg:'#0d1e0d', border:'#1a4a18' },
+  red:     { label:'Red',     land:'Mountain', hex:'#cc4444', bg:'#2a0808', border:'#5a1818' },
+  yellow:  { label:'Yellow',  land:'Desert',   hex:'#d4982a', bg:'#1e1408', border:'#5a3a10' },
+  neutral: { label:'Neutral', land:'Any',      hex:'#8a9ab0', bg:'#111418', border:'#2a3040' },
+};
+
+const RARITY_META = {
+  common:      { label:'Common',      color:'#8a9ab0' },
+  exceptional: { label:'Exceptional', color:'#4a9e40' },
+  epic:        { label:'Epic',        color:'#cc44ff' },
+  legendary:   { label:'Legendary',   color:'#c8a84b' },
+};
+
+// ── Helpers ─────────────────────────────────────────────
+function cardsByColor(color) { return Object.values(CARD_DB).filter(c => c.color === color); }
+function cardsByType(type)   { return Object.values(CARD_DB).filter(c => c.type  === type);  }
+function allCards()          { return Object.values(CARD_DB); }
+
+</script>
+<script>
+// ── hexforge-engine.js ─────────────────────────────────
+// ╔══════════════════════════════════════════════════════════╗
+//  HEXFORGE ENGINE  v2
+//  Board geometry · Keyword system · State · Combat · Rules
+//
+//  Keywords supported on units (stored in unit.kw Set):
+//    dash:N      — spawns N steps closer to enemy base
+//    charge:N    — attack range N (default 1 = melee)
+//    taunt       — enemies must target this unit first
+//    flying      — can move through empty cells
+//    ranged      — no counter-attack when attacking
+//    deathtouch  — any damage dealt by this unit kills instantly
+//    haste       — can move+attack the turn it is summoned
+//    jump        — movement can jump over occupied cells
+//    protection  — absorbs first hit, immune to targeted spells
+//    divine      — ignores all damage from non-divine sources
+//    aquatic     — can move through WELL cells
+//
+//  Trigger hooks (stored on unit object, defined per card):
+//    onDeath(S, unit)          — Last Words
+//    onCombat(S, atk, def)     — Combat ability
+//    onTurnStart(S, unit)      — Production
+// ╚══════════════════════════════════════════════════════════╝
+
+// ── Constants ─────────────────────────────────────────────
+const BOARD_R   = 3;
+const HS        = 34;
+const BASE_HP   = 20;
+const BASE_MANA = 3;
+const WELL_MANA = 2;
+const HAND_MAX  = 7;
+
+// ── Cube Coordinate Helpers ────────────────────────────────
+const CDIRS = [[1,-1,0],[-1,1,0],[1,0,-1],[-1,0,1],[0,1,-1],[0,-1,1]];
+
+function cK(q, r)      { return `${q},${r},${-q-r}`; }
+function pK(k)          { return k.split(',').map(Number); }
+function cDist(a, b)    { return Math.max(Math.abs(a[0]-b[0]),Math.abs(a[1]-b[1]),Math.abs(a[2]-b[2])); }
+function cNbr(q, r, s)  { return CDIRS.map(([a,b,c]) => [q+a,r+b,s+c]); }
+function inB(q, r, s)   { return Math.abs(q)<=BOARD_R && Math.abs(r)<=BOARD_R && Math.abs(s)<=BOARD_R; }
+function c2p(q, r)      { return [HS*1.5*q, HS*(Math.sqrt(3)/2*q + Math.sqrt(3)*r)]; }
+
+// ── Board Special Cells ────────────────────────────────────
+const BASE_A = [0, -BOARD_R,  BOARD_R];
+const BASE_B = [0,  BOARD_R, -BOARD_R];
+const WELLS  = [
+  [-BOARD_R,  0,  BOARD_R],
+  [ BOARD_R,  0, -BOARD_R],
+  [-BOARD_R,  BOARD_R,  0],
+  [ BOARD_R, -BOARD_R,  0],
+];
+
+function isWell(q,r,s)  { return WELLS.some(([a,b,c]) => a===q&&b===r&&c===s); }
+function isBaseA(q,r,s) { return q===BASE_A[0]&&r===BASE_A[1]&&s===BASE_A[2]; }
+function isBaseB(q,r,s) { return q===BASE_B[0]&&r===BASE_B[1]&&s===BASE_B[2]; }
+
+function allCells() {
+  const out = [];
+  for (let q=-BOARD_R; q<=BOARD_R; q++)
+    for (let r=-BOARD_R; r<=BOARD_R; r++) {
+      const s = -q-r;
+      if (Math.abs(s)<=BOARD_R) out.push([q,r,s]);
+    }
+  return out;
+}
+
+// ── Land visuals ───────────────────────────────────────────
+const LF = { N:'#1e2530', F:'#1a3a18', D:'#3a2810', M:'#22222e', W:'#0d1e3a' };
+const LS = { N:'#3a4a60', F:'#2d5a27', D:'#6a4a18', M:'#4a4a60', W:'#1a4a7a' };
+
+// ── Phase sequence ─────────────────────────────────────────
+const PHASES = ['DRAW','LAND_OR_BOOST','MANA','PLAY','MOVE','ATTACK','CLEANUP'];
+const PN = {
+  DRAW:'Ziehen', LAND_OR_BOOST:'Land/Boost', MANA:'Mana',
+  PLAY:'Spielen', MOVE:'Bewegen', ATTACK:'Angriff', CLEANUP:'Aufräumen'
+};
+
+// ══════════════════════════════════════════════════════════
+//  KEYWORD PARSER
+// ══════════════════════════════════════════════════════════
+function parseKeywords(card) {
+  const kw = new Set();
+  if (!card) return kw;
+
+  // Explicit kw array wins (used by legacy DB)
+  if (Array.isArray(card.kw)) {
+    card.kw.forEach(k => kw.add(k.toLowerCase()));
+    return kw;
+  }
+
+  // Auto-detect from text field (Faeria CARD_DB)
+  const text = (card.text || '').toLowerCase();
+
+  const dashM = text.match(/\bdash\s+(\d)/);
+  const chrgM = text.match(/\bcharge\s+(\d)/);
+  if (dashM) kw.add(`dash:${dashM[1]}`);
+  if (chrgM) kw.add(`charge:${chrgM[1]}`);
+
+  ['jump','flying','ranged','taunt','haste',
+   'deathtouch','protection','divine','aquatic'].forEach(b => {
+    if (text.includes(b)) kw.add(b);
+  });
+
+  return kw;
+}
+
+function kwDash(kw)   { for (const k of kw) { const m=k.match(/^dash:(\d)$/);   if(m) return +m[1]; } return 0; }
+function kwCharge(kw) { for (const k of kw) { const m=k.match(/^charge:(\d)$/); if(m) return +m[1]; } return 1; }
+
+// ══════════════════════════════════════════════════════════
+//  LEGACY CARD DATABASE
+// ══════════════════════════════════════════════════════════
+const DB = {
+  // Lands
+  land_F: { id:'land_F', name:'Waldlichtung', type:'LAND', landType:'F', cost:0, req:{}, text:'Platziert ein Waldfeld.' },
+  land_D: { id:'land_D', name:'Wüstenoase',   type:'LAND', landType:'D', cost:0, req:{}, text:'Platziert ein Wüstenfeld.' },
+  land_M: { id:'land_M', name:'Bergpass',     type:'LAND', landType:'M', cost:0, req:{}, text:'Platziert ein Bergfeld.' },
+  land_W: { id:'land_W', name:'Flachufer',    type:'LAND', landType:'W', cost:0, req:{}, text:'Platziert ein Seefeld.' },
+  land_N: { id:'land_N', name:'Grasland',     type:'LAND', landType:'N', cost:0, req:{}, text:'Platziert 2 neutrale Felder.' },
+
+  // Units
+  scout_F:    { id:'scout_F',    name:'Waldläufer',    type:'UNIT', cost:2, req:{F:1}, atk:2, hp:4,  kw:['dash:1'],            text:'Dash 1.' },
+  guardian_M: { id:'guardian_M', name:'Steinwächter',  type:'UNIT', cost:4, req:{M:2}, atk:3, hp:6,  kw:['taunt'],             text:'Taunt.' },
+  rider_D:    { id:'rider_D',    name:'Wüstenreiter',  type:'UNIT', cost:3, req:{D:1}, atk:3, hp:3,  kw:['dash:2','haste'],    text:'Dash 2, Haste.' },
+  sprite_W:   { id:'sprite_W',   name:'Seenixe',       type:'UNIT', cost:3, req:{W:1}, atk:2, hp:2,  kw:['aquatic','charge:2'],text:'Aquatic, Charge 2.' },
+  archer_M:   { id:'archer_M',   name:'Bergschütze',   type:'UNIT', cost:3, req:{M:1}, atk:2, hp:3,  kw:['ranged','charge:2'], text:'Ranged, Charge 2.' },
+  brawler_N:  { id:'brawler_N',  name:'Söldner',       type:'UNIT', cost:2, req:{},    atk:2, hp:3,  kw:[],                   text:'Keine Landrequirements.' },
+  emissary:   { id:'emissary',   name:'Dualist',       type:'UNIT', cost:5, req:{F:1,D:1}, atk:4, hp:4, kw:['jump'],          text:'Jump.' },
+  wellkeeper: { id:'wellkeeper', name:'Brunnenwächter', type:'UNIT', cost:3, req:{},   atk:1, hp:5,  kw:['taunt'],             text:'Taunt. Adj. Well: +1 Mana.' },
+  sky_knight: { id:'sky_knight', name:'Himmelsritter',  type:'UNIT', cost:4, req:{},   atk:3, hp:3,  kw:['flying','charge:2'],text:'Flying, Charge 2.' },
+  death_monk: { id:'death_monk', name:'Todesmonch',     type:'UNIT', cost:3, req:{},   atk:1, hp:4,  kw:['deathtouch'],       text:'Deathtouch.' },
+
+  // Instants
+  veil:      { id:'veil',      name:'Tarnschleier', type:'INSTANT', cost:1, req:{F:1}, text:'-2 Schaden an eigener Einheit.' },
+  gust:      { id:'gust',      name:'Sandschwall',  type:'INSTANT', cost:2, req:{D:2}, text:'Schiebe Gegner 1 Feld, 1 Schaden.' },
+  battlecry: { id:'battlecry', name:'Schlachtruf',  type:'INSTANT', cost:2, req:{},    text:'Gib einer eigenen Einheit +2/+0 bis Rundenende.' },
+  ironbark:  { id:'ironbark',  name:'Eisenrinde',   type:'INSTANT', cost:2, req:{F:1}, text:'Gib einer eigenen Einheit +0/+3 und Taunt.' },
+};
+
+// ── Unified card lookup ────────────────────────────────────
+function cardData(id) {
+  return DB[id] || (typeof CARD_DB !== 'undefined' && CARD_DB[id]) || null;
+}
+
+// ══════════════════════════════════════════════════════════
+//  UNIT FACTORY
+// ══════════════════════════════════════════════════════════
+function mkUnit(S, p, cardId, q, r, s) {
+  const cd = cardData(cardId);
+  if (!cd || (cd.type !== 'UNIT' && cd.type !== 'creature')) return null;
+
+  const kw      = parseKeywords(cd);
+  const uid     = `u${S.uid++}`;
+  const baseAtk = cd.atk ?? cd.power ?? 0;
+  const baseHp  = cd.hp  ?? cd.life  ?? 1;
+
+  let bew = cd.bew ?? 2;
+  if (kw.has('flying') && !cd.bew) bew = 3;
+
+  const rei = kwCharge(kw);
+
+  // ── Dash: walk toward enemy base at spawn time ──────────
+  const dashN  = kwDash(kw);
+  let spawnQ = q, spawnR = r, spawnS = s;
+  if (dashN > 0) {
+    const target = p === 'A' ? BASE_B : BASE_A;
+    let cur = [q, r, s];
+    for (let i = 0; i < dashN; i++) {
+      const candidates = cNbr(...cur).filter(([nq,nr,ns]) => {
+        if (!inB(nq,nr,ns)) return false;
+        const k = cK(nq,nr);
+        const c = S.cells[k];
+        if (!c || c.type === 'EMPTY') return false;
+        if (c.type === 'BASE' && c.owner !== p) return false;
+        if (c.type === 'LAND' && c.owner !== p) return false;
+        if (unitAt(S,nq,nr,ns)) return false;
+        return true;
+      });
+      if (!candidates.length) break;
+      candidates.sort((a,b) => cDist(a, target) - cDist(b, target));
+      cur = candidates[0];
+    }
+    [spawnQ, spawnR, spawnS] = cur;
+  }
+
+  const unit = {
+    id: uid, own: p, cid: cardId,
+    q: spawnQ, r: spawnR, s: spawnS,
+    hp: baseHp, maxHp: baseHp, atk: baseAtk,
+    bew, rei, kw,
+    moved: false, atked: false,
+    summonSick: !kw.has('haste'),
+    atkBuff: 0, hpBuff: 0,
+    protHit: false,
+  };
+
+  if (cd.onDeath)     unit.onDeath     = cd.onDeath;
+  if (cd.onCombat)    unit.onCombat    = cd.onCombat;
+  if (cd.onTurnStart) unit.onTurnStart = cd.onTurnStart;
+
+  return unit;
+}
+
+// ══════════════════════════════════════════════════════════
+//  BUFF HELPERS
+// ══════════════════════════════════════════════════════════
+function buffUnit(unit, dAtk, dHp) {
+  unit.atk    = Math.max(0, unit.atk + dAtk);
+  unit.hp     = Math.max(1, unit.hp  + dHp);
+  unit.maxHp += dHp;
+}
+
+function tempBuff(unit, dAtk, dHp) {
+  unit.atkBuff = (unit.atkBuff || 0) + dAtk;
+  unit.hpBuff  = (unit.hpBuff  || 0) + dHp;
+}
+
+function effAtk(unit) {
+  return (unit.atk || 0) + (unit.atkBuff || 0);
+}
+
+function clearTempBuffs(S) {
+  Object.values(S.units).forEach(u => { u.atkBuff = 0; u.hpBuff = 0; });
+}
+
+// ══════════════════════════════════════════════════════════
+//  TAUNT
+// ══════════════════════════════════════════════════════════
+function tauntTargets(S, attackerOwn) {
+  const enemy = attackerOwn === 'A' ? 'B' : 'A';
+  return Object.values(S.units).filter(u => u.own === enemy && u.kw.has('taunt'));
+}
+
+// ══════════════════════════════════════════════════════════
+//  DAMAGE  (Protection, Divine, Deathtouch)
+// ══════════════════════════════════════════════════════════
+function applyDmg(S, target, amount, source) {
+  if (!target || amount <= 0) return 0;
+
+  // Divine: immune unless source is also divine
+  if (target.kw && target.kw.has('divine') && !(source?.kw?.has('divine'))) {
+    lg(S, target.own, `${cardData(target.cid)?.name} — göttliche Immunität!`);
+    return 0;
+  }
+
+  // Protection: absorb first hit
+  if (target.kw && target.kw.has('protection') && !target.protHit) {
+    target.protHit = true;
+    lg(S, target.own, `${cardData(target.cid)?.name} — Schutz absorbiert!`);
+    return 0;
+  }
+
+  // Deathtouch
+  if (source?.kw?.has('deathtouch')) {
+    target.hp = 0;
+    return amount;
+  }
+
+  target.hp -= amount;
+  return amount;
+}
+
+// ══════════════════════════════════════════════════════════
+//  DEATH  (Last Words hook + removal)
+// ══════════════════════════════════════════════════════════
+function resolveDeath(S, uid) {
+  const u = S.units[uid];
+  if (!u) return;
+  lg(S, 'sys', `${cardData(u.cid)?.name || uid} stirbt`);
+  if (typeof u.onDeath === 'function') {
+    try { u.onDeath(S, u); } catch(e) { console.warn('onDeath', e); }
+  }
+  S.players[u.own].grave.push(u.cid);
+  delete S.units[uid];
+}
+
+// ══════════════════════════════════════════════════════════
+//  FALLBACK DECKS
+// ══════════════════════════════════════════════════════════
+function mkDefaultDeck(player) {
+  const d = [];
+  const add = (id, n) => { for(let i=0;i<n;i++) d.push(id); };
+  if (player === 'A') {
+    add('land_F',3); add('land_M',3); add('land_N',1);
+    add('scout_F',3); add('guardian_M',2); add('archer_M',2);
+    add('brawler_N',3); add('emissary',1); add('wellkeeper',3);
+    add('veil',2); add('battlecry',2); add('ironbark',2);
+    add('sky_knight',2); add('death_monk',1);
+  } else {
+    add('land_D',3); add('land_W',3); add('land_N',1);
+    add('rider_D',3); add('sprite_W',3); add('brawler_N',3);
+    add('wellkeeper',3); add('gust',3);
+    add('archer_M',2); add('sky_knight',2); add('death_monk',1);
+    add('battlecry',2); add('ironbark',1);
+  }
+  for (let i=d.length-1;i>0;i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [d[i],d[j]]=[d[j],d[i]];
+  }
+  return d;
+}
+
+function loadGameParams() {
+  try { const r=sessionStorage.getItem('hf_game_params'); if(r) return JSON.parse(r); } catch(e) {}
+  return null;
+}
+
+// ══════════════════════════════════════════════════════════
+//  STATE FACTORY
+// ══════════════════════════════════════════════════════════
+function mkState() {
+  const params = loadGameParams();
+  const rawA   = params?.deckA || mkDefaultDeck('A');
+  const rawB   = params?.deckB || mkDefaultDeck('B');
+  // Filter: keep only IDs that are known to cardData()
+  // cardData() checks both DB (legacy) and CARD_DB (Faeria) — must be called after both are loaded
+  const filter = arr => {
+    if (!Array.isArray(arr)) return mkDefaultDeck(arr === rawA ? 'A' : 'B');
+    const valid = arr.filter(id => {
+      const cd = cardData(id);
+      if (!cd) console.warn('[HexForge] Unknown card id in deck:', id);
+      return !!cd;
+    });
+    // If less than 5 cards survived the filter, fall back to default deck
+    return valid.length >= 5 ? valid : null;
+  };
+
+  const filteredA = filter(rawA) || mkDefaultDeck('A');
+  const filteredB = filter(rawB) || mkDefaultDeck('B');
+
+  const S = {
+    turn:1, ap:'A', phase:'DRAW', phaseStep:0, lobDone:false,
+    playerNames:{ A:params?.nameA||'Spieler A', B:params?.nameB||'Spieler B' },
+    players:{
+      A:{ hp:BASE_HP, mana:BASE_MANA, deck:filteredA, hand:[], grave:[], boostUsed:false },
+      B:{ hp:BASE_HP, mana:BASE_MANA, deck:filteredB, hand:[], grave:[], boostUsed:false },
+    },
+    cells:{}, units:{}, uid:1, log:[], winner:null,
+  };
+
+  allCells().forEach(([q,r,s]) => {
+    const k = cK(q,r);
+    if      (isBaseA(q,r,s)) S.cells[k] = { type:'BASE', owner:'A' };
+    else if (isBaseB(q,r,s)) S.cells[k] = { type:'BASE', owner:'B' };
+    else if (isWell(q,r,s))  S.cells[k] = { type:'WELL', ctrl:null };
+    else                     S.cells[k] = { type:'EMPTY' };
+  });
+
+  deal(S,'A',5); deal(S,'B',5);
+  return S;
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function deal(S, p, n) {
+  const pl = S.players[p];
+  for (let i=0;i<n;i++) {
+    if (!pl.deck.length || pl.hand.length>=HAND_MAX) break;
+    pl.hand.push(pl.deck.shift());
+  }
+}
+
+function landCnt(S, p, lt) {
+  return Object.values(S.cells).filter(c=>c.owner===p&&c.type==='LAND'&&c.landType===lt).length;
+}
+
+function ctrlWells(S, p) {
+  return WELLS.filter(([q,r,s]) => { const c=S.cells[cK(q,r)]; return c&&c.ctrl===p; }).length;
+}
+
+function canPlay(S, p, id) {
+  const cd = cardData(id);
+  if (!cd) return false;
+  if (S.players[p].mana < cd.cost) return false;
+  for (const [lt, n] of Object.entries(cd.req || {})) {
+    const key = { lake:'W', forest:'F', mountain:'M', desert:'D' }[lt] || lt;
+    if (landCnt(S,p,key) < n) return false;
+  }
+  return true;
+}
+
+function unitAt(S, q, r, s) {
+  return Object.values(S.units).find(u=>u.q===q&&u.r===r&&u.s===s) || null;
+}
+
+function lg(S, p, m) {
+  S.log.unshift({ p, m, t:S.turn });
+  if (S.log.length>60) S.log.pop();
+}
+
+function updWells(S) {
+  WELLS.forEach(([wq,wr,ws]) => {
+    const k=cK(wq,wr); let a=0, b=0;
+    cNbr(wq,wr,ws).forEach(([q,r,s]) => {
+      const u=unitAt(S,q,r,s); if(u) { if(u.own==='A') a++; else b++; }
+    });
+    S.cells[k].ctrl=(a>0&&b===0)?'A':(b>0&&a===0)?'B':null;
+  });
+}
+
+function manaInc(S, p) {
+  updWells(S);
+  const w=ctrlWells(S,p); let bonus=0;
+  Object.values(S.units).forEach(u => {
+    if (u.own===p&&u.cid==='wellkeeper') {
+      if (WELLS.some(([wq,wr,ws]) => { const c=S.cells[cK(wq,wr)]; return cDist([u.q,u.r,u.s],[wq,wr,ws])===1&&c&&c.ctrl===p; }))
+        bonus++;
+    }
+  });
+  return BASE_MANA + w*WELL_MANA + bonus;
+}
+
+function adjPlace(S, p) {
+  const v=new Set();
+  for (const [k,c] of Object.entries(S.cells)) {
+    if (c.owner===p&&(c.type==='LAND'||c.type==='BASE')) {
+      const [q,r,s]=pK(k);
+      cNbr(q,r,s).forEach(([nq,nr,ns]) => {
+        if (!inB(nq,nr,ns)) return;
+        const nk=cK(nq,nr); const nc=S.cells[nk];
+        if (nc&&nc.type==='EMPTY') v.add(nk);
+      });
+    }
+  }
+  return [...v].map(pK);
+}
+
+// ══════════════════════════════════════════════════════════
+//  MOVEMENT BFS  (Flying / Jump / Aquatic)
+// ══════════════════════════════════════════════════════════
+function validMoves(S, uid) {
+  const u=S.units[uid];
+  if (!u||u.summonSick||u.moved||u.atked) return [];
+
+  const flying  = u.kw.has('flying');
+  const jump    = u.kw.has('jump');
+  const aquatic = u.kw.has('aquatic');
+
+  const visited  = new Set([cK(u.q,u.r)]);
+  const frontier = [[u.q,u.r,u.s,0]];
+  const result   = [];
+
+  while (frontier.length) {
+    const [q,r,s,d] = frontier.shift();
+    if (d >= u.bew) continue;
+    cNbr(q,r,s).forEach(([nq,nr,ns]) => {
+      if (!inB(nq,nr,ns)) return;
+      const k=cK(nq,nr);
+      if (visited.has(k)) return;
+      visited.add(k);
+      const c=S.cells[k];
+      if (!c) return;
+
+      if (flying) {
+        // Flying: pass over empty, land anywhere passable
+        if (c.type==='EMPTY') { frontier.push([nq,nr,ns,d+1]); return; }
+        if (c.type==='BASE'&&c.owner!==u.own) return;
+        if (unitAt(S,nq,nr,ns)) return;
+        result.push([nq,nr,ns]);
+        frontier.push([nq,nr,ns,d+1]);
+        return;
+      }
+
+      if (c.type==='EMPTY') return;
+      if (c.type==='WELL') {
+        if (!aquatic) return;
+        if (unitAt(S,nq,nr,ns)) return;
+        result.push([nq,nr,ns]);
+        frontier.push([nq,nr,ns,d+1]);
+        return;
+      }
+      if (c.type==='BASE'&&c.owner!==u.own) return;
+      if (c.type==='LAND'&&c.owner!==u.own) return;
+
+      if (unitAt(S,nq,nr,ns)) {
+        if (jump) frontier.push([nq,nr,ns,d+1]);
+        return;
+      }
+      result.push([nq,nr,ns]);
+      frontier.push([nq,nr,ns,d+1]);
+    });
+  }
+  return result;
+}
+
+// ══════════════════════════════════════════════════════════
+//  ATTACK TARGETS  (Taunt, Charge, summon sickness)
+// ══════════════════════════════════════════════════════════
+function validAtks(S, uid) {
+  const u=S.units[uid];
+  if (!u||u.atked||u.summonSick) return [];
+
+  const enemy    = u.own==='A'?'B':'A';
+  const taunters = tauntTargets(S, u.own);
+
+  const inRange = Object.values(S.units).filter(t =>
+    t.own===enemy && cDist([u.q,u.r,u.s],[t.q,t.r,t.s])<=u.rei
+  );
+
+  const filtered = taunters.length > 0
+    ? inRange.filter(t => t.kw.has('taunt'))
+    : inRange;
+
+  const result = filtered.map(t => ({ type:'unit', id:t.id, q:t.q, r:t.r, s:t.s }));
+
+  const canHitBase = taunters.length===0 ||
+    taunters.every(t => cDist([u.q,u.r,u.s],[t.q,t.r,t.s])>u.rei);
+
+  if (canHitBase) {
+    const [bq,br,bs] = u.own==='A'?BASE_B:BASE_A;
+    if (cDist([u.q,u.r,u.s],[bq,br,bs])<=u.rei)
+      result.push({ type:'base', own:enemy, q:bq, r:br, s:bs });
+  }
+  return result;
+}
+
+// ══════════════════════════════════════════════════════════
+//  COMBAT
+// ══════════════════════════════════════════════════════════
+function doAtk(S, attackerId, targetType, targetId) {
+  const a=S.units[attackerId];
+  if (!a||a.atked||a.summonSick) return;
+
+  const aName = cardData(a.cid)?.name || attackerId;
+
+  if (targetType==='unit') {
+    const d=S.units[targetId];
+    if (!d) return;
+    const dName = cardData(d.cid)?.name || targetId;
+    lg(S, a.own, `${aName} ⚔ ${dName}`);
+
+    applyDmg(S, d, effAtk(a), a);
+    lg(S, a.own, `→ ${dName}: ${Math.max(0,d.hp)} HP verbleibend`);
+
+    if (!a.kw.has('ranged') && S.units[targetId] && d.hp>0) {
+      applyDmg(S, a, effAtk(d), d);
+      lg(S, d.own, `↩ Gegenschlag: ${aName}: ${Math.max(0,a.hp)} HP verbleibend`);
+    }
+
+    if (S.units[targetId]  && d.hp<=0) resolveDeath(S, targetId);
+    if (S.units[attackerId]&& a.hp<=0) { resolveDeath(S, attackerId); return; }
+
+    if (S.units[attackerId] && typeof a.onCombat==='function') {
+      try { a.onCombat(S,a,d); } catch(e) { console.warn('onCombat',e); }
+    }
+  } else {
+    const dmg=effAtk(a);
+    S.players[targetId].hp -= dmg;
+    lg(S, a.own, `⚔ Basis ${targetId}: -${dmg}HP → ${S.players[targetId].hp} verbleibend`);
+    if (S.players[targetId].hp<=0) S.winner=a.own;
+    if (S.units[attackerId]&&typeof a.onCombat==='function') {
+      try { a.onCombat(S,a,null); } catch(e) {}
+    }
+  }
+
+  if (S.units[attackerId]) S.units[attackerId].atked=true;
+}
+
+// ══════════════════════════════════════════════════════════
+//  CARD PLAY
+// ══════════════════════════════════════════════════════════
+function doPlay(S, p, id, q, r, s) {
+  const cd=cardData(id);
+  const pl=S.players[p];
+  if (!canPlay(S,p,id)) return false;
+
+  pl.mana -= cd.cost;
+  pl.hand.splice(pl.hand.indexOf(id),1);
+
+  // ── LAND ──────────────────────────────────────────────
+  if (cd.type==='LAND') {
+    if (id==='land_N') {
+      const spots=adjPlace(S,p);
+      const first=spots.find(([qq,rr,ss])=>!unitAt(S,qq,rr,ss));
+      if (first) S.cells[cK(first[0],first[1])]={ type:'LAND', owner:p, landType:'N' };
+      const spots2=adjPlace(S,p);
+      const second=spots2.find(([qq,rr])=>first&&cK(qq,rr)!==cK(first[0],first[1]));
+      if (second) S.cells[cK(second[0],second[1])]={ type:'LAND', owner:p, landType:'N' };
+    } else {
+      S.cells[cK(q,r)]={ type:'LAND', owner:p, landType:cd.landType };
+    }
+    lg(S,p,`Platziert ${cd.name}`);
+    S.lobDone=true;
+    return true;
+  }
+
+  // ── UNIT ──────────────────────────────────────────────
+  if (cd.type==='UNIT' || cd.type==='creature') {
+    const unit=mkUnit(S,p,id,q,r,s);
+    if (!unit) return false;
+    S.units[unit.id]=unit;
+    const kwList=[...unit.kw].filter(k=>k!=='').join(', ');
+    lg(S,p,`Beschwört ${cd.name}${kwList?' ['+kwList+']':''}`);
+    return true;
+  }
+
+  // ── INSTANT / EVENT ───────────────────────────────────
+  if (cd.type==='INSTANT'||cd.type==='event'||cd.type==='structure') {
+    if (typeof cd.onPlay==='function') {
+      cd.onPlay(S,p,q,r,s);
+      pl.grave.push(id);
+      return true;
+    }
+
+    const u = unitAt(S,q,r,s);
+
+    switch(id) {
+      case 'veil':
+        if (u&&u.own===p) { u._sh=(u._sh||0)+2; lg(S,p,'Tarnschleier: +2 Schadenspuffer'); } break;
+
+      case 'gust': {
+        if (u&&u.own!==p) {
+          const nb=cNbr(q,r,s).filter(([nq,nr,ns])=>inB(nq,nr,ns)&&!unitAt(S,nq,nr,ns));
+          if (nb.length) { const[nq,nr,ns]=nb[0]; u.q=nq;u.r=nr;u.s=ns; }
+          u.hp--; if(u.hp<=0) resolveDeath(S,u.id);
+          lg(S,p,'Sandschwall!');
+        } break;
+      }
+
+      case 'battlecry':
+        if (u&&u.own===p) { tempBuff(u,2,0); lg(S,p,`Schlachtruf: ${cardData(u.cid)?.name} +2 ATK`); } break;
+
+      case 'ironbark':
+        if (u&&u.own===p) { buffUnit(u,0,3); u.kw.add('taunt'); lg(S,p,`Eisenrinde: ${cardData(u.cid)?.name} +3 HP + Taunt`); } break;
+
+      case 'campfire':
+        if (u&&u.own===p) { buffUnit(u,1,1); lg(S,p,`Lagerfeuer: ${cardData(u.cid)?.name} +1/+1`); } break;
+
+      case 'healing_song':
+        deal(S,p,1); S.players[p].hp=Math.min(BASE_HP,S.players[p].hp+5);
+        lg(S,p,'Heilungslied: +5 LP, 1 Karte'); break;
+
+      case 'wisdom': case 'tidal_force': case 'shifting_tide':
+        deal(S,p,2); lg(S,p,`${cd.name}: 2 Karten gezogen`); break;
+
+      case 'falcon_dive':
+        if (u) { applyDmg(S,u,1,null); if(u.hp<=0)resolveDeath(S,u.id); lg(S,p,'Falkensturz: 1 Schaden'); } break;
+
+      case 'elderwood_embrace':
+        if (u&&u.own===p) { buffUnit(u,2,4); lg(S,p,`Umarmung: ${cardData(u.cid)?.name} +2/+4`); } break;
+
+      case 'firebomb':
+        if (u) { applyDmg(S,u,4,null); if(u.hp<=0)resolveDeath(S,u.id); lg(S,p,'Feuerbombe: 4 Schaden'); } break;
+
+      case 'flame_burst':
+        if (u) { applyDmg(S,u,3,null); if(u.hp<=0)resolveDeath(S,u.id); lg(S,p,'Feuerstrahl: 3 Schaden'); } break;
+
+      case 'soul_drain':
+        if (u&&u.own!==p) {
+          applyDmg(S,u,2,null);
+          S.players[p].hp=Math.min(BASE_HP,S.players[p].hp+2);
+          if(u.hp<=0)resolveDeath(S,u.id);
+          lg(S,p,'Seelenraub: 2 Schaden, +2 LP');
+        } break;
+
+      case 'gabrian_enchantment':
+        if (u) { u.atk=u.hp; deal(S,p,1); lg(S,p,`Gabrischer Zauber: ATK=${u.hp}, +1 Karte`); } break;
+
+      case 'wild_growth': {
+        const spots=adjPlace(S,p);
+        if (spots.length) {
+          const[tq,tr]=spots[Math.floor(Math.random()*spots.length)];
+          S.cells[cK(tq,tr)]={ type:'LAND', owner:p, landType:'F' };
+          lg(S,p,'Wildes Wachstum: Wald erzeugt');
+        } break;
+      }
+
+      default:
+        lg(S,p,`${cd.name} gespielt`);
+    }
+
+    pl.grave.push(id);
+    return true;
+  }
+
+  return false;
+}
+
+// ══════════════════════════════════════════════════════════
+//  PRODUCTION  (onTurnStart hooks)
+// ══════════════════════════════════════════════════════════
+function runProduction(S, p) {
+  Object.values(S.units).forEach(u => {
+    if (u.own!==p) return;
+    if (typeof u.onTurnStart==='function') {
+      try { u.onTurnStart(S,u); } catch(e) { console.warn('onTurnStart',e); }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  CLEANUP
+// ══════════════════════════════════════════════════════════
+function doCleanup(S) {
+  clearTempBuffs(S);
+  Object.values(S.units).forEach(u => {
+    u.moved=false; u.atked=false; u.summonSick=false;
+  });
+}
+
+</script>
+<script>
+// ── hexforge-ui.js ─────────────────────────────────────
+// ╔══════════════════════════════════════════════════════════╗
+//  HEXFORGE UI  v2
+//  Uses Engine v2: cardData(), mkUnit(), doCleanup(), keywords
+// ╚══════════════════════════════════════════════════════════╝
+
+// ── Keyword display config ─────────────────────────────────
+// Normalise card types: Faeria uses lowercase ('creature','event'),
+// legacy engine uses uppercase ('UNIT','INSTANT','LAND')
+function isUnitCard(cd)    { return cd.type === 'UNIT'    || cd.type === 'creature';  }
+function isInstantCard(cd) { return cd.type === 'INSTANT' || cd.type === 'event' || cd.type === 'structure'; }
+function isLandCard(cd)    { return cd.type === 'LAND'; }
+const KW_STYLE = {
+  'flying':      { label:'✦ Flying',      bg:'#0d2040', border:'#3a8acc', col:'#60aaee' },
+  'jump':        { label:'↟ Jump',         bg:'#0d2040', border:'#3a8acc', col:'#60aaee' },
+  'aquatic':     { label:'⚓ Aquatic',     bg:'#0d1e3a', border:'#2a6aaa', col:'#4a9acc' },
+  'ranged':      { label:'⊕ Ranged',      bg:'#2a1408', border:'#8a4a20', col:'#c07040' },
+  'deathtouch':  { label:'☠ Deathtouch',  bg:'#1a0a1a', border:'#882288', col:'#cc44cc' },
+  'taunt':       { label:'⛊ Taunt',       bg:'#2a1a08', border:'#aa7020', col:'#e0a040' },
+  'haste':       { label:'⚡ Haste',       bg:'#1a2008', border:'#6a9020', col:'#a0c040' },
+  'protection':  { label:'⊕ Protection',  bg:'#082018', border:'#208848', col:'#40cc80' },
+  'divine':      { label:'✶ Divine',      bg:'#201808', border:'#c8a84b', col:'#e8c870' },
+};
+
+function kwBadge(kwKey) {
+  const k = kwKey.replace(/:\d+$/, ''); // strip :N suffix
+  const base = KW_STYLE[k];
+  if (!base) {
+    // Parameterised ones: dash, charge
+    if (kwKey.startsWith('dash:'))   return `<span class="kw-badge" style="background:#1a0a20;border-color:#9940cc;color:#cc70ff">⤵ Dash ${kwKey.split(':')[1]}</span>`;
+    if (kwKey.startsWith('charge:')) return `<span class="kw-badge" style="background:#200808;border-color:#cc4444;color:#ee7070">◎ Charge ${kwKey.split(':')[1]}</span>`;
+    return '';
+  }
+  return `<span class="kw-badge" style="background:${base.bg};border-color:${base.border};color:${base.col}">${base.label}</span>`;
+}
+
+// ── Radial Menu Options ────────────────────────────────────
+const MENU_OPTS = [
+  { id:'land_F',  label:'Wald',       sub:'🌲',  fill:'#1c4a14', stroke:'#4a9e40', textCol:'#7dd870' },
+  { id:'land_D',  label:'Wüste',      sub:'🏜',  fill:'#5a2e08', stroke:'#d4982a', textCol:'#f0b84a' },
+  { id:'land_M',  label:'Berg',       sub:'⛰',   fill:'#282838', stroke:'#8a8aaa', textCol:'#aaaacc' },
+  { id:'land_W',  label:'Wasser',     sub:'🌊',  fill:'#083050', stroke:'#3a8acc', textCol:'#60aaee' },
+  { id:'land_N',  label:'2×Neutral',  sub:'··',  fill:'#1a2236', stroke:'#4a5a70', textCol:'#7a9ab0' },
+  { id:'_draw',   label:'Karte +1',   sub:'🃏',  fill:'#2a1c08', stroke:'#c8a84b', textCol:'#e8c870' },
+  { id:'_boost',  label:'+1 Mana',    sub:'◆',   fill:'#081828', stroke:'#4488cc', textCol:'#68aaee' },
+];
+
+// Cards that target own units
+const TARGET_OWN  = new Set(['veil','battlecry','ironbark','campfire','elderwood_embrace','gabrian_enchantment','tiki_chieftain']);
+// Cards that target enemy units
+const TARGET_ENEMY = new Set(['gust','firebomb','flame_burst','soul_drain','last_nightmare','falcon_dive']);
+// Cards that target any unit
+const TARGET_ANY   = new Set(['gabrian_enchantment','falcon_dive']);
+// Cards with no board target (self-effect)
+const TARGET_SELF  = new Set(['healing_song','wisdom','wild_growth','shifting_tide','tidal_force']);
+
+// ── Engine ─────────────────────────────────────────────────
+class Engine {
+  constructor() {
+    this.S       = mkState();
+    this.selCard = null;
+    this.selUnit = null;
+    this.pact    = null;  // 'land'|'unit'|'inst'|'move'|'atk'
+    this.vt      = [];    // valid target [q,r,s] triples
+
+    this._render();
+    this._showSwitch(this.S.ap);
+  }
+
+  get ap() { return this.S.ap; }
+
+  // ── Hotseat Switch ─────────────────────────────────────
+  dismissSwitch() {
+    document.getElementById('sw-ov').classList.remove('on');
+    this._runPhase();
+  }
+
+  _showSwitch(p) {
+    const name = this.S.playerNames?.[p] || `Spieler ${p}`;
+    const el = document.getElementById('sc-nm');
+    el.textContent = name.toUpperCase();
+    el.className   = `sc-nm ${p}`;
+    document.getElementById('sw-ov').classList.add('on');
+  }
+
+  // ── Phase Loop ──────────────────────────────────────────
+  _runPhase() {
+    const S = this.S;
+    if (S.winner) { this._win(); return; }
+
+    this.selCard = null; this.selUnit = null; this.pact = null; this.vt = [];
+
+    switch (S.phase) {
+
+      case 'DRAW':
+        deal(S, this.ap, 1);
+        lg(S, this.ap, 'Karte gezogen');
+        this._auto(350);
+        break;
+
+      case 'MANA': {
+        const inc = manaInc(S, this.ap);
+        S.players[this.ap].mana += inc;
+        if (S.players[this.ap].boostUsed) S.players[this.ap].mana += 1;
+        lg(S, this.ap, `+${inc} Mana → ${S.players[this.ap].mana}`);
+        // Run Production hooks (onTurnStart)
+        runProduction(S, this.ap);
+        this._auto(350);
+        break;
+      }
+
+      case 'CLEANUP':
+        doCleanup(S);
+        S.players[this.ap].boostUsed = false;
+        S.lobDone = false;
+        lg(S, this.ap, '— Runde Ende —');
+        if (this.ap === 'B') S.turn++;
+        S.ap    = this.ap === 'A' ? 'B' : 'A';
+        S.phase = 'DRAW';
+        S.phaseStep = 0;
+        this._render();
+        setTimeout(() => this._showSwitch(S.ap), 200);
+        return;
+
+      default:
+        break;
+    }
+    this._render();
+  }
+
+  _auto(ms)  { setTimeout(() => this._adv(), ms); }
+
+  _adv() {
+    const S = this.S;
+    const i = PHASES.indexOf(S.phase);
+    S.phase     = PHASES[i + 1] || 'CLEANUP';
+    S.phaseStep = i + 1;
+    this._runPhase();
+  }
+
+  nextPhase() { this._adv(); }
+
+  // ── Radial Land Menu ────────────────────────────────────
+  openLandMenu() {
+    const S = this.S;
+    if (S.phase !== 'LAND_OR_BOOST' || S.lobDone) return;
+    this._buildSVGMenu();
+    document.getElementById('rmenu').classList.add('on');
+  }
+
+  closeLandMenu() {
+    document.getElementById('rmenu').classList.remove('on');
+  }
+
+  _buildSVGMenu() {
+    const svg = document.getElementById('rmenu-svg');
+    svg.innerHTML = '';
+    const W = 340, H = 340, cx = W/2, cy = H/2;
+    const R = 38, RR = 88;
+
+    const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+    defs.innerHTML = `
+      <filter id="mhover">
+        <feGaussianBlur stdDeviation="3" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <radialGradient id="ringGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="60%"  stop-color="rgba(160,30,30,0)"/>
+        <stop offset="100%" stop-color="rgba(200,50,50,0.45)"/>
+      </radialGradient>`;
+    svg.appendChild(defs);
+
+    const addCircle = (r, fill, stroke, sw) => {
+      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',r);
+      c.setAttribute('fill',fill); c.setAttribute('stroke',stroke); c.setAttribute('stroke-width',sw);
+      svg.appendChild(c);
+    };
+    addCircle(H/2-8,  'url(#ringGrad)','#aa2525','4');
+    addCircle(H/2-20, 'none','rgba(180,50,50,0.3)','1.5');
+
+    const sin60 = Math.sin(Math.PI/3), cos60 = Math.cos(Math.PI/3);
+    const positions = [
+      [cx,            cy           ],
+      [cx,            cy - RR      ],
+      [cx + RR*sin60, cy - RR*cos60],
+      [cx + RR*sin60, cy + RR*cos60],
+      [cx,            cy + RR      ],
+      [cx - RR*sin60, cy + RR*cos60],
+      [cx - RR*sin60, cy - RR*cos60],
+    ];
+    const assign = [4, 0, 1, 2, 3, 5, 6];
+    assign.forEach((optIdx, posIdx) => {
+      const [px, py] = positions[posIdx];
+      this._addMenuHex(svg, px, py, R, MENU_OPTS[optIdx]);
+    });
+  }
+
+  _addMenuHex(svg, px, py, R, opt) {
+    const ns  = 'http://www.w3.org/2000/svg';
+    const pts = Array.from({length:6}, (_,i) => {
+      const a = (Math.PI/180)*(60*i);
+      return `${(px+R*Math.cos(a)).toFixed(1)},${(py+R*Math.sin(a)).toFixed(1)}`;
+    }).join(' ');
+
+    const g = document.createElementNS(ns,'g');
+    g.setAttribute('class','mhex');
+
+    const poly = document.createElementNS(ns,'polygon');
+    poly.setAttribute('points',pts); poly.setAttribute('fill',opt.fill);
+    poly.setAttribute('stroke',opt.stroke); poly.setAttribute('stroke-width','2.5');
+    g.appendChild(poly);
+
+    const glow = document.createElementNS(ns,'polygon');
+    glow.setAttribute('points',pts); glow.setAttribute('fill','none');
+    glow.setAttribute('stroke',opt.stroke); glow.setAttribute('stroke-width','5');
+    glow.setAttribute('opacity','0'); glow.setAttribute('filter','url(#mhover)');
+    glow.setAttribute('pointer-events','none');
+    g.appendChild(glow);
+
+    const sym = document.createElementNS(ns,'text');
+    sym.setAttribute('x',px); sym.setAttribute('y',py-2);
+    sym.setAttribute('text-anchor','middle'); sym.setAttribute('dominant-baseline','middle');
+    sym.setAttribute('font-size',R*0.75); sym.setAttribute('pointer-events','none');
+    sym.textContent = opt.sub;
+    g.appendChild(sym);
+
+    const lbl = document.createElementNS(ns,'text');
+    lbl.setAttribute('x',px); lbl.setAttribute('y',py+R*0.58);
+    lbl.setAttribute('text-anchor','middle'); lbl.setAttribute('dominant-baseline','middle');
+    lbl.setAttribute('font-family','Cinzel,serif'); lbl.setAttribute('font-size',R*0.25);
+    lbl.setAttribute('fill',opt.textCol); lbl.setAttribute('font-weight','bold');
+    lbl.setAttribute('pointer-events','none');
+    lbl.textContent = opt.label;
+    g.appendChild(lbl);
+
+    if (opt.id === 'land_N' || opt.id === '_draw' || opt.id === '_boost') {
+      const text = opt.id === 'land_N' ? '×2' : '+1';
+      g.appendChild(this._badge(px+R*0.65, py-R*0.55, text, opt.stroke,'#fff'));
+    }
+
+    g.onmouseenter = () => { glow.setAttribute('opacity','0.8'); poly.setAttribute('filter','url(#mhover)'); };
+    g.onmouseleave = () => { glow.setAttribute('opacity','0');   poly.removeAttribute('filter'); };
+    g.onclick      = () => this._selectMenuOpt(opt.id);
+    svg.appendChild(g);
+  }
+
+  _badge(x, y, text, bg, fg) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const g  = document.createElementNS(ns,'g');
+    g.setAttribute('pointer-events','none');
+    const c = document.createElementNS(ns,'circle');
+    c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r','11');
+    c.setAttribute('fill',bg); c.setAttribute('stroke',fg); c.setAttribute('stroke-width','1.5');
+    g.appendChild(c);
+    const t = document.createElementNS(ns,'text');
+    t.setAttribute('x',x); t.setAttribute('y',y);
+    t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-family','Cinzel,serif'); t.setAttribute('font-size','9');
+    t.setAttribute('fill',fg); t.setAttribute('font-weight','bold');
+    t.textContent = text;
+    g.appendChild(t);
+    return g;
+  }
+
+  _selectMenuOpt(id) {
+    const S = this.S;
+    this.closeLandMenu();
+
+    if (id === '_draw') {
+      deal(S, this.ap, 1);
+      S.lobDone = true;
+      lg(S, this.ap, 'Karte gezogen (Aktion)');
+      this._render(); this._auto(300);
+      return;
+    }
+    if (id === '_boost') {
+      S.players[this.ap].boostUsed = true;
+      S.lobDone = true;
+      lg(S, this.ap, '+1 Mana Boost');
+      this._render(); this._auto(300);
+      return;
+    }
+    if (id === 'land_N') {
+      const spots = adjPlace(S, this.ap);
+      let placed = 0;
+      for (const [qq,rr,ss] of spots) {
+        if (placed >= 2) break;
+        if (!unitAt(S,qq,rr,ss)) {
+          S.cells[cK(qq,rr)] = { type:'LAND', owner:this.ap, landType:'N' };
+          placed++;
+        }
+      }
+      S.lobDone = true;
+      lg(S, this.ap, '2× Grasland platziert');
+      this._render(); this._auto(300);
+      return;
+    }
+
+    // Other land types: player picks target cell
+    this.selCard = id;
+    this.pact    = 'land';
+    this.vt      = adjPlace(S, this.ap);
+    this._render();
+  }
+
+  // ── Card & Unit Selection ───────────────────────────────
+  selCardFn(id) {
+    const S  = this.S;
+    const cd = cardData(id);
+    if (!cd) return;
+
+    // Land cards → radial menu
+    if (isLandCard(cd)) { this.openLandMenu(); return; }
+
+    if (S.phase !== 'PLAY' && S.phase !== 'ATTACK') return;
+    if (!canPlay(S, this.ap, id)) return;
+
+    this.selCard = id;
+
+    if (isUnitCard(cd)) {
+      this.pact = 'unit';
+      // Valid spawns: own land/base cells that are free
+      this.vt = Object.entries(S.cells)
+        .filter(([k,c]) => c.owner===this.ap && (c.type==='LAND'||c.type==='BASE'))
+        .map(([k]) => pK(k))
+        .filter(([q,r,s]) => !unitAt(S,q,r,s));
+      this._render();
+      return;
+    }
+
+    // Instant / Event
+    if (isInstantCard(cd)) {
+      this.pact = 'inst';
+
+      if (TARGET_SELF.has(id)) {
+        // No target needed → play immediately
+        doPlay(S, this.ap, id, 0, 0, 0);
+        this._clr();
+        this._render();
+        if (S.winner) this._win();
+        return;
+      }
+
+      if (TARGET_ANY.has(id)) {
+        this.vt = Object.values(S.units).map(u => [u.q,u.r,u.s]);
+      } else if (TARGET_ENEMY.has(id)) {
+        this.vt = Object.values(S.units).filter(u => u.own!==this.ap).map(u => [u.q,u.r,u.s]);
+      } else {
+        // Default: target own units
+        this.vt = Object.values(S.units).filter(u => u.own===this.ap).map(u => [u.q,u.r,u.s]);
+      }
+      this._render();
+    }
+  }
+
+  selUnitFn(uid) {
+    const S = this.S;
+    const u = S.units[uid];
+    if (!u || u.own !== this.ap) return;
+    this.selCard = null;
+    this.selUnit = uid;
+
+    if (S.phase === 'MOVE') {
+      this.pact = 'move';
+      this.vt   = validMoves(S, uid);
+    } else if (S.phase === 'ATTACK') {
+      this.pact = 'atk';
+      this.vt   = validAtks(S, uid).map(t => [t.q,t.r,t.s]);
+    }
+    this._showUD(u);
+    this._render();
+  }
+
+  // ── Board Click Dispatcher ──────────────────────────────
+  clickCell(q, r, s) {
+    const S   = this.S;
+    const isV = this.vt.some(([a,b,c]) => a===q&&b===r&&c===s);
+
+    if (this.pact && isV) {
+
+      if (this.pact === 'land') {
+        const cd = cardData(this.selCard);
+        if (cd) {
+          S.cells[cK(q,r)] = { type:'LAND', owner:this.ap, landType:cd.landType };
+          S.lobDone = true;
+          lg(S, this.ap, `Platziert ${cd.name}`);
+        }
+        this._clr(); this._render(); this._auto(300);
+        return;
+      }
+
+      if (this.pact === 'unit') {
+        doPlay(S, this.ap, this.selCard, q, r, s);
+        this._clr();
+      }
+
+      if (this.pact === 'inst') {
+        doPlay(S, this.ap, this.selCard, q, r, s);
+        this._clr();
+      }
+
+      if (this.pact === 'move' && this.selUnit) {
+        const u = S.units[this.selUnit];
+        if (u) {
+          u.q = q; u.r = r; u.s = s;
+          u.moved = true;
+          updWells(S);
+          lg(S, this.ap, `${cardData(u.cid)?.name || u.id} bewegt`);
+        }
+        this._clr();
+      }
+
+      if (this.pact === 'atk' && this.selUnit) {
+        const tu = unitAt(S, q, r, s);
+        const [bq,br,bs] = this.ap==='A' ? BASE_B : BASE_A;
+        if (tu && tu.own !== this.ap) {
+          doAtk(S, this.selUnit, 'unit', tu.id);
+        } else if (q===bq && r===br && s===bs) {
+          doAtk(S, this.selUnit, 'base', this.ap==='A'?'B':'A');
+        }
+        this._clr();
+      }
+
+      this._render();
+      if (S.winner) this._win();
+      return;
+    }
+
+    // Fall-through: select unit
+    const u = unitAt(S, q, r, s);
+    if (u) this.selUnitFn(u.id);
+  }
+
+  _clr() { this.selCard=null; this.selUnit=null; this.pact=null; this.vt=[]; }
+  cancelSel() { this._clr(); this._render(); }
+
+  // ── Unit Detail Panel ───────────────────────────────────
+  _showUD(u) {
+    const cd = cardData(u.cid);
+    const kwBadges = [...u.kw].map(kwBadge).join('');
+    const sick  = u.summonSick ? '<span style="color:#cc8833;font-size:.55rem">⏳ Erschöpft</span>' : '';
+    const moved = u.moved  ? '<span style="color:#883030;font-size:.55rem">✓ Bew</span>' : '';
+    const atked = u.atked  ? '<span style="color:#883030;font-size:.55rem">✓ Atk</span>' : '';
+    const prot  = u.protHit ? '<span style="color:#607030;font-size:.55rem">⊕ Schutz verbraucht</span>' : '';
+    const tmpAtk = u.atkBuff > 0 ? `<span style="color:#aacc44;font-size:.55rem">+${u.atkBuff} ATK</span>` : '';
+
+    document.getElementById('ud').innerHTML = `
+      <div class="udn">${cd?.name || u.cid}</div>
+      <div style="display:flex;gap:8px;font-size:.75rem;margin-bottom:4px;flex-wrap:wrap">
+        <span style="color:var(--atk)">⚔ ${effAtk(u)}</span>
+        <span style="color:var(--hp)">♥ ${u.hp}/${u.maxHp}</span>
+        <span style="color:var(--dim)">➤ ${u.bew}</span>
+        <span style="color:var(--W)">◎ ${u.rei}</span>
+        ${tmpAtk}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px">${kwBadges}</div>
+      <div style="font-size:.6rem;color:var(--dim);font-style:italic;margin-bottom:3px">${cd?.text || ''}</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">${sick}${moved}${atked}${prot}</div>`;
+  }
+
+  _win() {
+    const name = this.S.playerNames?.[this.S.winner] || `Spieler ${this.S.winner}`;
+    document.getElementById('win-title').textContent = `${name} gewinnt!`;
+    document.getElementById('win-ov').classList.add('on');
+  }
+
+  // ── Master Render ───────────────────────────────────────
+  _render() {
+    this._rStats();
+    this._rHand();
+    this._rPhase();
+    this._rBtns();
+    this._rLog();
+    this._rBoard();
+  }
+
+  _rStats() {
+    const S = this.S;
+    ['A','B'].forEach(p => {
+      document.getElementById(`hp-${p}`).textContent    = S.players[p].hp;
+      document.getElementById(`mana-${p}`).textContent  = S.players[p].mana;
+      document.getElementById(`cards-${p}`).textContent = `${S.players[p].hand.length}/${S.players[p].deck.length}`;
+      document.getElementById(`wells-${p}`).textContent = ctrlWells(S, p);
+      document.getElementById(`hpbar-${p}`).style.width = `${S.players[p].hp/BASE_HP*100}%`;
+    });
+    document.getElementById('rnd').textContent = S.turn;
+    const n = document.getElementById('apn');
+    const nm = S.playerNames?.[S.ap] || `Spieler ${S.ap}`;
+    n.textContent = nm.toUpperCase();
+    n.className   = `pn ${S.ap}`;
+  }
+
+  _rPhase() {
+    const S = this.S;
+    document.getElementById('ph-name').textContent = PN[S.phase] || S.phase;
+    document.getElementById('ph-dots').innerHTML   = PHASES.map((ph,i) =>
+      `<span class="pdot ${i<S.phaseStep?'done':i===S.phaseStep?'cur':''}" title="${PN[ph]}"></span>`
+    ).join('');
+  }
+
+  _rBtns() {
+    const S = this.S;
+    document.getElementById('btn-land').disabled   = S.phase!=='LAND_OR_BOOST'||S.lobDone;
+    document.getElementById('btn-cancel').disabled = !this.pact&&!this.selUnit;
+    const auto = ['DRAW','MANA','CLEANUP'];
+    const nb   = document.getElementById('btn-next');
+    nb.disabled    = auto.includes(S.phase);
+    nb.textContent = auto.includes(S.phase) ? '⟳ Auto' : 'Phase ▶';
+  }
+
+  _rHand() {
+    const S  = this.S;
+    const el = document.getElementById('hand-area');
+    el.innerHTML = '';
+    S.players[this.ap].hand.forEach(id => {
+      const cd = cardData(id);
+      if (!cd) return;
+
+      const ok    = this._canP(id);
+      const isSel = this.selCard === id;
+
+      // Color accent based on card color (Faeria) or type (legacy)
+      const colorMap = { blue:'#1a3a5a', green:'#1a3a1a', red:'#3a1a1a', yellow:'#3a2a0a', neutral:'#1a2030' };
+      const accent = colorMap[cd.color] || (isUnitCard(cd)?'#1a2030':'#0d1018');
+
+      // Stats row
+      const atk = cd.atk ?? cd.power;
+      const hp  = cd.hp  ?? cd.life;
+      const kw  = parseKeywords(cd);
+      const kwHtml = [...kw].slice(0,3).map(kwBadge).join('');
+
+      // Land requirements
+      const reqEntries = Object.entries(cd.req||{}).filter(([,v])=>v>0);
+      const landNames  = { lake:'See', forest:'Wald', mountain:'Berg', desert:'Wüste', F:'Wald', M:'Berg', D:'Wüste', W:'See', N:'Neutral' };
+      const reqStr     = reqEntries.map(([lt,n])=>`${n}× ${landNames[lt]||lt}`).join(', ');
+
+      const d = document.createElement('div');
+      d.className = `hc ${ok?'':'np'} ${isSel?'sel':''}`;
+      d.style.cssText = `background:${accent};border-color:${isSel?'#c8a84b':'#252d40'}`;
+
+      d.innerHTML = `
+        <div class="ch">
+          <span class="cn">${cd.name}</span>
+          <span class="cc">${cd.cost>0?cd.cost+'◆':''}</span>
+        </div>
+        <div class="cb" style="color:${cd.color?{blue:'#3a8acc',green:'#4a9e40',red:'#cc4444',yellow:'#d4982a',neutral:'#8a9ab0'}[cd.color]||'#4a5a72':'#4a5a72'}">
+          ${cd.color||cd.type==='LAND'?'':cd.type}
+          ${cd.color?cd.color.charAt(0).toUpperCase()+cd.color.slice(1):''}
+          ${cd.type==='LAND'?' Land':''}
+          ${cd.rarity?'· '+cd.rarity:''}
+        </div>
+        ${atk!=null?`<div class="cs"><span class="cra">⚔${atk}</span><span class="crh">♥${hp}</span></div>`:''}
+        ${kwHtml?`<div style="display:flex;flex-wrap:wrap;gap:2px;margin:2px 0">${kwHtml}</div>`:''}
+        ${reqStr?`<div class="creq">Req: ${reqStr}</div>`:''}
+        <div class="ctx">${cd.text||''}</div>`;
+
+      if (ok) d.onclick = () => this.selCardFn(id);
+      el.appendChild(d);
+    });
+  }
+
+  _canP(id) {
+    const S  = this.S;
+    const cd = cardData(id);
+    if (!cd) return false;
+    if (isLandCard(cd))
+      return S.phase==='LAND_OR_BOOST' && !S.lobDone;
+    if (isUnitCard(cd))
+      return S.phase==='PLAY' && canPlay(S, this.ap, id);
+    if (isInstantCard(cd))
+      return (S.phase==='PLAY'||S.phase==='ATTACK') && canPlay(S, this.ap, id);
+    return false;
+  }
+
+  _rLog() {
+    document.getElementById('lp').innerHTML = this.S.log.slice(0,30).map(e =>
+      `<div class="le"><span class="l${e.p==='sys'?'S':e.p}">[${e.p==='sys'?'⚙':e.p}]</span> ${e.m}</div>`
+    ).join('');
+  }
+
+  // ── SVG Board Renderer ──────────────────────────────────
+  _rBoard() {
+    const S   = this.S;
+    const svg = document.getElementById('board');
+
+    function pts(cx, cy) {
+      return Array.from({length:6}, (_,i) => {
+        const a = (Math.PI/180)*(60*i);
+        return `${(cx+HS*Math.cos(a)).toFixed(1)},${(cy+HS*Math.sin(a)).toFixed(1)}`;
+      }).join(' ');
+    }
+
+    const cells = allCells();
+    let mnX=1e9, mxX=-1e9, mnY=1e9, mxY=-1e9;
+    cells.forEach(([q,r]) => {
+      const [px,py] = c2p(q,r);
+      mnX=Math.min(mnX,px); mxX=Math.max(mxX,px);
+      mnY=Math.min(mnY,py); mxY=Math.max(mxY,py);
+    });
+    const PAD = HS*1.5;
+    const W   = mxX-mnX+HS*2+PAD*2;
+    const H   = mxY-mnY+HS*2+PAD*2;
+    const ox  = -mnX+HS+PAD;
+    const oy  = -mnY+HS+PAD;
+
+    svg.setAttribute('width',W);
+    svg.setAttribute('height',H);
+    svg.innerHTML = '';
+
+    const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+    defs.innerHTML = `
+      <filter id="gw">
+        <feGaussianBlur stdDeviation="2.5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="wg">
+        <feGaussianBlur stdDeviation="5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="ss">
+        <feColorMatrix type="saturate" values="0.25"/>
+      </filter>`;
+    svg.appendChild(defs);
+
+    const vs = new Set(this.vt.map(([q,r]) => cK(q,r)));
+
+    // ── Draw cells ──────────────────────────────────────
+    cells.forEach(([q,r,s]) => {
+      const k  = cK(q,r);
+      const cd = S.cells[k];
+      const [px,py] = c2p(q,r);
+      const cx = px+ox, cy = py+oy;
+      const P  = pts(cx,cy);
+      const isV = vs.has(k);
+
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.style.cursor = 'pointer';
+      g.onclick = () => this.clickCell(q,r,s);
+
+      let fill='#0a0d12', stroke='#151c26', sw='1';
+      if (cd) {
+        if      (cd.type==='WELL') { fill='#100818'; stroke='#4a1a88'; sw='1.5'; }
+        else if (cd.type==='BASE') { fill=cd.owner==='A'?'#1e0808':'#08081e'; stroke=cd.owner==='A'?'#882222':'#224488'; sw='2'; }
+        else if (cd.type==='LAND') { fill=LF[cd.landType]||'#1e2530'; stroke=LS[cd.landType]||'#3a4a60'; }
+        else                        { fill='#0e1520'; stroke='#1a2535'; }
+      }
+
+      const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      poly.setAttribute('points',P); poly.setAttribute('fill',fill);
+      poly.setAttribute('stroke',stroke); poly.setAttribute('stroke-width',sw);
+      g.appendChild(poly);
+
+      // Well orb
+      if (cd?.type==='WELL') {
+        const glw = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        glw.setAttribute('cx',cx); glw.setAttribute('cy',cy); glw.setAttribute('r',HS*.78);
+        glw.setAttribute('fill',cd.ctrl==='A'?'rgba(160,40,255,0.22)':cd.ctrl==='B'?'rgba(40,100,255,0.22)':'rgba(80,15,140,0.15)');
+        glw.setAttribute('pointer-events','none'); g.appendChild(glw);
+        const orb = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        orb.setAttribute('cx',cx); orb.setAttribute('cy',cy); orb.setAttribute('r',HS*.35);
+        orb.setAttribute('fill',cd.ctrl==='A'?'#bb33ee':cd.ctrl==='B'?'#3366ee':'#6611bb');
+        orb.setAttribute('filter','url(#wg)'); orb.setAttribute('pointer-events','none'); g.appendChild(orb);
+        const sym = document.createElementNS('http://www.w3.org/2000/svg','text');
+        sym.setAttribute('x',cx); sym.setAttribute('y',cy+5); sym.setAttribute('text-anchor','middle');
+        sym.setAttribute('fill','#fff'); sym.setAttribute('font-size','14'); sym.setAttribute('pointer-events','none');
+        sym.textContent='◎'; g.appendChild(sym);
+        if (cd.ctrl) {
+          const ol = document.createElementNS('http://www.w3.org/2000/svg','text');
+          ol.setAttribute('x',cx); ol.setAttribute('y',cy+HS*.85); ol.setAttribute('text-anchor','middle');
+          ol.setAttribute('fill',cd.ctrl==='A'?'#cc44ff':'#4488ff'); ol.setAttribute('font-size','8');
+          ol.setAttribute('font-weight','bold'); ol.setAttribute('pointer-events','none');
+          ol.textContent=cd.ctrl; g.appendChild(ol);
+        }
+      }
+
+      // Base decoration
+      if (cd?.type==='BASE') {
+        const col = cd.owner==='A'?'#ff6060':'#6090ff';
+        const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x',cx); t.setAttribute('y',cy+5); t.setAttribute('text-anchor','middle');
+        t.setAttribute('fill',col); t.setAttribute('font-size','15'); t.setAttribute('font-family','Cinzel,serif');
+        t.setAttribute('font-weight','bold'); t.setAttribute('pointer-events','none');
+        t.textContent=cd.owner; g.appendChild(t);
+        const hp = document.createElementNS('http://www.w3.org/2000/svg','text');
+        hp.setAttribute('x',cx); hp.setAttribute('y',cy+HS*.82); hp.setAttribute('text-anchor','middle');
+        hp.setAttribute('fill',cd.owner==='A'?'#cc5050':'#5070cc'); hp.setAttribute('font-size','8');
+        hp.setAttribute('pointer-events','none');
+        hp.textContent=`${S.players[cd.owner].hp}HP`; g.appendChild(hp);
+      }
+
+      // Land emoji + owner dot
+      if (cd?.type==='LAND') {
+        const em = {F:'🌲',D:'🏜',M:'⛰',W:'🌊',N:'·'}[cd.landType]||'';
+        const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x',cx); t.setAttribute('y',cy+6); t.setAttribute('text-anchor','middle');
+        t.setAttribute('font-size','14'); t.setAttribute('pointer-events','none'); t.textContent=em; g.appendChild(t);
+        const od = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        od.setAttribute('cx',cx+HS*.56); od.setAttribute('cy',cy-HS*.56); od.setAttribute('r','4');
+        od.setAttribute('fill',cd.owner==='A'?'rgba(200,60,60,.65)':'rgba(60,100,200,.65)');
+        od.setAttribute('pointer-events','none'); g.appendChild(od);
+      }
+
+      // Valid-target highlight
+      if (isV) {
+        const hl = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+        hl.setAttribute('points',P); hl.setAttribute('fill','rgba(200,168,75,0.15)');
+        hl.setAttribute('stroke','#c8a84b'); hl.setAttribute('stroke-width','2');
+        hl.setAttribute('pointer-events','none'); g.appendChild(hl);
+      }
+
+      svg.appendChild(g);
+    });
+
+    // ── Draw units ──────────────────────────────────────
+    Object.values(S.units).forEach(u => {
+      const [px,py] = c2p(u.q,u.r);
+      const cx = px+ox, cy = py+oy;
+      const cd    = cardData(u.cid);
+      const isSel = this.selUnit === u.id;
+      const isVT  = vs.has(cK(u.q,u.r));
+      const sick  = u.summonSick;
+      const exhausted = u.moved || u.atked;
+
+      // Unit circle
+      const circ = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      circ.setAttribute('cx',cx); circ.setAttribute('cy',cy); circ.setAttribute('r','13');
+      circ.setAttribute('fill', u.own==='A'?'#2a0808':'#08082a');
+      circ.setAttribute('stroke', u.own==='A'?'#cc3333':'#3355cc');
+      circ.setAttribute('stroke-width', isSel?'3':'1.8');
+      if (isSel) circ.setAttribute('filter','url(#gw)');
+      if (sick)  circ.setAttribute('opacity','0.55');
+      circ.style.cursor='pointer';
+      circ.onclick = e => { e.stopPropagation(); this.selUnitFn(u.id); };
+      svg.appendChild(circ);
+
+      // Unit name abbreviation (2 chars)
+      const label = (cd?.name||u.cid).substring(0,2).toUpperCase();
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',cx); t.setAttribute('y',cy+4); t.setAttribute('text-anchor','middle');
+      t.setAttribute('fill', u.own==='A'?'#ff9090':'#9090ff');
+      t.setAttribute('font-size','9'); t.setAttribute('font-weight','bold');
+      t.setAttribute('pointer-events','none');
+      if (sick) t.setAttribute('opacity','0.55');
+      t.textContent=label; svg.appendChild(t);
+
+      // HP bar
+      const bW=22, bX=cx-bW/2, bY=cy+15;
+      const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      bg.setAttribute('x',bX); bg.setAttribute('y',bY); bg.setAttribute('width',bW); bg.setAttribute('height','3');
+      bg.setAttribute('fill','#111'); bg.setAttribute('rx','1.5'); bg.setAttribute('pointer-events','none');
+      svg.appendChild(bg);
+      const bar = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      bar.setAttribute('x',bX); bar.setAttribute('y',bY);
+      bar.setAttribute('width',(u.hp/u.maxHp*bW).toFixed(1)); bar.setAttribute('height','3');
+      bar.setAttribute('fill', u.own==='A'?'#aa2222':'#2244aa');
+      bar.setAttribute('rx','1.5'); bar.setAttribute('pointer-events','none');
+      svg.appendChild(bar);
+
+      // ATK buff indicator (yellow dot)
+      if (u.atkBuff > 0) {
+        const ab = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ab.setAttribute('cx',cx-11); ab.setAttribute('cy',cy-11); ab.setAttribute('r','4');
+        ab.setAttribute('fill','#aacc22'); ab.setAttribute('stroke','#ccee44'); ab.setAttribute('stroke-width','1');
+        ab.setAttribute('pointer-events','none'); svg.appendChild(ab);
+      }
+
+      // Keyword icons on unit (tiny)
+      const kwIcons = [];
+      if (u.kw.has('flying'))     kwIcons.push(['✦','#3a8acc']);
+      if (u.kw.has('taunt'))      kwIcons.push(['⛊','#d4982a']);
+      if (u.kw.has('deathtouch')) kwIcons.push(['☠','#aa44aa']);
+      if (u.kw.has('ranged'))     kwIcons.push(['⊕','#c07040']);
+      if (u.kw.has('haste')&&!sick) kwIcons.push(['⚡','#a0c040']);
+      kwIcons.forEach(([icon, col], i) => {
+        const kt = document.createElementNS('http://www.w3.org/2000/svg','text');
+        kt.setAttribute('x',cx-10+i*8); kt.setAttribute('y',cy-16);
+        kt.setAttribute('text-anchor','middle'); kt.setAttribute('fill',col);
+        kt.setAttribute('font-size','7'); kt.setAttribute('pointer-events','none');
+        kt.textContent=icon; svg.appendChild(kt);
+      });
+
+      // Summon-sickness hourglass
+      if (sick) {
+        const st = document.createElementNS('http://www.w3.org/2000/svg','text');
+        st.setAttribute('x',cx+9); st.setAttribute('y',cy-12);
+        st.setAttribute('text-anchor','middle'); st.setAttribute('fill','#cc8833');
+        st.setAttribute('font-size','9'); st.setAttribute('pointer-events','none');
+        st.textContent='⏳'; svg.appendChild(st);
+      }
+
+      // Exhaustion marker (red dot)
+      if (exhausted && !sick) {
+        const ex = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ex.setAttribute('cx',cx+11); ex.setAttribute('cy',cy-11); ex.setAttribute('r','4');
+        ex.setAttribute('fill','#882222'); ex.setAttribute('stroke','#cc4444'); ex.setAttribute('stroke-width','1');
+        ex.setAttribute('pointer-events','none'); svg.appendChild(ex);
+      }
+
+      // Attack-target ring
+      if (isVT && this.pact==='atk') {
+        const r2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        r2.setAttribute('cx',cx); r2.setAttribute('cy',cy); r2.setAttribute('r','17');
+        r2.setAttribute('fill','none'); r2.setAttribute('stroke','#cc3333'); r2.setAttribute('stroke-width','2.5');
+        r2.setAttribute('pointer-events','none'); svg.appendChild(r2);
+      }
+
+      // Selected unit ring
+      if (isSel) {
+        const sr = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        sr.setAttribute('cx',cx); sr.setAttribute('cy',cy); sr.setAttribute('r','17');
+        sr.setAttribute('fill','none'); sr.setAttribute('stroke','#c8a84b'); sr.setAttribute('stroke-width','1.5');
+        sr.setAttribute('stroke-dasharray','3,2'); sr.setAttribute('pointer-events','none'); svg.appendChild(sr);
+      }
+    });
+
+    // Enemy base attack highlight
+    if (this.pact==='atk') {
+      const [bq,br,bs] = this.ap==='A'?BASE_B:BASE_A;
+      if (vs.has(cK(bq,br))) {
+        const [px,py] = c2p(bq,br);
+        const cx=px+ox, cy=py+oy;
+        const r2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        r2.setAttribute('cx',cx); r2.setAttribute('cy',cy); r2.setAttribute('r','20');
+        r2.setAttribute('fill','none'); r2.setAttribute('stroke','#cc3333'); r2.setAttribute('stroke-width','3');
+        r2.setAttribute('pointer-events','none'); svg.appendChild(r2);
+      }
+    }
+  }
+}
+
+// ── CSS for keyword badges (injected once) ─────────────────
+const kwStyle = document.createElement('style');
+kwStyle.textContent = `.kw-badge {
+  display:inline-block; font-size:.48rem; padding:1px 5px;
+  border:1px solid; border-radius:2px;
+  font-family:'Cinzel',serif; letter-spacing:1px;
+  white-space:nowrap;
+}`;
+document.head.appendChild(kwStyle);
+
+// ── Boot ───────────────────────────────────────────────────
+const G = new Engine();
+
+</script>
 </body>
 </html>
