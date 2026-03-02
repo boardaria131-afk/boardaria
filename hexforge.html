@@ -11,6 +11,7 @@
 
 
 
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
 
@@ -545,6 +546,9 @@ svg#board { display: block; overflow: visible; }
 </div>
 
 <!-- ── Scripts (engine first, then UI) ─────────────────── -->
+
+
+
 
 
 
@@ -1245,8 +1249,8 @@ function validMoves(S, uid) {
         if (!c || c.type === 'EMPTY') break;
         if (aquatic && c.type !== 'WELL') break;
         if (!aquatic && c.type === 'WELL') break;
-        if (c.type === 'BASE' && c.owner !== u.own) break;
-        if (c.type === 'LAND' && c.owner !== u.own) break;
+        if (c.type === 'BASE' && c.owner !== u.own) break; // can't enter enemy base
+        // Enemy LAND is passable — unit can move onto it
         if (unitAt(S,cq,cr,cs)) break; // blocked by unit — can't pass or land
         result.set(k, [cq,cr,cs]);
       }
@@ -1276,8 +1280,8 @@ function validMoves(S, uid) {
         }
         if (aquatic && c.type !== 'WELL') return;
         if (!aquatic && c.type === 'WELL') return;
-        if (c.type === 'BASE' && c.owner !== u.own) return;
-        if (c.type === 'LAND' && c.owner !== u.own) return;
+        if (c.type === 'BASE' && c.owner !== u.own) return; // can't enter enemy base
+        // Enemy LAND is passable
         if (!unitAt(S,nq,nr,ns)) result.set(k, [nq,nr,ns]);
         frontier.push([nq,nr,ns,d+1]); // can jump OVER occupied
       });
@@ -1294,8 +1298,8 @@ function validMoves(S, uid) {
           if (!c||c.type==='EMPTY') break;
           if (aquatic && c.type!=='WELL') break;
           if (!aquatic && c.type==='WELL') break;
-          if (c.type==='BASE'&&c.owner!==u.own) break;
-          if (c.type==='LAND'&&c.owner!==u.own) break;
+          if (c.type==='BASE'&&c.owner!==u.own) break; // can't enter enemy base
+          // Enemy LAND is passable
           if (unitAt(S,cq,cr2,cs2)) break;
           if (step > 2) result.set(k,[cq,cr2,cs2]);
         }
@@ -1351,8 +1355,8 @@ function validMoves(S, uid) {
         frontier.push([nq,nr,ns,d+1]);
         return;
       }
-      if (c.type === 'BASE' && c.owner !== u.own) return;
-      if (c.type === 'LAND' && c.owner !== u.own) return;
+      if (c.type === 'BASE' && c.owner !== u.own) return; // can't enter enemy base
+      // Enemy LAND is passable — units can move onto enemy territory
       if (unitAt(S,nq,nr,ns)) return;
       result.set(k,[nq,nr,ns]);
       frontier.push([nq,nr,ns,d+1]);
@@ -1735,7 +1739,11 @@ class Engine {
     mp.style.display = '';
 
     const hand = S.players[p].hand;
-    const cardsHtml = hand.map(id => {
+    // Explore is not part of mulligan — it's automatically kept
+    const mulliganCards = hand.filter(id => id !== 'explore');
+    const hasExplore = hand.includes('explore');
+
+    const cardsHtml = mulliganCards.map(id => {
       const cd = cardData(id);
       if (!cd) return '';
       const col = { blue:'#3a8acc', green:'#4a9e40', red:'#cc4444', yellow:'#d4982a', neutral:'#8a9ab0' }[cd.color] || '#8a9ab0';
@@ -1747,9 +1755,15 @@ class Engine {
                background:${bg};min-width:90px;max-width:110px;text-align:center;transition:all .15s">
         <div style="font-family:'Cinzel',serif;font-size:.58rem;color:${col};margin-bottom:3px">${cd.name}</div>
         ${atk!=null?`<div style="font-size:.65rem;color:#aaa">⚔${atk} ♥${hp}</div>`:''}
-        <div style="font-size:.5rem;color:var(--dim);margin-top:2px">${cd.cost}◆</div>
+        <div style="font-size:.5rem;color:var(--dim);margin-top:2px">${cd.cost>0?cd.cost+'◆':'kostenlos'}</div>
       </div>`;
     }).join('');
+
+    const exploreNote = hasExplore
+      ? `<div style="font-size:.55rem;color:#c8a84b;margin-bottom:10px;font-family:'Cinzel',serif">
+           ✦ Explore wird automatisch zu deiner Hand hinzugefügt
+         </div>`
+      : '';
 
     mp.innerHTML = `
       <div class="sc-sub">Mulligan</div>
@@ -1757,6 +1771,7 @@ class Engine {
       <div style="font-size:.65rem;color:var(--dim);margin:8px 0 14px;font-family:'Cinzel',serif;letter-spacing:1px">
         Wähle Karten zum Ersetzen (oder keine)
       </div>
+      ${exploreNote}
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
         ${cardsHtml}
       </div>
@@ -1908,8 +1923,13 @@ class Engine {
     switch (S.phase) {
 
       case 'DRAW':
-        deal(S, this.ap, 1);
-        lg(S, this.ap, 'Karte gezogen');
+        // Round 1: no card draw (players already have their starting hand from mulligan)
+        if (S.turn === 1) {
+          lg(S, this.ap, 'Runde 1 — kein Kartenzug');
+        } else {
+          deal(S, this.ap, 1);
+          lg(S, this.ap, 'Karte gezogen');
+        }
         this._auto(350);
         break;
 
@@ -2671,6 +2691,20 @@ class Engine {
       bar.setAttribute('fill', u.own==='A'?'#aa2222':'#2244aa');
       bar.setAttribute('rx','1.5'); bar.setAttribute('pointer-events','none');
       svg.appendChild(bar);
+
+      // ATK / HP numbers below unit
+      const statAtk = effAtk(u);
+      const statHp  = u.hp;
+      const statT = document.createElementNS('http://www.w3.org/2000/svg','text');
+      statT.setAttribute('x', cx);
+      statT.setAttribute('y', cy + 27);
+      statT.setAttribute('text-anchor','middle');
+      statT.setAttribute('font-size','7.5');
+      statT.setAttribute('font-family','Cinzel,serif');
+      statT.setAttribute('pointer-events','none');
+      // ATK in orange-red, HP in green
+      statT.innerHTML = `<tspan fill="#e07040">⚔${statAtk}</tspan><tspan fill="#888"> </tspan><tspan fill="#50b050">♥${statHp}</tspan>`;
+      svg.appendChild(statT);
 
       // ATK buff indicator (yellow dot)
       if (u.atkBuff > 0) {
