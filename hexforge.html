@@ -10,6 +10,7 @@
 
 
 
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
 
@@ -544,6 +545,9 @@ svg#board { display: block; overflow: visible; }
 </div>
 
 <!-- ── Scripts (engine first, then UI) ─────────────────── -->
+
+
+
 
 
 
@@ -2740,18 +2744,19 @@ class Engine {
   }
 }
 
-// ── CSS for keyword badges (injected once) ─────────────────
-const kwStyle = document.createElement('style');
-kwStyle.textContent = `.kw-badge {
+
+// ── Boot ───────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const kwStyle = document.createElement('style');
+  kwStyle.textContent = `.kw-badge {
   display:inline-block; font-size:.48rem; padding:1px 5px;
   border:1px solid; border-radius:2px;
   font-family:'Cinzel',serif; letter-spacing:1px;
   white-space:nowrap;
 }`;
-document.head.appendChild(kwStyle);
-
-// ── Boot ───────────────────────────────────────────────────
-const G = new Engine();
+  document.head.appendChild(kwStyle);
+  window.G = new Engine();
+});
 
 </script>
 </body>
