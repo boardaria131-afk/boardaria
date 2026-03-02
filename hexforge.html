@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HexForge</title>
-  <style>
+  
+<style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
 
 /* ── Design Tokens ─────────────────────────────────────── */
@@ -470,8 +471,9 @@ svg#board { display: block; overflow: visible; }
     <svg id="board"></svg>
     <div id="abar">
       <button class="ab"    id="btn-land"   onclick="G.openLandMenu()">⬡ Land / Aktion</button>
-      <button class="ab pr" id="btn-next"   onclick="G.nextPhase()">Phase ▶</button>
+      <button class="ab pr" id="btn-next"   onclick="G.endTurn()">Zug beenden ▶</button>
       <button class="ab dn" id="btn-cancel" onclick="G.cancelSel()">✕ Abbruch</button>
+      <div id="action-hint" style="font-size:.6rem;color:var(--gold);letter-spacing:1px;margin-top:6px;min-height:1em;font-family:'Cinzel',serif;text-align:center"></div>
     </div>
   </div>
 
@@ -537,6 +539,9 @@ svg#board { display: block; overflow: visible; }
 </div>
 
 <!-- ── Scripts (engine first, then UI) ─────────────────── -->
+
+
+
 
 
 
@@ -713,10 +718,11 @@ const LF = { N:'#1e2530', F:'#1a3a18', D:'#3a2810', M:'#22222e', W:'#0d1e3a' };
 const LS = { N:'#3a4a60', F:'#2d5a27', D:'#6a4a18', M:'#4a4a60', W:'#1a4a7a' };
 
 // ── Phase sequence ─────────────────────────────────────────
-const PHASES = ['DRAW','LAND_OR_BOOST','MANA','PLAY','MOVE','ATTACK','CLEANUP'];
+// DRAW and MANA run automatically.
+// FREE is the single interactive phase where all actions are allowed.
+const PHASES = ['DRAW','MANA','FREE','CLEANUP'];
 const PN = {
-  DRAW:'Ziehen', LAND_OR_BOOST:'Land/Boost', MANA:'Mana',
-  PLAY:'Spielen', MOVE:'Bewegen', ATTACK:'Angriff', CLEANUP:'Aufräumen'
+  DRAW:'Ziehen', MANA:'Mana', FREE:'Freier Zug', CLEANUP:'Aufräumen'
 };
 
 // ══════════════════════════════════════════════════════════
@@ -1407,6 +1413,7 @@ class Engine {
     this.selUnit     = null;
     this.pact        = null;
     this.vt          = [];
+    this.landN_left  = 0;
     this.handVisible = false; // only shown after player confirms
 
     this._render();
@@ -1472,6 +1479,10 @@ class Engine {
   }
 
   // ── Phase Loop ──────────────────────────────────────────
+  // ── Phase Loop ──────────────────────────────────────────
+  // DRAW and MANA run automatically.
+  // FREE is the single interactive phase.
+  // "Zug beenden" triggers CLEANUP.
   _runPhase() {
     const S = this.S;
     if (S.winner) { this._win(); return; }
@@ -1491,16 +1502,20 @@ class Engine {
         S.players[this.ap].mana += inc;
         if (S.players[this.ap].boostUsed) S.players[this.ap].mana += 1;
         lg(S, this.ap, `+${inc} Mana → ${S.players[this.ap].mana}`);
-        // Run Production hooks (onTurnStart)
         runProduction(S, this.ap);
         this._auto(350);
         break;
       }
 
+      case 'FREE':
+        // Interactive — wait for player input
+        break;
+
       case 'CLEANUP':
         doCleanup(S);
         S.players[this.ap].boostUsed = false;
-        S.lobDone = false;
+        S.lobDone   = false;
+        S.landNLeft = 0;
         lg(S, this.ap, '— Runde Ende —');
         if (this.ap === 'B') S.turn++;
         S.ap    = this.ap === 'A' ? 'B' : 'A';
@@ -1526,12 +1541,20 @@ class Engine {
     this._runPhase();
   }
 
-  nextPhase() { this._adv(); }
+  // "Zug beenden" — only available during FREE phase
+  endTurn() {
+    const S = this.S;
+    if (S.phase !== 'FREE') return;
+    this._clr();
+    S.phase     = 'CLEANUP';
+    S.phaseStep = PHASES.indexOf('CLEANUP');
+    this._runPhase();
+  }
 
   // ── Radial Land Menu ────────────────────────────────────
   openLandMenu() {
     const S = this.S;
-    if (S.phase !== 'LAND_OR_BOOST' || S.lobDone) return;
+    if (S.phase !== 'FREE' || S.lobDone) return;
     this._buildSVGMenu();
     document.getElementById('rmenu').classList.add('on');
   }
@@ -1670,18 +1693,13 @@ class Engine {
       return;
     }
     if (id === 'land_N') {
-      const spots = adjPlace(S, this.ap);
-      let placed = 0;
-      for (const [qq,rr,ss] of spots) {
-        if (placed >= 2) break;
-        if (!unitAt(S,qq,rr,ss)) {
-          S.cells[cK(qq,rr)] = { type:'LAND', owner:this.ap, landType:'N' };
-          placed++;
-        }
-      }
-      S.lobDone = true;
-      lg(S, this.ap, '2× Grasland platziert');
-      this._render(); this._auto(300);
+      // Player picks both neutral tiles manually
+      this.selCard      = 'land_N';
+      this.pact         = 'land_N';
+      this.landN_left   = 2;           // still need to place 2 tiles
+      this.vt           = adjPlace(S, this.ap);
+      lg(S, this.ap, '2× Grasland — wähle 1. Feld');
+      this._render();
       return;
     }
 
@@ -1701,7 +1719,7 @@ class Engine {
     // Land cards → radial menu
     if (isLandCard(cd)) { this.openLandMenu(); return; }
 
-    if (S.phase !== 'PLAY' && S.phase !== 'ATTACK') return;
+    if (S.phase !== 'FREE') return;
     if (!canPlay(S, this.ap, id)) return;
 
     this.selCard = id;
@@ -1746,15 +1764,22 @@ class Engine {
     const S = this.S;
     const u = S.units[uid];
     if (!u || u.own !== this.ap) return;
+    if (S.phase !== 'FREE') return;
+
     this.selCard = null;
     this.selUnit = uid;
 
-    if (S.phase === 'MOVE') {
+    // Prefer move if not yet moved, otherwise attack
+    if (!u.summonSick && !u.moved) {
       this.pact = 'move';
       this.vt   = validMoves(S, uid);
-    } else if (S.phase === 'ATTACK') {
+    } else if (!u.summonSick && !u.atked) {
       this.pact = 'atk';
       this.vt   = validAtks(S, uid).map(t => [t.q,t.r,t.s]);
+    } else {
+      // Already acted — still select to show stats
+      this.pact = null;
+      this.vt   = [];
     }
     this._showUD(u);
     this._render();
@@ -1778,6 +1803,22 @@ class Engine {
         return;
       }
 
+      // Doppel-Neutral: player picks both tiles manually
+      if (this.pact === 'land_N') {
+        S.cells[cK(q,r)] = { type:'LAND', owner:this.ap, landType:'N' };
+        this.landN_left--;
+        if (this.landN_left > 0) {
+          this.vt = adjPlace(S, this.ap).filter(([qq,rr]) => cK(qq,rr) !== cK(q,r));
+          lg(S, this.ap, '1. Grasland gesetzt — wähle 2. Feld');
+          this._render();
+        } else {
+          S.lobDone = true;
+          lg(S, this.ap, '2× Grasland platziert');
+          this._clr(); this._render();
+        }
+        return;
+      }
+
       if (this.pact === 'unit') {
         doPlay(S, this.ap, this.selCard, q, r, s);
         this._clr();
@@ -1795,6 +1836,15 @@ class Engine {
           u.moved = true;
           updWells(S);
           lg(S, this.ap, `${cardData(u.cid)?.name || u.id} bewegt`);
+          // Auto-switch to attack if targets available
+          const atks = validAtks(S, this.selUnit);
+          if (atks.length > 0) {
+            this.pact = 'atk';
+            this.vt   = atks.map(t => [t.q,t.r,t.s]);
+            this._showUD(u);
+            this._render();
+            return;
+          }
         }
         this._clr();
       }
@@ -1820,7 +1870,7 @@ class Engine {
     if (u) this.selUnitFn(u.id);
   }
 
-  _clr() { this.selCard=null; this.selUnit=null; this.pact=null; this.vt=[]; }
+  _clr() { this.selCard=null; this.selUnit=null; this.pact=null; this.vt=[]; this.landN_left=0; }
   cancelSel() { this._clr(); this._render(); }
 
   // ── Unit Detail Panel ───────────────────────────────────
@@ -1881,20 +1931,38 @@ class Engine {
 
   _rPhase() {
     const S = this.S;
-    document.getElementById('ph-name').textContent = PN[S.phase] || S.phase;
-    document.getElementById('ph-dots').innerHTML   = PHASES.map((ph,i) =>
-      `<span class="pdot ${i<S.phaseStep?'done':i===S.phaseStep?'cur':''}" title="${PN[ph]}"></span>`
+    const labels = { DRAW:'Ziehen', MANA:'Mana', FREE:'Freier Zug', CLEANUP:'Aufräumen' };
+    const phases = ['DRAW','MANA','FREE','CLEANUP'];
+    document.getElementById('ph-name').textContent = labels[S.phase] || S.phase;
+    const cur = phases.indexOf(S.phase);
+    document.getElementById('ph-dots').innerHTML = phases.map((ph, i) =>
+      `<span class="pdot ${i < cur ? 'done' : i === cur ? 'cur' : ''}" title="${labels[ph]}"></span>`
     ).join('');
   }
 
   _rBtns() {
-    const S = this.S;
-    document.getElementById('btn-land').disabled   = S.phase!=='LAND_OR_BOOST'||S.lobDone;
-    document.getElementById('btn-cancel').disabled = !this.pact&&!this.selUnit;
-    const auto = ['DRAW','MANA','CLEANUP'];
-    const nb   = document.getElementById('btn-next');
-    nb.disabled    = auto.includes(S.phase);
-    nb.textContent = auto.includes(S.phase) ? '⟳ Auto' : 'Phase ▶';
+    const S    = this.S;
+    const free = S.phase === 'FREE';
+
+    document.getElementById('btn-land').disabled   = !free || S.lobDone;
+    document.getElementById('btn-cancel').disabled = !this.pact && !this.selUnit;
+
+    const nb = document.getElementById('btn-next');
+    nb.disabled    = !free || !!this.pact;
+    nb.textContent = free ? 'Zug beenden ▶' : '⟳ Auto';
+
+    // Action hint
+    const hint = document.getElementById('action-hint');
+    if (hint) {
+      if      (this.pact === 'land')   hint.textContent = '🗺 Klicke ein Feld um Land zu platzieren';
+      else if (this.pact === 'land_N') hint.textContent = `🗺 Grasland ${3 - this.landN_left}/2 — wähle ein Feld`;
+      else if (this.pact === 'unit')   hint.textContent = '⚔ Klicke ein eigenes Feld zum Beschwören';
+      else if (this.pact === 'move')   hint.textContent = '➤ Klicke ein Zielfeld zum Bewegen';
+      else if (this.pact === 'atk')    hint.textContent = '⚔ Klicke ein Ziel zum Angreifen';
+      else if (this.pact === 'inst')   hint.textContent = '✨ Klicke ein Ziel für den Zauber';
+      else if (free)                   hint.textContent = 'Wähle eine Karte oder Einheit — oder beende deinen Zug';
+      else                             hint.textContent = '';
+    }
   }
 
   _rHand() {
@@ -1965,12 +2033,9 @@ class Engine {
     const S  = this.S;
     const cd = cardData(id);
     if (!cd) return false;
-    if (isLandCard(cd))
-      return S.phase==='LAND_OR_BOOST' && !S.lobDone;
-    if (isUnitCard(cd))
-      return S.phase==='PLAY' && canPlay(S, this.ap, id);
-    if (isInstantCard(cd))
-      return (S.phase==='PLAY'||S.phase==='ATTACK') && canPlay(S, this.ap, id);
+    if (isLandCard(cd))    return S.phase==='FREE' && !S.lobDone;
+    if (isUnitCard(cd))    return S.phase==='FREE' && canPlay(S, this.ap, id);
+    if (isInstantCard(cd)) return S.phase==='FREE' && canPlay(S, this.ap, id);
     return false;
   }
 
