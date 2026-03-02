@@ -8,6 +8,8 @@
 
 
 
+
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
 
@@ -562,8 +564,14 @@ svg#board { display: block; overflow: visible; }
 
 
 
+
+
+
+
+
+
 <script>
-// ── hexforge-cards.js ──────────────────────────────────
+// ── hexforge-cards.js ──
 // ╔══════════════════════════════════════════════════════════╗
 //  HEXFORGE — CARD DATABASE (50 starter cards)
 //  color: blue | green | red | yellow | neutral
@@ -662,7 +670,7 @@ function allCards()          { return Object.values(CARD_DB); }
 
 </script>
 <script>
-// ── hexforge-engine.js ─────────────────────────────────
+// ── hexforge-engine.js ──
 // ╔══════════════════════════════════════════════════════════╗
 //  HEXFORGE ENGINE  v2
 //  Board geometry · Keyword system · State · Combat · Rules
@@ -1013,10 +1021,34 @@ function mkState() {
     else                     S.cells[k] = { type:'EMPTY' };
   });
 
-  deal(S,'A',5); deal(S,'B',5);
+  deal(S,'A',3); deal(S,'B',3);
   // Player B starts with Explore in hand to offset going second
   S.players['B'].hand.unshift('explore');
+  // Mulligan phase: each player will see their 3 cards and can replace any
+  S.mulligan = { active: true, phase: 'A' }; // UI will handle the mulligan flow
   return S;
+}
+
+// ── Mulligan: replace chosen cards, removing all copies from deck ──────────
+function doMulligan(S, p, replaceIds) {
+  const pl = S.players[p];
+
+  // Remove chosen cards from hand
+  replaceIds.forEach(id => {
+    const idx = pl.hand.indexOf(id);
+    if (idx !== -1) pl.hand.splice(idx, 1);
+  });
+
+  // Remove ALL copies of chosen card IDs from the deck
+  const toRemove = new Set(replaceIds);
+  pl.deck = pl.deck.filter(id => !toRemove.has(id));
+
+  // Draw replacement cards
+  deal(S, p, replaceIds.length);
+
+  // The replaced cards are set aside (not in deck, not in hand, not in grave)
+  // They simply no longer exist in this game — simulated by removing from deck above
+  lg(S, p, `Mulligan: ${replaceIds.length} Karte${replaceIds.length!==1?'n':''} ersetzt`);
 }
 
 // ── Helpers ────────────────────────────────────────────────
@@ -1088,26 +1120,53 @@ function updWells(S) {
   });
 }
 
+// Called after every unit movement — grants mana for newly controlled wells
+function harvestMana(S, p) {
+  const prev = S._prevWellCtrl || {};
+  updWells(S);
+  let gained = 0;
+  WELLS.forEach(([wq,wr,ws]) => {
+    const k = cK(wq,wr);
+    const c = S.cells[k];
+    const wasCtrl = prev[k];
+    const isCtrl  = c?.ctrl === p;
+    // Grant mana only if this player newly controls this well this turn
+    if (isCtrl && wasCtrl !== p) {
+      gained += WELL_MANA;
+    }
+  });
+  if (gained > 0) {
+    S.players[p].mana += gained;
+    lg(S, p, `⬡ Well geerntet: +${gained} Mana → ${S.players[p].mana}`);
+  }
+  // Save current state for next comparison
+  S._prevWellCtrl = {};
+  WELLS.forEach(([wq,wr,ws]) => {
+    const k = cK(wq,wr);
+    S._prevWellCtrl[k] = S.cells[k]?.ctrl || null;
+  });
+  return gained;
+}
+
 function manaInc(S, p) {
   updWells(S);
 
+  // Reset harvest tracking for the new turn
+  // Wells already controlled at turn start grant mana via the MANA phase,
+  // not again during the turn via harvestMana.
+  S._prevWellCtrl = {};
+  WELLS.forEach(([wq,wr,ws]) => {
+    const k = cK(wq,wr);
+    S._prevWellCtrl[k] = S.cells[k]?.ctrl || null;
+  });
+
   // ── Faeria Harvest Order ─────────────────────────────────
-  // Columns left→right (from active player's perspective),
-  // within each column top→bottom (toward enemy base = top).
-  // For Player A: top = negative r (toward BASE_B at r=+3)
-  //               columns: q from negative (left) to positive (right)
-  // For Player B (mirrored): top = positive r, columns q positive→negative
-  // Wells are sorted accordingly.
   const orderedWells = [...WELLS].sort(([q1,r1], [q2,r2]) => {
     if (p === 'A') {
-      // Column order: q ascending (left=negative q is player A's left)
       if (q1 !== q2) return q1 - q2;
-      // Within column: top = toward enemy (r ascending for A, enemy at r=+3)
       return r1 - r2;
     } else {
-      // For B, board is flipped: left side has positive q
       if (q1 !== q2) return q2 - q1;
-      // Within column: top = toward enemy (r descending for B, enemy at r=-3)
       return r2 - r1;
     }
   });
@@ -1572,7 +1631,7 @@ function doCleanup(S) {
 
 </script>
 <script>
-// ── hexforge-ui.js ─────────────────────────────────────
+// ── hexforge-ui.js ──
 // ╔══════════════════════════════════════════════════════════╗
 //  HEXFORGE UI  v2
 //  Uses Engine v2: cardData(), mkUnit(), doCleanup(), keywords
@@ -1639,16 +1698,137 @@ class Engine {
     this.pact        = null;
     this.vt          = [];
     this.landN_left  = 0;
-    this.handVisible = false; // only shown after player confirms
+    this.handVisible = false;
+    this.mulliganSel = new Set(); // cards selected for replacement
 
     this._render();
-    this._showReady(this.S.ap); // first screen: Player A confirms ready
+    // Start with Mulligan for Player A
+    this._showMulligan('A');
   }
 
   get ap() { return this.S.ap; }
 
+  // ── Mulligan UI ────────────────────────────────────────
+  _showMulligan(p) {
+    const S    = this.S;
+    const name = S.playerNames?.[p] || `Spieler ${p}`;
+    this.mulliganSel.clear();
+    this.handVisible = false;
+    this._rHand();
+
+    // Build mulligan panel inside sw-ov
+    document.getElementById('sw-pass').style.display  = 'none';
+    document.getElementById('sw-ready').style.display = 'none';
+
+    // Reuse sw-ov with a custom panel
+    let mp = document.getElementById('sw-mulligan');
+    if (!mp) {
+      mp = document.createElement('div');
+      mp.id        = 'sw-mulligan';
+      mp.className = 'sw-panel';
+      document.getElementById('sw-ov').appendChild(mp);
+    }
+    mp.style.display = '';
+
+    const hand = S.players[p].hand;
+    const cardsHtml = hand.map(id => {
+      const cd = cardData(id);
+      if (!cd) return '';
+      const col = { blue:'#3a8acc', green:'#4a9e40', red:'#cc4444', yellow:'#d4982a', neutral:'#8a9ab0' }[cd.color] || '#8a9ab0';
+      const bg  = { blue:'#0d1e3a', green:'#0d1e0d', red:'#1e0808', yellow:'#1e1008', neutral:'#111418' }[cd.color] || '#111418';
+      const atk = cd.atk ?? cd.power;
+      const hp  = cd.hp  ?? cd.life;
+      return `<div id="mull-${id}" onclick="G.toggleMulligan('${id}')"
+        style="cursor:pointer;border:2px solid #252d40;border-radius:6px;padding:6px 8px;
+               background:${bg};min-width:90px;max-width:110px;text-align:center;transition:all .15s">
+        <div style="font-family:'Cinzel',serif;font-size:.58rem;color:${col};margin-bottom:3px">${cd.name}</div>
+        ${atk!=null?`<div style="font-size:.65rem;color:#aaa">⚔${atk} ♥${hp}</div>`:''}
+        <div style="font-size:.5rem;color:var(--dim);margin-top:2px">${cd.cost}◆</div>
+      </div>`;
+    }).join('');
+
+    mp.innerHTML = `
+      <div class="sc-sub">Mulligan</div>
+      <div class="sc-nm ${p}">${name.toUpperCase()}</div>
+      <div style="font-size:.65rem;color:var(--dim);margin:8px 0 14px;font-family:'Cinzel',serif;letter-spacing:1px">
+        Wähle Karten zum Ersetzen (oder keine)
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
+        ${cardsHtml}
+      </div>
+      <div style="font-size:.55rem;color:var(--dim);margin-bottom:14px;font-family:'Cinzel',serif">
+        Ersetzte Karten können nicht erneut gezogen werden
+      </div>
+      <button onclick="G.confirmMulligan('${p}')">Bestätigen ▶</button>`;
+
+    document.getElementById('sw-ov').classList.add('on');
+  }
+
+  toggleMulligan(id) {
+    const el = document.getElementById(`mull-${id}`);
+    if (!el) return;
+    if (this.mulliganSel.has(id)) {
+      this.mulliganSel.delete(id);
+      el.style.borderColor = '#252d40';
+      el.style.boxShadow   = '';
+      el.style.opacity     = '1';
+    } else {
+      this.mulliganSel.add(id);
+      el.style.borderColor = '#cc3333';
+      el.style.boxShadow   = '0 0 8px #cc3333';
+      el.style.opacity     = '0.6';
+    }
+  }
+
+  confirmMulligan(p) {
+    const S = this.S;
+    doMulligan(S, p, [...this.mulliganSel]);
+    this.mulliganSel.clear();
+
+    const mp = document.getElementById('sw-mulligan');
+    if (mp) mp.style.display = 'none';
+    document.getElementById('sw-ov').classList.remove('on');
+
+    if (p === 'A') {
+      // Player A done — now Player B's mulligan (pass device)
+      this.handVisible = false;
+      this._rHand();
+      // Show pass-device screen before B's mulligan
+      document.getElementById('sw-pass').style.display  = '';
+      document.getElementById('sw-ready').style.display = 'none';
+      const nameA = S.playerNames?.['A'] || 'Spieler A';
+      const nameB = S.playerNames?.['B'] || 'Spieler B';
+      const el = document.getElementById('sw-pass-name');
+      el.textContent = nameA.toUpperCase();
+      el.className   = `sc-nm A`;
+      document.getElementById('sw-next-name').textContent = nameB;
+      // Override button to go to B mulligan
+      const btn = document.querySelector('#sw-pass button');
+      if (btn) btn.setAttribute('onclick', "G.startBMulligan()");
+      document.getElementById('sw-ov').classList.add('on');
+    } else {
+      // Both mulligans done — start the game
+      S.mulligan = { active: false };
+      this._startGame();
+    }
+  }
+
+  startBMulligan() {
+    document.getElementById('sw-ov').classList.remove('on');
+    this._showMulligan('B');
+    // Restore original pass button handler
+    const btn = document.querySelector('#sw-pass button');
+    if (btn) btn.setAttribute('onclick', "G.handOff()");
+  }
+
+  _startGame() {
+    // Game starts — hand will reveal when FREE phase begins
+    this.handVisible = false;
+    this._render();
+    this._showReady(this.S.ap);
+  }
+
   // ── Pass & Play ────────────────────────────────────────
-  // Step 1: outgoing player sees "pass device" screen (hand already hidden)
   _showSwitch(incoming) {
     const S      = this.S;
     const out    = incoming === 'A' ? 'B' : 'A';
@@ -1656,7 +1836,7 @@ class Engine {
     const outName= S.playerNames?.[out]      || `Spieler ${out}`;
 
     this.handVisible = false;
-    this._rHand(); // wipe hand immediately
+    this._rHand();
 
     document.getElementById('sw-pass').style.display  = '';
     document.getElementById('sw-ready').style.display = 'none';
@@ -1665,6 +1845,9 @@ class Engine {
     el.textContent = outName.toUpperCase();
     el.className   = `sc-nm ${out}`;
     document.getElementById('sw-next-name').textContent = inName;
+    // Restore standard handler
+    const btn = document.querySelector('#sw-pass button');
+    if (btn) btn.setAttribute('onclick', 'G.handOff()');
     document.getElementById('sw-ov').classList.add('on');
   }
 
@@ -1681,17 +1864,21 @@ class Engine {
     el.className   = `sc-nm ${p}`;
   }
 
-  // Step 2 confirm: reveal hand and start turn
+  // Step 2 confirm: start turn (hand will reveal when FREE phase begins)
   dismissSwitch() {
-    this.handVisible = true;
+    this.handVisible = false;
     document.getElementById('sw-ov').classList.remove('on');
     this._render();
     this._runPhase();
   }
 
-  // Helper: show "ready" directly (used for first turn)
+  // Helper: show "ready" directly (used for first turn / after mulligan)
   _showReady(p) {
     const name = this.S.playerNames?.[p] || `Spieler ${p}`;
+
+    // Hide mulligan panel if present
+    const mp = document.getElementById('sw-mulligan');
+    if (mp) mp.style.display = 'none';
 
     document.getElementById('sw-pass').style.display  = 'none';
     document.getElementById('sw-ready').style.display = '';
@@ -1723,16 +1910,19 @@ class Engine {
         break;
 
       case 'MANA': {
+        // Mana resets each turn to the base income (not accumulated)
         const inc = manaInc(S, this.ap);
-        S.players[this.ap].mana += inc;
-        if (S.players[this.ap].boostUsed) S.players[this.ap].mana += 1;
-        lg(S, this.ap, `+${inc} Mana → ${S.players[this.ap].mana}`);
+        const boost = S.players[this.ap].boostUsed ? 1 : 0;
+        S.players[this.ap].mana = inc + boost;
+        lg(S, this.ap, `Mana: ${inc}${boost?' +'+boost+' Boost':''} = ${S.players[this.ap].mana}`);
         runProduction(S, this.ap);
         this._auto(350);
         break;
       }
 
       case 'FREE':
+        // Reveal hand now — correct player confirmed, all auto phases complete
+        this.handVisible = true;
         // Interactive — wait for player input
         break;
 
@@ -2086,7 +2276,7 @@ class Engine {
         if (u) {
           u.q = q; u.r = r; u.s = s;
           u.moved = true;
-          updWells(S);
+          harvestMana(S, this.ap); // grant mana for newly controlled wells
           lg(S, this.ap, `${cardData(u.cid)?.name || u.id} bewegt`);
           // Auto-switch to attack if targets available
           const atks = validAtks(S, this.selUnit);
@@ -2171,7 +2361,10 @@ class Engine {
       document.getElementById(`hp-${p}`).textContent    = S.players[p].hp;
       document.getElementById(`mana-${p}`).textContent  = S.players[p].mana;
       document.getElementById(`cards-${p}`).textContent = `${S.players[p].hand.length}/${S.players[p].deck.length}`;
-      document.getElementById(`wells-${p}`).textContent = ctrlWells(S, p);
+      // Wells: show count and Faeria income per turn
+      const wc = ctrlWells(S, p);
+      const wi = wc * WELL_MANA;
+      document.getElementById(`wells-${p}`).textContent = wc > 0 ? `${wc} (+${wi}/Zug)` : '0';
       document.getElementById(`hpbar-${p}`).style.width = `${S.players[p].hp/BASE_HP*100}%`;
     });
     document.getElementById('rnd').textContent = S.turn;
