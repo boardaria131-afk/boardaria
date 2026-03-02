@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HexForge</title>
   
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
 
@@ -550,6 +551,9 @@ svg#board { display: block; overflow: visible; }
 
 
 
+
+
+
 <script>
 // ── hexforge-cards.js ──────────────────────────────────
 // ╔══════════════════════════════════════════════════════════╗
@@ -680,7 +684,8 @@ const WELL_MANA = 2;
 const HAND_MAX  = 7;
 
 // ── Cube Coordinate Helpers ────────────────────────────────
-const CDIRS = [[1,-1,0],[-1,1,0],[1,0,-1],[-1,0,1],[0,1,-1],[0,-1,1]];
+const CDIRS    = [[1,-1,0],[-1,1,0],[1,0,-1],[-1,0,1],[0,1,-1],[0,-1,1]];
+const HEX_DIRS = CDIRS; // alias for directional movement (charge, ranged LOS)
 
 function cK(q, r)      { return `${q},${r},${-q-r}`; }
 function pK(k)          { return k.split(',').map(Number); }
@@ -1075,90 +1080,223 @@ function adjPlace(S, p) {
 }
 
 // ══════════════════════════════════════════════════════════
-//  MOVEMENT BFS  (Flying / Jump / Aquatic)
+//  MOVEMENT  (Flying / Jump / Charge / Aquatic)
+//  Rules per Faeria documentation:
+//  - Flying: move over ocean/land but NOT through other units
+//  - Jump: up to 2 tiles, any direction, leap over obstacles
+//  - Charge N: move 1-N spaces in a STRAIGHT LINE
+//  - Aquatic: only lake/WELL tiles; drowns on non-lake land at end of turn
+//  - Jump+Charge: jump range (≤2) unrestricted direction; beyond 2 = straight charge
 // ══════════════════════════════════════════════════════════
 function validMoves(S, uid) {
-  const u=S.units[uid];
-  if (!u||u.summonSick||u.moved||u.atked) return [];
+  const u = S.units[uid];
+  if (!u || u.summonSick || u.moved) return [];
 
   const flying  = u.kw.has('flying');
   const jump    = u.kw.has('jump');
   const aquatic = u.kw.has('aquatic');
+  const charge  = kwCharge(u.kw) > 1; // charge:N means straight-line movement up to N
+  const chargeN = kwCharge(u.kw);
+  const bew     = u.bew;
 
-  const visited  = new Set([cK(u.q,u.r)]);
+  const result = new Map(); // cK → [q,r,s]
+
+  if (charge && !jump) {
+    // ── Charge only: straight lines up to chargeN steps ──
+    // Use bew for total movement range if bew > chargeN, otherwise chargeN
+    const maxSteps = Math.max(bew, chargeN);
+    HEX_DIRS.forEach(([dq, dr, ds]) => {
+      let cq = u.q, cr = u.r, cs = u.s;
+      for (let step = 1; step <= maxSteps; step++) {
+        cq += dq; cr += dr; cs += ds;
+        if (!inB(cq,cr,cs)) break;
+        const k = cK(cq,cr);
+        const c = S.cells[k];
+        if (!c || c.type === 'EMPTY') break;
+        if (aquatic && c.type !== 'WELL') break;
+        if (!aquatic && c.type === 'WELL') break;
+        if (c.type === 'BASE' && c.owner !== u.own) break;
+        if (c.type === 'LAND' && c.owner !== u.own) break;
+        if (unitAt(S,cq,cr,cs)) break; // blocked by unit — can't pass or land
+        result.set(k, [cq,cr,cs]);
+      }
+    });
+    return [...result.values()];
+  }
+
+  if (jump) {
+    // ── Jump: up to 2 tiles any direction, leap over obstacles ──
+    // Beyond 2 with charge: straight line
+    const jumpMax = 2;
+    const visited = new Set([cK(u.q,u.r)]);
+    const frontier = [[u.q,u.r,u.s,0]];
+    while (frontier.length) {
+      const [q,r,s,d] = frontier.shift();
+      if (d >= jumpMax) continue;
+      cNbr(q,r,s).forEach(([nq,nr,ns]) => {
+        if (!inB(nq,nr,ns)) return;
+        const k = cK(nq,nr);
+        if (visited.has(k)) return;
+        visited.add(k);
+        const c = S.cells[k];
+        if (!c || c.type === 'EMPTY') {
+          // Can jump over empty if within range
+          frontier.push([nq,nr,ns,d+1]);
+          return;
+        }
+        if (aquatic && c.type !== 'WELL') return;
+        if (!aquatic && c.type === 'WELL') return;
+        if (c.type === 'BASE' && c.owner !== u.own) return;
+        if (c.type === 'LAND' && c.owner !== u.own) return;
+        if (!unitAt(S,nq,nr,ns)) result.set(k, [nq,nr,ns]);
+        frontier.push([nq,nr,ns,d+1]); // can jump OVER occupied
+      });
+    }
+    // If also has charge, add straight-line moves beyond 2 up to chargeN
+    if (charge && chargeN > 2) {
+      HEX_DIRS.forEach(([dq,dr,ds]) => {
+        let cq=u.q, cr2=u.r, cs2=u.s;
+        for (let step=1; step<=chargeN; step++) {
+          cq+=dq; cr2+=dr; cs2+=ds;
+          if (!inB(cq,cr2,cs2)) break;
+          const k=cK(cq,cr2);
+          const c=S.cells[k];
+          if (!c||c.type==='EMPTY') break;
+          if (aquatic && c.type!=='WELL') break;
+          if (!aquatic && c.type==='WELL') break;
+          if (c.type==='BASE'&&c.owner!==u.own) break;
+          if (c.type==='LAND'&&c.owner!==u.own) break;
+          if (unitAt(S,cq,cr2,cs2)) break;
+          if (step > 2) result.set(k,[cq,cr2,cs2]);
+        }
+      });
+    }
+    return [...result.values()];
+  }
+
+  if (flying) {
+    // ── Flying: move over ocean and land, NOT through other units ──
+    const flyVisited = new Set([cK(u.q,u.r)]);
+    const flyFrontier = [[u.q,u.r,u.s,0]];
+    const flyResult = [];
+    while (flyFrontier.length) {
+      const [q,r,s,d] = flyFrontier.shift();
+      if (d >= bew) continue;
+      cNbr(q,r,s).forEach(([nq,nr,ns]) => {
+        if (!inB(nq,nr,ns)) return;
+        const k = cK(nq,nr);
+        if (flyVisited.has(k)) return;
+        flyVisited.add(k);
+        const c = S.cells[k];
+        if (unitAt(S,nq,nr,ns)) return; // cannot pass through units
+        if (!c || c.type === 'EMPTY') {
+          flyFrontier.push([nq,nr,ns,d+1]); // fly over ocean
+          return;
+        }
+        if (c.type === 'BASE' && c.owner !== u.own) return;
+        flyResult.push([nq,nr,ns]);
+        flyFrontier.push([nq,nr,ns,d+1]);
+      });
+    }
+    return flyResult;
+  }
+
+  // ── Standard BFS movement ──────────────────────────────
+  const visited = new Set([cK(u.q,u.r)]);
   const frontier = [[u.q,u.r,u.s,0]];
-  const result   = [];
-
   while (frontier.length) {
     const [q,r,s,d] = frontier.shift();
-    if (d >= u.bew) continue;
+    if (d >= bew) continue;
     cNbr(q,r,s).forEach(([nq,nr,ns]) => {
       if (!inB(nq,nr,ns)) return;
-      const k=cK(nq,nr);
+      const k = cK(nq,nr);
       if (visited.has(k)) return;
       visited.add(k);
-      const c=S.cells[k];
-      if (!c) return;
-
-      if (flying) {
-        // Flying: pass over empty, land anywhere passable
-        if (c.type==='EMPTY') { frontier.push([nq,nr,ns,d+1]); return; }
-        if (c.type==='BASE'&&c.owner!==u.own) return;
-        if (unitAt(S,nq,nr,ns)) return;
-        result.push([nq,nr,ns]);
-        frontier.push([nq,nr,ns,d+1]);
-        return;
-      }
-
-      if (c.type==='EMPTY') return;
-      if (c.type==='WELL') {
+      const c = S.cells[k];
+      if (!c || c.type === 'EMPTY') return;
+      if (c.type === 'WELL') {
         if (!aquatic) return;
         if (unitAt(S,nq,nr,ns)) return;
-        result.push([nq,nr,ns]);
+        result.set(k,[nq,nr,ns]);
         frontier.push([nq,nr,ns,d+1]);
         return;
       }
-      if (c.type==='BASE'&&c.owner!==u.own) return;
-      if (c.type==='LAND'&&c.owner!==u.own) return;
-
-      if (unitAt(S,nq,nr,ns)) {
-        if (jump) frontier.push([nq,nr,ns,d+1]);
-        return;
-      }
-      result.push([nq,nr,ns]);
+      if (c.type === 'BASE' && c.owner !== u.own) return;
+      if (c.type === 'LAND' && c.owner !== u.own) return;
+      if (unitAt(S,nq,nr,ns)) return;
+      result.set(k,[nq,nr,ns]);
       frontier.push([nq,nr,ns,d+1]);
     });
   }
-  return result;
+  return [...result.values()];
 }
 
 // ══════════════════════════════════════════════════════════
-//  ATTACK TARGETS  (Taunt, Charge, summon sickness)
+//  ATTACK TARGETS
+//  - Taunt: only units ADJACENT to the attacker are blocked by taunt
+//  - Ranged: shoots in straight line with infinite range, needs line of sight
+//  - Charge: attack range = chargeN (rei field on unit)
 // ══════════════════════════════════════════════════════════
 function validAtks(S, uid) {
-  const u=S.units[uid];
-  if (!u||u.atked||u.summonSick) return [];
+  const u = S.units[uid];
+  if (!u || u.atked || u.summonSick) return [];
 
-  const enemy    = u.own==='A'?'B':'A';
-  const taunters = tauntTargets(S, u.own);
+  const enemy   = u.own === 'A' ? 'B' : 'A';
+  const ranged  = u.kw.has('ranged');
 
-  const inRange = Object.values(S.units).filter(t =>
-    t.own===enemy && cDist([u.q,u.r,u.s],[t.q,t.r,t.s])<=u.rei
+  if (ranged) {
+    // Ranged: shoot in straight lines, infinite range, needs clear LOS
+    // Cannot attack if already moved this turn
+    if (u.moved) return [];
+    const result = [];
+    HEX_DIRS.forEach(([dq,dr,ds]) => {
+      let cq=u.q, cr=u.r, cs=u.s;
+      while (true) {
+        cq+=dq; cr+=dr; cs+=ds;
+        if (!inB(cq,cr,cs)) break;
+        const k = cK(cq,cr);
+        const c = S.cells[k];
+        // Ocean/empty blocks LOS
+        if (!c || c.type==='EMPTY') break;
+        const tu = unitAt(S,cq,cr,cs);
+        if (tu) {
+          // First thing in LOS — can only shoot this target
+          if (tu.own === enemy) result.push({type:'unit',id:tu.id,q:cq,r:cr,s:cs});
+          break; // blocked regardless
+        }
+        // Check if enemy base is here
+        if (c.type==='BASE' && c.owner===enemy) {
+          const [bq,br,bs] = enemy==='A'?BASE_A:BASE_B;
+          result.push({type:'base',own:enemy,q:bq,r:br,s:bs});
+          break;
+        }
+      }
+    });
+    return result;
+  }
+
+  // Standard melee / charge attack
+  // Taunt rule: only affects this unit if a taunt enemy is ADJACENT to it
+  const adjTaunters = Object.values(S.units).filter(t =>
+    t.own === enemy && t.kw.has('taunt') && cDist([u.q,u.r,u.s],[t.q,t.r,t.s]) === 1
   );
 
-  const filtered = taunters.length > 0
-    ? inRange.filter(t => t.kw.has('taunt'))
+  const inRange = Object.values(S.units).filter(t =>
+    t.own === enemy && cDist([u.q,u.r,u.s],[t.q,t.r,t.s]) <= u.rei
+  );
+
+  // If adjacent taunters exist, can only attack them
+  const filtered = adjTaunters.length > 0
+    ? inRange.filter(t => t.kw.has('taunt') && cDist([u.q,u.r,u.s],[t.q,t.r,t.s])===1)
     : inRange;
 
-  const result = filtered.map(t => ({ type:'unit', id:t.id, q:t.q, r:t.r, s:t.s }));
+  const result = filtered.map(t => ({type:'unit', id:t.id, q:t.q, r:t.r, s:t.s}));
 
-  const canHitBase = taunters.length===0 ||
-    taunters.every(t => cDist([u.q,u.r,u.s],[t.q,t.r,t.s])>u.rei);
-
-  if (canHitBase) {
-    const [bq,br,bs] = u.own==='A'?BASE_B:BASE_A;
-    if (cDist([u.q,u.r,u.s],[bq,br,bs])<=u.rei)
-      result.push({ type:'base', own:enemy, q:bq, r:br, s:bs });
+  // Can hit base only if no adjacent taunters
+  if (adjTaunters.length === 0) {
+    const [bq,br,bs] = u.own==='A' ? BASE_B : BASE_A;
+    if (cDist([u.q,u.r,u.s],[bq,br,bs]) <= u.rei)
+      result.push({type:'base', own:enemy, q:bq, r:br, s:bs});
   }
   return result;
 }
@@ -1181,7 +1319,13 @@ function doAtk(S, attackerId, targetType, targetId) {
     applyDmg(S, d, effAtk(a), a);
     lg(S, a.own, `→ ${dName}: ${Math.max(0,d.hp)} HP verbleibend`);
 
-    if (!a.kw.has('ranged') && S.units[targetId] && d.hp>0) {
+    // Counter-attack rules for ranged:
+    // Defender retaliates only if: (a) attacker is NOT ranged, OR
+    // (b) attacker IS ranged but defender is adjacent, OR defender is also ranged
+    const adjacent = cDist([a.q,a.r,a.s],[d.q,d.r,d.s]) === 1;
+    const defRetaliates = !a.kw.has('ranged') || adjacent || d.kw.has('ranged');
+
+    if (defRetaliates && S.units[targetId] && d.hp > 0) {
       applyDmg(S, a, effAtk(d), d);
       lg(S, d.own, `↩ Gegenschlag: ${aName}: ${Math.max(0,a.hp)} HP verbleibend`);
     }
@@ -1682,14 +1826,15 @@ class Engine {
       deal(S, this.ap, 1);
       S.lobDone = true;
       lg(S, this.ap, 'Karte gezogen (Aktion)');
-      this._render(); this._auto(300);
+      this._render();
       return;
     }
     if (id === '_boost') {
+      S.players[this.ap].mana += 1;
       S.players[this.ap].boostUsed = true;
       S.lobDone = true;
-      lg(S, this.ap, '+1 Mana Boost');
-      this._render(); this._auto(300);
+      lg(S, this.ap, `+1 Mana Boost → ${S.players[this.ap].mana}`);
+      this._render();
       return;
     }
     if (id === 'land_N') {
@@ -1797,9 +1942,9 @@ class Engine {
         if (cd) {
           S.cells[cK(q,r)] = { type:'LAND', owner:this.ap, landType:cd.landType };
           S.lobDone = true;
-          lg(S, this.ap, `Platziert ${cd.name}`);
+          lg(S, this.ap, `${cd.name} platziert`);
         }
-        this._clr(); this._render(); this._auto(300);
+        this._clr(); this._render();
         return;
       }
 
