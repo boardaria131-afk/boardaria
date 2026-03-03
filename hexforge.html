@@ -1068,8 +1068,8 @@ function mkState() {
     turn:1, ap:'A', phase:'DRAW', phaseStep:0, lobDone:false,
     playerNames:{ A:params?.nameA||'Spieler A', B:params?.nameB||'Spieler B' },
     players:{
-      A:{ hp:BASE_HP, mana:0, deck:filteredA, hand:[], grave:[], boostUsed:false, boostCount:0 },
-      B:{ hp:BASE_HP, mana:0, deck:filteredB, hand:[], grave:[], boostUsed:false, boostCount:0 },
+      A:{ hp:BASE_HP, mana:BASE_MANA, deck:filteredA, hand:[], grave:[], boostUsed:false, boostCount:0 },
+      B:{ hp:BASE_HP, mana:BASE_MANA, deck:filteredB, hand:[], grave:[], boostUsed:false, boostCount:0 },
     },
     cells:{}, units:{}, uid:1, log:[], winner:null,
   };
@@ -1078,8 +1078,14 @@ function mkState() {
     const k = cK(q,r);
     if      (isBaseA(q,r,s)) S.cells[k] = { type:'BASE', owner:'A' };
     else if (isBaseB(q,r,s)) S.cells[k] = { type:'BASE', owner:'B' };
-    else if (isWell(q,r,s))  S.cells[k] = { type:'WELL', ctrl:null };
-    else                     S.cells[k] = { type:'EMPTY' };
+    else if (isWell(q,r,s)) {
+      // Assign initial control based on proximity to each base
+      const dA = cDist([q,r,s], BASE_A);
+      const dB = cDist([q,r,s], BASE_B);
+      const ctrl = dA < dB ? 'A' : dB < dA ? 'B' : null;
+      S.cells[k] = { type:'WELL', ctrl };
+    }
+    else S.cells[k] = { type:'EMPTY' };
   });
 
   deal(S,'A',3); deal(S,'B',3);
@@ -1260,16 +1266,31 @@ function manaInc(S, p) {
 }
 
 function adjPlace(S, p) {
-  const v=new Set();
-  for (const [k,c] of Object.entries(S.cells)) {
-    if (c.owner===p&&(c.type==='LAND'||c.type==='BASE')) {
-      const [q,r,s]=pK(k);
-      cNbr(q,r,s).forEach(([nq,nr,ns]) => {
-        if (!inB(nq,nr,ns)) return;
-        const nk=cK(nq,nr); const nc=S.cells[nk];
-        if (nc&&nc.type==='EMPTY') v.add(nk);
-      });
+  const v = new Set();
+
+  // Helper: is this cell an "anchor" for player p?
+  // — own LAND or BASE
+  // — OR a cell where p has a unit standing (on any land, even enemy)
+  const isAnchor = (k, c) => {
+    if (c.owner === p && (c.type === 'LAND' || c.type === 'BASE')) return true;
+    // Own unit standing on any land cell (even enemy)
+    if (c.type === 'LAND' || c.type === 'BASE') {
+      const [q,r,s] = pK(k);
+      const u = unitAt(S, q, r, s);
+      if (u && u.own === p) return true;
     }
+    return false;
+  };
+
+  for (const [k, c] of Object.entries(S.cells)) {
+    if (!isAnchor(k, c)) continue;
+    const [q,r,s] = pK(k);
+    cNbr(q,r,s).forEach(([nq,nr,ns]) => {
+      if (!inB(nq,nr,ns)) return;
+      const nk = cK(nq,nr);
+      const nc = S.cells[nk];
+      if (nc && nc.type === 'EMPTY') v.add(nk);
+    });
   }
   return [...v].map(pK);
 }
@@ -1772,17 +1793,44 @@ function doPlay(S, p, id, q, r, s) {
       case 'firebomb':
         if (u) { applyDmg(S,u,4,null); if(u.hp<=0)resolveDeath(S,u.id); lg(S,p,'Feuerbombe: 4 Schaden'); } break;
 
-      case 'flame_burst':
-        if (u) { applyDmg(S,u,3,null); if(u.hp<=0)resolveDeath(S,u.id); lg(S,p,'Feuerstrahl: 3 Schaden'); } break;
+      case 'flame_burst': {
+        // Deal 3 damage to any target (creature or god)
+        const opp = p==='A'?'B':'A';
+        const [baA] = [BASE_A]; const [baB] = [BASE_B];
+        const isGodA = q===BASE_A[0]&&r===BASE_A[1]&&s===BASE_A[2];
+        const isGodB = q===BASE_B[0]&&r===BASE_B[1]&&s===BASE_B[2];
+        if (u) {
+          applyDmg(S,u,3,null); if(u.hp<=0)resolveDeath(S,u.id);
+          lg(S,p,`Feuerstrahl: 3 Schaden an ${cardData(u.cid)?.name||u.id}`);
+        } else if (isGodA || isGodB) {
+          const tgt = isGodA ? 'A' : 'B';
+          S.players[tgt].hp -= 3;
+          lg(S,p,`Feuerstrahl: 3 Schaden an Gott ${tgt} → ${S.players[tgt].hp} LP`);
+          if (S.players[tgt].hp<=0) S.winner=p;
+        }
+        break;
+      }
 
-      case 'soul_drain':
-        if (u && u.own !== p) {
-          const drainAmt = Math.min(2, u.hp); // can't drain more than target has
+      case 'soul_drain': {
+        // Drain 2 from creature, can also drain from gods
+        const isGodA2 = q===BASE_A[0]&&r===BASE_A[1]&&s===BASE_A[2];
+        const isGodB2 = q===BASE_B[0]&&r===BASE_B[1]&&s===BASE_B[2];
+        if (u) {
+          const drainAmt = Math.min(2, u.hp);
           applyDmg(S, u, drainAmt, null);
           S.players[p].hp = Math.min(BASE_HP, S.players[p].hp + drainAmt);
           if (u.hp <= 0) resolveDeath(S, u.id);
           lg(S, p, `Seelenraub: ${drainAmt} LP gesaugt → eigener Gott: ${S.players[p].hp}`);
-        } break;
+        } else if (isGodA2 || isGodB2) {
+          const tgt = isGodA2 ? 'A' : 'B';
+          const drainAmt = Math.min(2, S.players[tgt].hp);
+          S.players[tgt].hp -= drainAmt;
+          S.players[p].hp = Math.min(BASE_HP, S.players[p].hp + drainAmt);
+          lg(S, p, `Seelenraub: ${drainAmt} LP von Gott ${tgt} gesaugt`);
+          if (S.players[tgt].hp<=0) S.winner=p;
+        }
+        break;
+      }
 
       case 'gabrian_enchantment':
         if (u) { u.atk=u.hp; deal(S,p,1); lg(S,p,`Gabrischer Zauber: ATK=${u.hp}, +1 Karte`); } break;
@@ -1910,14 +1958,16 @@ const MENU_OPTS = [
   { id:'_boost',  label:'+1 Mana',    sub:'◆',   fill:'#081828', stroke:'#4488cc', textCol:'#68aaee' },
 ];
 
-// Cards that target own units
-const TARGET_OWN   = new Set(['veil','battlecry','ironbark','campfire','elderwood_embrace','tiki_chieftain']);
-// Cards that target enemy units
-const TARGET_ENEMY = new Set(['gust','firebomb','flame_burst','soul_drain','last_nightmare','falcon_dive']);
-// Cards that target any unit
-const TARGET_ANY   = new Set(['gabrian_enchantment','falcon_dive']);
-// Cards with no board target (self-effect)
-const TARGET_SELF  = new Set(['healing_song','wisdom','wild_growth','tidal_force']);
+// Cards that target only own units
+const TARGET_OWN        = new Set(['veil','battlecry','ironbark','campfire','elderwood_embrace','tiki_chieftain']);
+// Cards that target only enemy units
+const TARGET_ENEMY_UNIT = new Set(['gust', 'last_nightmare']);
+// Cards that target any unit (own OR enemy creature)
+const TARGET_ALL_UNITS  = new Set(['firebomb', 'gabrian_enchantment', 'falcon_dive']);
+// Cards with unrestricted damage targets: any creature + any god (BASE)
+const TARGET_ALL        = new Set(['flame_burst', 'soul_drain']);
+// Cards with no board target (self-effect, play immediately)
+const TARGET_SELF  = new Set(['healing_song', 'wisdom', 'wild_growth', 'tidal_force']);
 // Cards that target empty adjacent land cells
 const TARGET_LAND  = new Set(['explore']);
 
@@ -2166,13 +2216,19 @@ class Engine {
         break;
 
       case 'MANA': {
-        // Mana accumulates — add income to existing pool (unspent mana carries over)
-        const inc   = manaInc(S, this.ap);
-        // Boost: only applies if used last turn (boostUsed was set), then clear it
+        // Round 1: mana was set to BASE_MANA at game start, skip income
+        // Round 2+: add income to accumulated pool (unspent carries over)
         const boost = S.players[this.ap].boostUsed ? 1 : 0;
-        S.players[this.ap].boostUsed = false; // reset boost tracking for this turn
-        S.players[this.ap].mana += inc + boost;
-        lg(S, this.ap, `+${inc}${boost?'+1 Boost':''} Mana → ${S.players[this.ap].mana}`);
+        S.players[this.ap].boostUsed = false;
+        if (S.turn > 1) {
+          const inc = manaInc(S, this.ap);
+          S.players[this.ap].mana += inc + boost;
+          lg(S, this.ap, `+${inc}${boost?'+1 Boost':''} Mana → ${S.players[this.ap].mana}`);
+        } else {
+          // Round 1: just apply boost if used, mana already set to 3
+          if (boost) { S.players[this.ap].mana += boost; }
+          lg(S, this.ap, `Startet mit ${S.players[this.ap].mana} Mana`);
+        }
         this._auto(350);
         break;
       }
@@ -2455,13 +2511,24 @@ class Engine {
         return;
       }
 
-      if (TARGET_ANY.has(id)) {
+      const opp = this.ap === 'A' ? 'B' : 'A';
+      if (TARGET_ALL.has(id)) {
+        // Any creature (own + enemy) + both gods (BASEs)
+        const [baA] = [BASE_A]; const [baB] = [BASE_B];
+        this.vt = [
+          ...Object.values(S.units).map(u => [u.q,u.r,u.s]),
+          BASE_A, BASE_B
+        ];
+      } else if (TARGET_ALL_UNITS.has(id)) {
+        // Any creature (own + enemy), no gods
         this.vt = Object.values(S.units).map(u => [u.q,u.r,u.s]);
-      } else if (TARGET_ENEMY.has(id)) {
-        this.vt = Object.values(S.units).filter(u => u.own!==this.ap).map(u => [u.q,u.r,u.s]);
+      } else if (TARGET_ENEMY_UNIT.has(id)) {
+        this.vt = Object.values(S.units).filter(u => u.own !== this.ap).map(u => [u.q,u.r,u.s]);
+      } else if (TARGET_OWN.has(id)) {
+        this.vt = Object.values(S.units).filter(u => u.own === this.ap).map(u => [u.q,u.r,u.s]);
       } else {
         // Default: target own units
-        this.vt = Object.values(S.units).filter(u => u.own===this.ap).map(u => [u.q,u.r,u.s]);
+        this.vt = Object.values(S.units).filter(u => u.own === this.ap).map(u => [u.q,u.r,u.s]);
       }
       this._render();
     }
@@ -3042,6 +3109,10 @@ class Engine {
       // Self-targeting spells are always playable if affordable
       const selfTargets = new Set(['healing_song','wisdom','tidal_force','shifting_tide','wild_growth','explore']);
       if (selfTargets.has(id)) return true;
+      // Unrestricted damage (can always hit a god even with no creatures)
+      if (TARGET_ALL.has(id)) return true;
+      // Spells targeting any creature
+      if (TARGET_ALL_UNITS.has(id)) return Object.keys(S.units).length > 0;
       // Spells targeting own units
       const ownTargets = new Set(['veil','battlecry','ironbark','campfire','elderwood_embrace','gabrian_enchantment','tiki_chieftain']);
       if (ownTargets.has(id)) return Object.values(S.units).some(u => u.own === this.ap);
@@ -3210,7 +3281,17 @@ class Engine {
       if (isSel) circ.setAttribute('filter','url(#gw)');
       if (sick)  circ.setAttribute('opacity','0.55');
       circ.style.cursor='pointer';
-      circ.onclick = e => { e.stopPropagation(); this.selUnitFn(u.id); };
+      // In targeting modes (atk/inst/gift/dash) route to clickCell; otherwise selUnitFn
+      circ.onclick = e => {
+        e.stopPropagation();
+        const tm = this.pact;
+        if (tm==='atk'||tm==='inst'||tm==='gift'||tm==='dash'||
+            tm==='shifting_land_pick'||tm==='shifting_land_dest') {
+          this.clickCell(u.q, u.r, u.s);
+        } else {
+          this.selUnitFn(u.id);
+        }
+      };
       svg.appendChild(circ);
 
       // Unit name abbreviation (2 chars)
@@ -3290,6 +3371,25 @@ class Engine {
         ex.setAttribute('pointer-events','none'); svg.appendChild(ex);
       }
 
+      // ── Invisible full-hex hit overlay ─────────────────
+      // Covers the entire hex so player can click ANYWHERE on the cell.
+      // Only active in targeting modes so it doesn't block normal unit selection.
+      const targetingMode = this.pact === 'atk' || this.pact === 'inst' ||
+                            this.pact === 'gift' || this.pact === 'move' ||
+                            this.pact === 'dash' || this.pact === 'land' ||
+                            this.pact === 'land_N' ||
+                            this.pact === 'shifting_land_pick' ||
+                            this.pact === 'shifting_land_dest';
+      if (targetingMode) {
+        const hit = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+        hit.setAttribute('points', P);
+        hit.setAttribute('fill', 'transparent');
+        hit.setAttribute('stroke', 'none');
+        hit.style.cursor = isV ? 'pointer' : 'default';
+        hit.onclick = () => this.clickCell(q, r, s);
+        svg.appendChild(hit);
+      }
+
       // Attack-target ring
       if (isVT && this.pact==='atk') {
         const r2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
@@ -3307,17 +3407,24 @@ class Engine {
       }
     });
 
-    // Enemy base attack highlight
-    if (this.pact==='atk') {
-      const [bq,br,bs] = this.ap==='A'?BASE_B:BASE_A;
-      if (vs.has(cK(bq,br))) {
+    // Base target highlights (attack, spell, gift targeting)
+    if (this.pact==='atk' || this.pact==='inst' || this.pact==='gift') {
+      [BASE_A, BASE_B].forEach(base => {
+        const [bq,br,bs] = base;
+        if (!vs.has(cK(bq,br))) return;
         const [px,py] = c2p(bq,br);
         const cx=px+ox, cy=py+oy;
         const r2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        r2.setAttribute('cx',cx); r2.setAttribute('cy',cy); r2.setAttribute('r','20');
+        r2.setAttribute('cx',cx); r2.setAttribute('cy',cy); r2.setAttribute('r','22');
         r2.setAttribute('fill','none'); r2.setAttribute('stroke','#cc3333'); r2.setAttribute('stroke-width','3');
         r2.setAttribute('pointer-events','none'); svg.appendChild(r2);
-      }
+        // Invisible large hit area for easy clicking
+        const hit2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        hit2.setAttribute('cx',cx); hit2.setAttribute('cy',cy); hit2.setAttribute('r','24');
+        hit2.setAttribute('fill','transparent'); hit2.style.cursor='pointer';
+        hit2.onclick = () => this.clickCell(bq,br,bs);
+        svg.appendChild(hit2);
+      });
     }
   }
 }
