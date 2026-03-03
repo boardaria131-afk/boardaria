@@ -1019,8 +1019,8 @@ function mkState() {
     turn:1, ap:'A', phase:'DRAW', phaseStep:0, lobDone:false,
     playerNames:{ A:params?.nameA||'Spieler A', B:params?.nameB||'Spieler B' },
     players:{
-      A:{ hp:BASE_HP, mana:BASE_MANA, deck:filteredA, hand:[], grave:[], boostUsed:false },
-      B:{ hp:BASE_HP, mana:BASE_MANA, deck:filteredB, hand:[], grave:[], boostUsed:false },
+      A:{ hp:BASE_HP, mana:0, deck:filteredA, hand:[], grave:[], boostUsed:false, boostCount:0 },
+      B:{ hp:BASE_HP, mana:0, deck:filteredB, hand:[], grave:[], boostUsed:false, boostCount:0 },
     },
     cells:{}, units:{}, uid:1, log:[], winner:null,
   };
@@ -1498,6 +1498,111 @@ function doAtk(S, attackerId, targetType, targetId) {
 }
 
 // ══════════════════════════════════════════════════════════
+//  GIFT ABILITIES — triggered when unit is summoned
+// ══════════════════════════════════════════════════════════
+function doGift(S, p, unit) {
+  const opp = p === 'A' ? 'B' : 'A';
+  switch(unit.cid) {
+
+    // ── Flame Spitter: Gift — Deal 1 damage to any enemy ──
+    case 'flame_spitter':
+      // Mark unit as having a pending gift choice
+      unit.pendingGift = { type:'dmg1_enemy' };
+      lg(S, p, `✦ Flame Spitter Gift: Wähle Ziel (Kreatur oder Gott) für 1 Schaden`);
+      break;
+
+    // ── Tiki Healer: Gift — Restore 5 life ────────────────
+    case 'tiki_healer':
+      S.players[p].hp = Math.min(BASE_HP + 10, S.players[p].hp + 5);
+      lg(S, p, `✦ Tiki Healer Gift: +5 LP → ${S.players[p].hp}`);
+      break;
+
+    // ── Tiki Chieftain: Gift — Give a friendly creature Taunt
+    case 'tiki_chieftain':
+      unit.pendingGift = { type:'give_taunt' };
+      lg(S, p, `✦ Tiki Chieftain Gift: Wähle eigene Kreatur für Taunt`);
+      break;
+
+    // ── Outland Ranger: Gift — Add a Campfire to hand ─────
+    case 'outland_ranger':
+      if (S.players[p].hand.length < HAND_MAX) {
+        S.players[p].hand.push('campfire');
+        lg(S, p, `✦ Outland Ranger Gift: Campfire zur Hand`);
+      }
+      break;
+
+    // ── Water Elemental: Gift — Create a Lake ─────────────
+    case 'water_elemental': {
+      const spot = adjPlace(S,p).find(([aq,ar]) => {
+        const c=S.cells[cK(aq,ar)]; return c&&c.type==='EMPTY';
+      });
+      if (spot) {
+        S.cells[cK(spot[0],spot[1])] = { type:'LAND', owner:p, landType:'W' };
+        lg(S, p, `✦ Water Elemental Gift: See erschaffen`);
+      }
+      break;
+    }
+
+    // ── Axe Grinder: Gift — +2/+2 if next to enemy well ──
+    case 'axe_grinder': {
+      const nearEnemyWell = WELLS.some(([wq,wr,ws]) => {
+        const c = S.cells[cK(wq,wr)];
+        return c && c.ctrl===opp && cDist([unit.q,unit.r,unit.s],[wq,wr,ws])<=1;
+      });
+      if (nearEnemyWell) {
+        buffUnit(unit, 2, 2);
+        lg(S, p, `✦ Axe Grinder Gift: +2/+2 (neben feindlichem Brunnen)`);
+      }
+      break;
+    }
+
+    default:
+      // No gift, or not yet implemented
+      break;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  RESOLVE PENDING GIFT (called when player clicks target)
+// ══════════════════════════════════════════════════════════
+function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
+  if (!unit?.pendingGift) return false;
+  const opp = p === 'A' ? 'B' : 'A';
+  const gift = unit.pendingGift;
+  unit.pendingGift = null;
+
+  if (gift.type === 'dmg1_enemy') {
+    // Can target enemy creature OR enemy base
+    const tu = unitAt(S, targetQ, targetR, targetS);
+    const [bq,br,bs] = opp==='A' ? BASE_A : BASE_B;
+    if (tu && tu.own === opp) {
+      applyDmg(S, tu, 1, unit);
+      lg(S, p, `✦ Flame Spitter: 1 Schaden an ${cardData(tu.cid)?.name||tu.id}`);
+      if (tu.hp <= 0) resolveDeath(S, tu.id);
+      return true;
+    } else if (targetQ===bq && targetR===br && targetS===bs) {
+      S.players[opp].hp -= 1;
+      lg(S, p, `✦ Flame Spitter: 1 Schaden an Gott ${opp} → ${S.players[opp].hp} LP`);
+      if (S.players[opp].hp <= 0) S.winner = p;
+      return true;
+    }
+    return false;
+  }
+
+  if (gift.type === 'give_taunt') {
+    const tu = unitAt(S, targetQ, targetR, targetS);
+    if (tu && tu.own === p) {
+      tu.kw.add('taunt');
+      lg(S, p, `✦ Tiki Chieftain: ${cardData(tu.cid)?.name||tu.id} bekommt Taunt`);
+      return true;
+    }
+    return false;
+  }
+
+  return false;
+}
+
+// ══════════════════════════════════════════════════════════
 //  CARD PLAY
 // ══════════════════════════════════════════════════════════
 function doPlay(S, p, id, q, r, s) {
@@ -1535,6 +1640,8 @@ function doPlay(S, p, id, q, r, s) {
     S.units[unit.id]=unit;
     const kwList=[...unit.kw].filter(k=>k!=='').join(', ');
     lg(S,p,`Beschwört ${cd.name}${kwList?' ['+kwList+']':''}`);
+    // Trigger Gift ability
+    doGift(S, p, unit);
     return true;
   }
 
@@ -1953,9 +2060,11 @@ class Engine {
       case 'MANA': {
         // Mana accumulates — add income to existing pool (unspent mana carries over)
         const inc   = manaInc(S, this.ap);
+        // Boost: only applies if used last turn (boostUsed was set), then clear it
         const boost = S.players[this.ap].boostUsed ? 1 : 0;
+        S.players[this.ap].boostUsed = false; // reset boost tracking for this turn
         S.players[this.ap].mana += inc + boost;
-        lg(S, this.ap, `+${inc}${boost?'+'+boost+' Boost':''} Mana → ${S.players[this.ap].mana}`);
+        lg(S, this.ap, `+${inc}${boost?'+1 Boost':''} Mana → ${S.players[this.ap].mana}`);
         runProduction(S, this.ap);
         this._auto(350);
         break;
@@ -1969,7 +2078,8 @@ class Engine {
 
       case 'CLEANUP':
         doCleanup(S);
-        S.players[this.ap].boostUsed = false;
+        // boostUsed is intentionally NOT reset here — MANA phase resets it
+        // so the boost carries forward as income next turn
         S.lobDone   = false;
         S.landNLeft = 0;
         lg(S, this.ap, '— Runde Ende —');
@@ -2143,6 +2253,7 @@ class Engine {
       return;
     }
     if (id === '_boost') {
+      if (S.players[this.ap].boostUsed) return; // already used this turn
       S.players[this.ap].mana += 1;
       S.players[this.ap].boostUsed = true;
       S.lobDone = true;
@@ -2252,6 +2363,25 @@ class Engine {
     this.selCard = null;
     this.selUnit = uid;
 
+    // If this unit has a pending gift to resolve, enter gift mode
+    if (u.pendingGift) {
+      this.pact = 'gift';
+      const opp = this.ap === 'A' ? 'B' : 'A';
+      if (u.pendingGift.type === 'dmg1_enemy') {
+        // Targets: enemy units + enemy base
+        const [bq,br,bs] = opp==='A' ? BASE_A : BASE_B;
+        this.vt = [
+          ...Object.values(S.units).filter(t=>t.own===opp).map(t=>[t.q,t.r,t.s]),
+          [bq,br,bs]
+        ];
+      } else if (u.pendingGift.type === 'give_taunt') {
+        this.vt = Object.values(S.units).filter(t=>t.own===this.ap).map(t=>[t.q,t.r,t.s]);
+      }
+      this._showUD(u);
+      this._render();
+      return;
+    }
+
     // Prefer move if not yet moved, otherwise attack
     if (!u.summonSick && !u.moved) {
       this.pact = 'move';
@@ -2309,6 +2439,12 @@ class Engine {
 
       if (this.pact === 'inst') {
         doPlay(S, this.ap, this.selCard, q, r, s);
+        this._clr();
+      }
+
+      if (this.pact === 'gift' && this.selUnit) {
+        const u = S.units[this.selUnit];
+        if (u) resolvePendingGift(S, this.ap, u, q, r, s);
         this._clr();
       }
 
@@ -2446,6 +2582,7 @@ class Engine {
       else if (this.pact === 'move')   hint.textContent = '➤ Klicke ein Zielfeld zum Bewegen';
       else if (this.pact === 'atk')    hint.textContent = '⚔ Klicke ein Ziel zum Angreifen';
       else if (this.pact === 'inst')   hint.textContent = '✨ Klicke ein Ziel für den Zauber';
+      else if (this.pact === 'gift')   hint.textContent = '✦ Gift: Klicke ein Ziel';
       else if (free)                   hint.textContent = 'Wähle eine Karte oder Einheit — oder beende deinen Zug';
       else                             hint.textContent = '';
     }
@@ -2518,11 +2655,40 @@ class Engine {
   _canP(id) {
     const S  = this.S;
     const cd = cardData(id);
-    if (!cd) return false;
-    if (isLandCard(cd))    return S.phase==='FREE' && !S.lobDone;
-    if (isUnitCard(cd))    return S.phase==='FREE' && canPlay(S, this.ap, id);
-    if (isInstantCard(cd)) return S.phase==='FREE' && canPlay(S, this.ap, id);
-    return false;
+    if (!cd || S.phase !== 'FREE') return false;
+
+    if (isLandCard(cd)) return !S.lobDone && adjPlace(S, this.ap).length > 0;
+
+    if (!canPlay(S, this.ap, id)) return false;
+
+    if (isUnitCard(cd)) {
+      // Check that at least one valid unoccupied spawn tile exists
+      const reqEntries = Object.entries(cd.req || {}).filter(([,v]) => v > 0);
+      const reqTypes   = reqEntries.map(([lt]) =>
+        ({ lake:'W', forest:'F', mountain:'M', desert:'D' }[lt] || lt)
+      );
+      const spawns = Object.entries(S.cells)
+        .filter(([k,c]) => {
+          if (c.owner !== this.ap || c.type !== 'LAND') return false;
+          if (reqTypes.length > 0 && !reqTypes.includes(c.landType)) return false;
+          const [q,r,s] = pK(k);
+          return !unitAt(S,q,r,s);
+        });
+      return spawns.length > 0;
+    }
+
+    if (isInstantCard(cd)) {
+      // Self-targeting spells are always playable if affordable
+      const selfTargets = new Set(['healing_song','wisdom','tidal_force','shifting_tide','wild_growth','explore']);
+      if (selfTargets.has(id)) return true;
+      // Spells targeting own units
+      const ownTargets = new Set(['veil','battlecry','ironbark','campfire','elderwood_embrace','gabrian_enchantment','tiki_chieftain']);
+      if (ownTargets.has(id)) return Object.values(S.units).some(u => u.own === this.ap);
+      // Spells targeting enemy units
+      return Object.values(S.units).some(u => u.own !== this.ap);
+    }
+
+    return true;
   }
 
   _rLog() {
