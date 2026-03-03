@@ -1175,6 +1175,10 @@ function canHarvest(u) {
 function updWells(S) {
   WELLS.forEach(([wq,wr,ws]) => {
     const k = cK(wq,wr);
+    const cell = S.cells[k];
+    if (!cell) return;
+
+    // Count adjacent units per player
     let a = 0, b = 0;
     cNbr(wq,wr,ws).forEach(([q,r,s]) => {
       const u = unitAt(S,q,r,s);
@@ -1183,7 +1187,18 @@ function updWells(S) {
         else               b++;
       }
     });
-    S.cells[k].ctrl = (a > 0 && b === 0) ? 'A' : (b > 0 && a === 0) ? 'B' : null;
+
+    if (a > 0 && b === 0) {
+      cell.ctrl = 'A';
+    } else if (b > 0 && a === 0) {
+      cell.ctrl = 'B';
+    } else if (a === 0 && b === 0) {
+      // No units present — revert to default proximity-based ownership
+      const dA = cDist([wq,wr,ws], BASE_A);
+      const dB = cDist([wq,wr,ws], BASE_B);
+      cell.ctrl = dA < dB ? 'A' : dB < dA ? 'B' : null;
+    }
+    // If both a>0 and b>0: contested, keep current ctrl (no change)
   });
 }
 
@@ -1324,13 +1339,15 @@ function validMoves(S, uid) {
 
   const result = new Map();
 
-  // ── Aquatic: travels over OCEAN (EMPTY) and WELL, lands only on lakes (W) or wells ──
+  // ── Aquatic: travels over OCEAN (EMPTY) and WELL, lands only on lakes (W), EMPTY, or wells ──
+  // With Jump: can leap over units/obstacles, same aquatic landing restriction
   if (aquatic && !flying) {
+    const range = jump ? 2 : (charge ? chargeN : bew);
     const visited = new Set([cK(u.q,u.r)]);
     const frontier = [[u.q,u.r,u.s,0]];
     while (frontier.length) {
       const [aq,ar,as,d] = frontier.shift();
-      if (d >= (charge ? chargeN : bew)) continue;
+      if (d >= range) continue;
       cNbr(aq,ar,as).forEach(([nq,nr,ns]) => {
         if (!inB(nq,nr,ns)) return;
         const k = cK(nq,nr);
@@ -1339,11 +1356,18 @@ function validMoves(S, uid) {
         const c = S.cells[k];
         if (!c) return;
         if (c.type === 'BASE') return;  // can never enter a BASE
-        if (unitAt(S,nq,nr,ns)) return; // blocked by any unit
-        // Aquatic can travel over/land on: EMPTY (ocean), WELL, lake LAND (W)
-        // Cannot enter: non-lake LAND (F, M, D, N)
-        if (c.type === 'LAND' && c.landType !== 'W') return;
-        // Valid cell — can land here and continue through it
+        // Cannot land on non-lake LAND (but Jump can leap OVER occupied cells)
+        if (c.type === 'LAND' && c.landType !== 'W') {
+          // With jump: can pass through non-lake land (but not land there)
+          if (jump) frontier.push([nq,nr,ns,d+1]); // continue traversal
+          return;
+        }
+        if (unitAt(S,nq,nr,ns)) {
+          // With jump: can leap over units
+          if (jump) frontier.push([nq,nr,ns,d+1]);
+          return;
+        }
+        // Valid landing cell
         result.set(k,[nq,nr,ns]);
         frontier.push([nq,nr,ns,d+1]);
       });
@@ -2566,17 +2590,48 @@ class Engine {
       return;
     }
 
-    // Prefer move if not yet moved, otherwise attack
-    if (!u.summonSick && !u.moved) {
-      this.pact = 'move';
-      this.vt   = validMoves(S, uid);
-    } else if (!u.summonSick && !u.atked) {
-      this.pact = 'atk';
-      this.vt   = validAtks(S, uid).map(t => [t.q,t.r,t.s]);
-    } else {
-      // Already acted — still select to show stats
+    // ── Decide initial mode OR toggle if already selected ──
+    const isRanged  = u.kw.has('ranged');
+    const canMove   = !u.summonSick && !u.moved;
+    const canAttack = !u.summonSick && !u.atked;
+
+    if (!canMove && !canAttack) {
+      // Unit exhausted — just show stats
       this.pact = null;
       this.vt   = [];
+      this._showUD(u);
+      this._render();
+      return;
+    }
+
+    // If this unit is already selected, toggle between move ↔ attack
+    if (this.selUnit === uid && this.pact) {
+      if (this.pact === 'move' && canAttack) {
+        this.pact = 'atk';
+        this.vt   = validAtks(S, uid).map(t => [t.q,t.r,t.s]);
+        this._showUD(u);
+        this._render();
+        return;
+      }
+      if (this.pact === 'atk' && canMove) {
+        this.pact = 'move';
+        this.vt   = validMoves(S, uid);
+        this._showUD(u);
+        this._render();
+        return;
+      }
+    }
+
+    // Fresh selection: Ranged units default to ATTACK mode (they prefer to shoot)
+    if (isRanged && canAttack) {
+      this.pact = 'atk';
+      this.vt   = validAtks(S, uid).map(t => [t.q,t.r,t.s]);
+    } else if (canMove) {
+      this.pact = 'move';
+      this.vt   = validMoves(S, uid);
+    } else if (canAttack) {
+      this.pact = 'atk';
+      this.vt   = validAtks(S, uid).map(t => [t.q,t.r,t.s]);
     }
     this._showUD(u);
     this._render();
@@ -2605,13 +2660,16 @@ class Engine {
         const srcKey = cK(q,r);
         const srcCell = S.cells[srcKey];
         if (!srcCell || srcCell.type !== 'LAND') { this._render(); return; }
-        this._shiftingSrc = { k:srcKey, q, r, s, landType:srcCell.landType };
+        this._shiftingSrc = { k:srcKey, q, r, s, landType:srcCell.landType, owner:srcCell.owner };
         this.pact = 'shifting_land_dest';
-        // Destination: any empty adjacent cell (like adjPlace)
-        this.vt = Object.entries(S.cells)
-          .filter(([k,c]) => c.type==='EMPTY' && k!==srcKey)
-          .map(([k]) => pK(k));
-        lg(S, this.ap, 'Shifting Tide: Wähle Zielfeld');
+        // Destination: EMPTY cells directly adjacent (1 step) to the source land
+        this.vt = cNbr(q,r,s)
+          .filter(([nq,nr,ns]) => {
+            if (!inB(nq,nr,ns)) return false;
+            const nc = S.cells[cK(nq,nr)];
+            return nc && nc.type === 'EMPTY';
+          });
+        lg(S, this.ap, 'Shifting Tide: Wähle benachbartes Zielfeld');
         this._render();
         return;
       }
@@ -2622,14 +2680,14 @@ class Engine {
         if (src) {
           // Remove land from source
           S.cells[src.k] = { type:'EMPTY' };
-          // Place at destination
-          S.cells[cK(q,r)] = { type:'LAND', owner:this.ap, landType:src.landType };
+          // Place at destination — preserve original owner and land type
+          S.cells[cK(q,r)] = { type:'LAND', owner:src.owner || this.ap, landType:src.landType };
           // Pay cost
           S.players[this.ap].mana -= cardData('shifting_tide').cost;
           const idx = S.players[this.ap].hand.indexOf('shifting_tide');
           if (idx !== -1) S.players[this.ap].hand.splice(idx, 1);
           S.players[this.ap].grave.push('shifting_tide');
-          lg(S, this.ap, 'Shifting Tide: Land verschoben');
+          lg(S, this.ap, 'Shifting Tide: Land 1 Feld verschoben');
           this._shiftingSrc = null;
         }
         this._clr(); this._render();
@@ -3006,8 +3064,17 @@ class Engine {
       if      (this.pact === 'land')   hint.textContent = '🗺 Klicke ein Feld um Land zu platzieren';
       else if (this.pact === 'land_N') hint.textContent = `🗺 Grasland ${3 - this.landN_left}/2 — wähle ein Feld`;
       else if (this.pact === 'unit')   hint.textContent = '⚔ Klicke ein eigenes Feld zum Beschwören';
-      else if (this.pact === 'move')   hint.textContent = '➤ Klicke ein Zielfeld zum Bewegen';
-      else if (this.pact === 'atk')    hint.textContent = '⚔ Klicke ein Ziel zum Angreifen';
+      else if (this.pact === 'move') {
+        const su = this.selUnit ? S.units[this.selUnit] : null;
+        const canAtk = su && !su.atked && !su.summonSick;
+        hint.textContent = canAtk ? '➤ Bewegen — nochmal klicken für ⚔ Angriff' : '➤ Klicke ein Zielfeld zum Bewegen';
+      }
+      else if (this.pact === 'atk') {
+        const su = this.selUnit ? S.units[this.selUnit] : null;
+        const isRng = su?.kw?.has('ranged');
+        const canMv = su && !su.moved && !su.summonSick;
+        hint.textContent = (isRng ? '⊕ Fernkampf' : '⚔ Angriff') + (canMv ? ' — nochmal klicken zum Bewegen' : '') + ' — Klicke ein Ziel';
+      }
       else if (this.pact === 'inst')   hint.textContent = '✨ Klicke ein Ziel für den Zauber';
       else if (this.pact === 'gift')   hint.textContent = '✦ Gift: Klicke ein Ziel';
       else if (this.pact === 'dash')   hint.textContent = '💨 Dash: Wähle ein Zielfeld (oder Abbrechen)';
