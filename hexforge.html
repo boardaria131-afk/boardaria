@@ -430,6 +430,45 @@ svg#board { display: block; overflow: visible; }
 }
 #win-card button:hover { background: rgba(200,168,75,.2); border-color: var(--gold); }
 
+/* ── Combat Flash Overlay ── */
+#combat-flash {
+  position: fixed; inset: 0; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 900; opacity: 0;
+  transition: opacity .1s;
+}
+#combat-flash.show { opacity: 1; }
+#combat-flash .cf-inner {
+  background: rgba(10,8,16,.88);
+  border: 2px solid #c8a84b;
+  border-radius: 8px;
+  padding: 14px 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  box-shadow: 0 0 40px rgba(200,168,75,.4), 0 0 80px rgba(0,0,0,.8);
+}
+#combat-flash .cf-row {
+  display: flex; align-items: center; gap: 16px; font-family: 'Cinzel', serif;
+}
+#combat-flash .cf-name { font-size: .75rem; font-weight: bold; }
+#combat-flash .cf-nameA { color: #ff9090; }
+#combat-flash .cf-nameB { color: #9090ff; }
+#combat-flash .cf-vs {
+  font-size: 1.2rem; color: #c8a84b; animation: cfPulse .3s ease-in-out infinite alternate;
+}
+#combat-flash .cf-dmg {
+  font-size: .65rem; color: var(--dim); font-family: 'Cinzel', serif;
+}
+#combat-flash .cf-result { font-size: .6rem; color: #aaa; font-family: 'Cinzel', serif; }
+@keyframes cfPulse { from { transform: scale(1); } to { transform: scale(1.3); } }
+@keyframes cfShake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+.cf-shake { animation: cfShake .35s ease-in-out; }
+
 </style>
 </head>
 <body>
@@ -515,7 +554,6 @@ svg#board { display: block; overflow: visible; }
 
 <!-- ── Pass & Play Übergabe-Overlay ────────────────────── -->
 <div id="sw-ov">
-
   <!-- Schritt 1: Zug beendet — Gerät weitergeben -->
   <div id="sw-pass" class="sw-panel">
     <div class="sc-sub">Zug beendet</div>
@@ -535,6 +573,19 @@ svg#board { display: block; overflow: visible; }
     <button onclick="G.dismissSwitch()">Bereit — Hand anzeigen ▶</button>
   </div>
 
+</div>
+
+<!-- ── Combat Flash Overlay ─────────────────────────────── -->
+<div id="combat-flash">
+  <div class="cf-inner">
+    <div class="cf-row">
+      <span id="cf-nameA" class="cf-name cf-nameA"></span>
+      <span class="cf-vs">⚔</span>
+      <span id="cf-nameB" class="cf-name cf-nameB"></span>
+    </div>
+    <div id="cf-dmg" class="cf-dmg"></div>
+    <div id="cf-result" class="cf-result"></div>
+  </div>
 </div>
 
 <!-- ── Victory Screen ──────────────────────────────────── -->
@@ -845,33 +896,12 @@ function mkUnit(S, p, cardId, q, r, s) {
 
   const rei = kwCharge(kw);
 
-  // ── Dash: walk toward enemy base at spawn time ──────────
-  const dashN  = kwDash(kw);
-  let spawnQ = q, spawnR = r, spawnS = s;
-  if (dashN > 0) {
-    const target = p === 'A' ? BASE_B : BASE_A;
-    let cur = [q, r, s];
-    for (let i = 0; i < dashN; i++) {
-      const candidates = cNbr(...cur).filter(([nq,nr,ns]) => {
-        if (!inB(nq,nr,ns)) return false;
-        const k = cK(nq,nr);
-        const c = S.cells[k];
-        if (!c || c.type === 'EMPTY') return false;
-        if (c.type === 'BASE' && c.owner !== p) return false;
-        if (c.type === 'LAND' && c.owner !== p) return false;
-        if (unitAt(S,nq,nr,ns)) return false;
-        return true;
-      });
-      if (!candidates.length) break;
-      candidates.sort((a,b) => cDist(a, target) - cDist(b, target));
-      cur = candidates[0];
-    }
-    [spawnQ, spawnR, spawnS] = cur;
-  }
+  // ── Dash: set pendingDash so player can choose direction after spawn ──
+  const dashN = kwDash(kw);
 
   const unit = {
     id: uid, own: p, cid: cardId,
-    q: spawnQ, r: spawnR, s: spawnS,
+    q, r, s, // spawn at chosen tile; dash happens interactively after
     hp: baseHp, maxHp: baseHp, atk: baseAtk,
     bew, rei, kw,
     moved: false, atked: false,
@@ -879,6 +909,7 @@ function mkUnit(S, p, cardId, q, r, s) {
     noHarvest: !!(cd.text && cd.text.toLowerCase().includes("can't harvest")),
     atkBuff: 0, hpBuff: 0,
     protHit: false,
+    pendingDash: dashN > 0 ? dashN : 0, // player picks dash target after spawn
   };
 
   if (cd.onDeath)     unit.onDeath     = cd.onDeath;
@@ -1238,12 +1269,20 @@ function validMoves(S, uid) {
   const u = S.units[uid];
   if (!u || u.summonSick || u.moved) return [];
 
+  const enemy  = u.own === 'A' ? 'B' : 'A';
   const flying  = u.kw.has('flying');
   const jump    = u.kw.has('jump');
   const aquatic = u.kw.has('aquatic');
-  const charge  = kwCharge(u.kw) > 1; // charge:N means straight-line movement up to N
+  const charge  = kwCharge(u.kw) > 1;
   const chargeN = kwCharge(u.kw);
   const bew     = u.bew;
+
+  // ── Taunt: if an adjacent enemy has Taunt, this unit CANNOT move ──
+  // (it can only attack the taunt — handled in validAtks)
+  const adjEnemyTaunt = Object.values(S.units).some(t =>
+    t.own === enemy && t.kw.has('taunt') && cDist([u.q,u.r,u.s],[t.q,t.r,t.s]) === 1
+  );
+  if (adjEnemyTaunt) return [];
 
   const result = new Map(); // cK → [q,r,s]
 
@@ -1513,7 +1552,7 @@ function doGift(S, p, unit) {
 
     // ── Tiki Healer: Gift — Restore 5 life ────────────────
     case 'tiki_healer':
-      S.players[p].hp = Math.min(BASE_HP + 10, S.players[p].hp + 5);
+      S.players[p].hp = Math.min(BASE_HP, S.players[p].hp + 5);
       lg(S, p, `✦ Tiki Healer Gift: +5 LP → ${S.players[p].hp}`);
       break;
 
@@ -1531,17 +1570,11 @@ function doGift(S, p, unit) {
       }
       break;
 
-    // ── Water Elemental: Gift — Create a Lake ─────────────
-    case 'water_elemental': {
-      const spot = adjPlace(S,p).find(([aq,ar]) => {
-        const c=S.cells[cK(aq,ar)]; return c&&c.type==='EMPTY';
-      });
-      if (spot) {
-        S.cells[cK(spot[0],spot[1])] = { type:'LAND', owner:p, landType:'W' };
-        lg(S, p, `✦ Water Elemental Gift: See erschaffen`);
-      }
+    // ── Water Elemental: Gift — Player chooses where to create a Lake ─
+    case 'water_elemental':
+      unit.pendingGift = { type:'create_lake' };
+      lg(S, p, `✦ Water Elemental Gift: Wähle ein leeres Feld für einen See`);
       break;
-    }
 
     // ── Axe Grinder: Gift — +2/+2 if next to enemy well ──
     case 'axe_grinder': {
@@ -1570,6 +1603,17 @@ function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
   const opp = p === 'A' ? 'B' : 'A';
   const gift = unit.pendingGift;
   unit.pendingGift = null;
+
+  if (gift.type === 'create_lake') {
+    // Place a lake on any adjacent EMPTY cell
+    const c = S.cells[cK(targetQ, targetR)];
+    if (c && c.type === 'EMPTY') {
+      S.cells[cK(targetQ,targetR)] = { type:'LAND', owner:p, landType:'W' };
+      lg(S, p, `✦ Water Elemental: See erschaffen`);
+      return true;
+    }
+    return false; // invalid target — gift stays pending
+  }
 
   if (gift.type === 'dmg1_enemy') {
     // Can target enemy creature OR enemy base
@@ -1642,7 +1686,8 @@ function doPlay(S, p, id, q, r, s) {
     lg(S,p,`Beschwört ${cd.name}${kwList?' ['+kwList+']':''}`);
     // Trigger Gift ability
     doGift(S, p, unit);
-    return true;
+    // Return unit id so UI can enter dash mode if needed
+    return unit.id;
   }
 
   // ── INSTANT / EVENT ───────────────────────────────────
@@ -2376,6 +2421,11 @@ class Engine {
         ];
       } else if (u.pendingGift.type === 'give_taunt') {
         this.vt = Object.values(S.units).filter(t=>t.own===this.ap).map(t=>[t.q,t.r,t.s]);
+      } else if (u.pendingGift.type === 'create_lake') {
+        // Any adjacent-to-own-territory EMPTY cell
+        this.vt = Object.entries(S.cells)
+          .filter(([k,c]) => c.type === 'EMPTY')
+          .map(([k]) => pK(k));
       }
       this._showUD(u);
       this._render();
@@ -2433,8 +2483,23 @@ class Engine {
       }
 
       if (this.pact === 'unit') {
-        doPlay(S, this.ap, this.selCard, q, r, s);
+        const uid = doPlay(S, this.ap, this.selCard, q, r, s);
         this._clr();
+        // If spawned unit has pendingDash, enter dash mode immediately
+        if (typeof uid === 'string' && S.units[uid]?.pendingDash > 0) {
+          this.selUnit = uid;
+          this.pact    = 'dash';
+          this.vt      = this._dashTargets(S.units[uid]);
+          this._showUD(S.units[uid]);
+          this._render();
+          return;
+        }
+        // Check for pendingGift on newly spawned unit
+        if (typeof uid === 'string' && S.units[uid]?.pendingGift) {
+          this.selUnit = uid;
+          this.selUnitFn(uid); // enter gift mode
+          return;
+        }
       }
 
       if (this.pact === 'inst') {
@@ -2444,7 +2509,29 @@ class Engine {
 
       if (this.pact === 'gift' && this.selUnit) {
         const u = S.units[this.selUnit];
-        if (u) resolvePendingGift(S, this.ap, u, q, r, s);
+        if (u) {
+          const resolved = resolvePendingGift(S, this.ap, u, q, r, s);
+          if (!resolved) { this._render(); return; } // keep mode if invalid target
+        }
+        this._clr();
+      }
+
+      if (this.pact === 'dash' && this.selUnit) {
+        const u = S.units[this.selUnit];
+        if (u) {
+          u.q = q; u.r = r; u.s = s;
+          u.pendingDash = 0;
+          u.moved = true;
+          harvestMana(S, this.ap);
+          lg(S, this.ap, `${cardData(u.cid)?.name||u.id} Dash`);
+          // After dash, check for pendingGift
+          if (u.pendingGift) {
+            this.pact = 'gift';
+            const opp = this.ap === 'A' ? 'B' : 'A';
+            this.selUnitFn(u.id);
+            return;
+          }
+        }
         this._clr();
       }
 
@@ -2472,9 +2559,19 @@ class Engine {
         const tu = unitAt(S, q, r, s);
         const [bq,br,bs] = this.ap==='A' ? BASE_B : BASE_A;
         if (tu && tu.own !== this.ap) {
-          doAtk(S, this.selUnit, 'unit', tu.id);
+          this._combatFlash(this.selUnit, 'unit', tu.id, () => {
+            doAtk(S, this.selUnit, 'unit', tu.id);
+            this._clr(); this._render();
+            if (S.winner) this._win();
+          });
+          return; // render happens in callback
         } else if (q===bq && r===br && s===bs) {
-          doAtk(S, this.selUnit, 'base', this.ap==='A'?'B':'A');
+          this._combatFlash(this.selUnit, 'base', this.ap==='A'?'B':'A', () => {
+            doAtk(S, this.selUnit, 'base', this.ap==='A'?'B':'A');
+            this._clr(); this._render();
+            if (S.winner) this._win();
+          });
+          return;
         }
         this._clr();
       }
@@ -2491,6 +2588,50 @@ class Engine {
 
   _clr() { this.selCard=null; this.selUnit=null; this.pact=null; this.vt=[]; this.landN_left=0; }
   cancelSel() { this._clr(); this._render(); }
+
+  // ── Dash target tiles: straight lines up to N steps (no wells, no base, no occupied) ──
+  _dashTargets(u) {
+    const S = this.S;
+    const n = u.pendingDash;
+    const result = new Map();
+    const hasJump = u.kw.has('jump');
+    if (hasJump) {
+      // Jump+Dash: any direction within n steps, leap over obstacles
+      const visited = new Set([cK(u.q,u.r)]);
+      const frontier = [[u.q,u.r,u.s,0]];
+      while (frontier.length) {
+        const [q,r,s,d] = frontier.shift();
+        if (d >= n) continue;
+        cNbr(q,r,s).forEach(([nq,nr,ns]) => {
+          if (!inB(nq,nr,ns)) return;
+          const k = cK(nq,nr);
+          if (visited.has(k)) return;
+          visited.add(k);
+          const c = S.cells[k];
+          // Can leap over EMPTY and units
+          frontier.push([nq,nr,ns,d+1]);
+          if (!c || c.type==='EMPTY' || c.type==='WELL' || c.type==='BASE') return;
+          if (unitAt(S,nq,nr,ns)) return;
+          result.set(k,[nq,nr,ns]);
+        });
+      }
+    } else {
+      // Straight-line dash
+      HEX_DIRS.forEach(([dq,dr,ds]) => {
+        let cq=u.q, cr=u.r, cs=u.s;
+        for (let step=1; step<=n; step++) {
+          cq+=dq; cr+=dr; cs+=ds;
+          if (!inB(cq,cr,cs)) break;
+          const k = cK(cq,cr);
+          const c = S.cells[k];
+          if (!c || c.type==='EMPTY' || c.type==='WELL' || c.type==='BASE') break;
+          if (unitAt(S,cq,cr,cs)) break;
+          result.set(k,[cq,cr,cs]);
+        }
+      });
+    }
+    return [...result.values()];
+  }
 
   // ── Unit Detail Panel ───────────────────────────────────
   _showUD(u) {
@@ -2514,6 +2655,61 @@ class Engine {
       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px">${kwBadges}</div>
       <div style="font-size:.6rem;color:var(--dim);font-style:italic;margin-bottom:3px">${cd?.text || ''}</div>
       <div style="display:flex;gap:5px;flex-wrap:wrap">${sick}${moved}${atked}${prot}</div>`;
+  }
+
+  // ── Combat Flash Animation ──────────────────────────────
+  _combatFlash(attackerId, targetType, targetId, callback) {
+    const S = this.S;
+    const a = S.units[attackerId];
+    if (!a) { callback(); return; }
+    const aName = cardData(a.cid)?.name || attackerId;
+    const aOwn  = a.own;
+    const opp   = aOwn === 'A' ? 'B' : 'A';
+
+    let bName, bOwn;
+    if (targetType === 'unit') {
+      const d = S.units[targetId];
+      if (!d) { callback(); return; }
+      bName = cardData(d.cid)?.name || targetId;
+      bOwn  = d.own;
+    } else {
+      bName = `Gott ${targetId}`;
+      bOwn  = targetId;
+    }
+
+    // Determine attacker color based on owner
+    const elA    = document.getElementById('cf-nameA');
+    const elB    = document.getElementById('cf-nameB');
+    const elDmg  = document.getElementById('cf-dmg');
+    const elRes  = document.getElementById('cf-result');
+    const flash  = document.getElementById('combat-flash');
+
+    elA.textContent  = aOwn === 'A' ? aName : bName;
+    elA.className    = `cf-name cf-name${aOwn === 'A' ? 'A' : 'B'}`;
+    elB.textContent  = aOwn === 'A' ? bName : aName;
+    elB.className    = `cf-name cf-name${aOwn === 'A' ? 'B' : 'A'}`;
+    elDmg.textContent = `${effAtk(a)} Schaden${targetType==='unit'?` | ${effAtk(S.units[targetId]||{atk:0,atkBuff:0})||0} Gegenschlag`:''}`;
+    elRes.textContent = '';
+
+    flash.classList.add('show');
+    flash.querySelector('.cf-inner').classList.add('cf-shake');
+
+    // After 600ms apply damage and show result
+    setTimeout(() => {
+      callback();
+      // Show brief result
+      const resA = S.units[attackerId];
+      const resD = targetType==='unit' ? S.units[targetId] : null;
+      const parts = [];
+      if (!resA) parts.push(`${aName}: besiegt`);
+      if (targetType==='unit' && !resD) parts.push(`${bName}: besiegt`);
+      elRes.textContent = parts.join(' · ') || 'Kampf beendet';
+
+      setTimeout(() => {
+        flash.classList.remove('show');
+        flash.querySelector('.cf-inner').classList.remove('cf-shake');
+      }, 500);
+    }, 600);
   }
 
   _win() {
@@ -2583,6 +2779,7 @@ class Engine {
       else if (this.pact === 'atk')    hint.textContent = '⚔ Klicke ein Ziel zum Angreifen';
       else if (this.pact === 'inst')   hint.textContent = '✨ Klicke ein Ziel für den Zauber';
       else if (this.pact === 'gift')   hint.textContent = '✦ Gift: Klicke ein Ziel';
+      else if (this.pact === 'dash')   hint.textContent = '💨 Dash: Wähle ein Zielfeld (oder Abbrechen)';
       else if (free)                   hint.textContent = 'Wähle eine Karte oder Einheit — oder beende deinen Zug';
       else                             hint.textContent = '';
     }
