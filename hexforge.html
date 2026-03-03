@@ -321,10 +321,9 @@ svg#board { display: block; overflow: visible; }
   padding: 32px 48px;
   text-align: center;
   animation: fis .25s ease;
-  max-width: 520px;
+  max-width: 540px;
   width: 94%;
-  max-height: 90vh;
-  overflow-y: auto;
+  flex-shrink: 0;
 }
 @keyframes fis {
   from { opacity: 0; transform: scale(.92); }
@@ -1318,12 +1317,13 @@ function validMoves(S, uid) {
         visited.add(k);
         const c = S.cells[k];
         if (!c) return;
-        // Can cross OCEAN (EMPTY) and WELL — but these are not landing spots unless lake
-        if (c.type === 'BASE') return; // no entering bases
-        if (c.type === 'LAND' && c.landType !== 'W') return; // can only land on lakes
-        if (unitAt(S,nq,nr,ns)) return;
+        if (c.type === 'BASE') return;  // can never enter a BASE
+        if (unitAt(S,nq,nr,ns)) return; // blocked by any unit
+        // Aquatic can travel over/land on: EMPTY (ocean), WELL, lake LAND (W)
+        // Cannot enter: non-lake LAND (F, M, D, N)
+        if (c.type === 'LAND' && c.landType !== 'W') return;
+        // Valid cell — can land here and continue through it
         result.set(k,[nq,nr,ns]);
-        // Can continue moving through ocean/well
         frontier.push([nq,nr,ns,d+1]);
       });
     }
@@ -2151,6 +2151,10 @@ class Engine {
     switch (S.phase) {
 
       case 'DRAW':
+        // Production triggers at the START of each player's turn (before draw)
+        if (S.turn > 1) { // Skip turn 1 — units didn't exist yet at turn start
+          runProduction(S, this.ap);
+        }
         // Round 1: no card draw (players already have their starting hand from mulligan)
         if (S.turn === 1) {
           lg(S, this.ap, 'Runde 1 — kein Kartenzug');
@@ -2169,7 +2173,6 @@ class Engine {
         S.players[this.ap].boostUsed = false; // reset boost tracking for this turn
         S.players[this.ap].mana += inc + boost;
         lg(S, this.ap, `+${inc}${boost?'+1 Boost':''} Mana → ${S.players[this.ap].mana}`);
-        runProduction(S, this.ap);
         this._auto(350);
         break;
       }
