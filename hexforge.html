@@ -306,8 +306,10 @@ svg#board { display: block; overflow: visible; }
   inset: 0;
   background: rgba(0,0,0,.96);
   z-index: 200;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow-y: auto;
+  padding: 24px 0;
   backdrop-filter: blur(12px);
 }
 #sw-ov.on { display: flex; }
@@ -316,11 +318,13 @@ svg#board { display: block; overflow: visible; }
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 44px 64px;
+  padding: 32px 48px;
   text-align: center;
   animation: fis .25s ease;
-  max-width: 420px;
-  width: 90%;
+  max-width: 520px;
+  width: 94%;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 @keyframes fis {
   from { opacity: 0; transform: scale(.92); }
@@ -916,6 +920,21 @@ function mkUnit(S, p, cardId, q, r, s) {
   if (cd.onCombat)    unit.onCombat    = cd.onCombat;
   if (cd.onTurnStart) unit.onTurnStart = cd.onTurnStart;
 
+  // ── Hard-coded Production effects for CARD_DB cards ──────
+  // (CARD_DB stores text only, not functions)
+  const prodMap = {
+    shaytan_demon:    (S,u) => { S.players[u.own].hp -= 2; lg(S,u.own,`☠ Shaytan Dämon: -2 LP → ${S.players[u.own].hp}`); if(S.players[u.own].hp<=0) S.winner=u.own==='A'?'B':'A'; },
+    crystal_flower:   (S,u) => { S.players[u.own].mana += 1; lg(S,u.own,`✿ Crystal Flower: +1 Mana → ${S.players[u.own].mana}`); },
+    farm_boy:         (S,u) => { S.players[u.own].mana += 1; lg(S,u.own,`🌾 Farm Boy: +1 Mana → ${S.players[u.own].mana}`); },
+    animated_banquet: (S,u) => { buffUnit(u,1,0); lg(S,u.own,`🍖 Animated Banquet: +1 ATK → ${u.atk}`); },
+    triton_adventurer:(S,u) => { deal(S,u.own,1); lg(S,u.own,`🐟 Triton Adventurer: +1 Karte`); },
+    tiki_adventurer:  (S,u) => { S.players[u.own].mana += 1; lg(S,u.own,`🗿 Tiki Adventurer: +1 Mana → ${S.players[u.own].mana}`); },
+    keldran_adventurer:(S,u) => { buffUnit(u,1,1); lg(S,u.own,`⚔ Keldran Adventurer: +1/+1`); },
+  };
+  if (!unit.onTurnStart && prodMap[cardId]) {
+    unit.onTurnStart = prodMap[cardId];
+  }
+
   return unit;
 }
 
@@ -1269,124 +1288,134 @@ function validMoves(S, uid) {
   const u = S.units[uid];
   if (!u || u.summonSick || u.moved) return [];
 
-  const enemy  = u.own === 'A' ? 'B' : 'A';
+  const enemy   = u.own === 'A' ? 'B' : 'A';
   const flying  = u.kw.has('flying');
   const jump    = u.kw.has('jump');
   const aquatic = u.kw.has('aquatic');
-  const charge  = kwCharge(u.kw) > 1;
   const chargeN = kwCharge(u.kw);
-  const bew     = u.bew;
+  const charge  = chargeN > 1;
+  const bew     = u.bew; // 1 for standard units
 
-  // ── Taunt: if an adjacent enemy has Taunt, this unit CANNOT move ──
-  // (it can only attack the taunt — handled in validAtks)
+  // Taunt: if an ADJACENT enemy has Taunt, this unit cannot move at all
   const adjEnemyTaunt = Object.values(S.units).some(t =>
     t.own === enemy && t.kw.has('taunt') && cDist([u.q,u.r,u.s],[t.q,t.r,t.s]) === 1
   );
   if (adjEnemyTaunt) return [];
 
-  const result = new Map(); // cK → [q,r,s]
+  const result = new Map();
 
-  if (charge && !jump) {
-    // ── Charge only: straight lines up to chargeN steps ──
-    // Use bew for total movement range if bew > chargeN, otherwise chargeN
-    const maxSteps = Math.max(bew, chargeN);
-    HEX_DIRS.forEach(([dq, dr, ds]) => {
-      let cq = u.q, cr = u.r, cs = u.s;
-      for (let step = 1; step <= maxSteps; step++) {
-        cq += dq; cr += dr; cs += ds;
-        if (!inB(cq,cr,cs)) break;
-        const k = cK(cq,cr);
-        const c = S.cells[k];
-        if (!c || c.type === 'EMPTY') break;
-        if (aquatic && c.type !== 'WELL') break;
-        if (!aquatic && c.type === 'WELL') break;
-        if (c.type === 'BASE' && c.owner !== u.own) break; // can't enter enemy base
-        // Enemy LAND is passable — unit can move onto it
-        if (unitAt(S,cq,cr,cs)) break; // blocked by unit — can't pass or land
-        result.set(k, [cq,cr,cs]);
-      }
-    });
-    return [...result.values()];
-  }
-
-  if (jump) {
-    // ── Jump: up to 2 tiles any direction, leap over obstacles ──
-    // Beyond 2 with charge: straight line
-    const jumpMax = 2;
+  // ── Aquatic: travels over OCEAN (EMPTY) and WELL, lands only on lakes (W) or wells ──
+  if (aquatic && !flying) {
     const visited = new Set([cK(u.q,u.r)]);
     const frontier = [[u.q,u.r,u.s,0]];
     while (frontier.length) {
-      const [q,r,s,d] = frontier.shift();
-      if (d >= jumpMax) continue;
-      cNbr(q,r,s).forEach(([nq,nr,ns]) => {
+      const [aq,ar,as,d] = frontier.shift();
+      if (d >= (charge ? chargeN : bew)) continue;
+      cNbr(aq,ar,as).forEach(([nq,nr,ns]) => {
         if (!inB(nq,nr,ns)) return;
         const k = cK(nq,nr);
         if (visited.has(k)) return;
         visited.add(k);
         const c = S.cells[k];
-        if (!c || c.type === 'EMPTY') {
-          // Can jump over empty if within range
-          frontier.push([nq,nr,ns,d+1]);
-          return;
-        }
-        if (aquatic && c.type !== 'WELL') return;
-        if (!aquatic && c.type === 'WELL') return;
-        if (c.type === 'BASE' && c.owner !== u.own) return; // can't enter enemy base
-        // Enemy LAND is passable
-        if (!unitAt(S,nq,nr,ns)) result.set(k, [nq,nr,ns]);
-        frontier.push([nq,nr,ns,d+1]); // can jump OVER occupied
+        if (!c) return;
+        // Can cross OCEAN (EMPTY) and WELL — but these are not landing spots unless lake
+        if (c.type === 'BASE') return; // no entering bases
+        if (c.type === 'LAND' && c.landType !== 'W') return; // can only land on lakes
+        if (unitAt(S,nq,nr,ns)) return;
+        result.set(k,[nq,nr,ns]);
+        // Can continue moving through ocean/well
+        frontier.push([nq,nr,ns,d+1]);
       });
     }
-    // If also has charge, add straight-line moves beyond 2 up to chargeN
+    return [...result.values()];
+  }
+
+  // ── Charge (no jump): straight lines ──
+  if (charge && !jump) {
+    HEX_DIRS.forEach(([dq,dr,ds]) => {
+      let cq=u.q, cr=u.r, cs=u.s;
+      for (let step=1; step<=chargeN; step++) {
+        cq+=dq; cr+=dr; cs+=ds;
+        if (!inB(cq,cr,cs)) break;
+        const k=cK(cq,cr), c=S.cells[k];
+        if (!c || c.type==='EMPTY') break; // blocked by ocean
+        if (c.type==='BASE') break;        // no entering base
+        if (c.type==='WELL') break;        // wells block charge movement
+        if (unitAt(S,cq,cr,cs)) break;
+        result.set(k,[cq,cr,cs]);
+      }
+    });
+    return [...result.values()];
+  }
+
+  // ── Jump: up to 2 tiles any direction, leap over obstacles ──
+  if (jump) {
+    const visited = new Set([cK(u.q,u.r)]);
+    const frontier = [[u.q,u.r,u.s,0]];
+    while (frontier.length) {
+      const [q,r,s,d] = frontier.shift();
+      if (d >= 2) continue;
+      cNbr(q,r,s).forEach(([nq,nr,ns]) => {
+        if (!inB(nq,nr,ns)) return;
+        const k=cK(nq,nr);
+        if (visited.has(k)) return;
+        visited.add(k);
+        const c=S.cells[k];
+        // Can leap over anything (ocean, units, wells)
+        frontier.push([nq,nr,ns,d+1]);
+        if (!c || c.type==='EMPTY') return; // ocean: can pass but not land
+        if (c.type==='BASE') return;
+        if (c.type==='WELL') return;        // can't land on wells
+        if (unitAt(S,nq,nr,ns)) return;
+        result.set(k,[nq,nr,ns]);
+      });
+    }
+    // Jump+Charge: extend in straight lines beyond 2
     if (charge && chargeN > 2) {
       HEX_DIRS.forEach(([dq,dr,ds]) => {
-        let cq=u.q, cr2=u.r, cs2=u.s;
+        let cq=u.q, cr=u.r, cs=u.s;
         for (let step=1; step<=chargeN; step++) {
-          cq+=dq; cr2+=dr; cs2+=ds;
-          if (!inB(cq,cr2,cs2)) break;
-          const k=cK(cq,cr2);
-          const c=S.cells[k];
-          if (!c||c.type==='EMPTY') break;
-          if (aquatic && c.type!=='WELL') break;
-          if (!aquatic && c.type==='WELL') break;
-          if (c.type==='BASE'&&c.owner!==u.own) break; // can't enter enemy base
-          // Enemy LAND is passable
-          if (unitAt(S,cq,cr2,cs2)) break;
-          if (step > 2) result.set(k,[cq,cr2,cs2]);
+          cq+=dq; cr+=dr; cs+=ds;
+          if (!inB(cq,cr,cs)) break;
+          const k=cK(cq,cr), c=S.cells[k];
+          if (!c || c.type==='EMPTY') break;
+          if (c.type==='BASE' || c.type==='WELL') break;
+          if (unitAt(S,cq,cr,cs)) break;
+          if (step > 2) result.set(k,[cq,cr,cs]);
         }
       });
     }
     return [...result.values()];
   }
 
+  // ── Flying: move over ocean and land, not through other units ──
   if (flying) {
-    // ── Flying: move over ocean and land, NOT through other units ──
-    const flyVisited = new Set([cK(u.q,u.r)]);
-    const flyFrontier = [[u.q,u.r,u.s,0]];
-    const flyResult = [];
-    while (flyFrontier.length) {
-      const [q,r,s,d] = flyFrontier.shift();
+    const visited = new Set([cK(u.q,u.r)]);
+    const frontier = [[u.q,u.r,u.s,0]];
+    while (frontier.length) {
+      const [q,r,s,d] = frontier.shift();
       if (d >= bew) continue;
       cNbr(q,r,s).forEach(([nq,nr,ns]) => {
         if (!inB(nq,nr,ns)) return;
-        const k = cK(nq,nr);
-        if (flyVisited.has(k)) return;
-        flyVisited.add(k);
-        const c = S.cells[k];
-        if (unitAt(S,nq,nr,ns)) return; // cannot pass through units
-        if (!c || c.type === 'EMPTY') {
-          flyFrontier.push([nq,nr,ns,d+1]); // fly over ocean
+        const k=cK(nq,nr);
+        if (visited.has(k)) return;
+        visited.add(k);
+        if (unitAt(S,nq,nr,ns)) return; // blocked by any unit
+        const c=S.cells[k];
+        if (c && c.type==='BASE') return; // no entering base
+        if (c && c.type==='WELL') return; // no landing on wells
+        if (!c || c.type==='EMPTY') {
+          frontier.push([nq,nr,ns,d+1]); // fly over ocean
           return;
         }
-        if (c.type === 'BASE' && c.owner !== u.own) return;
-        flyResult.push([nq,nr,ns]);
-        flyFrontier.push([nq,nr,ns,d+1]);
+        result.set(k,[nq,nr,ns]);
+        frontier.push([nq,nr,ns,d+1]);
       });
     }
-    return flyResult;
+    return [...result.values()];
   }
 
-  // ── Standard BFS movement ──────────────────────────────
+  // ── Standard BFS (bew=1) ──────────────────────────────
   const visited = new Set([cK(u.q,u.r)]);
   const frontier = [[u.q,u.r,u.s,0]];
   while (frontier.length) {
@@ -1394,20 +1423,13 @@ function validMoves(S, uid) {
     if (d >= bew) continue;
     cNbr(q,r,s).forEach(([nq,nr,ns]) => {
       if (!inB(nq,nr,ns)) return;
-      const k = cK(nq,nr);
+      const k=cK(nq,nr);
       if (visited.has(k)) return;
       visited.add(k);
-      const c = S.cells[k];
-      if (!c || c.type === 'EMPTY') return;
-      if (c.type === 'WELL') {
-        if (!aquatic) return;
-        if (unitAt(S,nq,nr,ns)) return;
-        result.set(k,[nq,nr,ns]);
-        frontier.push([nq,nr,ns,d+1]);
-        return;
-      }
-      if (c.type === 'BASE' && c.owner !== u.own) return; // can't enter enemy base
-      // Enemy LAND is passable — units can move onto enemy territory
+      const c=S.cells[k];
+      if (!c || c.type==='EMPTY') return; // ocean blocks standard movement
+      if (c.type==='WELL') return;        // can't move into wells
+      if (c.type==='BASE') return;        // no entering base
       if (unitAt(S,nq,nr,ns)) return;
       result.set(k,[nq,nr,ns]);
       frontier.push([nq,nr,ns,d+1]);
@@ -1415,6 +1437,7 @@ function validMoves(S, uid) {
   }
   return [...result.values()];
 }
+
 
 // ══════════════════════════════════════════════════════════
 //  ATTACK TARGETS
@@ -1430,7 +1453,8 @@ function validAtks(S, uid) {
   const ranged  = u.kw.has('ranged');
 
   if (ranged) {
-    // Ranged: shoot in straight lines, infinite range, needs clear LOS
+    // Ranged: shoot in straight lines, infinite range
+    // EMPTY (ocean) does NOT block LOS — only units, LAND, BASE, WELL do
     // Cannot attack if already moved this turn
     if (u.moved) return [];
     const result = [];
@@ -1441,20 +1465,24 @@ function validAtks(S, uid) {
         if (!inB(cq,cr,cs)) break;
         const k = cK(cq,cr);
         const c = S.cells[k];
-        // Ocean/empty blocks LOS
-        if (!c || c.type==='EMPTY') break;
+        // EMPTY (ocean) = transparent, skip
+        if (!c || c.type==='EMPTY') continue;
+        // Check for unit on this cell first
         const tu = unitAt(S,cq,cr,cs);
         if (tu) {
-          // First thing in LOS — can only shoot this target
           if (tu.own === enemy) result.push({type:'unit',id:tu.id,q:cq,r:cr,s:cs});
-          break; // blocked regardless
+          break; // blocked by any unit
         }
-        // Check if enemy base is here
+        // Enemy base
         if (c.type==='BASE' && c.owner===enemy) {
-          const [bq,br,bs] = enemy==='A'?BASE_A:BASE_B;
-          result.push({type:'base',own:enemy,q:bq,r:br,s:bs});
+          result.push({type:'base',own:enemy,q:cq,r:cr,s:cs});
           break;
         }
+        // Own base or WELL with no unit = transparent
+        if (c.type==='BASE' && c.owner===u.own) continue;
+        if (c.type==='WELL') continue; // wells are transparent for ranged
+        // LAND without a unit = transparent (shoot over empty land)
+        // no break, continue along line
       }
     });
     return result;
@@ -1726,8 +1754,14 @@ function doPlay(S, p, id, q, r, s) {
         deal(S,p,1); S.players[p].hp=Math.min(BASE_HP,S.players[p].hp+5);
         lg(S,p,'Heilungslied: +5 LP, 1 Karte'); break;
 
-      case 'wisdom': case 'tidal_force': case 'shifting_tide':
+      case 'wisdom': case 'tidal_force':
         deal(S,p,2); lg(S,p,`${cd.name}: 2 Karten gezogen`); break;
+
+      case 'shifting_tide':
+        // Choose one: Draw a card OR move a land — handled via pendingChoice in UI
+        S._pendingShiftingTide = { p };
+        lg(S,p,'Shifting Tide: Wähle — Karte ziehen oder Land bewegen?');
+        break;
 
       case 'falcon_dive':
         if (u) { applyDmg(S,u,1,null); if(u.hp<=0)resolveDeath(S,u.id); lg(S,p,'Falkensturz: 1 Schaden'); } break;
@@ -1742,11 +1776,12 @@ function doPlay(S, p, id, q, r, s) {
         if (u) { applyDmg(S,u,3,null); if(u.hp<=0)resolveDeath(S,u.id); lg(S,p,'Feuerstrahl: 3 Schaden'); } break;
 
       case 'soul_drain':
-        if (u&&u.own!==p) {
-          applyDmg(S,u,2,null);
-          S.players[p].hp=Math.min(BASE_HP,S.players[p].hp+2);
-          if(u.hp<=0)resolveDeath(S,u.id);
-          lg(S,p,'Seelenraub: 2 Schaden, +2 LP');
+        if (u && u.own !== p) {
+          const drainAmt = Math.min(2, u.hp); // can't drain more than target has
+          applyDmg(S, u, drainAmt, null);
+          S.players[p].hp = Math.min(BASE_HP, S.players[p].hp + drainAmt);
+          if (u.hp <= 0) resolveDeath(S, u.id);
+          lg(S, p, `Seelenraub: ${drainAmt} LP gesaugt → eigener Gott: ${S.players[p].hp}`);
         } break;
 
       case 'gabrian_enchantment':
@@ -1800,6 +1835,26 @@ function runProduction(S, p) {
 //  CLEANUP
 // ══════════════════════════════════════════════════════════
 function doCleanup(S) {
+  // ── Drowning check (end of turn) ───────────────────────
+  // Aquatic creatures on non-WELL land die; non-aquatic/non-flying on EMPTY die
+  const toKill = [];
+  Object.values(S.units).forEach(u => {
+    const c = S.cells[cK(u.q,u.r)];
+    if (!c) return;
+    if (u.kw.has('aquatic')) {
+      // Aquatic dies on land that is NOT a lake/well
+      if (c.type === 'LAND' && c.landType !== 'W') toKill.push(u.id);
+      if (c.type === 'BASE') toKill.push(u.id);
+    } else if (!u.kw.has('flying')) {
+      // Normal units die on ocean (EMPTY = ocean)
+      if (c.type === 'EMPTY') toKill.push(u.id);
+    }
+  });
+  toKill.forEach(uid => {
+    const u = S.units[uid];
+    if (u) { lg(S, u.own, `💀 ${cardData(u.cid)?.name||uid} ertrunken`); resolveDeath(S, uid); }
+  });
+
   clearTempBuffs(S);
   Object.values(S.units).forEach(u => {
     u.moved=false; u.atked=false; u.summonSick=false;
@@ -1862,7 +1917,7 @@ const TARGET_ENEMY = new Set(['gust','firebomb','flame_burst','soul_drain','last
 // Cards that target any unit
 const TARGET_ANY   = new Set(['gabrian_enchantment','falcon_dive']);
 // Cards with no board target (self-effect)
-const TARGET_SELF  = new Set(['healing_song','wisdom','wild_growth','shifting_tide','tidal_force']);
+const TARGET_SELF  = new Set(['healing_song','wisdom','wild_growth','tidal_force']);
 // Cards that target empty adjacent land cells
 const TARGET_LAND  = new Set(['explore']);
 
@@ -1912,14 +1967,15 @@ class Engine {
     const mulliganCards = hand.filter(id => id !== 'explore');
     const hasExplore = hand.includes('explore');
 
-    const cardsHtml = mulliganCards.map(id => {
+    const cardsHtml = mulliganCards.map((id, idx) => {
       const cd = cardData(id);
       if (!cd) return '';
       const col = { blue:'#3a8acc', green:'#4a9e40', red:'#cc4444', yellow:'#d4982a', neutral:'#8a9ab0' }[cd.color] || '#8a9ab0';
       const bg  = { blue:'#0d1e3a', green:'#0d1e0d', red:'#1e0808', yellow:'#1e1008', neutral:'#111418' }[cd.color] || '#111418';
       const atk = cd.atk ?? cd.power;
       const hp  = cd.hp  ?? cd.life;
-      return `<div id="mull-${id}" onclick="G.toggleMulligan('${id}')"
+      // Use index-based id to handle duplicate cards in hand
+      return `<div id="mull-idx-${idx}" data-cardid="${id}" data-idx="${idx}" onclick="G.toggleMulligan(${idx},'${id}')"
         style="cursor:pointer;border:2px solid #252d40;border-radius:6px;padding:6px 8px;
                background:${bg};min-width:90px;max-width:110px;text-align:center;transition:all .15s">
         <div style="font-family:'Cinzel',serif;font-size:.58rem;color:${col};margin-bottom:3px">${cd.name}</div>
@@ -1952,16 +2008,17 @@ class Engine {
     document.getElementById('sw-ov').classList.add('on');
   }
 
-  toggleMulligan(id) {
-    const el = document.getElementById(`mull-${id}`);
+  toggleMulligan(idx, id) {
+    const el = document.getElementById(`mull-idx-${idx}`);
     if (!el) return;
-    if (this.mulliganSel.has(id)) {
-      this.mulliganSel.delete(id);
+    const key = `${idx}:${id}`;
+    if (this.mulliganSel.has(key)) {
+      this.mulliganSel.delete(key);
       el.style.borderColor = '#252d40';
       el.style.boxShadow   = '';
       el.style.opacity     = '1';
     } else {
-      this.mulliganSel.add(id);
+      this.mulliganSel.add(key);
       el.style.borderColor = '#cc3333';
       el.style.boxShadow   = '0 0 8px #cc3333';
       el.style.opacity     = '0.6';
@@ -1970,7 +2027,9 @@ class Engine {
 
   confirmMulligan(p) {
     const S = this.S;
-    doMulligan(S, p, [...this.mulliganSel]);
+    // Extract card ids from "idx:cardid" keys
+    const replaceIds = [...this.mulliganSel].map(key => key.split(':').slice(1).join(':'));
+    doMulligan(S, p, replaceIds);
     this.mulliganSel.clear();
 
     const mp = document.getElementById('sw-mulligan');
@@ -2369,6 +2428,12 @@ class Engine {
 
     // Instant / Event
     if (isInstantCard(cd)) {
+      // ── Shifting Tide: modal choice ────────────────────
+      if (id === 'shifting_tide') {
+        this._shiftingTideChoice();
+        return;
+      }
+
       this.pact = 'inst';
 
       if (TARGET_SELF.has(id)) {
@@ -2422,10 +2487,9 @@ class Engine {
       } else if (u.pendingGift.type === 'give_taunt') {
         this.vt = Object.values(S.units).filter(t=>t.own===this.ap).map(t=>[t.q,t.r,t.s]);
       } else if (u.pendingGift.type === 'create_lake') {
-        // Any adjacent-to-own-territory EMPTY cell
-        this.vt = Object.entries(S.cells)
-          .filter(([k,c]) => c.type === 'EMPTY')
-          .map(([k]) => pK(k));
+        // Adjacent to own territory (like normal land placement)
+        this.vt = adjPlace(S, this.ap)
+          .filter(([aq,ar]) => { const c=S.cells[cK(aq,ar)]; return c && c.type==='EMPTY'; });
       }
       this._showUD(u);
       this._render();
@@ -2461,6 +2525,42 @@ class Engine {
           S.cells[cK(q,r)] = { type:'LAND', owner:this.ap, landType:cd.landType };
           S.lobDone = true;
           lg(S, this.ap, `${cd.name} platziert`);
+        }
+        this._clr(); this._render();
+        return;
+      }
+
+      // Shifting Tide: pick source land to move
+      if (this.pact === 'shifting_land_pick') {
+        const srcKey = cK(q,r);
+        const srcCell = S.cells[srcKey];
+        if (!srcCell || srcCell.type !== 'LAND') { this._render(); return; }
+        this._shiftingSrc = { k:srcKey, q, r, s, landType:srcCell.landType };
+        this.pact = 'shifting_land_dest';
+        // Destination: any empty adjacent cell (like adjPlace)
+        this.vt = Object.entries(S.cells)
+          .filter(([k,c]) => c.type==='EMPTY' && k!==srcKey)
+          .map(([k]) => pK(k));
+        lg(S, this.ap, 'Shifting Tide: Wähle Zielfeld');
+        this._render();
+        return;
+      }
+
+      // Shifting Tide: pick destination, then commit
+      if (this.pact === 'shifting_land_dest') {
+        const src = this._shiftingSrc;
+        if (src) {
+          // Remove land from source
+          S.cells[src.k] = { type:'EMPTY' };
+          // Place at destination
+          S.cells[cK(q,r)] = { type:'LAND', owner:this.ap, landType:src.landType };
+          // Pay cost
+          S.players[this.ap].mana -= cardData('shifting_tide').cost;
+          const idx = S.players[this.ap].hand.indexOf('shifting_tide');
+          if (idx !== -1) S.players[this.ap].hand.splice(idx, 1);
+          S.players[this.ap].grave.push('shifting_tide');
+          lg(S, this.ap, 'Shifting Tide: Land verschoben');
+          this._shiftingSrc = null;
         }
         this._clr(); this._render();
         return;
@@ -2584,6 +2684,67 @@ class Engine {
     // Fall-through: select unit
     const u = unitAt(S, q, r, s);
     if (u) this.selUnitFn(u.id);
+  }
+
+  // ── Shifting Tide: modal choice ────────────────────────
+  _shiftingTideChoice() {
+    const S = this.S;
+    if (!canPlay(S, this.ap, 'shifting_tide')) return;
+    const existing = document.getElementById('shifting-tide-modal');
+    if (existing) existing.remove();
+    const modal = document.createElement('div');
+    modal.id = 'shifting-tide-modal';
+    modal.style.cssText = `position:fixed;inset:0;z-index:950;display:flex;
+      align-items:center;justify-content:center;background:rgba(0,0,0,.7)`;
+    modal.innerHTML = `
+      <div style="background:#0e1520;border:2px solid #c8a84b;border-radius:10px;
+           padding:24px 32px;text-align:center;font-family:'Cinzel',serif;max-width:280px">
+        <div style="color:#c8a84b;font-size:.8rem;letter-spacing:2px;margin-bottom:18px">
+          SHIFTING TIDE
+        </div>
+        <div style="color:var(--dim);font-size:.6rem;margin-bottom:20px">Wähle eine Option:</div>
+        <div style="display:flex;gap:12px;justify-content:center">
+          <button onclick="G._shiftingTidePick('draw')"
+            style="padding:10px 18px;font-size:.65rem">🃏 Karte ziehen</button>
+          <button onclick="G._shiftingTidePick('land')"
+            style="padding:10px 18px;font-size:.65rem">🗺 Land bewegen</button>
+        </div>
+        <div style="margin-top:14px">
+          <button onclick="G._shiftingTideCancel()"
+            style="padding:6px 14px;font-size:.55rem;opacity:.7">Abbrechen</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+
+  _shiftingTidePick(choice) {
+    const S = this.S;
+    const modal = document.getElementById('shifting-tide-modal');
+    if (modal) modal.remove();
+
+    if (choice === 'draw') {
+      // Pay cost and draw a card
+      S.players[this.ap].mana -= cardData('shifting_tide').cost;
+      S.players[this.ap].hand.splice(S.players[this.ap].hand.indexOf('shifting_tide'), 1);
+      S.players[this.ap].grave.push('shifting_tide');
+      deal(S, this.ap, 1);
+      lg(S, this.ap, 'Shifting Tide: Karte gezogen');
+      this._render();
+    } else {
+      // Land move: player picks a land to move, then picks destination
+      this.pact     = 'shifting_land_pick';
+      this.selCard  = 'shifting_tide';
+      this.vt       = Object.entries(S.cells)
+        .filter(([k,c]) => c.owner === this.ap && c.type === 'LAND')
+        .map(([k]) => pK(k));
+      lg(S, this.ap, 'Shifting Tide: Wähle ein eigenes Land zum Verschieben');
+      this._render();
+    }
+  }
+
+  _shiftingTideCancel() {
+    const modal = document.getElementById('shifting-tide-modal');
+    if (modal) modal.remove();
   }
 
   _clr() { this.selCard=null; this.selUnit=null; this.pact=null; this.vt=[]; this.landN_left=0; }
