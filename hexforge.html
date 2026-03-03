@@ -12,6 +12,7 @@
 
 
 
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
 
@@ -578,6 +579,9 @@ svg#board { display: block; overflow: visible; }
 
 
 
+
+
+
 <script>
 // ── hexforge-cards.js ──
 // ╔══════════════════════════════════════════════════════════╗
@@ -707,7 +711,7 @@ const BOARD_R   = 3;
 const HS        = 34;
 const BASE_HP   = 20;
 const BASE_MANA = 3;
-const WELL_MANA = 2;
+const WELL_MANA = 1; // each well yields 1 Faeria per turn, then is exhausted until opponent's turn
 const HAND_MAX  = 9;
 
 // ── Cube Coordinate Helpers ────────────────────────────────
@@ -836,8 +840,8 @@ function mkUnit(S, p, cardId, q, r, s) {
   const baseAtk = cd.atk ?? cd.power ?? 0;
   const baseHp  = cd.hp  ?? cd.life  ?? 1;
 
-  let bew = cd.bew ?? 2;
-  if (kw.has('flying') && !cd.bew) bew = 3;
+  let bew = cd.bew ?? 1; // default: 1 hex movement
+  if (kw.has('flying') && !cd.bew) bew = 2; // flying gets 2 by default
 
   const rei = kwCharge(kw);
 
@@ -1139,8 +1143,10 @@ function harvestMana(S, p) {
     const wasCtrl = prev[k];
     const isCtrl  = c?.ctrl === p;
     // Grant mana only if this player newly controls this well this turn
-    if (isCtrl && wasCtrl !== p) {
+    // AND the well has not already been harvested this turn
+    if (isCtrl && wasCtrl !== p && !c.exhausted) {
       gained += WELL_MANA;
+      c.exhausted = true; // well is now exhausted until opponent's turn
     }
   });
   if (gained > 0) {
@@ -1159,9 +1165,15 @@ function harvestMana(S, p) {
 function manaInc(S, p) {
   updWells(S);
 
+  // Reset exhausted wells — wells that were harvested by the OPPONENT refresh now
+  const opp = p === 'A' ? 'B' : 'A';
+  WELLS.forEach(([wq,wr,ws]) => {
+    const k = cK(wq,wr);
+    const c = S.cells[k];
+    if (c && c.exhausted) c.exhausted = false; // refresh at start of each player's turn
+  });
+
   // Reset harvest tracking for the new turn
-  // Wells already controlled at turn start grant mana via the MANA phase,
-  // not again during the turn via harvestMana.
   S._prevWellCtrl = {};
   WELLS.forEach(([wq,wr,ws]) => {
     const k = cK(wq,wr);
@@ -1436,51 +1448,53 @@ function validAtks(S, uid) {
 }
 
 // ══════════════════════════════════════════════════════════
-//  COMBAT
+//  COMBAT — simultaneous damage
 // ══════════════════════════════════════════════════════════
 function doAtk(S, attackerId, targetType, targetId) {
-  const a=S.units[attackerId];
-  if (!a||a.atked||a.summonSick) return;
+  const a = S.units[attackerId];
+  if (!a || a.atked || a.summonSick) return;
 
   const aName = cardData(a.cid)?.name || attackerId;
 
-  if (targetType==='unit') {
-    const d=S.units[targetId];
+  if (targetType === 'unit') {
+    const d = S.units[targetId];
     if (!d) return;
     const dName = cardData(d.cid)?.name || targetId;
     lg(S, a.own, `${aName} ⚔ ${dName}`);
 
-    applyDmg(S, d, effAtk(a), a);
-    lg(S, a.own, `→ ${dName}: ${Math.max(0,d.hp)} HP verbleibend`);
-
-    // Counter-attack rules for ranged:
-    // Defender retaliates only if: (a) attacker is NOT ranged, OR
-    // (b) attacker IS ranged but defender is adjacent, OR defender is also ranged
+    // Calculate both damage values BEFORE applying either (simultaneous combat)
+    const dmgToD = effAtk(a);
     const adjacent = cDist([a.q,a.r,a.s],[d.q,d.r,d.s]) === 1;
     const defRetaliates = !a.kw.has('ranged') || adjacent || d.kw.has('ranged');
+    const dmgToA = defRetaliates ? effAtk(d) : 0;
 
-    if (defRetaliates && S.units[targetId] && d.hp > 0) {
-      applyDmg(S, a, effAtk(d), d);
-      lg(S, d.own, `↩ Gegenschlag: ${aName}: ${Math.max(0,a.hp)} HP verbleibend`);
-    }
+    // Apply damage simultaneously
+    applyDmg(S, d, dmgToD, a);
+    if (dmgToA > 0) applyDmg(S, a, dmgToA, d);
 
-    if (S.units[targetId]  && d.hp<=0) resolveDeath(S, targetId);
-    if (S.units[attackerId]&& a.hp<=0) { resolveDeath(S, attackerId); return; }
+    lg(S, a.own, `→ ${dName}: ${Math.max(0,d.hp)} HP | ${aName}: ${Math.max(0,a.hp)} HP`);
 
-    if (S.units[attackerId] && typeof a.onCombat==='function') {
-      try { a.onCombat(S,a,d); } catch(e) { console.warn('onCombat',e); }
+    // Resolve deaths
+    const dDied = d.hp <= 0;
+    const aDied = a.hp <= 0;
+    if (dDied && S.units[targetId])  resolveDeath(S, targetId);
+    if (aDied && S.units[attackerId]) { resolveDeath(S, attackerId); return; }
+
+    if (S.units[attackerId] && typeof a.onCombat === 'function') {
+      try { a.onCombat(S, a, d); } catch(e) { console.warn('onCombat', e); }
     }
   } else {
-    const dmg=effAtk(a);
+    // Attack enemy base
+    const dmg = effAtk(a);
     S.players[targetId].hp -= dmg;
     lg(S, a.own, `⚔ Basis ${targetId}: -${dmg}HP → ${S.players[targetId].hp} verbleibend`);
-    if (S.players[targetId].hp<=0) S.winner=a.own;
-    if (S.units[attackerId]&&typeof a.onCombat==='function') {
-      try { a.onCombat(S,a,null); } catch(e) {}
+    if (S.players[targetId].hp <= 0) S.winner = a.own;
+    if (S.units[attackerId] && typeof a.onCombat === 'function') {
+      try { a.onCombat(S, a, null); } catch(e) {}
     }
   }
 
-  if (S.units[attackerId]) S.units[attackerId].atked=true;
+  if (S.units[attackerId]) S.units[attackerId].atked = true;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1513,6 +1527,9 @@ function doPlay(S, p, id, q, r, s) {
 
   // ── UNIT ──────────────────────────────────────────────
   if (cd.type==='UNIT' || cd.type==='creature') {
+    // Refuse spawn on BASE cells (Masterfeld)
+    const targetCell = S.cells[cK(q,r)];
+    if (targetCell && targetCell.type === 'BASE') return false;
     const unit=mkUnit(S,p,id,q,r,s);
     if (!unit) return false;
     S.units[unit.id]=unit;
@@ -1934,11 +1951,11 @@ class Engine {
         break;
 
       case 'MANA': {
-        // Mana resets each turn to the base income (not accumulated)
-        const inc = manaInc(S, this.ap);
+        // Mana accumulates — add income to existing pool (unspent mana carries over)
+        const inc   = manaInc(S, this.ap);
         const boost = S.players[this.ap].boostUsed ? 1 : 0;
-        S.players[this.ap].mana = inc + boost;
-        lg(S, this.ap, `Mana: ${inc}${boost?' +'+boost+' Boost':''} = ${S.players[this.ap].mana}`);
+        S.players[this.ap].mana += inc + boost;
+        lg(S, this.ap, `+${inc}${boost?'+'+boost+' Boost':''} Mana → ${S.players[this.ap].mana}`);
         runProduction(S, this.ap);
         this._auto(350);
         break;
