@@ -1436,34 +1436,52 @@ function validMoves(S, uid) {
 
   const result = new Map();
 
-  // ── Flying: moves freely over ocean/land, can land anywhere except BASE/WELL/occupied ──
-  // Flying overrides all other movement restrictions (charge, aquatic, standard BFS)
+  // ── Flying: moves in STRAIGHT LINES over ocean/land, can't land on BASE/WELL/occupied ──
+  // If also has Jump: uses free BFS up to range instead of straight lines
   if (flying) {
     const maxRange = charge ? chargeN : bew;
-    const visited = new Set([cK(u.q,u.r)]);
-    const frontier = [[u.q,u.r,u.s,0]];
-    while (frontier.length) {
-      const [q,r,s,d] = frontier.shift();
-      if (d >= maxRange) continue;
-      cNbr(q,r,s).forEach(([nq,nr,ns]) => {
-        if (!inB(nq,nr,ns)) return;
-        const k=cK(nq,nr);
-        if (visited.has(k)) return;
-        visited.add(k);
-        if (unitAt(S,nq,nr,ns)) return; // blocked by any unit
-        const c=S.cells[k];
-        if (c && c.type==='BASE') return; // no entering base
-        if (c && c.type==='WELL') return; // no landing on wells
-        // Flying can land on EMPTY (ocean) AND on any LAND type
-        result.set(k,[nq,nr,ns]);
-        frontier.push([nq,nr,ns,d+1]);
+
+    if (jump) {
+      // Flying + Jump: free BFS (any direction, up to range)
+      const visited = new Set([cK(u.q,u.r)]);
+      const frontier = [[u.q,u.r,u.s,0]];
+      while (frontier.length) {
+        const [q,r,s,d] = frontier.shift();
+        if (d >= maxRange) continue;
+        cNbr(q,r,s).forEach(([nq,nr,ns]) => {
+          if (!inB(nq,nr,ns)) return;
+          const k=cK(nq,nr);
+          if (visited.has(k)) return;
+          visited.add(k);
+          const c=S.cells[k];
+          if (c && c.type==='BASE') return;
+          if (c && c.type==='WELL') return; // no landing on wells
+          if (unitAt(S,nq,nr,ns)) return;
+          result.set(k,[nq,nr,ns]);
+          frontier.push([nq,nr,ns,d+1]);
+        });
+      }
+    } else {
+      // Flying only: straight lines in 6 directions, fly over ocean & units
+      HEX_DIRS.forEach(([dq,dr,ds]) => {
+        let cq=u.q, cr=u.r, cs=u.s;
+        for (let step=1; step<=maxRange; step++) {
+          cq+=dq; cr+=dr; cs+=ds;
+          if (!inB(cq,cr,cs)) break;
+          const k=cK(cq,cr), c=S.cells[k];
+          if (c && c.type==='BASE') break; // can't enter base
+          if (c && c.type==='WELL') break; // can't land on wells
+          if (unitAt(S,cq,cr,cs)) break;   // blocked by unit
+          // Can land on LAND or EMPTY (ocean)
+          result.set(k,[cq,cr,cs]);
+        }
       });
     }
     return [...result.values()];
   }
 
-  // ── Aquatic: travels over OCEAN (EMPTY) and WELL, lands only on lakes (W), EMPTY, or wells ──
-  // With Jump: can leap over units/obstacles, same aquatic landing restriction
+  // ── Aquatic: travels over OCEAN (EMPTY), can NOT land on WELLs or non-lake LAND ──
+  // With Jump: can leap over units/obstacles
   if (aquatic) {
     const range = jump ? 2 : (charge ? chargeN : bew);
     const visited = new Set([cK(u.q,u.r)]);
@@ -1478,19 +1496,17 @@ function validMoves(S, uid) {
         visited.add(k);
         const c = S.cells[k];
         if (!c) return;
-        if (c.type === 'BASE') return;  // can never enter a BASE
-        // Cannot land on non-lake LAND (but Jump can leap OVER occupied cells)
+        if (c.type === 'BASE') return;  // can never enter BASE
+        if (c.type === 'WELL') return;  // can never land on WELL
+        // Cannot land on non-lake LAND
         if (c.type === 'LAND' && c.landType !== 'W') {
-          // With jump: can pass through non-lake land (but not land there)
-          if (jump) frontier.push([nq,nr,ns,d+1]); // continue traversal
+          if (jump) frontier.push([nq,nr,ns,d+1]); // jump can pass through
           return;
         }
         if (unitAt(S,nq,nr,ns)) {
-          // With jump: can leap over units
           if (jump) frontier.push([nq,nr,ns,d+1]);
           return;
         }
-        // Valid landing cell
         result.set(k,[nq,nr,ns]);
         frontier.push([nq,nr,ns,d+1]);
       });
