@@ -3181,10 +3181,6 @@ class Engine {
       document.getElementById(`hp-${p}`).textContent    = S.players[p].hp;
       document.getElementById(`mana-${p}`).textContent  = S.players[p].mana;
       document.getElementById(`cards-${p}`).textContent = `${S.players[p].hand.length}/${S.players[p].deck.length}`;
-      // Wells: show count and Faeria income per turn
-      const wc = ctrlWells(S, p);
-      const wi = wc * WELL_MANA;
-      document.getElementById(`wells-${p}`).textContent = wc > 0 ? `${wc} (+${wi}/Zug)` : '0';
       document.getElementById(`hpbar-${p}`).style.width = `${S.players[p].hp/BASE_HP*100}%`;
     });
     document.getElementById('rnd').textContent = S.turn;
