@@ -2016,42 +2016,7 @@ function doCleanup(S) {
   }
 }
 
-// ══════════════════════════════════════════════════════════
-//  UI CARD HELPERS  (used by Engine + UI)
-// ══════════════════════════════════════════════════════════
-const KW_STYLE = {
-  'flying':      { label:'✦ Flying',      bg:'#0d2040', border:'#3a8acc', col:'#60aaee' },
-  'jump':        { label:'↑ Jump',        bg:'#1a1a10', border:'#8a8a30', col:'#cccc60' },
-  'aquatic':     { label:'⚓ Aquatic',     bg:'#0d1e3a', border:'#2a6aaa', col:'#4a9acc' },
-  'ranged':      { label:'🏹 Ranged',      bg:'#201808', border:'#8a5020', col:'#cc8040' },
-  'taunt':       { label:'🛡 Taunt',       bg:'#101828', border:'#2a5080', col:'#6090cc' },
-  'haste':       { label:'⚡ Haste',       bg:'#201800', border:'#806000', col:'#c8a020' },
-  'deathtouch':  { label:'☠ Deathtouch',  bg:'#180818', border:'#602060', col:'#a040a0' },
-  'protection':  { label:'◈ Protection',  bg:'#181808', border:'#606020', col:'#a0a030' },
-  'divine':      { label:'✧ Divine',      bg:'#181818', border:'#808020', col:'#e0e060' },
-};
-
-function kwBadge(kwKey) {
-  const base = kwKey.split(':')[0];
-  const s = KW_STYLE[base];
-  if (!s) return `<span style="font-size:.55rem;background:#111;border:1px solid #333;color:#888;padding:1px 4px;border-radius:2px">${kwKey}</span>`;
-  return `<span style="font-size:.55rem;background:${s.bg};border:1px solid ${s.border};color:${s.col};padding:1px 4px;border-radius:2px;letter-spacing:.5px">${s.label}</span>`;
-}
-
-const MENU_OPTS = [
-  {key:'F', label:'Wald',      color:'#2d5a27', req:'F', cost:0},
-  {key:'D', label:'Wüste',     color:'#6a4a18', req:'D', cost:0},
-  {key:'M', label:'Berg',      color:'#4a4a60', req:'M', cost:0},
-  {key:'W', label:'See',       color:'#1a4a7a', req:'W', cost:0},
-  {key:'N', label:'Grasland',  color:'#3a4a60', req:'N', cost:0},
-];
-
-const TARGET_OWN        = new Set(['veil','battlecry','ironbark','campfire','elderwood_embrace','tiki_chieftain']);
-const TARGET_ENEMY_UNIT = new Set(['gust','last_nightmare']);
-const TARGET_ALL_UNITS  = new Set(['firebomb','gabrian_enchantment','falcon_dive']);
-const TARGET_ALL        = new Set(['flame_burst','soul_drain']);
-const TARGET_SELF       = new Set(['healing_song','wisdom','wild_growth','tidal_force']);
-const TARGET_LAND       = new Set(['explore']);
+// (KW_STYLE, kwBadge, MENU_OPTS, TARGET_* defined in UI script)
 
 </script>
 <script>
