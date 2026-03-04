@@ -806,29 +806,11 @@ const CARDS = (function() {
   const add = (card) => { db[card.id] = card; return card; };
 
   // ── LANDS ──────────────────────────────────────────────
-  add({ id:'land_F', name:'Waldlichtung', color:'green',   type:'LAND', landType:'F', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Waldfeld.' });
-  add({ id:'land_D', name:'Wüstenoase',   color:'yellow',  type:'LAND', landType:'D', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Wüstenfeld.' });
-  add({ id:'land_M', name:'Bergpass',     color:'red',     type:'LAND', landType:'M', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Bergfeld.' });
-  add({ id:'land_W', name:'Flachufer',    color:'blue',    type:'LAND', landType:'W', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Seefeld.' });
-  add({ id:'land_N', name:'Grasland',     color:'neutral', type:'LAND', landType:'N', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert 2 neutrale Felder.' });
-
-  // ── LEGACY UNITS (deutsch) ────────────────────────────
-  add({ id:'scout_F',    name:'Waldläufer',     color:'green',   type:'creature', cost:2, req:{F:1}, kw:kw('dash:1'),             atk:2,hp:4, text:'Dash 1.' });
-  add({ id:'guardian_M', name:'Steinwächter',   color:'red',     type:'creature', cost:4, req:{M:2}, kw:kw('taunt'),              atk:3,hp:6, text:'Taunt.' });
-  add({ id:'rider_D',    name:'Wüstenreiter',   color:'yellow',  type:'creature', cost:3, req:{D:1}, kw:kw('dash:2','haste'),     atk:3,hp:3, text:'Dash 2, Haste.' });
-  add({ id:'sprite_W',   name:'Seenixe',        color:'blue',    type:'creature', cost:3, req:{W:1}, kw:kw('aquatic','charge:2'), atk:2,hp:2, text:'Aquatic, Charge 2.' });
-  add({ id:'archer_M',   name:'Bergschütze',    color:'red',     type:'creature', cost:3, req:{M:1}, kw:kw('ranged','charge:2'),  atk:2,hp:3, text:'Ranged, Charge 2.' });
-  add({ id:'brawler_N',  name:'Söldner',        color:'neutral', type:'creature', cost:2, req:{},    kw:kw(),                    atk:2,hp:3, text:'' });
-  add({ id:'emissary',   name:'Dualist',        color:'neutral', type:'creature', cost:5, req:{F:1,D:1}, kw:kw('jump'),          atk:4,hp:4, text:'Jump.' });
-  add({ id:'sky_knight', name:'Himmelsritter',  color:'neutral', type:'creature', cost:4, req:{},    kw:kw('flying','charge:2'), atk:3,hp:3, text:'Flying, Charge 2.' });
-  add({ id:'death_monk', name:'Todesmonch',     color:'neutral', type:'creature', cost:3, req:{},    kw:kw('deathtouch'),        atk:1,hp:4, text:'Deathtouch.' });
-  add({ id:'wellkeeper', name:'Brunnenwächter', color:'neutral', type:'creature', cost:3, req:{},    kw:kw('taunt'),             atk:1,hp:5, text:'Taunt. Adj. Well: +1 Mana.' });
-
-  // ── LEGACY INSTANTS (deutsch) ────────────────────────
-  add({ id:'veil',      name:'Tarnschleier', color:'green',   type:'INSTANT', cost:1, req:{F:1}, kw:kw(), atk:null,hp:null, text:'-2 Schaden an eigener Einheit.' });
-  add({ id:'gust',      name:'Sandschwall',  color:'yellow',  type:'INSTANT', cost:2, req:{D:2}, kw:kw(), atk:null,hp:null, text:'Schiebe Gegner 1 Feld, 1 Schaden.' });
-  add({ id:'battlecry', name:'Schlachtruf',  color:'neutral', type:'INSTANT', cost:2, req:{},    kw:kw(), atk:null,hp:null, text:'Gib einer eigenen Einheit +2/+0 bis Rundenende.' });
-  add({ id:'ironbark',  name:'Eisenrinde',   color:'green',   type:'INSTANT', cost:2, req:{F:1}, kw:kw(), atk:null,hp:null, text:'Gib einer eigenen Einheit +0/+3 und Taunt.' });
+  add({ id:'land_F', set:'core', name:'Waldlichtung', color:'green',   type:'LAND', landType:'F', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Waldfeld.' });
+  add({ id:'land_D', set:'core', name:'Wüstenoase',   color:'yellow',  type:'LAND', landType:'D', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Wüstenfeld.' });
+  add({ id:'land_M', set:'core', name:'Bergpass',     color:'red',     type:'LAND', landType:'M', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Bergfeld.' });
+  add({ id:'land_W', set:'core', name:'Flachufer',    color:'blue',    type:'LAND', landType:'W', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Seefeld.' });
+  add({ id:'land_N', set:'core', name:'Grasland',     color:'neutral', type:'LAND', landType:'N', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert 2 neutrale Felder.' });
 
   // ── BLUE CREATURES ────────────────────────────────────
   add({ id:'triton_warrior',  name:'Triton Warrior',  color:'blue', type:'creature', subtype:'Triton', cost:4, req:{lake:2}, kw:kw('jump'),                   atk:4,hp:4, text:'Jump.' });
@@ -840,37 +822,37 @@ const CARDS = (function() {
     text:'Gift - Change another friendly creature to 6/6.',
     onGift:(S,p,unit) => { unit.pendingGift={type:'set_6_6'}; lg(S,p,'✦ Aurora Gift: Wähle eigene Kreatur'); }
   });
-  add({ id:'orosei', name:'Orosei, Dream of the Deep', color:'blue', type:'creature', cost:10, req:{lake:2}, kw:kw('flying','charge:2'), atk:6,hp:6,
+  add({ id:'orosei', set:'core', name:'Orosei, Dream of the Deep', color:'blue', type:'creature', cost:10, req:{lake:2}, kw:kw('flying','charge:2'), atk:6,hp:6,
     text:'Flying, Charge 2. Gift - Transform all your other creatures into creatures that cost 2 more.',
     onGift:(S,p,unit) => { lg(S,p,'✦ Orosei Gift: (Transform — not yet implemented)'); }
   });
-  add({ id:'water_elemental', name:'Water Elemental', color:'blue', type:'creature', cost:4, req:{lake:1}, kw:kw('jump'), atk:3,hp:3,
+  add({ id:'water_elemental', set:'core', name:'Water Elemental', color:'blue', type:'creature', cost:4, req:{lake:1}, kw:kw('jump'), atk:3,hp:3,
     text:'Jump. Gift - Create a Lake.',
     onGift:(S,p,unit) => { unit.pendingGift={type:'create_lake'}; lg(S,p,'✦ Water Elemental Gift: Wähle ein leeres Feld für einen See'); }
   });
-  add({ id:'shifting_tide', name:'Shifting Tide', color:'blue', type:'event', cost:1, req:{lake:1}, kw:kw(), atk:null,hp:null, text:'Choose one - Move a land. - Draw a card.' });
+  add({ id:'shifting_tide', set:'core', name:'Shifting Tide', color:'blue', type:'event', cost:1, req:{lake:1}, kw:kw(), atk:null,hp:null, text:'Choose one - Move a land. - Draw a card.' });
 
-  add({ id:'gabrian_enchantment', name:'Gabrian Enchantment', color:'blue', type:'event', cost:2, req:{lake:2}, kw:kw(), atk:null,hp:null, text:"A creature's Attack becomes equal to its Life. Draw a card." });
+  add({ id:'gabrian_enchantment', set:'core', name:'Gabrian Enchantment', color:'blue', type:'event', cost:2, req:{lake:2}, kw:kw(), atk:null,hp:null, text:"A creature's Attack becomes equal to its Life. Draw a card." });
 
   // ── GREEN CREATURES ───────────────────────────────────
-  add({ id:'tiki_chieftain', name:'Tiki Chieftain', color:'green', type:'creature', cost:2, req:{forest:2}, kw:kw(), atk:2,hp:2,
+  add({ id:'tiki_chieftain', set:'core', name:'Tiki Chieftain', color:'green', type:'creature', cost:2, req:{forest:2}, kw:kw(), atk:2,hp:2,
     text:'Gift - Give a creature Taunt.',
     onGift:(S,p,unit) => { unit.pendingGift={type:'give_taunt'}; lg(S,p,'✦ Tiki Chieftain Gift: Wähle eigene Kreatur für Taunt'); }
   });
   add({ id:'living_willow',  name:'Living Willow',  color:'green', type:'creature', cost:3, req:{forest:2}, kw:kw('taunt'),  atk:1,hp:7, text:'Taunt.' });
-  add({ id:'sagami_warrior', name:'Sagami Warrior', color:'green', type:'creature', cost:3, req:{forest:1}, kw:kw('dash:2'), atk:3,hp:4, text:'Dash 2.' });
+  add({ id:'sagami_warrior', set:'core', name:'Sagami Warrior', color:'green', type:'creature', cost:3, req:{forest:1}, kw:kw('dash:2'), atk:3,hp:4, text:'Dash 2.' });
   add({ id:'deepwood_grizzly',name:'Deepwood Grizzly',color:'green',type:'creature',subtype:'Beast',cost:5,req:{forest:1},kw:kw(), atk:3,hp:8, text:'' });
-  add({ id:'tiki_healer', name:'Tiki Healer', color:'green', type:'creature', cost:4, req:{forest:2}, kw:kw(), atk:2,hp:5,
+  add({ id:'tiki_healer', set:'core', name:'Tiki Healer', color:'green', type:'creature', cost:4, req:{forest:2}, kw:kw(), atk:2,hp:5,
     text:'Gift - Gain 5 Life.',
     onGift:(S,p,unit) => { S.players[p].hp=Math.min(BASE_HP,S.players[p].hp+5); lg(S,p,'✦ Tiki Healer Gift: +5 LP → '+S.players[p].hp); }
   });
-  add({ id:'elderwood_embrace', name:'Elderwood Embrace', color:'green', type:'event', cost:3, req:{forest:2}, kw:kw(), atk:null,hp:null, text:'Give a creature +2/+4.' });
+  add({ id:'elderwood_embrace', set:'core', name:'Elderwood Embrace', color:'green', type:'event', cost:3, req:{forest:2}, kw:kw(), atk:null,hp:null, text:'Give a creature +2/+4.' });
   add({ id:'wild_growth',       name:'Wild Growth',       color:'green', type:'event', cost:1, req:{forest:1}, kw:kw(), atk:null,hp:null, text:'Create Forest at random.' });
-  add({ id:'spirit_of_rebirth', name:'Spirit of Rebirth', color:'green', type:'creature', cost:3, req:{forest:2}, kw:kw(), atk:3,hp:3,
+  add({ id:'spirit_of_rebirth', set:'core', name:'Spirit of Rebirth', color:'green', type:'creature', cost:3, req:{forest:2}, kw:kw(), atk:3,hp:3,
     text:'Whenever another friendly creature dies, give a random creature in your hand +1/+1.'
     // Spirit trigger is in resolveDeath — no onDeath hook needed here
   });
-  add({ id:'ruunin', name:'Ruunin, the Relentless', color:'green', type:'creature', subtype:'Beast', cost:5, req:{forest:3}, kw:kw('dash:2'), atk:4,hp:4,
+  add({ id:'ruunin', set:'core', name:'Ruunin, the Relentless', color:'green', type:'creature', subtype:'Beast', cost:5, req:{forest:3}, kw:kw('dash:2'), atk:4,hp:4,
     text:'Dash 2. Last Words - Return Ruunin to your hand at end of turn. She gains +2/+2.',
     onDeath:(S,u) => {
       if (!S._pendingReturn) S._pendingReturn=[];
@@ -878,27 +860,27 @@ const CARDS = (function() {
       lg(S,u.own,'🌿 Ruunin: kehrt am Zugend mit +2/+2 zur Hand zurück');
     }
   });
-  add({ id:'tethra', name:'Tethra, Soul of the Wild', color:'green', type:'creature', cost:10, req:{forest:2}, kw:kw('flying','charge:2'), atk:6,hp:6,
+  add({ id:'tethra', set:'core', name:'Tethra, Soul of the Wild', color:'green', type:'creature', cost:10, req:{forest:2}, kw:kw('flying','charge:2'), atk:6,hp:6,
     text:'Flying, Charge 2. Gift - Give a creature +5/+5.',
     onGift:(S,p,unit) => { unit.pendingGift={type:'buff_creature', atk:5, hp:5}; lg(S,p,'✦ Tethra Gift: Wähle eigene Kreatur für +5/+5'); }
   });
 
   // ── RED CREATURES ─────────────────────────────────────
-  add({ id:'flame_spitter', name:'Flame Spitter', color:'red', type:'creature', cost:3, req:{mountain:1}, kw:kw(), atk:2,hp:2,
+  add({ id:'flame_spitter', set:'core', name:'Flame Spitter', color:'red', type:'creature', cost:3, req:{mountain:1}, kw:kw(), atk:2,hp:2,
     text:'Gift - Deal 1 damage to an enemy.',
     onGift:(S,p,unit) => { unit.pendingGift={type:'dmg1_enemy'}; lg(S,p,'✦ Flame Spitter Gift: Wähle Ziel'); }
   });
-  add({ id:'underground_brigand', name:'Underground Brigand', color:'red', type:'creature', cost:3, req:{mountain:2}, kw:kw(), atk:2,hp:3,
+  add({ id:'underground_brigand', set:'core', name:'Underground Brigand', color:'red', type:'creature', cost:3, req:{mountain:2}, kw:kw(), atk:2,hp:3,
     text:'Combat - Gain 2 Faeria.',
     onCombat: manaGain(2,'⛏ Underground Brigand')
   });
-  add({ id:'shedim_brute', name:'Shedim Brute', color:'red', type:'creature', cost:5, req:{mountain:2}, kw:kw(), atk:3,hp:6,
+  add({ id:'shedim_brute', set:'core', name:'Shedim Brute', color:'red', type:'creature', cost:5, req:{mountain:2}, kw:kw(), atk:3,hp:6,
     text:'Combat - Deal 2 damage to your opponent.',
     onCombat: dmgGod(2,'👹 Shedim Brute')
   });
   add({ id:'firebomb',    name:'Firebomb',   color:'red', type:'event', cost:4, req:{mountain:2}, kw:kw(), atk:null,hp:null, text:'Deal 4 damage to a creature or structure.' });
-  add({ id:'flame_burst', name:'Flame Burst',color:'red', type:'event', cost:3, req:{mountain:2}, kw:kw(), atk:null,hp:null, text:'Deal 3 damage.' });
-  add({ id:'axe_grinder', name:'Axe Grinder', color:'red', type:'creature', cost:3, req:{mountain:1}, kw:kw(), atk:4,hp:3,
+  add({ id:'flame_burst', set:'core', name:'Flame Burst',color:'red', type:'event', cost:3, req:{mountain:2}, kw:kw(), atk:null,hp:null, text:'Deal 3 damage.' });
+  add({ id:'axe_grinder', set:'core', name:'Axe Grinder', color:'red', type:'creature', cost:3, req:{mountain:1}, kw:kw(), atk:4,hp:3,
     text:"Gift - Gains +1/+1 if summoned adjacent to an opponent's well.",
     onGift:(S,p,unit) => {
       const opp=p==='A'?'B':'A';
@@ -925,11 +907,11 @@ const CARDS = (function() {
       lg(S,p,`✦ Blazing Salamander Gift: ${hits} Ziele getroffen`);
     }
   });
-  add({ id:'seifer_blood_tyrant', name:'Seifer, Blood Tyrant', color:'red', type:'creature', cost:5, req:{mountain:3}, kw:kw(), atk:5,hp:6,
+  add({ id:'seifer_blood_tyrant', set:'core', name:'Seifer, Blood Tyrant', color:'red', type:'creature', cost:5, req:{mountain:3}, kw:kw(), atk:5,hp:6,
     text:"When Seifer destroys a creature, he gains Attack and Life equal to the destroyed creature's base stats."
     // Seifer logic is in resolveDeath (needs both seifer+victim reference)
   });
-  add({ id:'garudan', name:'Garudan, Heart of the Mountain', color:'red', type:'creature', cost:10, req:{mountain:2}, kw:kw('flying','charge:2'), atk:6,hp:6,
+  add({ id:'garudan', set:'core', name:'Garudan, Heart of the Mountain', color:'red', type:'creature', cost:10, req:{mountain:2}, kw:kw('flying','charge:2'), atk:6,hp:6,
     text:'Flying, Charge 2. Gift - Deal 3 damage to all enemy creatures.',
     onGift:(S,p,unit) => {
       const opp=p==='A'?'B':'A';
@@ -948,16 +930,16 @@ const CARDS = (function() {
     text:'Production - Deal 2 damage to yourself.',
     onTurnStart:(S,u) => { S.players[u.own].hp-=2; lg(S,u.own,`☠ Shaytan Dämon: -2 LP → ${S.players[u.own].hp}`); if(S.players[u.own].hp<=0)S.winner=u.own==='A'?'B':'A'; }
   });
-  add({ id:'dune_drake', name:'Dune Drake', color:'yellow', type:'creature', cost:4, req:{desert:2}, kw:kw('flying','charge:2'), atk:4,hp:4, noHarvest:true,
+  add({ id:'dune_drake', set:'core', name:'Dune Drake', color:'yellow', type:'creature', cost:4, req:{desert:2}, kw:kw('flying','charge:2'), atk:4,hp:4, noHarvest:true,
     text:"Flying, Charge 2. Can't harvest faeria."
   });
-  add({ id:'rebel_glider', name:'Rebel Glider', color:'yellow', type:'creature', cost:3, req:{desert:1}, kw:kw('flying'), atk:3,hp:2, noHarvest:true,
+  add({ id:'rebel_glider', set:'core', name:'Rebel Glider', color:'yellow', type:'creature', cost:3, req:{desert:1}, kw:kw('flying'), atk:3,hp:2, noHarvest:true,
     text:"Flying. Can't harvest faeria."
   });
   add({ id:'soul_drain',   name:'Soul Drain',   color:'yellow', type:'event', cost:2, req:{desert:2}, kw:kw(), atk:null,hp:null, text:'Drain 2 Life from a creature.' });
   add({ id:'wind_gate',    name:'Wind Gate',    color:'yellow', type:'structure', cost:1, req:{desert:1}, kw:kw(), atk:null,hp:4, text:'You can summon creatures on spaces adjacent to this. Activate - Move Wind Gate.' });
   add({ id:'last_nightmare',name:'Last Nightmare',color:'yellow',type:'event',cost:6,req:{desert:3},kw:kw(), atk:null,hp:null, text:'Destroy a creature.' });
-  add({ id:'khalim_sky_prodigy', name:'Khalim, Sky Prodigy', color:'yellow', type:'creature', cost:5, req:{desert:3}, kw:kw('flying','charge:2'), atk:3,hp:6, godBonus:3,
+  add({ id:'khalim_sky_prodigy', set:'core', name:'Khalim, Sky Prodigy', color:'yellow', type:'creature', cost:5, req:{desert:3}, kw:kw('flying','charge:2'), atk:3,hp:6, godBonus:3,
     text:"Flying, Charge 2. When Khalim attacks a god, add a Khalim's Follower to your hand. It costs 0.",
     onCombat:(S,u,other) => {
       if(other!==null) return; // only triggers on god attack (other===null means base attacked)
@@ -971,10 +953,10 @@ const CARDS = (function() {
       }
     }
   });
-  add({ id:'khalims_follower', name:"Khalim's Follower", color:'yellow', type:'creature', cost:2, req:{desert:1}, kw:kw('flying'), atk:2,hp:2, godBonus:2,
+  add({ id:'khalims_follower', set:'core', name:"Khalim's Follower", color:'yellow', type:'creature', cost:2, req:{desert:1}, kw:kw('flying'), atk:2,hp:2, godBonus:2,
     text:"Flying. Has +2/+0 against gods."
   });
-  add({ id:'azarai', name:'Azarai, Wrath of the Desert', color:'yellow', type:'creature', cost:10, req:{desert:2}, kw:kw('flying','charge:2'), atk:6,hp:6,
+  add({ id:'azarai', set:'core', name:'Azarai, Wrath of the Desert', color:'yellow', type:'creature', cost:10, req:{desert:2}, kw:kw('flying','charge:2'), atk:6,hp:6,
     text:'Flying, Charge 2. Gift - Azarai drains 2 Attack from each enemy creature.',
     onGift:(S,p,unit) => {
       const opp=p==='A'?'B':'A';
@@ -985,18 +967,18 @@ const CARDS = (function() {
 
   // ── NEUTRAL CREATURES ─────────────────────────────────
   add({ id:'campfire',  name:'Campfire',  color:'neutral', type:'event', cost:1, req:{}, kw:kw(), atk:null,hp:null, text:'Give a creature +1/+1.' });
-  add({ id:'imperial_guard', name:'Imperial Guard', color:'neutral', type:'creature', cost:3, req:{}, kw:kw('taunt'), atk:2,hp:3,
+  add({ id:'imperial_guard', set:'core', name:'Imperial Guard', color:'neutral', type:'creature', cost:3, req:{}, kw:kw('taunt'), atk:2,hp:3,
     text:'Taunt. Last Words - Gain 2 Life.',
     onDeath:(S,u) => { S.players[u.own].hp=Math.min(BASE_HP,S.players[u.own].hp+2); lg(S,u.own,`🛡 Imperial Guard: +2 LP → ${S.players[u.own].hp}`); }
   });
   add({ id:'hilltop_archer',  name:'Hilltop Archer', color:'neutral', type:'creature', cost:4, req:{}, kw:kw('ranged'),         atk:2,hp:2, text:'Ranged.' });
   add({ id:'healing_song',    name:'Healing Song',   color:'neutral', type:'event',   cost:3, req:{}, kw:kw(), atk:null,hp:null, text:'Draw a card and gain 5 Life.' });
   add({ id:'wisdom',          name:'Wisdom',         color:'neutral', type:'event',   cost:3, req:{}, kw:kw(), atk:null,hp:null, text:'Draw 2 cards.' });
-  add({ id:'queens_guard', name:"Queen's Guard", color:'neutral', type:'creature', cost:6, req:{}, kw:kw('taunt'), atk:3,hp:6,
+  add({ id:'queens_guard', set:'core', name:"Queen's Guard", color:'neutral', type:'creature', cost:6, req:{}, kw:kw('taunt'), atk:3,hp:6,
     text:'Taunt. Combat - Gain 1 Faeria.',
     onCombat: manaGain(1,"👑 Queen's Guard")
   });
-  add({ id:'outland_ranger', name:'Outland Ranger', color:'neutral', type:'creature', cost:3, req:{}, kw:kw(), atk:3,hp:2,
+  add({ id:'outland_ranger', set:'core', name:'Outland Ranger', color:'neutral', type:'creature', cost:3, req:{}, kw:kw(), atk:3,hp:2,
     text:'Gift - Add a Campfire to your hand.',
     onGift:(S,p,unit) => {
       const pl=S.players[p];
@@ -1006,12 +988,12 @@ const CARDS = (function() {
       }
     }
   });
-  add({ id:'walking_fortress', name:'Walking Fortress', color:'neutral', type:'creature', cost:9, req:{}, kw:kw(), atk:7,hp:10, text:'' });
-  add({ id:'sharra_dragonslayer', name:'Sharra, Dragonslayer', color:'neutral', type:'creature', cost:7, req:{}, kw:kw(), atk:6,hp:3,
+  add({ id:'walking_fortress', set:'core', name:'Walking Fortress', color:'neutral', type:'creature', cost:9, req:{}, kw:kw(), atk:7,hp:10, text:'' });
+  add({ id:'sharra_dragonslayer', set:'core', name:'Sharra, Dragonslayer', color:'neutral', type:'creature', cost:7, req:{}, kw:kw(), atk:6,hp:3,
     text:'Sharra ignores all damage equal to 4 or more.'
     // Handled in applyDmg
   });
-  add({ id:'magnus_king', name:'Magnus, King of Meroval', color:'neutral', type:'creature', cost:10, req:{}, kw:kw('charge:3'), atk:4,hp:8,
+  add({ id:'magnus_king', set:'core', name:'Magnus, King of Meroval', color:'neutral', type:'creature', cost:10, req:{}, kw:kw('charge:3'), atk:4,hp:8,
     text:'Charge 3. Combat - Draw a card. It costs 0.',
     onCombat:(S,u) => {
       const pl=S.players[u.own];
@@ -1023,54 +1005,54 @@ const CARDS = (function() {
       lg(S,u.own,`👑 Magnus: "${CARDS[drawn]?.name||drawn}" gezogen — kostet dauerhaft 0 Mana`);
     }
   });
-  add({ id:'tax_collector', name:'Tax Collector', color:'neutral', type:'creature', cost:3, req:{}, kw:kw(), atk:2,hp:3,
+  add({ id:'tax_collector', set:'core', name:'Tax Collector', color:'neutral', type:'creature', cost:3, req:{}, kw:kw(), atk:2,hp:3,
     text:'Combat - Gain 1 Faeria.',
     onCombat: manaGain(1,'🪙 Tax Collector')
   });
-  add({ id:'kings_guard', name:"King's Guard", color:'neutral', type:'creature', cost:4, req:{}, kw:kw(), atk:3,hp:4,
+  add({ id:'kings_guard', set:'core', name:"King's Guard", color:'neutral', type:'creature', cost:4, req:{}, kw:kw(), atk:3,hp:4,
     text:'Combat - Draw a card.',
     onCombat: drawCard("🛡 King's Guard")
   });
-  add({ id:'llamacorn', name:'Llamacorn', color:'neutral', type:'creature', cost:5, req:{}, kw:kw(), atk:3,hp:4,
+  add({ id:'llamacorn', set:'core', name:'Llamacorn', color:'neutral', type:'creature', cost:5, req:{}, kw:kw(), atk:3,hp:4,
     text:'Combat - Both players draw a card and gain 2 Life.',
     onCombat:(S,u) => { ['A','B'].forEach(pl=>{deal(S,pl,1);S.players[pl].hp=Math.min(BASE_HP,S.players[pl].hp+2);}); lg(S,u.own,'🦄 Llamacorn: Beide +1 Karte +2 LP'); }
   });
-  add({ id:'underground_boss', name:'Underground Boss', color:'red', type:'creature', cost:6, req:{mountain:3}, kw:kw(), atk:4,hp:6,
+  add({ id:'underground_boss', set:'core', name:'Underground Boss', color:'red', type:'creature', cost:6, req:{mountain:3}, kw:kw(), atk:4,hp:6,
     text:'Combat - Gain 2 Faeria.',
     onCombat: manaGain(2,'⛏ Underground Boss')
   });
-  add({ id:'crystal_flower', name:'Crystal Flower', color:'neutral', type:'creature', cost:2, req:{}, kw:kw(), atk:0,hp:3,
+  add({ id:'crystal_flower', set:'core', name:'Crystal Flower', color:'neutral', type:'creature', cost:2, req:{}, kw:kw(), atk:0,hp:3,
     text:'Production - Gain 1 Faeria.',
     onTurnStart:(S,u) => { S.players[u.own].mana+=1; lg(S,u.own,`✿ Crystal Flower: +1 Mana → ${S.players[u.own].mana}`); }
   });
-  add({ id:'farm_boy', name:'Farm Boy', color:'neutral', type:'creature', cost:1, req:{}, kw:kw(), atk:1,hp:2,
+  add({ id:'farm_boy', set:'core', name:'Farm Boy', color:'neutral', type:'creature', cost:1, req:{}, kw:kw(), atk:1,hp:2,
     text:'Production - Gain 1 Faeria.',
     onTurnStart:(S,u) => { S.players[u.own].mana+=1; lg(S,u.own,`🌾 Farm Boy: +1 Mana → ${S.players[u.own].mana}`); }
   });
-  add({ id:'animated_banquet', name:'Animated Banquet', color:'neutral', type:'creature', cost:3, req:{}, kw:kw(), atk:1,hp:4,
+  add({ id:'animated_banquet', set:'core', name:'Animated Banquet', color:'neutral', type:'creature', cost:3, req:{}, kw:kw(), atk:1,hp:4,
     text:'Production - Gains +1/+0.',
     onTurnStart:(S,u) => { buffUnit(u,1,0); lg(S,u.own,`🍖 Animated Banquet: +1 ATK → ${u.atk}`); }
   });
-  add({ id:'triton_adventurer', name:'Triton Adventurer', color:'blue', type:'creature', subtype:'Triton', cost:2, req:{lake:1}, kw:kw('aquatic'), atk:1,hp:3,
+  add({ id:'triton_adventurer', set:'core', name:'Triton Adventurer', color:'blue', type:'creature', subtype:'Triton', cost:2, req:{lake:1}, kw:kw('aquatic'), atk:1,hp:3,
     text:'Aquatic. Production - Draw a card.',
     onTurnStart: drawCard('🐟 Triton Adventurer')
   });
-  add({ id:'tiki_adventurer', name:'Tiki Adventurer', color:'green', type:'creature', cost:2, req:{forest:1}, kw:kw(), atk:2,hp:2,
+  add({ id:'tiki_adventurer', set:'core', name:'Tiki Adventurer', color:'green', type:'creature', cost:2, req:{forest:1}, kw:kw(), atk:2,hp:2,
     text:'Production - Gain 1 Faeria.',
     onTurnStart:(S,u) => { S.players[u.own].mana+=1; lg(S,u.own,`🗿 Tiki Adventurer: +1 Mana → ${S.players[u.own].mana}`); }
   });
-  add({ id:'keldran_adventurer', name:'Keldran Adventurer', color:'yellow', type:'creature', cost:3, req:{desert:1}, kw:kw(), atk:2,hp:3,
+  add({ id:'keldran_adventurer', set:'core', name:'Keldran Adventurer', color:'yellow', type:'creature', cost:3, req:{desert:1}, kw:kw(), atk:2,hp:3,
     text:'Production - Gains +1/+1.',
     onTurnStart:(S,u) => { buffUnit(u,1,1); lg(S,u.own,'⚔ Keldran Adventurer: +1/+1'); }
   });
 
   // ── SPECIAL ───────────────────────────────────────────
-  add({ id:'explore', name:'Explore', color:'neutral', type:'event', cost:0, req:{}, kw:kw(), atk:null,hp:null,
+  add({ id:'explore', set:'core', name:'Explore', color:'neutral', type:'event', cost:0, req:{}, kw:kw(), atk:null,hp:null,
     text:'Place a Prairie on any adjacent empty space. Gain 2 Faeria.'
   });
-  add({ id:'tidal_force', name:'Tidal Force', color:'blue', type:'event', cost:2, req:{lake:1}, kw:kw(), atk:null,hp:null,
+  add({ id:'tidal_force', set:'core', name:'Tidal Force', color:'blue', type:'event', cost:2, req:{lake:1}, kw:kw(), atk:null,hp:null,
     text:'Draw 2 cards.' });
-  add({ id:'falcon_dive', name:'Falcon Dive', color:'yellow', type:'event', cost:1, req:{desert:1}, kw:kw(), atk:null,hp:null,
+  add({ id:'falcon_dive', set:'core', name:'Falcon Dive', color:'yellow', type:'event', cost:1, req:{desert:1}, kw:kw(), atk:null,hp:null,
     text:'Deal 1 damage to a target.' });
 
   return db;
@@ -1276,20 +1258,23 @@ function deal(S, p, n) {
 //  FALLBACK DECKS
 // ══════════════════════════════════════════════════════════
 function mkDefaultDeck(player) {
+  // Fallback decks using core Faeria cards only
   const d = [];
   const add = (id, n) => { for(let i=0;i<n;i++) d.push(id); };
   if (player==='A') {
-    add('land_F',3); add('land_M',3); add('land_N',1);
-    add('scout_F',3); add('guardian_M',2); add('archer_M',2);
-    add('brawler_N',3); add('emissary',1); add('wellkeeper',3);
-    add('veil',2); add('battlecry',2); add('ironbark',2);
-    add('sky_knight',2); add('death_monk',1);
+    // Green/Forest starter
+    add('land_F',4); add('land_N',2);
+    add('tiki_chieftain',3); add('sagami_warrior',3); add('living_willow',2);
+    add('deepwood_grizzly',2); add('tiki_healer',2);
+    add('wild_growth',2); add('elderwood_embrace',2);
+    add('imperial_guard',2); add('healing_song',2); add('campfire',2);
   } else {
-    add('land_D',3); add('land_W',3); add('land_N',1);
-    add('rider_D',3); add('sprite_W',3); add('brawler_N',3);
-    add('wellkeeper',3); add('gust',3);
-    add('archer_M',2); add('sky_knight',2); add('death_monk',1);
-    add('battlecry',2); add('ironbark',1);
+    // Red/Mountain starter
+    add('land_M',4); add('land_N',2);
+    add('flame_spitter',3); add('underground_brigand',3); add('axe_grinder',3);
+    add('shedim_brute',2); add('barbarian_ogre',1);
+    add('firebomb',3); add('flame_burst',2);
+    add('imperial_guard',2); add('healing_song',2); add('campfire',1);
   }
   for (let i=d.length-1;i>0;i--) {
     const j=Math.floor(Math.random()*(i+1));
@@ -1839,40 +1824,6 @@ function doPlay(S, p, id, q, r, s) {
 
   // ── INSTANT / EVENT ────────────────────────────────────
   switch(id) {
-    case 'veil': {
-      const tu=unitAt(S,q,r,s);
-      if(tu&&tu.own===p){applyDmg(S,tu,-2,null);lg(S,p,`${cd.name}: -2 Schaden`);}
-      break;
-    }
-    case 'gust': {
-      const tu=unitAt(S,q,r,s);
-      if(tu&&tu.own!==p){
-        const dirs=HEX_DIRS;
-        const [aq,ar,as]=[tu.q,tu.r,tu.s];
-        const [bq,br,bs]=p==='A'?BASE_A:BASE_B;
-        const pushDir=dirs.reduce((best,d)=>{
-          const score=-cDist([aq+d[0],ar+d[1],as+d[2]],[bq,br,bs]);
-          return score>best.score?{d,score}:best;
-        },{d:null,score:-Infinity}).d;
-        if(pushDir){
-          const [nq,nr,ns]=[aq+pushDir[0],ar+pushDir[1],as+pushDir[2]];
-          if(inB(nq,nr,ns)&&!unitAt(S,nq,nr,ns)){tu.q=nq;tu.r=nr;tu.s=ns;}
-        }
-        applyDmg(S,tu,1,null); if(tu.hp<=0)resolveDeath(S,tu.id);
-        lg(S,p,`${cd.name}: Gegner verschoben + 1 Schaden`);
-      }
-      break;
-    }
-    case 'battlecry': {
-      const tu=unitAt(S,q,r,s);
-      if(tu&&tu.own===p){tempBuff(tu,2,0);lg(S,p,`${cd.name}: +2 ATK bis Rundenende`);}
-      break;
-    }
-    case 'ironbark': {
-      const tu=unitAt(S,q,r,s);
-      if(tu&&tu.own===p){buffUnit(tu,0,3);tu.kw.add('taunt');lg(S,p,`${cd.name}: +3 HP + Taunt`);}
-      break;
-    }
     case 'campfire': {
       const tu=unitAt(S,q,r,s);
       if(tu&&tu.own===p){buffUnit(tu,1,1);lg(S,p,`${cd.name}: +1/+1 an ${cardData(tu.cid)?.name||tu.id}`);}
@@ -2069,9 +2020,9 @@ const MENU_OPTS = [
 ];
 
 // Cards that target only own units
-const TARGET_OWN        = new Set(['veil','battlecry','ironbark','campfire','elderwood_embrace','tiki_chieftain']);
+const TARGET_OWN        = new Set(['campfire','elderwood_embrace','tiki_chieftain']);
 // Cards that target only enemy units
-const TARGET_ENEMY_UNIT = new Set(['gust', 'last_nightmare']);
+const TARGET_ENEMY_UNIT = new Set(['last_nightmare']);
 // Cards that target any unit (own OR enemy creature)
 const TARGET_ALL_UNITS  = new Set(['firebomb', 'gabrian_enchantment', 'falcon_dive']);
 // Cards with unrestricted damage targets: any creature + any god (BASE)
@@ -3485,7 +3436,7 @@ class Engine {
       // Spells targeting any creature
       if (TARGET_ALL_UNITS.has(id)) return Object.keys(S.units).length > 0;
       // Spells targeting own units
-      const ownTargets = new Set(['veil','battlecry','ironbark','campfire','elderwood_embrace','gabrian_enchantment','tiki_chieftain']);
+      const ownTargets = new Set(['campfire','elderwood_embrace','gabrian_enchantment','tiki_chieftain']);
       if (ownTargets.has(id)) return Object.values(S.units).some(u => u.own === this.ap);
       // Spells targeting enemy units
       return Object.values(S.units).some(u => u.own !== this.ap);
