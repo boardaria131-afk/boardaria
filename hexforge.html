@@ -522,6 +522,9 @@ svg#board { display: block; overflow: visible; }
       <button class="ab"    id="btn-land"   onclick="G.openLandMenu()">⬡ Land / Aktion</button>
       <button class="ab pr" id="btn-next"   onclick="G.endTurn()">Zug beenden ▶</button>
       <button class="ab dn" id="btn-cancel" onclick="G.cancelSel()">✕ Abbruch</button>
+      <button class="ab"    id="btn-rnd"    onclick="G.devRandomize()" style="background:rgba(80,40,120,.35);border-color:#6a3a9a;color:#bb88ff;display:none">🎲 Randomize</button>
+      <button class="ab"    id="btn-addmana" onclick="G.devAddMana()" style="background:rgba(40,80,40,.35);border-color:#3a6a3a;color:#88cc88;display:none">+5 Mana</button>
+      <button class="ab"    id="btn-drawall" onclick="G.devDrawAll()" style="background:rgba(40,60,80,.35);border-color:#3a5a7a;color:#88aacc;display:none">+3 Karten</button>
       <div id="action-hint" style="font-size:.6rem;color:var(--gold);letter-spacing:1px;margin-top:6px;min-height:1em;font-family:'Cinzel',serif;text-align:center"></div>
     </div>
   </div>
@@ -759,6 +762,9 @@ function allCards()          { return Object.values(CARD_DB); }
 // ╚══════════════════════════════════════════════════════════╝
 
 // ── Constants ─────────────────────────────────────────────
+// ⚠ DEV_MODE: set to false before release
+const DEV_MODE  = true;
+
 const BOARD_R   = 3;
 const HS        = 34;
 const BASE_HP   = 20;
@@ -2039,6 +2045,7 @@ class Engine {
     this.mulliganSel = new Set(); // cards selected for replacement
 
     this._render();
+    this._devInit();
     // Start with Mulligan for Player A
     this._showMulligan('A');
   }
@@ -2946,6 +2953,144 @@ class Engine {
 
   _clr() { this.selCard=null; this.selUnit=null; this.pact=null; this.vt=[]; this.landN_left=0; }
   cancelSel() { this._clr(); this._render(); }
+
+  // ══════════════════════════════════════════════════════════
+  //  DEV / PLAYTEST TOOLS  (DEV_MODE only — remove for release)
+  // ══════════════════════════════════════════════════════════
+  _devInit() {
+    if (!DEV_MODE) return;
+    // Show DEV buttons
+    ['btn-rnd','btn-addmana','btn-drawall'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = '';
+    });
+    // DEV banner in corner
+    const banner = document.createElement('div');
+    banner.id = 'dev-banner';
+    banner.innerHTML = `
+      <span style="opacity:.7">🛠 DEV</span>
+      <button onclick="G.devSkipMulligan()" title="Mulligan überspringen" style="margin-left:6px;padding:1px 6px;font-size:.55rem;background:rgba(80,40,120,.5);border:1px solid #6a3a9a;color:#cc99ff;border-radius:3px;cursor:pointer">Skip Mulligan</button>
+      <button onclick="G.devSetHP()" title="HP auf 5 setzen" style="margin-left:4px;padding:1px 6px;font-size:.55rem;background:rgba(120,30,30,.5);border:1px solid #882222;color:#ff9090;border-radius:3px;cursor:pointer">HP→5</button>
+    `;
+    banner.style.cssText = 'position:fixed;top:4px;right:4px;z-index:9999;font-size:.6rem;font-family:monospace;color:#aa77ff;background:rgba(20,10,30,.8);border:1px solid #4a2a6a;border-radius:4px;padding:3px 8px;display:flex;align-items:center;gap:2px;';
+    document.body.appendChild(banner);
+  }
+
+  // Skip mulligan for both players and jump straight to FREE
+  devSkipMulligan() {
+    if (!DEV_MODE) return;
+    const S = this.S;
+    // Complete mulligan for both players (no replacements)
+    if (S.mulligan?.active) {
+      doMulligan(S, 'A', []);
+      doMulligan(S, 'B', []);
+      S.mulligan.active = false;
+    }
+    // Deal full starting hands
+    ['A','B'].forEach(p => {
+      while (S.players[p].hand.length < 5 && S.players[p].deck.length > 0)
+        deal(S, p, 1);
+    });
+    // Hide overlay, jump to FREE phase
+    const ov = document.getElementById('sw-ov');
+    if (ov) ov.style.display = 'none';
+    S.phase = 'FREE';
+    S.lobDone = false;
+    this.handVisible = true;
+    lg(S, S.ap, `🛠 DEV: Mulligan übersprungen`);
+    this._render();
+  }
+
+  // Set both gods to 5 HP (stress-test win conditions)
+  devSetHP() {
+    if (!DEV_MODE) return;
+    const S = this.S;
+    ['A','B'].forEach(p => { S.players[p].hp = 5; });
+    lg(S, S.ap, `🛠 DEV: Beide Götter auf 5 HP gesetzt`);
+    this._render();
+  }
+
+  // +5 Mana for active player
+  devAddMana() {
+    if (!DEV_MODE) return;
+    const S = this.S;
+    S.players[S.ap].mana += 5;
+    lg(S, S.ap, `🛠 DEV: +5 Mana → ${S.players[S.ap].mana}`);
+    this._render();
+  }
+
+  // Draw 3 cards for active player
+  devDrawAll() {
+    if (!DEV_MODE) return;
+    const S = this.S;
+    deal(S, S.ap, 3);
+    lg(S, S.ap, `🛠 DEV: 3 Karten gezogen`);
+    this._render();
+  }
+
+  // Randomize: place ~6 lands + 3 creatures per player
+  devRandomize() {
+    if (!DEV_MODE) return;
+    const S = this.S;
+    this._clr();
+
+    const landTypes = ['F','D','M','W','N','N']; // N slightly more common
+    const allC = allCells();
+    const rnd = arr => [...arr].sort(() => Math.random() - .5);
+
+    // Clear existing non-base/non-well cells and units
+    allC.forEach(([q,r,s]) => {
+      const k = cK(q,r);
+      const c = S.cells[k];
+      if (c && c.type === 'LAND') S.cells[k] = { type:'EMPTY' };
+    });
+    Object.keys(S.units).forEach(uid => delete S.units[uid]);
+
+    // Place 6 lands per player, biased to their half + near base
+    ['A','B'].forEach(p => {
+      const half = allC.filter(([q,r,s]) => {
+        const c = S.cells[cK(q,r)];
+        if (!c || c.type !== 'EMPTY') return false;
+        return p === 'A' ? r <= 1 : r >= -1;
+      });
+      rnd(half).slice(0, 6).forEach(([q,r,s]) => {
+        const lt = landTypes[Math.floor(Math.random() * landTypes.length)];
+        S.cells[cK(q,r)] = { type:'LAND', owner:p, landType:lt };
+      });
+    });
+
+    // Pick creature/structure cards (must have power+life defined)
+    const pool = Object.values(CARD_DB).filter(cd =>
+      (cd.type === 'creature' || cd.type === 'structure') &&
+      cd.power != null && cd.life != null && cd.power > 0
+    );
+
+    // Place 3 units per player on their own lands
+    ['A','B'].forEach(p => {
+      const ownLands = allC.filter(([q,r,s]) => {
+        const c = S.cells[cK(q,r)];
+        return c && c.type === 'LAND' && c.owner === p && !unitAt(S,q,r,s);
+      });
+      const spots  = rnd(ownLands).slice(0, 3);
+      const cards  = rnd(pool).slice(0, spots.length);
+      spots.forEach(([q,r,s], i) => {
+        const cd = cards[i];
+        if (!cd) return;
+        const u = mkUnit(S, p, cd.id, q, r, s);
+        u.summonSick = false; // no sickness in dev
+        S.units[u.id] = u;
+        lg(S, p, `🛠 ${cd.name} @ [${q},${r}]`);
+      });
+    });
+
+    // Give mana, go to FREE
+    ['A','B'].forEach(p => { S.players[p].mana = Math.max(S.players[p].mana, 6); });
+    S.phase = 'FREE';
+    S.lobDone = true;
+    this.handVisible = true;
+    lg(S, S.ap, `🛠 DEV: Board randomisiert — viel Spaß!`);
+    this._render();
+  }
 
   // ── Dash target tiles: straight lines up to N steps (no wells, no base, no occupied) ──
   _dashTargets(u) {
