@@ -968,11 +968,18 @@ function tempBuff(unit, dAtk, dHp) {
 }
 
 // targetIsGod: true when attacking an enemy base
-function effAtk(unit, targetIsGod) {
+function effAtk(unit, targetIsGod, S) {
   let base = (unit.atk || 0) + (unit.atkBuff || 0);
   if (targetIsGod) {
     const godBonus = { oradrim_templar:3, khalim_sky_prodigy:3, khalims_follower:2 };
     base += (godBonus[unit.cid] || 0);
+  }
+  // Windborne Emissary: +2 while another friendly flying unit is on the board
+  if (unit.cid === 'windborne_emissary' && S) {
+    const hasOtherFlyer = Object.values(S.units).some(u =>
+      u.id !== unit.id && u.own === unit.own && u.kw && u.kw.has('flying')
+    );
+    if (hasOtherFlyer) base += 2;
   }
   return base;
 }
@@ -1600,10 +1607,10 @@ function doAtk(S, attackerId, targetType, targetId) {
     lg(S, a.own, `${aName} ⚔ ${dName}`);
 
     // Calculate both damage values BEFORE applying either (simultaneous combat)
-    const dmgToD = effAtk(a, false);
+    const dmgToD = effAtk(a, false, S);
     const adjacent = cDist([a.q,a.r,a.s],[d.q,d.r,d.s]) === 1;
     const defRetaliates = !a.kw.has('ranged') || adjacent || d.kw.has('ranged');
-    const dmgToA = defRetaliates ? effAtk(d, false) : 0;
+    const dmgToA = defRetaliates ? effAtk(d, false, S) : 0;
 
     // Apply damage simultaneously
     applyDmg(S, d, dmgToD, a);
@@ -1628,9 +1635,9 @@ function doAtk(S, attackerId, targetType, targetId) {
     }
   } else {
     // Attack enemy base — god-bonus applies here
-    const dmg = effAtk(a, true);
+    const dmg = effAtk(a, true, S);
     S.players[targetId].hp -= dmg;
-    const bonusNote = effAtk(a, true) > effAtk(a, false) ? ` (inkl. Götterbonus)` : '';
+    const bonusNote = effAtk(a, true, S) > effAtk(a, false, S) ? ` (inkl. Götterbonus)` : '';
     lg(S, a.own, `⚔ Basis ${targetId}: -${dmg}HP${bonusNote} → ${S.players[targetId].hp} verbleibend`);
     if (S.players[targetId].hp <= 0) S.winner = a.own;
     if (S.units[attackerId] && typeof a.onCombat === 'function') {
@@ -2332,19 +2339,44 @@ class Engine {
 
       case 'MANA': {
         // Round 1: mana was set to BASE_MANA at game start, skip income
-        // Round 2+: add income to accumulated pool (unspent carries over)
         const boost = S.players[this.ap].boostUsed ? 1 : 0;
         S.players[this.ap].boostUsed = false;
         if (S.turn > 1) {
-          const inc = manaInc(S, this.ap);
-          S.players[this.ap].mana += inc + boost;
-          lg(S, this.ap, `+${inc}${boost?'+1 Boost':''} Mana → ${S.players[this.ap].mana}`);
+          // Reset exhausted state, refresh wells
+          updWells(S);
+          WELLS.forEach(([wq,wr,ws]) => {
+            const c = S.cells[cK(wq,wr)];
+            if (c) c.exhausted = false;
+          });
+
+          // Build ordered list of income sources
+          // 1. Base income (BASE_MANA)
+          // 2. Each controlled well: +1
+          // 3. Boost if used
+          const sources = [];
+          sources.push({ label: `⬡ Basis-Einkommen`, gain: BASE_MANA });
+
+          // Ordered wells (closest to own base first)
+          const orderedW = [...WELLS].sort(([q1,r1],[q2,r2]) => {
+            const d1 = cDist([q1,r1,-(q1+r1)], this.ap==='A'?BASE_A:BASE_B);
+            const d2 = cDist([q2,r2,-(q2+r2)], this.ap==='A'?BASE_A:BASE_B);
+            return d1 - d2;
+          });
+          orderedW.forEach(([wq,wr,ws]) => {
+            const c = S.cells[cK(wq,wr)];
+            if (c && c.ctrl === this.ap) {
+              sources.push({ label:`⬡ Brunnen [${wq},${wr}]`, gain:WELL_MANA, wellKey:cK(wq,wr) });
+            }
+          });
+          if (boost) sources.push({ label:'⬡ Boost-Aktion', gain:1 });
+
+          // Animate: grant one source per frame, then advance phase
+          this._animateMana(sources, 0, () => this._adv());
         } else {
-          // Round 1: just apply boost if used, mana already set to 3
           if (boost) { S.players[this.ap].mana += boost; }
           lg(S, this.ap, `Startet mit ${S.players[this.ap].mana} Mana`);
+          this._auto(350);
         }
-        this._auto(350);
         break;
       }
 
@@ -2377,6 +2409,30 @@ class Engine {
   }
 
   _auto(ms)  { setTimeout(() => this._adv(), ms); }
+
+  // Animate mana income one source at a time, flash the well hex briefly
+  _animateMana(sources, idx, done) {
+    if (idx >= sources.length) { done(); return; }
+    const S = this.S;
+    const src = sources[idx];
+    S.players[this.ap].mana += src.gain;
+    lg(S, this.ap, `${src.label}: +${src.gain} → ${S.players[this.ap].mana} Mana`);
+
+    // Flash the well hex if this source has a wellKey
+    if (src.wellKey) {
+      const c = S.cells[src.wellKey];
+      if (c) c._flash = true;
+      this._render();
+      setTimeout(() => {
+        if (c) c._flash = false;
+        this._render();
+        setTimeout(() => this._animateMana(sources, idx+1, done), 120);
+      }, 200);
+    } else {
+      this._render();
+      setTimeout(() => this._animateMana(sources, idx+1, done), 180);
+    }
+  }
 
   _adv() {
     const S = this.S;
@@ -3040,7 +3096,7 @@ class Engine {
     document.getElementById('ud').innerHTML = `
       <div class="udn">${cd?.name || u.cid}</div>
       <div style="display:flex;gap:8px;font-size:.75rem;margin-bottom:4px;flex-wrap:wrap">
-        <span style="color:var(--atk)">⚔ ${effAtk(u)}</span>
+        <span style="color:var(--atk)">⚔ ${effAtk(u,false,S)}</span>
         <span style="color:var(--hp)">♥ ${u.hp}/${u.maxHp}</span>
         <span style="color:var(--dim)">➤ ${u.bew}</span>
         <span style="color:var(--W)">◎ ${u.rei}</span>
@@ -3082,7 +3138,7 @@ class Engine {
     elA.className    = `cf-name cf-name${aOwn === 'A' ? 'A' : 'B'}`;
     elB.textContent  = aOwn === 'A' ? bName : aName;
     elB.className    = `cf-name cf-name${aOwn === 'A' ? 'B' : 'A'}`;
-    elDmg.textContent = `${effAtk(a)} Schaden${targetType==='unit'?` | ${effAtk(S.units[targetId]||{atk:0,atkBuff:0})||0} Gegenschlag`:''}`;
+    elDmg.textContent = `${effAtk(a,false,S)} Schaden${targetType==='unit'?` | ${effAtk(S.units[targetId]||{atk:0,atkBuff:0},false,S)||0} Gegenschlag`:''}`;
     elRes.textContent = '';
 
     flash.classList.add('show');
@@ -3362,10 +3418,12 @@ class Engine {
 
       let fill='#0a0d12', stroke='#151c26', sw='1';
       if (cd) {
-        if      (cd.type==='WELL') { fill='#100818'; stroke='#4a1a88'; sw='1.5'; }
+        if      (cd.type==='WELL') { fill='#0e1520'; stroke='#1a2535'; sw='1'; } // hidden normally
         else if (cd.type==='BASE') { fill=cd.owner==='A'?'#1e0808':'#08081e'; stroke=cd.owner==='A'?'#882222':'#224488'; sw='2'; }
         else if (cd.type==='LAND') { fill=LF[cd.landType]||'#1e2530'; stroke=LS[cd.landType]||'#3a4a60'; }
         else                        { fill='#0e1520'; stroke='#1a2535'; }
+        // Well flash override: brief gold glow during mana animation
+        if (cd.type==='WELL' && cd._flash) { fill='#2a2010'; stroke='#c8a83a'; sw='2'; }
       }
 
       const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
@@ -3373,29 +3431,7 @@ class Engine {
       poly.setAttribute('stroke',stroke); poly.setAttribute('stroke-width',sw);
       g.appendChild(poly);
 
-      // Well orb
-      if (cd?.type==='WELL') {
-        const glw = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        glw.setAttribute('cx',cx); glw.setAttribute('cy',cy); glw.setAttribute('r',HS*.78);
-        glw.setAttribute('fill',cd.ctrl==='A'?'rgba(160,40,255,0.22)':cd.ctrl==='B'?'rgba(40,100,255,0.22)':'rgba(80,15,140,0.15)');
-        glw.setAttribute('pointer-events','none'); g.appendChild(glw);
-        const orb = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        orb.setAttribute('cx',cx); orb.setAttribute('cy',cy); orb.setAttribute('r',HS*.35);
-        orb.setAttribute('fill',cd.ctrl==='A'?'#bb33ee':cd.ctrl==='B'?'#3366ee':'#6611bb');
-        orb.setAttribute('filter','url(#wg)'); orb.setAttribute('pointer-events','none'); g.appendChild(orb);
-        const sym = document.createElementNS('http://www.w3.org/2000/svg','text');
-        sym.setAttribute('x',cx); sym.setAttribute('y',cy+5); sym.setAttribute('text-anchor','middle');
-        sym.setAttribute('fill','#fff'); sym.setAttribute('font-size','14'); sym.setAttribute('pointer-events','none');
-        sym.textContent='◎'; g.appendChild(sym);
-        if (cd.ctrl) {
-          const ol = document.createElementNS('http://www.w3.org/2000/svg','text');
-          ol.setAttribute('x',cx); ol.setAttribute('y',cy+HS*.85); ol.setAttribute('text-anchor','middle');
-          ol.setAttribute('fill',cd.ctrl==='A'?'#cc44ff':'#4488ff'); ol.setAttribute('font-size','8');
-          ol.setAttribute('font-weight','bold'); ol.setAttribute('pointer-events','none');
-          ol.textContent=cd.ctrl; g.appendChild(ol);
-        }
-      }
-
+      // Well: no visual (internal only)
       // Base decoration
       if (cd?.type==='BASE') {
         const col = cd.owner==='A'?'#ff6060':'#6090ff';
@@ -3506,7 +3542,7 @@ class Engine {
       svg.appendChild(bar);
 
       // ATK / HP numbers below unit
-      const statAtk = effAtk(u);
+      const statAtk = effAtk(u,false,S);
       const statHp  = u.hp;
       const statT = document.createElementNS('http://www.w3.org/2000/svg','text');
       statT.setAttribute('x', cx);
