@@ -1106,11 +1106,10 @@ function mkState() {
     if      (isBaseA(q,r,s)) S.cells[k] = { type:'BASE', owner:'A' };
     else if (isBaseB(q,r,s)) S.cells[k] = { type:'BASE', owner:'B' };
     else if (isWell(q,r,s)) {
-      // Assign initial control based on proximity to each base
       const dA = cDist([q,r,s], BASE_A);
       const dB = cDist([q,r,s], BASE_B);
-      const ctrl = dA < dB ? 'A' : dB < dA ? 'B' : null;
-      S.cells[k] = { type:'WELL', ctrl };
+      const owner = dA < dB ? 'A' : dB < dA ? 'B' : null;
+      S.cells[k] = { type:'WELL', owner, ctrl:owner };
     }
     else S.cells[k] = { type:'EMPTY' };
   });
@@ -3094,7 +3093,7 @@ class Engine {
     document.getElementById('ud').innerHTML = `
       <div class="udn">${cd?.name || u.cid}</div>
       <div style="display:flex;gap:8px;font-size:.75rem;margin-bottom:4px;flex-wrap:wrap">
-        <span style="color:var(--atk)">⚔ ${effAtk(u,false,S)}</span>
+        <span style="color:var(--atk)">⚔ ${effAtk(u,false,this.S)}</span>
         <span style="color:var(--hp)">♥ ${u.hp}/${u.maxHp}</span>
         <span style="color:var(--dim)">➤ ${u.bew}</span>
         <span style="color:var(--W)">◎ ${u.rei}</span>
@@ -3429,16 +3428,16 @@ class Engine {
       poly.setAttribute('stroke',stroke); poly.setAttribute('stroke-width',sw);
       g.appendChild(poly);
 
-      // Well: colored by controller (A=red, B=blue, neutral=grey)
+      // Well: colored by original owner (A=red, B=blue, neutral=grey) + flash on harvest
       if (cd?.type==='WELL') {
         const col = cd._flash ? '#c8a83a'
-                  : cd.ctrl==='A' ? '#cc4444'
-                  : cd.ctrl==='B' ? '#3366cc'
-                  : '#445566';
+                  : cd.owner==='A' ? '#882222'
+                  : cd.owner==='B' ? '#224488'
+                  : '#334455';
         const strk = cd._flash ? '#ffe080'
-                   : cd.ctrl==='A' ? '#ff8060'
-                   : cd.ctrl==='B' ? '#6090ff'
-                   : '#667788';
+                   : cd.owner==='A' ? '#cc5050'
+                   : cd.owner==='B' ? '#4466cc'
+                   : '#556677';
         const orb = document.createElementNS('http://www.w3.org/2000/svg','circle');
         orb.setAttribute('cx',cx); orb.setAttribute('cy',cy); orb.setAttribute('r',HS*.32);
         orb.setAttribute('fill',col); orb.setAttribute('stroke',strk);
@@ -3446,7 +3445,7 @@ class Engine {
         g.appendChild(orb);
         const sym = document.createElementNS('http://www.w3.org/2000/svg','text');
         sym.setAttribute('x',cx); sym.setAttribute('y',cy+4); sym.setAttribute('text-anchor','middle');
-        sym.setAttribute('fill','rgba(255,255,255,0.7)'); sym.setAttribute('font-size','10');
+        sym.setAttribute('fill','rgba(255,255,255,0.6)'); sym.setAttribute('font-size','10');
         sym.setAttribute('pointer-events','none');
         sym.textContent='◎'; g.appendChild(sym);
       }
