@@ -1109,7 +1109,7 @@ function mkState() {
       const dA = cDist([q,r,s], BASE_A);
       const dB = cDist([q,r,s], BASE_B);
       const owner = dA < dB ? 'A' : dB < dA ? 'B' : null;
-      S.cells[k] = { type:'WELL', owner, ctrl:owner };
+      S.cells[k] = { type:'WELL', owner, ctrl:owner, mana:1 };
     }
     else S.cells[k] = { type:'EMPTY' };
   });
@@ -1198,118 +1198,54 @@ function canHarvest(u) {
   return true;
 }
 
+// updWells: refills well mana at start of each player's turn (each well gets 1 mana back)
 function updWells(S) {
   WELLS.forEach(([wq,wr,ws]) => {
-    const k = cK(wq,wr);
-    const cell = S.cells[k];
-    if (!cell) return;
-
-    // Count adjacent units per player
-    let a = 0, b = 0;
-    cNbr(wq,wr,ws).forEach(([q,r,s]) => {
-      const u = unitAt(S,q,r,s);
-      if (u && canHarvest(u)) {
-        if (u.own === 'A') a++;
-        else               b++;
-      }
-    });
-
-    if (a > 0 && b === 0) {
-      cell.ctrl = 'A';
-    } else if (b > 0 && a === 0) {
-      cell.ctrl = 'B';
-    } else if (a === 0 && b === 0) {
-      // No units present — revert to default proximity-based ownership
-      const dA = cDist([wq,wr,ws], BASE_A);
-      const dB = cDist([wq,wr,ws], BASE_B);
-      cell.ctrl = dA < dB ? 'A' : dB < dA ? 'B' : null;
-    }
-    // If both a>0 and b>0: contested, keep current ctrl (no change)
+    const c = S.cells[cK(wq,wr)];
+    if (c) c.mana = 1; // refill to 1 each turn start
   });
 }
 
-// Called after every unit movement — grants mana for newly controlled wells
+// harvestMana: called after a unit moves/is summoned.
+// Any unit adjacent to a well with mana>0 can drain it (+1 mana to player).
+// Both players can harvest any well. Each well holds 1 mana per turn.
 function harvestMana(S, p) {
-  // Find the unit that just moved (most recently placed unit at its position)
-  // We check all current player's non-summonSick units for adjacency to wells
-  updWells(S);
-
   let gained = 0;
+  const flashed = [];
+
   WELLS.forEach(([wq,wr,ws]) => {
     const k = cK(wq,wr);
     const c = S.cells[k];
-    if (!c || c.exhausted) return; // already harvested this turn
+    if (!c || (c.mana || 0) <= 0) return; // no mana left in this well
 
-    // Grant mana if ANY of this player's units is adjacent to this well
-    const hasAdj = Object.values(S.units).some(u =>
-      u.own === p && cDist([u.q,u.r,u.s],[wq,wr,ws]) === 1
+    // Check if any of this player's eligible units is adjacent
+    const adjUnit = Object.values(S.units).find(u =>
+      u.own === p && canHarvest(u) && cDist([u.q,u.r,u.s],[wq,wr,ws]) === 1
     );
-    if (hasAdj) {
-      gained += WELL_MANA;
-      c.exhausted = true;
+    if (adjUnit) {
+      c.mana = 0; // drain the well
+      gained += 1;
+      flashed.push({ k, c });
     }
   });
 
   if (gained > 0) {
     S.players[p].mana += gained;
     lg(S, p, `⬡ Brunnen geerntet: +${gained} Mana → ${S.players[p].mana}`);
+    // Trigger flash animation per well
+    flashed.forEach(({ k, c }) => {
+      c._flash = true;
+      setTimeout(() => { c._flash = false; }, 320);
+    });
   }
-
-  // Save current well ctrl state for reference
-  S._prevWellCtrl = {};
-  WELLS.forEach(([wq,wr,ws]) => {
-    const k = cK(wq,wr);
-    S._prevWellCtrl[k] = S.cells[k]?.ctrl || null;
-  });
   return gained;
 }
 
 function manaInc(S, p) {
+  // Refill all wells at turn start
   updWells(S);
-
-  // Reset exhausted wells — wells that were harvested by the OPPONENT refresh now
-  const opp = p === 'A' ? 'B' : 'A';
-  WELLS.forEach(([wq,wr,ws]) => {
-    const k = cK(wq,wr);
-    const c = S.cells[k];
-    if (c && c.exhausted) c.exhausted = false; // refresh at start of each player's turn
-  });
-
-  // Reset harvest tracking for the new turn
-  S._prevWellCtrl = {};
-  WELLS.forEach(([wq,wr,ws]) => {
-    const k = cK(wq,wr);
-    S._prevWellCtrl[k] = S.cells[k]?.ctrl || null;
-  });
-
-  // ── Faeria Harvest Order ─────────────────────────────────
-  const orderedWells = [...WELLS].sort(([q1,r1], [q2,r2]) => {
-    if (p === 'A') {
-      if (q1 !== q2) return q1 - q2;
-      return r1 - r2;
-    } else {
-      if (q1 !== q2) return q2 - q1;
-      return r2 - r1;
-    }
-  });
-
-  let w = 0;
-  orderedWells.forEach(([wq,wr,ws]) => {
-    const c = S.cells[cK(wq,wr)];
-    if (c && c.ctrl === p) w++;
-  });
-
-  let bonus = 0;
-  Object.values(S.units).forEach(u => {
-    if (u.own === p && u.cid === 'wellkeeper') {
-      if (WELLS.some(([wq,wr,ws]) => {
-        const c = S.cells[cK(wq,wr)];
-        return cDist([u.q,u.r,u.s],[wq,wr,ws]) === 1 && c && c.ctrl === p;
-      })) bonus++;
-    }
-  });
-
-  return BASE_MANA + w * WELL_MANA + bonus;
+  // Base income only — well income is earned by moving units adjacent during FREE phase
+  return BASE_MANA;
 }
 
 function adjPlace(S, p) {
@@ -2335,45 +2271,20 @@ class Engine {
         break;
 
       case 'MANA': {
-        // Round 1: mana was set to BASE_MANA at game start, skip income
+        // Refill all wells at start of turn (each well gets mana=1 back)
+        updWells(S);
         const boost = S.players[this.ap].boostUsed ? 1 : 0;
         S.players[this.ap].boostUsed = false;
         if (S.turn > 1) {
-          // Reset exhausted state, refresh wells
-          updWells(S);
-          WELLS.forEach(([wq,wr,ws]) => {
-            const c = S.cells[cK(wq,wr)];
-            if (c) c.exhausted = false;
-          });
-
-          // Build ordered list of income sources
-          // 1. Base income (BASE_MANA)
-          // 2. Each controlled well: +1
-          // 3. Boost if used
-          const sources = [];
-          sources.push({ label: `⬡ Basis-Einkommen`, gain: BASE_MANA });
-
-          // Ordered wells (closest to own base first)
-          const orderedW = [...WELLS].sort(([q1,r1],[q2,r2]) => {
-            const d1 = cDist([q1,r1,-(q1+r1)], this.ap==='A'?BASE_A:BASE_B);
-            const d2 = cDist([q2,r2,-(q2+r2)], this.ap==='A'?BASE_A:BASE_B);
-            return d1 - d2;
-          });
-          orderedW.forEach(([wq,wr,ws]) => {
-            const c = S.cells[cK(wq,wr)];
-            if (c && c.ctrl === this.ap) {
-              sources.push({ label:`⬡ Brunnen [${wq},${wr}]`, gain:WELL_MANA, wellKey:cK(wq,wr) });
-            }
-          });
-          if (boost) sources.push({ label:'⬡ Boost-Aktion', gain:1 });
-
-          // Animate: grant one source per frame, then advance phase
-          this._animateMana(sources, 0, () => this._adv());
+          const inc = BASE_MANA + boost;
+          S.players[this.ap].mana += inc;
+          lg(S, this.ap, `⬡ Basis-Einkommen: +${inc} Mana → ${S.players[this.ap].mana}`);
+          lg(S, this.ap, `◎ Brunnen aufgefüllt — bewege Einheiten nah an Brunnen zum Ernten`);
         } else {
-          if (boost) { S.players[this.ap].mana += boost; }
+          if (boost) S.players[this.ap].mana += boost;
           lg(S, this.ap, `Startet mit ${S.players[this.ap].mana} Mana`);
-          this._auto(350);
         }
+        this._auto(350);
         break;
       }
 
@@ -3424,16 +3335,17 @@ class Engine {
       poly.setAttribute('stroke',stroke); poly.setAttribute('stroke-width',sw);
       g.appendChild(poly);
 
-      // Well: colored by original owner (A=red, B=blue, neutral=grey) + flash on harvest
+      // Well: colored by original owner, dim when empty (mana=0)
       if (cd?.type==='WELL') {
+        const full = (cd.mana || 0) > 0;
         const col = cd._flash ? '#c8a83a'
-                  : cd.owner==='A' ? '#882222'
-                  : cd.owner==='B' ? '#224488'
-                  : '#334455';
+                  : cd.owner==='A' ? (full ? '#882222' : '#3a1212')
+                  : cd.owner==='B' ? (full ? '#224488' : '#121830')
+                  : (full ? '#334455' : '#1a2028');
         const strk = cd._flash ? '#ffe080'
-                   : cd.owner==='A' ? '#cc5050'
-                   : cd.owner==='B' ? '#4466cc'
-                   : '#556677';
+                   : cd.owner==='A' ? (full ? '#cc5050' : '#551a1a')
+                   : cd.owner==='B' ? (full ? '#4466cc' : '#1a2255')
+                   : (full ? '#556677' : '#2a3040');
         const orb = document.createElementNS('http://www.w3.org/2000/svg','circle');
         orb.setAttribute('cx',cx); orb.setAttribute('cy',cy); orb.setAttribute('r',HS*.32);
         orb.setAttribute('fill',col); orb.setAttribute('stroke',strk);
@@ -3441,9 +3353,10 @@ class Engine {
         g.appendChild(orb);
         const sym = document.createElementNS('http://www.w3.org/2000/svg','text');
         sym.setAttribute('x',cx); sym.setAttribute('y',cy+4); sym.setAttribute('text-anchor','middle');
-        sym.setAttribute('fill','rgba(255,255,255,0.6)'); sym.setAttribute('font-size','10');
-        sym.setAttribute('pointer-events','none');
-        sym.textContent='◎'; g.appendChild(sym);
+        sym.setAttribute('fill', full ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.2)');
+        sym.setAttribute('font-size','10'); sym.setAttribute('pointer-events','none');
+        sym.textContent = full ? '◎' : '○';
+        g.appendChild(sym);
       }
 
       // Base decoration
