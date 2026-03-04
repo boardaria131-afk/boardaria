@@ -909,7 +909,7 @@ function mkUnit(S, p, cardId, q, r, s) {
     bew, rei, kw,
     moved: false, atked: false,
     summonSick: !kw.has('haste'),
-    noHarvest: !!(cd.text && cd.text.toLowerCase().includes("can't harvest")),
+    noHarvest: !!(cd.text && /can.t harvest/i.test(cd.text)) || ['dune_drake','rebel_glider'].includes(cardId),
     atkBuff: 0, hpBuff: 0,
     protHit: false,
     pendingDash: dashN > 0 ? dashN : 0, // player picks dash target after spawn
@@ -967,8 +967,14 @@ function tempBuff(unit, dAtk, dHp) {
   unit.hpBuff  = (unit.hpBuff  || 0) + dHp;
 }
 
-function effAtk(unit) {
-  return (unit.atk || 0) + (unit.atkBuff || 0);
+// targetIsGod: true when attacking an enemy base
+function effAtk(unit, targetIsGod) {
+  let base = (unit.atk || 0) + (unit.atkBuff || 0);
+  if (targetIsGod) {
+    const godBonus = { oradrim_templar:3, khalim_sky_prodigy:3, khalims_follower:2 };
+    base += (godBonus[unit.cid] || 0);
+  }
+  return base;
 }
 
 function clearTempBuffs(S) {
@@ -1455,7 +1461,7 @@ function validMoves(S, uid) {
     return [...result.values()];
   }
 
-  // ── Flying: move over ocean and land, not through other units ──
+  // ── Flying: move over AND land on ocean/land, not through other units ──
   if (flying) {
     const visited = new Set([cK(u.q,u.r)]);
     const frontier = [[u.q,u.r,u.s,0]];
@@ -1471,10 +1477,7 @@ function validMoves(S, uid) {
         const c=S.cells[k];
         if (c && c.type==='BASE') return; // no entering base
         if (c && c.type==='WELL') return; // no landing on wells
-        if (!c || c.type==='EMPTY') {
-          frontier.push([nq,nr,ns,d+1]); // fly over ocean
-          return;
-        }
+        // Flying can land on EMPTY (ocean) AND on LAND
         result.set(k,[nq,nr,ns]);
         frontier.push([nq,nr,ns,d+1]);
       });
@@ -1597,10 +1600,10 @@ function doAtk(S, attackerId, targetType, targetId) {
     lg(S, a.own, `${aName} ⚔ ${dName}`);
 
     // Calculate both damage values BEFORE applying either (simultaneous combat)
-    const dmgToD = effAtk(a);
+    const dmgToD = effAtk(a, false);
     const adjacent = cDist([a.q,a.r,a.s],[d.q,d.r,d.s]) === 1;
     const defRetaliates = !a.kw.has('ranged') || adjacent || d.kw.has('ranged');
-    const dmgToA = defRetaliates ? effAtk(d) : 0;
+    const dmgToA = defRetaliates ? effAtk(d, false) : 0;
 
     // Apply damage simultaneously
     applyDmg(S, d, dmgToD, a);
@@ -1614,18 +1617,21 @@ function doAtk(S, attackerId, targetType, targetId) {
     if (dDied && S.units[targetId])  resolveDeath(S, targetId);
     if (aDied && S.units[attackerId]) { resolveDeath(S, attackerId); return; }
 
-    // Trigger Combat abilities — attacker always, defender only if it retaliated
+    // Trigger Combat abilities:
+    // - Attacker always fires
+    // - Defender fires if it CAN retaliate (not vs ranged-at-range), even if ATK=0
     if (S.units[attackerId] && typeof a.onCombat === 'function') {
       try { a.onCombat(S, a, d); } catch(e) { console.warn('onCombat atk', e); }
     }
-    if (S.units[targetId] && dmgToA > 0 && typeof d.onCombat === 'function') {
+    if (S.units[targetId] && defRetaliates && typeof d.onCombat === 'function') {
       try { d.onCombat(S, d, a); } catch(e) { console.warn('onCombat def', e); }
     }
   } else {
-    // Attack enemy base
-    const dmg = effAtk(a);
+    // Attack enemy base — god-bonus applies here
+    const dmg = effAtk(a, true);
     S.players[targetId].hp -= dmg;
-    lg(S, a.own, `⚔ Basis ${targetId}: -${dmg}HP → ${S.players[targetId].hp} verbleibend`);
+    const bonusNote = effAtk(a, true) > effAtk(a, false) ? ` (inkl. Götterbonus)` : '';
+    lg(S, a.own, `⚔ Basis ${targetId}: -${dmg}HP${bonusNote} → ${S.players[targetId].hp} verbleibend`);
     if (S.players[targetId].hp <= 0) S.winner = a.own;
     if (S.units[attackerId] && typeof a.onCombat === 'function') {
       try { a.onCombat(S, a, null); } catch(e) {}
@@ -1691,6 +1697,29 @@ function doGift(S, p, unit) {
         buffUnit(unit, 1, 1);
         lg(S, p, `✦ Axe Grinder Gift: +1/+1 (neben feindlichem Brunnen)`);
       }
+      break;
+    }
+
+    // ── Blazing Salamander: Gift — Deal 2 damage to all adjacent enemies (incl. god) ──
+    case 'blazing_salamander': {
+      const opp2 = p === 'A' ? 'B' : 'A';
+      const [gbq,gbr,gbs] = opp2==='A' ? BASE_A : BASE_B;
+      let hits = 0;
+      cNbr(unit.q, unit.r, unit.s).forEach(([nq,nr,ns]) => {
+        const tu = unitAt(S, nq, nr, ns);
+        if (tu && tu.own === opp2) {
+          applyDmg(S, tu, 2, unit);
+          if (tu.hp <= 0) resolveDeath(S, tu.id);
+          hits++;
+        }
+        // Also hit the enemy god if adjacent
+        if (nq===gbq && nr===gbr && ns===gbs) {
+          S.players[opp2].hp -= 2;
+          if (S.players[opp2].hp <= 0) S.winner = p;
+          hits++;
+        }
+      });
+      lg(S, p, `🔥 Blazing Salamander Gift: 2 Schaden an ${hits} benachbarten Feinden`);
       break;
     }
 
