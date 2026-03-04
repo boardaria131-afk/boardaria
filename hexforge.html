@@ -510,7 +510,6 @@ svg#board { display: block; overflow: visible; }
       <div class="sr"><span class="sl">Basis HP</span>  <span class="sv hp" id="hp-A">20</span></div>
       <div class="sr"><span class="sl">Mana</span>       <span class="sv mn" id="mana-A">3</span></div>
       <div class="sr"><span class="sl">Hand/Deck</span>  <span class="sv cd" id="cards-A">5/25</span></div>
-      <div class="sr"><span class="sl">Wells</span>      <span class="sv" id="wells-A" style="color:var(--well)">0</span></div>
     </div>
     <div class="pt">Hand</div>
     <div id="hand-area"></div>
@@ -536,7 +535,6 @@ svg#board { display: block; overflow: visible; }
       <div class="sr"><span class="sl">Basis HP</span>  <span class="sv hp" id="hp-B">20</span></div>
       <div class="sr"><span class="sl">Mana</span>       <span class="sv mn" id="mana-B">3</span></div>
       <div class="sr"><span class="sl">Hand/Deck</span>  <span class="sv cd" id="cards-B">5/25</span></div>
-      <div class="sr"><span class="sl">Wells</span>      <span class="sv" id="wells-B" style="color:var(--well)">0</span></div>
     </div>
     <div class="pt">Einheit</div>
     <div id="ud"><span style="color:var(--dim);font-size:.68rem">Einheit auswählen…</span></div>
@@ -3418,7 +3416,7 @@ class Engine {
 
       let fill='#0a0d12', stroke='#151c26', sw='1';
       if (cd) {
-        if      (cd.type==='WELL') { fill='#0e1520'; stroke='#1a2535'; sw='1'; } // hidden normally
+        if      (cd.type==='WELL') { fill='#0d1018'; stroke='#2a3545'; sw='1.5'; } // dezent sichtbar
         else if (cd.type==='BASE') { fill=cd.owner==='A'?'#1e0808':'#08081e'; stroke=cd.owner==='A'?'#882222':'#224488'; sw='2'; }
         else if (cd.type==='LAND') { fill=LF[cd.landType]||'#1e2530'; stroke=LS[cd.landType]||'#3a4a60'; }
         else                        { fill='#0e1520'; stroke='#1a2535'; }
@@ -3431,7 +3429,28 @@ class Engine {
       poly.setAttribute('stroke',stroke); poly.setAttribute('stroke-width',sw);
       g.appendChild(poly);
 
-      // Well: no visual (internal only)
+      // Well: colored by controller (A=red, B=blue, neutral=grey)
+      if (cd?.type==='WELL') {
+        const col = cd._flash ? '#c8a83a'
+                  : cd.ctrl==='A' ? '#cc4444'
+                  : cd.ctrl==='B' ? '#3366cc'
+                  : '#445566';
+        const strk = cd._flash ? '#ffe080'
+                   : cd.ctrl==='A' ? '#ff8060'
+                   : cd.ctrl==='B' ? '#6090ff'
+                   : '#667788';
+        const orb = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        orb.setAttribute('cx',cx); orb.setAttribute('cy',cy); orb.setAttribute('r',HS*.32);
+        orb.setAttribute('fill',col); orb.setAttribute('stroke',strk);
+        orb.setAttribute('stroke-width','1.5'); orb.setAttribute('pointer-events','none');
+        g.appendChild(orb);
+        const sym = document.createElementNS('http://www.w3.org/2000/svg','text');
+        sym.setAttribute('x',cx); sym.setAttribute('y',cy+4); sym.setAttribute('text-anchor','middle');
+        sym.setAttribute('fill','rgba(255,255,255,0.7)'); sym.setAttribute('font-size','10');
+        sym.setAttribute('pointer-events','none');
+        sym.textContent='◎'; g.appendChild(sym);
+      }
+
       // Base decoration
       if (cd?.type==='BASE') {
         const col = cd.owner==='A'?'#ff6060':'#6090ff';
