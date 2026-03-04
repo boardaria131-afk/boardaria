@@ -1204,26 +1204,32 @@ function updWells(S) {
 
 // Called after every unit movement — grants mana for newly controlled wells
 function harvestMana(S, p) {
-  const prev = S._prevWellCtrl || {};
+  // Find the unit that just moved (most recently placed unit at its position)
+  // We check all current player's non-summonSick units for adjacency to wells
   updWells(S);
+
   let gained = 0;
   WELLS.forEach(([wq,wr,ws]) => {
     const k = cK(wq,wr);
     const c = S.cells[k];
-    const wasCtrl = prev[k];
-    const isCtrl  = c?.ctrl === p;
-    // Grant mana only if this player newly controls this well this turn
-    // AND the well has not already been harvested this turn
-    if (isCtrl && wasCtrl !== p && !c.exhausted) {
+    if (!c || c.exhausted) return; // already harvested this turn
+
+    // Grant mana if ANY of this player's units is adjacent to this well
+    const hasAdj = Object.values(S.units).some(u =>
+      u.own === p && cDist([u.q,u.r,u.s],[wq,wr,ws]) === 1
+    );
+    if (hasAdj) {
       gained += WELL_MANA;
-      c.exhausted = true; // well is now exhausted until opponent's turn
+      c.exhausted = true;
     }
   });
+
   if (gained > 0) {
     S.players[p].mana += gained;
-    lg(S, p, `⬡ Well geerntet: +${gained} Mana → ${S.players[p].mana}`);
+    lg(S, p, `⬡ Brunnen geerntet: +${gained} Mana → ${S.players[p].mana}`);
   }
-  // Save current state for next comparison
+
+  // Save current well ctrl state for reference
   S._prevWellCtrl = {};
   WELLS.forEach(([wq,wr,ws]) => {
     const k = cK(wq,wr);
@@ -1606,7 +1612,13 @@ function doAtk(S, attackerId, targetType, targetId) {
     }
   }
 
-  if (S.units[attackerId]) S.units[attackerId].atked = true;
+  if (S.units[attackerId]) {
+    S.units[attackerId].atked = true;
+    // Ranged units cannot also move — shooting uses their action
+    if (S.units[attackerId].kw?.has('ranged')) {
+      S.units[attackerId].moved = true;
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1656,8 +1668,8 @@ function doGift(S, p, unit) {
         return c && c.ctrl===opp && cDist([unit.q,unit.r,unit.s],[wq,wr,ws])<=1;
       });
       if (nearEnemyWell) {
-        buffUnit(unit, 2, 2);
-        lg(S, p, `✦ Axe Grinder Gift: +2/+2 (neben feindlichem Brunnen)`);
+        buffUnit(unit, 1, 1);
+        lg(S, p, `✦ Axe Grinder Gift: +1/+1 (neben feindlichem Brunnen)`);
       }
       break;
     }
@@ -1885,6 +1897,23 @@ function doPlay(S, p, id, q, r, s) {
     }
 
     pl.grave.push(id);
+
+    // ── Event triggers ────────────────────────────────────
+    // Snowstorm Lancer: +2/+0 (tempBuff) whenever owner plays an event (max +6/+0)
+    if (cd.type === 'event') {
+      Object.values(S.units).forEach(u => {
+        if (u.own === p && u.cid === 'snowstorm_lancer') {
+          const cap = 6;
+          const current = u.atkBuff || 0;
+          const gain = Math.min(2, cap - current);
+          if (gain > 0) {
+            tempBuff(u, gain, 0);
+            lg(S, p, `❄ Snowstorm Lancer: +${gain} ATK (Gesamt: +${u.atkBuff}) durch Event`);
+          }
+        }
+      });
+    }
+
     return true;
   }
 
@@ -2296,10 +2325,20 @@ class Engine {
   }
 
   // "Zug beenden" — only available during FREE phase
+  // If no land/draw action was taken this turn, auto-apply +1 mana bonus first
   endTurn() {
     const S = this.S;
     if (S.phase !== 'FREE') return;
     this._clr();
+
+    // Mandatory action: if lobDone is still false, auto-grant +1 mana as default action
+    if (!S.lobDone) {
+      S.players[this.ap].mana += 1;
+      S.lobDone = true;
+      lg(S, this.ap, `+1 Mana (Standard-Aktion) → ${S.players[this.ap].mana}`);
+      this._render(); // brief flash of log update
+    }
+
     S.phase     = 'CLEANUP';
     S.phaseStep = PHASES.indexOf('CLEANUP');
     this._runPhase();
@@ -2768,16 +2807,20 @@ class Engine {
         if (u) {
           u.q = q; u.r = r; u.s = s;
           u.moved = true;
+          // Ranged units expend their action by moving — cannot also shoot
+          if (u.kw.has('ranged')) u.atked = true;
           harvestMana(S, this.ap); // grant mana for newly controlled wells
           lg(S, this.ap, `${cardData(u.cid)?.name || u.id} bewegt`);
-          // Auto-switch to attack if targets available
-          const atks = validAtks(S, this.selUnit);
-          if (atks.length > 0) {
-            this.pact = 'atk';
-            this.vt   = atks.map(t => [t.q,t.r,t.s]);
-            this._showUD(u);
-            this._render();
-            return;
+          // Auto-switch to attack if targets available (non-ranged only)
+          if (!u.kw.has('ranged')) {
+            const atks = validAtks(S, this.selUnit);
+            if (atks.length > 0) {
+              this.pact = 'atk';
+              this.vt   = atks.map(t => [t.q,t.r,t.s]);
+              this._showUD(u);
+              this._render();
+              return;
+            }
           }
         }
         this._clr();
@@ -2859,13 +2902,13 @@ class Engine {
       lg(S, this.ap, 'Shifting Tide: Karte gezogen');
       this._render();
     } else {
-      // Land move: player picks a land to move, then picks destination
+      // Land move: player picks ANY land to move (own or enemy), then adjacent empty destination
       this.pact     = 'shifting_land_pick';
       this.selCard  = 'shifting_tide';
       this.vt       = Object.entries(S.cells)
-        .filter(([k,c]) => c.owner === this.ap && c.type === 'LAND')
+        .filter(([k,c]) => c.type === 'LAND')
         .map(([k]) => pK(k));
-      lg(S, this.ap, 'Shifting Tide: Wähle ein eigenes Land zum Verschieben');
+      lg(S, this.ap, 'Shifting Tide: Wähle ein Land zum Verschieben');
       this._render();
     }
   }
@@ -3326,6 +3369,22 @@ class Engine {
         hl.setAttribute('pointer-events','none'); g.appendChild(hl);
       }
 
+      // ── Invisible full-hex top-layer overlay (in targeting modes) ──
+      // Placed last in group so it catches clicks over unit circles too
+      const targetingMode = this.pact==='atk'||this.pact==='inst'||this.pact==='gift'||
+                            this.pact==='move'||this.pact==='dash'||this.pact==='land'||
+                            this.pact==='land_N'||this.pact==='shifting_land_pick'||
+                            this.pact==='shifting_land_dest';
+      if (targetingMode) {
+        const hit = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+        hit.setAttribute('points', P);
+        hit.setAttribute('fill', 'transparent');
+        hit.setAttribute('stroke', 'none');
+        hit.style.cursor = isV ? 'pointer' : 'default';
+        hit.onclick = () => this.clickCell(q, r, s);
+        g.appendChild(hit);
+      }
+
       svg.appendChild(g);
     });
 
@@ -3436,25 +3495,6 @@ class Engine {
         ex.setAttribute('cx',cx+11); ex.setAttribute('cy',cy-11); ex.setAttribute('r','4');
         ex.setAttribute('fill','#882222'); ex.setAttribute('stroke','#cc4444'); ex.setAttribute('stroke-width','1');
         ex.setAttribute('pointer-events','none'); svg.appendChild(ex);
-      }
-
-      // ── Invisible full-hex hit overlay ─────────────────
-      // Covers the entire hex so player can click ANYWHERE on the cell.
-      // Only active in targeting modes so it doesn't block normal unit selection.
-      const targetingMode = this.pact === 'atk' || this.pact === 'inst' ||
-                            this.pact === 'gift' || this.pact === 'move' ||
-                            this.pact === 'dash' || this.pact === 'land' ||
-                            this.pact === 'land_N' ||
-                            this.pact === 'shifting_land_pick' ||
-                            this.pact === 'shifting_land_dest';
-      if (targetingMode) {
-        const hit = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-        hit.setAttribute('points', P);
-        hit.setAttribute('fill', 'transparent');
-        hit.setAttribute('stroke', 'none');
-        hit.style.cursor = isV ? 'pointer' : 'default';
-        hit.onclick = () => this.clickCell(q, r, s);
-        svg.appendChild(hit);
       }
 
       // Attack-target ring
