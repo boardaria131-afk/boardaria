@@ -153,6 +153,53 @@ body {
 .hc.sel             { border-color: var(--gold); box-shadow: 0 0 7px rgba(200,168,75,.3); }
 .hc.np              { opacity: .35; cursor: not-allowed; }
 .hc.np:hover        { border-color: var(--border); background: var(--bg3); }
+
+/* ── Unit Hover Tooltip ─────────────────────────────────── */
+#unit-tip {
+  position: fixed;
+  z-index: 8000;
+  pointer-events: none;
+  background: rgba(8,12,20,.97);
+  border: 1px solid #3a4a60;
+  border-radius: 6px;
+  padding: 7px 10px;
+  min-width: 160px;
+  max-width: 220px;
+  font-size: .65rem;
+  color: var(--text);
+  box-shadow: 0 4px 16px rgba(0,0,0,.7);
+  display: none;
+}
+#unit-tip .tip-name  { font-family:'Cinzel',serif; font-size:.72rem; color:var(--gold); margin-bottom:3px; }
+#unit-tip .tip-stats { display:flex; gap:8px; margin-bottom:3px; }
+#unit-tip .tip-text  { font-size:.6rem; color:var(--dim); font-style:italic; line-height:1.35; }
+#unit-tip .tip-kw    { display:flex; flex-wrap:wrap; gap:2px; margin-bottom:3px; }
+
+/* ── Enemy hand (face-down cards at top) ────────────────── */
+#opp-hand {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  padding: 4px 0;
+  min-height: 28px;
+  flex-wrap: wrap;
+}
+.opp-card {
+  width: 18px; height: 26px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #1a2030 0%, #0d1220 100%);
+  border: 1px solid #2a3a50;
+  box-shadow: inset 0 0 4px rgba(0,0,0,.5);
+  position: relative;
+  overflow: hidden;
+}
+.opp-card::after {
+  content: '';
+  position: absolute; inset: 2px;
+  border: 1px solid rgba(60,80,120,.4);
+  border-radius: 2px;
+  background: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(40,60,100,.15) 3px, rgba(40,60,100,.15) 4px);
+}
 .ch  { display: flex; justify-content: space-between; margin-bottom: 2px; }
 .cn  { font-family: 'Cinzel', serif; font-size: .66rem; color: var(--text); line-height: 1.2; }
 .cc  { font-family: 'Cinzel', serif; font-size: .72rem; color: var(--mana); font-weight: 600; margin-left: 3px; }
@@ -498,6 +545,14 @@ svg#board { display: block; overflow: visible; }
   </div>
 </div>
 
+<!-- Unit hover tooltip -->
+<div id="unit-tip">
+  <div class="tip-name" id="tip-name"></div>
+  <div class="tip-stats"><span id="tip-atk" style="color:var(--atk)"></span><span id="tip-hp" style="color:var(--hp)"></span><span id="tip-cost" style="color:var(--mana)"></span></div>
+  <div class="tip-kw" id="tip-kw"></div>
+  <div class="tip-text" id="tip-text"></div>
+</div>
+
 <!-- ── Main Layout ─────────────────────────────────────── -->
 <div id="main">
 
@@ -517,6 +572,11 @@ svg#board { display: block; overflow: visible; }
 
   <!-- Centre: board SVG + action bar -->
   <div id="bw">
+    <!-- Opponent hand (face-down) above board -->
+    <div style="width:100%;display:flex;flex-direction:column;align-items:center;padding:4px 0 0">
+      <div style="font-size:.5rem;color:var(--dim);letter-spacing:2px;margin-bottom:2px;font-family:'Cinzel',serif">GEGNER</div>
+      <div id="opp-hand"></div>
+    </div>
     <svg id="board"></svg>
     <div id="abar">
       <button class="ab"    id="btn-land"   onclick="G.openLandMenu()">⬡ Land / Aktion</button>
@@ -954,6 +1014,33 @@ function mkUnit(S, p, cardId, q, r, s) {
     unit.onCombat = combatMap[cardId];
   }
 
+  // ── Hard-coded Death (Last Words) for CARD_DB cards ──────
+  const deathMap = {
+    ruunin: (S, u) => {
+      // Return to hand at END of turn with +2/+2 (store pending return)
+      if (!S._pendingReturn) S._pendingReturn = [];
+      S._pendingReturn.push({ cid: u.cid, own: u.own, buffAtk: 2, buffHp: 2 });
+      lg(S, u.own, `🌿 Ruunin: kehrt am Zugend mit +2/+2 zur Hand zurück`);
+    },
+    imperial_guard: (S, u) => {
+      S.players[u.own].hp = Math.min(BASE_HP, S.players[u.own].hp + 2);
+      lg(S, u.own, `🛡 Imperial Guard: +2 LP → ${S.players[u.own].hp}`);
+    },
+  };
+  if (deathMap[cardId]) {
+    unit.onDeath = deathMap[cardId];
+  }
+
+  // Apply return buffs (e.g. Ruunin returned with +2/+2)
+  if (S._returnBuffs && S._returnBuffs[cardId]) {
+    const rb = S._returnBuffs[cardId];
+    unit.atk   += rb.atk;
+    unit.hp    += rb.hp;
+    unit.maxHp += rb.hp;
+    delete S._returnBuffs[cardId];
+    lg(S, p, `🌿 ${cardData(cardId)?.name||cardId} mit +${rb.atk}/+${rb.hp} Buff beschworen`);
+  }
+
   return unit;
 }
 
@@ -1036,9 +1123,45 @@ function resolveDeath(S, uid) {
   const u = S.units[uid];
   if (!u) return;
   lg(S, 'sys', `${cardData(u.cid)?.name || uid} stirbt`);
+
+  // ── Seifer: gains base ATK+Life of the unit he kills ──────
+  // (handled in doAtk caller via S._seiferKill flag)
+  if (S._seiferKill && S._seiferKill.targetId === uid) {
+    const seifer = S.units[S._seiferKill.seiferId];
+    const victim = u;
+    if (seifer) {
+      const cd = cardData(victim.cid);
+      const gainAtk = cd?.power || 0;
+      const gainHp  = cd?.life  || 0;
+      buffUnit(seifer, gainAtk, gainHp);
+      lg(S, seifer.own, `🩸 Seifer: +${gainAtk}/+${gainHp} durch ${cd?.name||victim.cid} → ${seifer.atk}/${seifer.hp}`);
+    }
+    S._seiferKill = null;
+  }
+
+  // ── Spirit of Rebirth: buff random hand card when friendly dies ──
+  Object.values(S.units).forEach(spirit => {
+    if (spirit.cid !== 'spirit_of_rebirth') return;
+    if (spirit.own !== u.own) return;
+    if (spirit.id === uid) return; // spirit itself dying — no trigger
+    const hand = S.players[u.own].hand;
+    if (hand.length === 0) return;
+    const idx = Math.floor(Math.random() * hand.length);
+    const cid = hand[idx];
+    // Store buff on a per-card-in-hand bonus array
+    if (!S._handBuffs) S._handBuffs = {};
+    if (!S._handBuffs[u.own]) S._handBuffs[u.own] = {};
+    if (!S._handBuffs[u.own][idx]) S._handBuffs[u.own][idx] = {atk:0,hp:0};
+    S._handBuffs[u.own][idx].atk += 1;
+    S._handBuffs[u.own][idx].hp  += 1;
+    const cd = cardData(cid);
+    lg(S, u.own, `🌀 Spirit of Rebirth: ${cd?.name||cid} auf Hand +1/+1`);
+  });
+
   if (typeof u.onDeath === 'function') {
     try { u.onDeath(S, u); } catch(e) { console.warn('onDeath', e); }
   }
+
   S.players[u.own].grave.push(u.cid);
   delete S.units[uid];
 }
@@ -1313,9 +1436,35 @@ function validMoves(S, uid) {
 
   const result = new Map();
 
+  // ── Flying: moves freely over ocean/land, can land anywhere except BASE/WELL/occupied ──
+  // Flying overrides all other movement restrictions (charge, aquatic, standard BFS)
+  if (flying) {
+    const maxRange = charge ? chargeN : bew;
+    const visited = new Set([cK(u.q,u.r)]);
+    const frontier = [[u.q,u.r,u.s,0]];
+    while (frontier.length) {
+      const [q,r,s,d] = frontier.shift();
+      if (d >= maxRange) continue;
+      cNbr(q,r,s).forEach(([nq,nr,ns]) => {
+        if (!inB(nq,nr,ns)) return;
+        const k=cK(nq,nr);
+        if (visited.has(k)) return;
+        visited.add(k);
+        if (unitAt(S,nq,nr,ns)) return; // blocked by any unit
+        const c=S.cells[k];
+        if (c && c.type==='BASE') return; // no entering base
+        if (c && c.type==='WELL') return; // no landing on wells
+        // Flying can land on EMPTY (ocean) AND on any LAND type
+        result.set(k,[nq,nr,ns]);
+        frontier.push([nq,nr,ns,d+1]);
+      });
+    }
+    return [...result.values()];
+  }
+
   // ── Aquatic: travels over OCEAN (EMPTY) and WELL, lands only on lakes (W), EMPTY, or wells ──
   // With Jump: can leap over units/obstacles, same aquatic landing restriction
-  if (aquatic && !flying) {
+  if (aquatic) {
     const range = jump ? 2 : (charge ? chargeN : bew);
     const visited = new Set([cK(u.q,u.r)]);
     const frontier = [[u.q,u.r,u.s,0]];
@@ -1402,30 +1551,6 @@ function validMoves(S, uid) {
           if (unitAt(S,cq,cr,cs)) break;
           if (step > 2) result.set(k,[cq,cr,cs]);
         }
-      });
-    }
-    return [...result.values()];
-  }
-
-  // ── Flying: move over AND land on ocean/land, not through other units ──
-  if (flying) {
-    const visited = new Set([cK(u.q,u.r)]);
-    const frontier = [[u.q,u.r,u.s,0]];
-    while (frontier.length) {
-      const [q,r,s,d] = frontier.shift();
-      if (d >= bew) continue;
-      cNbr(q,r,s).forEach(([nq,nr,ns]) => {
-        if (!inB(nq,nr,ns)) return;
-        const k=cK(nq,nr);
-        if (visited.has(k)) return;
-        visited.add(k);
-        if (unitAt(S,nq,nr,ns)) return; // blocked by any unit
-        const c=S.cells[k];
-        if (c && c.type==='BASE') return; // no entering base
-        if (c && c.type==='WELL') return; // no landing on wells
-        // Flying can land on EMPTY (ocean) AND on LAND
-        result.set(k,[nq,nr,ns]);
-        frontier.push([nq,nr,ns,d+1]);
       });
     }
     return [...result.values()];
@@ -1560,6 +1685,10 @@ function doAtk(S, attackerId, targetType, targetId) {
     // Resolve deaths
     const dDied = d.hp <= 0;
     const aDied = a.hp <= 0;
+    // Seifer: track which unit he killed to gain its stats
+    if (dDied && a.cid === 'seifer_blood_tyrant' && !aDied) {
+      S._seiferKill = { seiferId: attackerId, targetId: targetId };
+    }
     if (dDied && S.units[targetId])  resolveDeath(S, targetId);
     if (aDied && S.units[attackerId]) { resolveDeath(S, attackerId); return; }
 
@@ -1968,6 +2097,23 @@ function doCleanup(S) {
   Object.values(S.units).forEach(u => {
     u.moved=false; u.atked=false; u.summonSick=false;
   });
+
+  // ── Ruunin / pending return-to-hand ───────────────────────
+  if (S._pendingReturn && S._pendingReturn.length > 0) {
+    S._pendingReturn.forEach(({ cid, own, buffAtk, buffHp }) => {
+      const pl = S.players[own];
+      if (pl.hand.length < HAND_MAX) {
+        pl.hand.push(cid);
+        // Store the buff so mkUnit can apply it when next played
+        if (!S._returnBuffs) S._returnBuffs = {};
+        if (!S._returnBuffs[cid]) S._returnBuffs[cid] = { atk:0, hp:0 };
+        S._returnBuffs[cid].atk += buffAtk;
+        S._returnBuffs[cid].hp  += buffHp;
+        lg(S, own, `🌿 Ruunin kehrt zur Hand zurück (+${buffAtk}/+${buffHp})`);
+      }
+    });
+    S._pendingReturn = [];
+  }
 }
 
 </script>
@@ -2286,7 +2432,9 @@ class Engine {
           const inc = BASE_MANA + boost;
           S.players[this.ap].mana += inc;
           lg(S, this.ap, `⬡ Basis-Einkommen: +${inc} Mana → ${S.players[this.ap].mana}`);
-          lg(S, this.ap, `◎ Brunnen aufgefüllt — bewege Einheiten nah an Brunnen zum Ernten`);
+          // Harvest wells where this player already has adjacent units
+          const startHarvest = harvestMana(S, this.ap);
+          if (startHarvest === 0) lg(S, this.ap, `◎ Brunnen aufgefüllt — bewege Einheiten nah an Brunnen zum Ernten`);
         } else {
           if (boost) S.players[this.ap].mana += boost;
           lg(S, this.ap, `Startet mit ${S.players[this.ap].mana} Mana`);
@@ -2954,6 +3102,33 @@ class Engine {
   _clr() { this.selCard=null; this.selUnit=null; this.pact=null; this.vt=[]; this.landN_left=0; }
   cancelSel() { this._clr(); this._render(); }
 
+  // ── Unit Hover Tooltip ──────────────────────────────────
+  _showUnitTip(u, e) {
+    const cd  = cardData(u.cid);
+    const tip = document.getElementById('unit-tip');
+    if (!tip || !cd) return;
+    const kw  = [...u.kw].map(kwBadge).join('');
+    document.getElementById('tip-name').textContent = cd.name || u.cid;
+    document.getElementById('tip-atk').textContent  = `⚔ ${effAtk(u, false, this.S)}  `;
+    document.getElementById('tip-hp').textContent   = `♥ ${u.hp}/${u.maxHp}  `;
+    document.getElementById('tip-cost').textContent = cd.cost ? `${cd.cost}◆` : '';
+    document.getElementById('tip-kw').innerHTML     = kw;
+    document.getElementById('tip-text').textContent = cd.text || '';
+    tip.style.display = 'block';
+    this._moveUnitTip(e);
+  }
+  _moveUnitTip(e) {
+    const tip = document.getElementById('unit-tip');
+    if (!tip) return;
+    const x = e.clientX + 14, y = e.clientY - 10;
+    tip.style.left = Math.min(x, window.innerWidth  - 230) + 'px';
+    tip.style.top  = Math.min(y, window.innerHeight - 160) + 'px';
+  }
+  _hideUnitTip() {
+    const tip = document.getElementById('unit-tip');
+    if (tip) tip.style.display = 'none';
+  }
+
   // ══════════════════════════════════════════════════════════
   //  DEV / PLAYTEST TOOLS  (DEV_MODE only — remove for release)
   // ══════════════════════════════════════════════════════════
@@ -3225,10 +3400,21 @@ class Engine {
   _render() {
     this._rStats();
     this._rHand();
+    this._rOppHand();
     this._rPhase();
     this._rBtns();
     this._rLog();
     this._rBoard();
+  }
+
+  // Render opponent's face-down hand count
+  _rOppHand() {
+    const S   = this.S;
+    const opp = this.ap === 'A' ? 'B' : 'A';
+    const el  = document.getElementById('opp-hand');
+    if (!el) return;
+    const n = S.players[opp].hand.length;
+    el.innerHTML = Array.from({length: n}, () => `<div class="opp-card"></div>`).join('');
   }
 
   _rStats() {
@@ -3577,6 +3763,10 @@ class Engine {
       if (isSel) circ.setAttribute('filter','url(#gw)');
       if (sick)  circ.setAttribute('opacity','0.55');
       circ.style.cursor='pointer';
+      // Hover tooltip (always shown, useful for enemy units)
+      circ.onmouseenter = e => this._showUnitTip(u, e);
+      circ.onmousemove  = e => this._moveUnitTip(e);
+      circ.onmouseleave = () => this._hideUnitTip();
       // In targeting modes (atk/inst/gift/dash) route to clickCell; otherwise selUnitFn
       circ.onclick = e => {
         e.stopPropagation();
