@@ -934,6 +934,22 @@ function mkUnit(S, p, cardId, q, r, s) {
     unit.onTurnStart = prodMap[cardId];
   }
 
+  // ── Hard-coded Combat abilities for CARD_DB cards ────────
+  // Triggered when this unit fights (as attacker OR as defender, except vs ranged)
+  const combatMap = {
+    queens_guard:      (S,u) => { S.players[u.own].mana+=1; lg(S,u.own,`👑 Queen's Guard: +1 Mana → ${S.players[u.own].mana}`); },
+    underground_brigand:(S,u) => { S.players[u.own].mana+=2; lg(S,u.own,`⛏ Underground Brigand: +2 Mana → ${S.players[u.own].mana}`); },
+    underground_boss:  (S,u) => { S.players[u.own].mana+=2; lg(S,u.own,`⛏ Underground Boss: +2 Mana → ${S.players[u.own].mana}`); },
+    shedim_brute:      (S,u) => { const opp=u.own==='A'?'B':'A'; S.players[opp].hp-=2; lg(S,u.own,`👹 Shedim Brute: 2 Schaden an Gott ${opp} → ${S.players[opp].hp}`); if(S.players[opp].hp<=0) S.winner=u.own; },
+    magnus_king:       (S,u,S2) => { deal(S2||S,u.own,1); lg(S,u.own,`👑 Magnus: Karte gezogen`); },
+    tax_collector:     (S,u) => { S.players[u.own].mana+=1; lg(S,u.own,`🪙 Tax Collector: +1 Mana → ${S.players[u.own].mana}`); },
+    kings_guard:       (S,u,S2) => { deal(S2||S,u.own,1); lg(S,u.own,`🛡 King's Guard: Karte gezogen`); },
+    llamacorn:         (S,u,S2) => { ['A','B'].forEach(pl=>{ deal(S2||S,pl,1); S.players[pl].hp=Math.min(BASE_HP,S.players[pl].hp+2); }); lg(S,u.own,`🦄 Llamacorn: Beide Spieler +1 Karte +2 LP`); },
+  };
+  if (combatMap[cardId]) {
+    unit.onCombat = combatMap[cardId];
+  }
+
   return unit;
 }
 
@@ -1598,8 +1614,12 @@ function doAtk(S, attackerId, targetType, targetId) {
     if (dDied && S.units[targetId])  resolveDeath(S, targetId);
     if (aDied && S.units[attackerId]) { resolveDeath(S, attackerId); return; }
 
+    // Trigger Combat abilities — attacker always, defender only if it retaliated
     if (S.units[attackerId] && typeof a.onCombat === 'function') {
-      try { a.onCombat(S, a, d); } catch(e) { console.warn('onCombat', e); }
+      try { a.onCombat(S, a, d); } catch(e) { console.warn('onCombat atk', e); }
+    }
+    if (S.units[targetId] && dmgToA > 0 && typeof d.onCombat === 'function') {
+      try { d.onCombat(S, d, a); } catch(e) { console.warn('onCombat def', e); }
     }
   } else {
     // Attack enemy base
@@ -1870,6 +1890,19 @@ function doPlay(S, p, id, q, r, s) {
 
       case 'gabrian_enchantment':
         if (u) { u.atk=u.hp; deal(S,p,1); lg(S,p,`Gabrischer Zauber: ATK=${u.hp}, +1 Karte`); } break;
+
+      case 'last_nightmare': {
+        // Destroy target creature (any enemy creature — targeted via inst mode)
+        if (u && u.own !== p) {
+          lg(S, p, `💀 Last Nightmare: ${cardData(u.cid)?.name || u.id} vernichtet`);
+          resolveDeath(S, u.id);
+        } else if (u && u.own === p) {
+          // Allow targeting own creature too (e.g. for combo)
+          lg(S, p, `💀 Last Nightmare: ${cardData(u.cid)?.name || u.id} vernichtet`);
+          resolveDeath(S, u.id);
+        }
+        break;
+      }
 
       case 'explore': {
         // Place a Prairie (Neutral land) — does NOT consume the land action (lobDone stays false)
