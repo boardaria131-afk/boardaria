@@ -893,6 +893,8 @@ function parseKeywords(card) {
   }
 
   // Auto-detect from text field (Faeria CARD_DB)
+  // Keywords appear at the START of the text or after punctuation, NOT inside ability descriptions
+  // e.g. "Flying, Charge 2." → flying ✓   "Gift - Give a creature Taunt." → taunt ✗
   const text = (card.text || '').toLowerCase();
 
   const dashM = text.match(/\bdash\s+(\d)/);
@@ -900,9 +902,12 @@ function parseKeywords(card) {
   if (dashM) kw.add(`dash:${dashM[1]}`);
   if (chrgM) kw.add(`charge:${chrgM[1]}`);
 
+  // Only add boolean keywords if they appear in the leading keyword list
+  // (before any ' - ' gift/ability separator or sentence describing an effect on others)
+  const keywordSection = text.split(/\.\s+|\bgift\b|\blast words\b|\bcombat\b|\bproduction\b/)[0];
   ['jump','flying','ranged','taunt','haste',
    'deathtouch','protection','divine','aquatic'].forEach(b => {
-    if (text.includes(b)) kw.add(b);
+    if (keywordSection.includes(b)) kw.add(b);
   });
 
   return kw;
@@ -958,10 +963,9 @@ function mkUnit(S, p, cardId, q, r, s) {
   const baseAtk = cd.atk ?? cd.power ?? 0;
   const baseHp  = cd.hp  ?? cd.life  ?? 1;
 
-  let bew = cd.bew ?? 1; // default: 1 hex movement
-  if (kw.has('flying') && !cd.bew) bew = 2; // flying gets 2 by default
+  let bew = cd.bew ?? 1; // default: 1 hex movement — flying does NOT add extra movement
 
-  const rei = kwCharge(kw);
+  const rei = 1; // melee attack range is always 1 (adjacent) — Charge extends MOVEMENT, not attack range
 
   // ── Dash: set pendingDash so player can choose direction after spawn ──
   const dashN = kwDash(kw);
@@ -1005,7 +1009,19 @@ function mkUnit(S, p, cardId, q, r, s) {
     underground_brigand:(S,u) => { S.players[u.own].mana+=2; lg(S,u.own,`⛏ Underground Brigand: +2 Mana → ${S.players[u.own].mana}`); },
     underground_boss:  (S,u) => { S.players[u.own].mana+=2; lg(S,u.own,`⛏ Underground Boss: +2 Mana → ${S.players[u.own].mana}`); },
     shedim_brute:      (S,u) => { const opp=u.own==='A'?'B':'A'; S.players[opp].hp-=2; lg(S,u.own,`👹 Shedim Brute: 2 Schaden an Gott ${opp} → ${S.players[opp].hp}`); if(S.players[opp].hp<=0) S.winner=u.own; },
-    magnus_king:       (S,u,S2) => { deal(S2||S,u.own,1); lg(S,u.own,`👑 Magnus: Karte gezogen`); },
+    magnus_king: (S, u) => {
+      const pl = S.players[u.own];
+      if (pl.deck.length === 0) { lg(S, u.own, `👑 Magnus: Deck leer`); return; }
+      const drawn = pl.deck.shift();
+      pl.hand.push(drawn);
+      // Mark the newly drawn card (last in hand) as 0-cost for this turn
+      const drawnIdx = pl.hand.length - 1;
+      if (!S._zeroCost) S._zeroCost = {};
+      if (!S._zeroCost[u.own]) S._zeroCost[u.own] = [];
+      S._zeroCost[u.own].push(drawnIdx);
+      const cd = cardData(drawn);
+      lg(S, u.own, `👑 Magnus: "${cd?.name||drawn}" gezogen — kostet 0 Mana`);
+    },
     tax_collector:     (S,u) => { S.players[u.own].mana+=1; lg(S,u.own,`🪙 Tax Collector: +1 Mana → ${S.players[u.own].mana}`); },
     kings_guard:       (S,u,S2) => { deal(S2||S,u.own,1); lg(S,u.own,`🛡 King's Guard: Karte gezogen`); },
     llamacorn:         (S,u,S2) => { ['A','B'].forEach(pl=>{ deal(S2||S,pl,1); S.players[pl].hp=Math.min(BASE_HP,S.players[pl].hp+2); }); lg(S,u.own,`🦄 Llamacorn: Beide Spieler +1 Karte +2 LP`); },
@@ -1039,6 +1055,16 @@ function mkUnit(S, p, cardId, q, r, s) {
     unit.maxHp += rb.hp;
     delete S._returnBuffs[cardId];
     lg(S, p, `🌿 ${cardData(cardId)?.name||cardId} mit +${rb.atk}/+${rb.hp} Buff beschworen`);
+  }
+
+  // Apply Spirit of Rebirth hand buff if this card was buffed while in hand
+  if (S._pendingPlayBuff) {
+    const pb = S._pendingPlayBuff;
+    S._pendingPlayBuff = null;
+    unit.atk   += pb.atk;
+    unit.hp    += pb.hp;
+    unit.maxHp += pb.hp;
+    lg(S, p, `🌀 ${cardData(cardId)?.name||cardId} mit Spirit-Buff +${pb.atk}/+${pb.hp} beschworen`);
   }
 
   return unit;
@@ -1092,6 +1118,12 @@ function tauntTargets(S, attackerOwn) {
 // ══════════════════════════════════════════════════════════
 function applyDmg(S, target, amount, source) {
   if (!target || amount <= 0) return 0;
+
+  // Sharra: ignores any single hit of 4 or more damage
+  if (target.cid === 'sharra_dragonslayer' && amount >= 4) {
+    lg(S, target.own, `🛡 Sharra ignoriert ${amount} Schaden (≥4)`);
+    return 0;
+  }
 
   // Divine: immune unless source is also divine
   if (target.kw && target.kw.has('divine') && !(source?.kw?.has('divine'))) {
@@ -1147,15 +1179,14 @@ function resolveDeath(S, uid) {
     const hand = S.players[u.own].hand;
     if (hand.length === 0) return;
     const idx = Math.floor(Math.random() * hand.length);
-    const cid = hand[idx];
-    // Store buff on a per-card-in-hand bonus array
+    // Use a per-slot buff: S._handBuffs[owner] is array parallel to hand
     if (!S._handBuffs) S._handBuffs = {};
-    if (!S._handBuffs[u.own]) S._handBuffs[u.own] = {};
+    if (!S._handBuffs[u.own]) S._handBuffs[u.own] = [];
     if (!S._handBuffs[u.own][idx]) S._handBuffs[u.own][idx] = {atk:0,hp:0};
     S._handBuffs[u.own][idx].atk += 1;
     S._handBuffs[u.own][idx].hp  += 1;
-    const cd = cardData(cid);
-    lg(S, u.own, `🌀 Spirit of Rebirth: ${cd?.name||cid} auf Hand +1/+1`);
+    const cd = cardData(hand[idx]);
+    lg(S, u.own, `🌀 Spirit of Rebirth: ${cd?.name||hand[idx]} auf Hand +1/+1`);
   });
 
   if (typeof u.onDeath === 'function') {
@@ -1301,7 +1332,9 @@ function ctrlWells(S, p) {
 function canPlay(S, p, id) {
   const cd = cardData(id);
   if (!cd) return false;
-  if (S.players[p].mana < cd.cost) return false;
+  const idx = S.players[p].hand.indexOf(id);
+  const isFree = S._zeroCost?.[p]?.includes(idx);
+  if (!isFree && S.players[p].mana < cd.cost) return false;
   for (const [lt, n] of Object.entries(cd.req || {})) {
     const key = { lake:'W', forest:'F', mountain:'M', desert:'D' }[lt] || lt;
     if (landCnt(S,p,key) < n) return false;
@@ -1701,9 +1734,12 @@ function doAtk(S, attackerId, targetType, targetId) {
     // Resolve deaths
     const dDied = d.hp <= 0;
     const aDied = a.hp <= 0;
-    // Seifer: track which unit he killed to gain its stats
-    if (dDied && a.cid === 'seifer_blood_tyrant' && !aDied) {
+    // Seifer: gains stats of killed unit — whether attacker or defender
+    if (dDied && !aDied && a.cid === 'seifer_blood_tyrant') {
       S._seiferKill = { seiferId: attackerId, targetId: targetId };
+    }
+    if (aDied && !dDied && d.cid === 'seifer_blood_tyrant') {
+      S._seiferKill = { seiferId: targetId, targetId: attackerId };
     }
     if (dDied && S.units[targetId])  resolveDeath(S, targetId);
     if (aDied && S.units[attackerId]) { resolveDeath(S, attackerId); return; }
@@ -1880,7 +1916,26 @@ function doPlay(S, p, id, q, r, s) {
   if (!canPlay(S,p,id)) return false;
 
   pl.mana -= cd.cost;
-  pl.hand.splice(pl.hand.indexOf(id),1);
+  const handIdx = pl.hand.indexOf(id);
+  // Magnus zero-cost: check if this hand slot is free
+  const zeroCostSlots = S._zeroCost?.[p] || [];
+  const isFree = zeroCostSlots.includes(handIdx);
+  pl.mana -= isFree ? 0 : cd.cost;
+  // Remove zero-cost marker and shift remaining indices
+  if (isFree && S._zeroCost?.[p]) {
+    S._zeroCost[p] = S._zeroCost[p]
+      .filter(i => i !== handIdx)
+      .map(i => i > handIdx ? i - 1 : i);
+  }
+  // Spirit of Rebirth hand buff: capture and transfer to unit on summon
+  const handBuff = S._handBuffs?.[p]?.[handIdx] || null;
+  if (handBuff) {
+    // Remove the slot, shift remaining buffs
+    const arr = S._handBuffs[p];
+    arr.splice(handIdx, 1);
+    S._pendingPlayBuff = handBuff; // will be applied in mkUnit
+  }
+  pl.hand.splice(handIdx, 1);
 
   // ── LAND ──────────────────────────────────────────────
   if (cd.type==='LAND') {
@@ -2113,6 +2168,8 @@ function doCleanup(S) {
   Object.values(S.units).forEach(u => {
     u.moved=false; u.atked=false; u.summonSick=false;
   });
+  // Clear Magnus zero-cost markers (they expire at end of turn)
+  if (S._zeroCost) S._zeroCost = {};
 
   // ── Ruunin / pending return-to-hand ───────────────────────
   if (S._pendingReturn && S._pendingReturn.length > 0) {
@@ -3512,12 +3569,21 @@ class Engine {
     }
 
     el.innerHTML = '';
-    S.players[this.ap].hand.forEach(id => {
+    S.players[this.ap].hand.forEach((id, handIdx) => {
       const cd = cardData(id);
       if (!cd) return;
 
       const ok    = this._canP(id);
       const isSel = this.selCard === id;
+
+      // Spirit of Rebirth hand buff for this slot
+      const hb = S._handBuffs?.[this.ap]?.[handIdx];
+      const hbStr = hb ? `<span style="color:#88ee88;font-size:.58rem;font-weight:bold">+${hb.atk}/+${hb.hp} ✦</span>` : '';
+
+      // Magnus zero-cost indicator
+      const zeroCostSlots = S._zeroCost?.[this.ap] || [];
+      const isFree = zeroCostSlots.includes(handIdx);
+      const freeStr = isFree ? `<span style="color:#c8a84b;font-size:.58rem">0◆✦</span>` : '';
 
       // Color accent based on card color (Faeria) or type (legacy)
       const colorMap = { blue:'#1a3a5a', green:'#1a3a1a', red:'#3a1a1a', yellow:'#3a2a0a', neutral:'#1a2030' };
@@ -3541,7 +3607,7 @@ class Engine {
       d.innerHTML = `
         <div class="ch">
           <span class="cn">${cd.name}</span>
-          <span class="cc">${cd.cost>0?cd.cost+'◆':''}</span>
+          <span class="cc">${isFree ? '0◆✦' : (cd.cost>0?cd.cost+'◆':'')}</span>
         </div>
         <div class="cb" style="color:${cd.color?{blue:'#3a8acc',green:'#4a9e40',red:'#cc4444',yellow:'#d4982a',neutral:'#8a9ab0'}[cd.color]||'#4a5a72':'#4a5a72'}">
           ${cd.color||cd.type==='LAND'?'':cd.type}
@@ -3549,7 +3615,7 @@ class Engine {
           ${cd.type==='LAND'?' Land':''}
           ${cd.rarity?'· '+cd.rarity:''}
         </div>
-        ${atk!=null?`<div class="cs"><span class="cra">⚔${atk}</span><span class="crh">♥${hp}</span></div>`:''}
+        ${atk!=null?`<div class="cs"><span class="cra">⚔${atk}</span><span class="crh">♥${hp}</span>${hbStr}</div>`:''}
         ${kwHtml?`<div style="display:flex;flex-wrap:wrap;gap:2px;margin:2px 0">${kwHtml}</div>`:''}
         ${reqStr?`<div class="creq">Req: ${reqStr}</div>`:''}
         <div class="ctx">${cd.text||''}</div>`;
