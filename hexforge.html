@@ -921,7 +921,7 @@ const CARDS = (function() {
       let hits=0;
       cNbr(unit.q,unit.r,unit.s).forEach(([nq,nr,ns])=>{
         const tu=unitAt(S,nq,nr,ns);
-        if(tu&&tu.own===opp){applyDmg(S,tu,2,unit);if(tu.hp<=0)resolveDeath(S,tu.id);hits++;}
+        if(tu&&tu.own===opp){applyDmg(S,tu,2,unit,true);if(tu.hp<=0)resolveDeath(S,tu.id);hits++;}
       });
       // Also hit enemy god if adjacent to own base (check base position)
       const [bq,br,bs]=opp==='B'?BASE_B:BASE_A;
@@ -938,7 +938,7 @@ const CARDS = (function() {
     onGift:(S,p,unit) => {
       const opp=p==='A'?'B':'A';
       Object.values(S.units).filter(u=>u.own===opp).forEach(u=>{
-        applyDmg(S,u,3,unit);if(u.hp<=0)resolveDeath(S,u.id);
+        applyDmg(S,u,3,unit,true);if(u.hp<=0)resolveDeath(S,u.id);
       });
       lg(S,p,'✦ Garudan Gift: 3 damage to all enemies');
     }
@@ -3409,17 +3409,25 @@ function clearTempBuffs(S) {
 }
 
 // ══════════════════════════════════════════════════════════
+//  DIVINE HELPER
+// ══════════════════════════════════════════════════════════
+// Returns true if unit has Divine — used to filter valid spell/ability targets.
+// Divine does NOT prevent attacks or AoE damage; only targeted spells/abilities.
+function isDivine(u) { return u?.kw?.has('divine') ?? false; }
+
+// ══════════════════════════════════════════════════════════
 //  DAMAGE  (Protection, Divine, Deathtouch, Sharra)
 // ══════════════════════════════════════════════════════════
-function applyDmg(S, target, amount, source) {
+function applyDmg(S, target, amount, source, isAoE=false) {
   if (!target || amount <= 0) return 0;
 
   if (target.cid==='sharra_dragonslayer' && amount >= 4) {
     lg(S, target.own, `🛡 Sharra ignores ${amount} damage (≥4)`);
     return 0;
   }
-  if (target.kw?.has('divine') && !(source?.kw?.has('divine'))) {
-    lg(S, target.own, `${cardData(target.cid)?.name} — göttliche Immunität!`);
+  // Divine: immune to targeted spells/abilities. AoE and direct attacks bypass this.
+  if (!isAoE && target.kw?.has('divine')) {
+    lg(S, target.own, `${cardData(target.cid)?.name} — Divine: can't be targeted by spells`);
     return 0;
   }
   if (target.kw?.has('protection') && !target.protHit) {
@@ -4071,6 +4079,15 @@ function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
 
   const opp = p==='A'?'B':'A';
 
+  // Divine: before resolving any gift that targets a unit, check and block
+  const _targetUnit = unitAt(S, targetQ, targetR, targetS);
+  const UNIT_TARGETING_GIFTS = new Set(['dmg1_enemy','give_taunt','buff_creature','set_6_6','swallow_friendly','swallow_any']);
+  if (UNIT_TARGETING_GIFTS.has(gift.type) && _targetUnit && isDivine(_targetUnit)) {
+    lg(S, p, `✶ Divine: ${cardData(_targetUnit.cid)?.name||_targetUnit.id} cannot be targeted by abilities`);
+    unit.pendingGift = gift; // restore so player can pick again
+    return false;
+  }
+
   if (gift.type==='dmg1_enemy') {
     const tu = unitAt(S, targetQ, targetR, targetS);
     if (tu && tu.own===opp) {
@@ -4262,6 +4279,7 @@ function doPlay(S, p, id, q, r, s) {
     }
     case 'soul_drain': {
       const tu=unitAt(S,q,r,s);
+      if(tu && isDivine(tu)){lg(S,p,`${cd.name}: ${cardData(tu.cid)?.name||tu.id} — Divine, can't be targeted`);break;}
       if(tu){
         const drain=Math.min(2,tu.hp-1);
         tu.hp-=drain; S.players[p].hp=Math.min(BASE_HP,S.players[p].hp+drain);
@@ -4272,11 +4290,13 @@ function doPlay(S, p, id, q, r, s) {
     }
     case 'gabrian_enchantment': {
       const tu=unitAt(S,q,r,s);
+      if(tu && isDivine(tu)){lg(S,p,`${cd.name}: ${cardData(tu.cid)?.name||tu.id} — Divine, can't be targeted`);break;}
       if(tu){tu.atk=tu.hp;deal(S,p,1);lg(S,p,`${cd.name}: ATK=${tu.hp}, +1 Karte`);}
       break;
     }
     case 'last_nightmare': {
       const tu=unitAt(S,q,r,s);
+      if(tu && isDivine(tu)){lg(S,p,`${cd.name}: ${cardData(tu.cid)?.name||tu.id} — Divine, can't be targeted`);break;}
       if(tu){lg(S,p,`${cd.name}: ${cardData(tu.cid)?.name||tu.id} vernichtet`);resolveDeath(S,tu.id);}
       break;
     }
@@ -5100,22 +5120,21 @@ class Engine {
 
       const opp = this.ap === 'A' ? 'B' : 'A';
       if (TARGET_ALL.has(id)) {
-        // Any creature (own + enemy) + both gods (BASEs)
-        const [baA] = [BASE_A]; const [baB] = [BASE_B];
+        // Any creature (own + enemy) + both gods (BASEs) — Divine units untargetable
         this.vt = [
-          ...Object.values(S.units).map(u => [u.q,u.r,u.s]),
+          ...Object.values(S.units).filter(u => !isDivine(u)).map(u => [u.q,u.r,u.s]),
           BASE_A, BASE_B
         ];
       } else if (TARGET_ALL_UNITS.has(id)) {
-        // Any creature (own + enemy), no gods
-        this.vt = Object.values(S.units).map(u => [u.q,u.r,u.s]);
+        // Any creature (own + enemy), no gods — Divine units untargetable
+        this.vt = Object.values(S.units).filter(u => !isDivine(u)).map(u => [u.q,u.r,u.s]);
       } else if (TARGET_ENEMY_UNIT.has(id)) {
-        this.vt = Object.values(S.units).filter(u => u.own !== this.ap).map(u => [u.q,u.r,u.s]);
+        this.vt = Object.values(S.units).filter(u => u.own !== this.ap && !isDivine(u)).map(u => [u.q,u.r,u.s]);
       } else if (TARGET_OWN.has(id)) {
-        this.vt = Object.values(S.units).filter(u => u.own === this.ap).map(u => [u.q,u.r,u.s]);
+        this.vt = Object.values(S.units).filter(u => u.own === this.ap && !isDivine(u)).map(u => [u.q,u.r,u.s]);
       } else {
-        // Default: target own units
-        this.vt = Object.values(S.units).filter(u => u.own === this.ap).map(u => [u.q,u.r,u.s]);
+        // Default: target own units — Divine units untargetable
+        this.vt = Object.values(S.units).filter(u => u.own === this.ap && !isDivine(u)).map(u => [u.q,u.r,u.s]);
       }
       this._render();
     }
@@ -5132,6 +5151,11 @@ class Engine {
 
     // Spirit Spice target
     if (S._pendingSpiritSpice === this.ap) {
+      if (isDivine(u)) {
+        lg(S, this.ap, `✶ Divine: ${cardData(u.cid)?.name||u.id} cannot be targeted`);
+        this._render();
+        return;
+      }
       S._pendingSpiritSpice = null;
       buffUnit(u, 4, 4);
       u.kw.add('flying');
@@ -5146,27 +5170,28 @@ class Engine {
       this.pact = 'gift';
       const opp = this.ap === 'A' ? 'B' : 'A';
       if (u.pendingGift.type === 'dmg1_enemy') {
-        // Targets: enemy units + enemy base
+        // Targets: enemy units (non-Divine) + enemy base
         const [bq,br,bs] = opp==='A' ? BASE_A : BASE_B;
         this.vt = [
-          ...Object.values(S.units).filter(t=>t.own===opp).map(t=>[t.q,t.r,t.s]),
+          ...Object.values(S.units).filter(t=>t.own===opp && !isDivine(t)).map(t=>[t.q,t.r,t.s]),
           [bq,br,bs]
         ];
       } else if (u.pendingGift.type === 'give_taunt') {
-        this.vt = Object.values(S.units).filter(t=>t.own===this.ap).map(t=>[t.q,t.r,t.s]);
+        // Own units — Divine units can't be targeted even by own abilities
+        this.vt = Object.values(S.units).filter(t=>t.own===this.ap && !isDivine(t)).map(t=>[t.q,t.r,t.s]);
       } else if (u.pendingGift.type === 'create_lake') {
         // Adjacent to own territory (like normal land placement)
         this.vt = adjPlace(S, this.ap)
           .filter(([aq,ar]) => { const c=S.cells[cK(aq,ar)]; return c && c.type==='EMPTY'; });
       } else if (u.pendingGift.type === 'swallow_friendly') {
-        // Friendly units on board that aren't already swallowed/swallowing
+        // Friendly units on board — Divine units untargetable
         this.vt = Object.values(S.units)
-          .filter(t => t.own===this.ap && t.id!==u.id && t.q!==null && !t.swallowedBy && !t.swallowedUnit)
+          .filter(t => t.own===this.ap && t.id!==u.id && t.q!==null && !t.swallowedBy && !t.swallowedUnit && !isDivine(t))
           .map(t=>[t.q,t.r,t.s]);
       } else if (u.pendingGift.type === 'swallow_any') {
-        // Any unit on board (not already swallowed, not a host, not self)
+        // Any unit on board — Divine units untargetable
         this.vt = Object.values(S.units)
-          .filter(t => t.id!==u.id && t.q!==null && !t.swallowedBy && !t.swallowedUnit)
+          .filter(t => t.id!==u.id && t.q!==null && !t.swallowedBy && !t.swallowedUnit && !isDivine(t))
           .map(t=>[t.q,t.r,t.s]);
       }
       this._showUD(u);
