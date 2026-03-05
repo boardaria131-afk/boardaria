@@ -577,6 +577,7 @@ svg#board { display: block; overflow: visible; }
       <div class="sr"><span class="sl">Base HP</span>  <span class="sv hp" id="hp-A">20</span></div>
       <div class="sr"><span class="sl">Mana</span>       <span class="sv mn" id="mana-A">3</span></div>
       <div class="sr"><span class="sl">Hand/Deck</span>  <span class="sv cd" id="cards-A">5/25</span></div>
+      <div class="sr"><span class="sl">Lands</span>      <span id="lands-A" style="font-size:.58rem;line-height:1.6;letter-spacing:.5px"></span></div>
     </div>
     <div class="pt">Hand</div>
     <div id="hand-area"></div>
@@ -613,6 +614,7 @@ svg#board { display: block; overflow: visible; }
       <div class="sr"><span class="sl">Base HP</span>  <span class="sv hp" id="hp-B">20</span></div>
       <div class="sr"><span class="sl">Mana</span>       <span class="sv mn" id="mana-B">3</span></div>
       <div class="sr"><span class="sl">Hand/Deck</span>  <span class="sv cd" id="cards-B">5/25</span></div>
+      <div class="sr"><span class="sl">Lands</span>      <span id="lands-B" style="font-size:.58rem;line-height:1.6;letter-spacing:.5px"></span></div>
     </div>
     <div class="pt">Unit</div>
     <div id="ud"><span style="color:var(--dim);font-size:.68rem">Select a unit…</span></div>
@@ -1946,7 +1948,26 @@ const CARDS = (function() {
   add({ id:'chrysalis', set:'dlc', name:'Chrysalis', color:'green', type:'structure', subtype:null,
     cost:0, req:{forest:1}, kw:kw(), atk:null, hp:2,
     rarity:'epic', treasure:false,
-    text:'Gift: Swallow a friendly creature. Production: Swallowed creature gains +1/+1. Activate: Destroy this.',
+    text:'Gift: Swallow a friendly creature. Production: Swallowed creature gains +1/+1. Activate: Destroy this (releasing the creature).',
+    onGift:(S,p,unit) => {
+      if (unit.swallowedUnit) {
+        // Activate: destroy self, releasing swallowed creature
+        lg(S, p, '🌱 Chrysalis activates — releasing creature!');
+        resolveDeath(S, unit.id);
+        return;
+      }
+      const targets = Object.values(S.units).filter(u => u.own===p && u.id!==unit.id && !u.swallowedBy && !u.swallowedUnit);
+      if (!targets.length) { lg(S,p,'🌱 Chrysalis: No friendly creature to swallow'); return; }
+      unit.pendingGift = { type:'swallow_friendly' };
+      lg(S, p, '🌱 Chrysalis: Choose a friendly creature to cocoon');
+    },
+    onTurnStart:(S,u) => {
+      if (!u.swallowedUnit) return;
+      const sw = S.units[u.swallowedUnit];
+      if (!sw) { u.swallowedUnit = null; return; }
+      buffUnit(sw, 1, 1);
+      lg(S, u.own, `🌱 Chrysalis: ${cardData(sw.cid)?.name} grows +1/+1 inside`);
+    }
   });
   add({ id:'verduran_emissary', set:'dlc', name:'Verduran Emissary', color:'green', type:'creature', subtype:null,
     cost:5, req:{forest:1}, kw:kw(), atk:4, hp:5,
@@ -2927,6 +2948,20 @@ const CARDS = (function() {
     cost:6, req:{wild:6}, kw:kw('flying', 'charge:3'), atk:6, hp:6,
     rarity:'legendary', treasure:false,
     text:'Flying. Charge 3. First time Shozen would kill in combat, swallow and gain control instead.',
+    onCombat:(S, u, other) => {
+      // Only triggers once (flag reset each turn in doCleanup)
+      if (u._shozenUsed) return;
+      if (!other) return;
+      if (other.own === u.own) return;                     // only enemy
+      if (other.hp <= 0 && S.units[other.id]) {           // enemy would die
+        u._shozenUsed = true;
+        // Cancel the death — restore 1 hp so resolveDeath won't fire
+        other.hp = 1;
+        // Steal ownership and swallow
+        const ok = doSwallow(S, u.id, other.id, false);   // keepOwner=false → Shozen controls on release
+        if (ok) lg(S, u.own, `👹 Shozen devours ${cardData(other.cid)?.name} — it will serve you!`);
+      }
+    }
   });
   add({ id:'imperial_outpost', set:'dlc', name:'Imperial Outpost', color:'neutral', type:'structure', subtype:null,
     cost:2, req:{}, kw:kw(), atk:null, hp:2,
@@ -3006,17 +3041,36 @@ const CARDS = (function() {
   add({ id:'balloon_fish', set:'dlc', name:'Balloon Fish', color:'neutral', type:'creature', subtype:null,
     cost:1, req:{wild:2}, kw:kw('flying', 'dash:2'), atk:2, hp:2,
     rarity:'rare', treasure:false,
-    text:'Flying. Dash 2. Gift: Swallow a friendly creature. If can\'t, this dies.',
+    text:"Flying. Dash 2. Gift: Swallow a friendly creature. If can't, this dies.",
+    onGift:(S,p,unit) => {
+      // Check if any valid friendly targets exist
+      const targets = Object.values(S.units).filter(u => u.own===p && u.id!==unit.id && !u.swallowedBy && !u.swallowedUnit);
+      if (!targets.length) {
+        lg(S,p,'🐡 Balloon Fish: No target — Balloon Fish pops!');
+        resolveDeath(S, unit.id);
+        return;
+      }
+      unit.pendingGift = { type:'swallow_friendly' };
+      lg(S, p, '🐡 Balloon Fish: Choose a friendly creature to swallow');
+    }
   });
   add({ id:'azure_skywhale', set:'dlc', name:'Azure Skywhale', color:'neutral', type:'creature', subtype:null,
     cost:6, req:{wild:8}, kw:kw('flying', 'charge:3'), atk:6, hp:6,
     rarity:'epic', treasure:false,
-    text:'Flying. Charge 3. Can\'t harvest. Gift: Swallow a creature.',
+    text:"Flying. Charge 3. Can't harvest. Gift: Swallow any creature (returns to original owner on release).",
+    onGift:(S,p,unit) => {
+      unit.pendingGift = { type:'swallow_any', keepOwner:true };
+      lg(S, p, '🐋 Azure Skywhale: Choose any creature to swallow');
+    }
   });
   add({ id:'mobie', set:'dlc', name:'Mobie, Azure Skywhale', color:'neutral', type:'creature', subtype:null,
     cost:6, req:{wild:8}, kw:kw('flying', 'charge:3'), atk:6, hp:6,
     rarity:'legendary', treasure:false,
-    text:'Flying. Charge 3. Can\'t harvest. Gift: Swallow a creature.',
+    text:"Flying. Charge 3. Can't harvest. Gift: Swallow any creature (returns to original owner on release).",
+    onGift:(S,p,unit) => {
+      unit.pendingGift = { type:'swallow_any', keepOwner:true };
+      lg(S, p, '🐋 Mobie: Choose any creature to swallow');
+    }
   });
   add({ id:'emerald_salamander', set:'dlc', name:'Emerald Salamander', color:'neutral', type:'creature', subtype:'Beast',
     cost:6, req:{mountain:2, forest:2}, kw:kw(), atk:2, hp:5,
@@ -3201,7 +3255,25 @@ const CARDS = (function() {
   add({ id:'crystalis', set:'dlc', name:'Crystalis', color:'neutral', type:'structure', subtype:null,
     cost:0, req:{}, kw:kw(), atk:null, hp:6,
     rarity:'rare', treasure:true,
-    text:'Gift: Swallow a friendly creature. Production: Swallowed creature gains +4/+4. Activate: Destroy this.',
+    text:'Gift: Swallow a friendly creature. Production: Swallowed creature gains +4/+4. Activate: Destroy this (releasing the creature).',
+    onGift:(S,p,unit) => {
+      if (unit.swallowedUnit) {
+        lg(S, p, '💎 Crystalis activates — releasing creature!');
+        resolveDeath(S, unit.id);
+        return;
+      }
+      const targets = Object.values(S.units).filter(u => u.own===p && u.id!==unit.id && !u.swallowedBy && !u.swallowedUnit);
+      if (!targets.length) { lg(S,p,'💎 Crystalis: No friendly creature to swallow'); return; }
+      unit.pendingGift = { type:'swallow_friendly' };
+      lg(S, p, '💎 Crystalis: Choose a friendly creature to empower');
+    },
+    onTurnStart:(S,u) => {
+      if (!u.swallowedUnit) return;
+      const sw = S.units[u.swallowedUnit];
+      if (!sw) { u.swallowedUnit = null; return; }
+      buffUnit(sw, 4, 4);
+      lg(S, u.own, `💎 Crystalis: ${cardData(sw.cid)?.name} grows +4/+4 inside`);
+    }
   });
   add({ id:'magic_carpet', set:'dlc', name:'Magic Carpet', color:'neutral', type:'creature', subtype:null,
     cost:4, req:{}, kw:kw('flying', 'dash:5'), atk:3, hp:1,
@@ -3264,6 +3336,8 @@ function mkUnit(S, p, cardId, q, r, s) {
     atkBuff: 0, hpBuff: 0,
     protHit: false,
     pendingDash: dashN,
+    swallowedUnit: null,   // id of unit this creature has swallowed
+    swallowedBy:   null,   // id of unit that swallowed this creature
     // Ability hooks — copied directly from card definition
     onGift:      cd.onGift      || null,
     onCombat:    cd.onCombat    || null,
@@ -3355,10 +3429,92 @@ function applyDmg(S, target, amount, source) {
 // ══════════════════════════════════════════════════════════
 //  DEATH  (Last Words + Spirit of Rebirth + Seifer)
 // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+//  SWALLOW MECHANIC
+// ══════════════════════════════════════════════════════════
+
+// Attempt to swallow: host eats target.
+// keepOwner=true  → target keeps its original owner on release (e.g. Mobie/AzureSkywhale)
+// keepOwner=false → target changes owner to host on release (e.g. Shozen)
+function doSwallow(S, hostId, targetId, keepOwner = true) {
+  const host   = S.units[hostId];
+  const target = S.units[targetId];
+  if (!host || !target) return false;
+  // Preconditions
+  if (host.swallowedUnit)   return false; // host already full
+  if (target.swallowedBy)   return false; // target already swallowed
+  if (target.swallowedUnit) return false; // can't swallow a host that has something inside
+
+  host.swallowedUnit = targetId;
+  target.swallowedBy = hostId;
+  target._swallowKeepOwner = keepOwner;
+  // Store target's position (will be null while swallowed — no q/r/s on board)
+  target._swallowedQ = target.q;
+  target._swallowedR = target.r;
+  target._swallowedS = target.s;
+  // Remove from board — keep in S.units but make invisible/inactive
+  target.q = null; target.r = null; target.s = null;
+
+  const hName = cardData(host.cid)?.name   || hostId;
+  const tName = cardData(target.cid)?.name || targetId;
+  lg(S, host.own, `🌀 ${hName} swallows ${tName}`);
+  return true;
+}
+
+// Release swallowed creature when host dies (or is explicitly released)
+// Called from resolveDeath before the host is deleted
+function releaseSwallowed(S, hostId) {
+  const host = S.units[hostId];
+  if (!host || !host.swallowedUnit) return;
+
+  const targetId = host.swallowedUnit;
+  const target   = S.units[targetId];
+  if (!target) { host.swallowedUnit = null; return; }
+
+  const keepOwner = target._swallowKeepOwner !== false;
+
+  // Place on host's current position
+  target.q = host.q;
+  target.r = host.r;
+  target.s = host.s;
+  target.swallowedBy        = null;
+  target._swallowKeepOwner  = undefined;
+  target._swallowedQ        = undefined;
+  target._swallowedR        = undefined;
+  target._swallowedS        = undefined;
+  host.swallowedUnit        = null;
+
+  // Ownership: Shozen converts; others return to original owner
+  if (!keepOwner) {
+    target.own = host.own;
+  }
+
+  // Summoning sickness — can't act this turn
+  target.summonSick  = true;
+  target.moved       = false;
+  target.atked       = false;
+
+  const hName = cardData(host.cid)?.name   || hostId;
+  const tName = cardData(target.cid)?.name || targetId;
+  const ownerNote = !keepOwner ? ` (now controlled by ${target.own})` : '';
+  lg(S, target.own, `🌀 ${tName} released from ${hName}${ownerNote}`);
+}
+
 function resolveDeath(S, uid) {
   const u = S.units[uid];
   if (!u) return;
   lg(S, 'sys', `${cardData(u.cid)?.name||uid} stirbt`);
+
+  // ── Release swallowed creature before host is removed ──
+  if (u.swallowedUnit) {
+    releaseSwallowed(S, uid);
+  }
+  // If this unit was swallowed and somehow dies, clean up host reference
+  if (u.swallowedBy) {
+    const host = S.units[u.swallowedBy];
+    if (host) host.swallowedUnit = null;
+    u.swallowedBy = null;
+  }
 
   // Seifer kill-stat gain
   if (S._seiferKill?.targetId === uid) {
@@ -3948,6 +4104,26 @@ function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
     return false;
   }
 
+  // ── Swallow friendly (Balloon Fish, Chrysalis, Crystalis) ─────────────
+  if (gift.type==='swallow_friendly') {
+    const tu = unitAt(S, targetQ, targetR, targetS);
+    if (!tu || tu.own !== p || tu.id === unit.id) return false;
+    if (tu.swallowedBy || tu.swallowedUnit) return false;
+    const ok = doSwallow(S, unit.id, tu.id, true); // release returns to original owner
+    if (!ok) return false;
+    if (gift.killIfFail === undefined) {/* already succeeded */}
+    return true;
+  }
+
+  // ── Swallow any (Mobie / Azure Skywhale — releases to original owner) ──
+  if (gift.type==='swallow_any') {
+    const tu = unitAt(S, targetQ, targetR, targetS);
+    if (!tu || tu.id === unit.id) return false;
+    if (tu.swallowedBy || tu.swallowedUnit) return false;
+    const keepOwner = gift.keepOwner !== false; // true = Mobie, false = Shozen-style
+    return doSwallow(S, unit.id, tu.id, keepOwner);
+  }
+
   return false;
 }
 
@@ -3998,6 +4174,30 @@ function doPlay(S, p, id, q, r, s) {
     S.units[u.id] = u;
     lg(S, p, `✦ ${cd.name} beschworen`);
     harvestMana(S, p); // harvest if spawned adjacent to well
+
+    // Bloated Toad: enters with an enemy 2/2 Frog swallowed
+    if (id === 'bloated_toad') {
+      const opp = p === 'A' ? 'B' : 'A';
+      const frogId = `u${S.uid++}`;
+      const frog = {
+        id: frogId, own: opp, cid: 'frog_token',
+        q: null, r: null, s: null,
+        hp: 2, maxHp: 2, atk: 2,
+        bew: 1, rei: 1,
+        kw: new Set(),
+        moved: false, atked: false,
+        summonSick: true,
+        noHarvest: false,
+        atkBuff: 0, hpBuff: 0,
+        protHit: false, pendingDash: 0,
+        swallowedUnit: null, swallowedBy: null,
+        onGift: null, onCombat: null, onDeath: null, onTurnStart: null,
+      };
+      S.units[frogId] = frog;
+      doSwallow(S, u.id, frogId, true); // frog returns to opponent on release
+      lg(S, p, `🐸 Bloated Toad enters with a 2/2 Frog swallowed (opponent's)`);
+    }
+
     // Trigger Gift if card has one
     if (u.onGift) doGift(S, p, u);
     return u.id;
@@ -4223,7 +4423,10 @@ function doCleanup(S) {
   });
 
   clearTempBuffs(S);
-  Object.values(S.units).forEach(u=>{u.moved=false;u.atked=false;u.summonSick=false;});
+  Object.values(S.units).forEach(u=>{
+    u.moved=false; u.atked=false; u.summonSick=false;
+    if (u._shozenUsed) u._shozenUsed = false; // reset once-per-turn swallow
+  });
   // Reset per-turn discounts
   if(S._handDiscount)S._handDiscount[S.ap]=0;
 
@@ -4947,6 +5150,16 @@ class Engine {
         // Adjacent to own territory (like normal land placement)
         this.vt = adjPlace(S, this.ap)
           .filter(([aq,ar]) => { const c=S.cells[cK(aq,ar)]; return c && c.type==='EMPTY'; });
+      } else if (u.pendingGift.type === 'swallow_friendly') {
+        // Friendly units on board that aren't already swallowed/swallowing
+        this.vt = Object.values(S.units)
+          .filter(t => t.own===this.ap && t.id!==u.id && t.q!==null && !t.swallowedBy && !t.swallowedUnit)
+          .map(t=>[t.q,t.r,t.s]);
+      } else if (u.pendingGift.type === 'swallow_any') {
+        // Any unit on board (not already swallowed, not a host, not self)
+        this.vt = Object.values(S.units)
+          .filter(t => t.id!==u.id && t.q!==null && !t.swallowedBy && !t.swallowedUnit)
+          .map(t=>[t.q,t.r,t.s]);
       }
       this._showUD(u);
       this._render();
@@ -5264,7 +5477,17 @@ class Engine {
     document.getElementById('tip-hp').textContent   = `♥ ${u.hp}/${u.maxHp}  `;
     document.getElementById('tip-cost').textContent = cd.cost ? `${cd.cost}◆` : '';
     document.getElementById('tip-kw').innerHTML     = kw;
-    document.getElementById('tip-text').textContent = cd.text || '';
+    let tipText = cd.text || '';
+    // Show swallow status
+    if (u.swallowedUnit) {
+      const sw = this.S.units[u.swallowedUnit];
+      if (sw) tipText += `\n🌀 Swallowed: ${cardData(sw.cid)?.name||sw.cid} (${sw.own}) ${sw.atk}/${sw.hp}`;
+    }
+    if (u.swallowedBy) {
+      const host = this.S.units[u.swallowedBy];
+      if (host) tipText += `\n🌀 Swallowed by: ${cardData(host.cid)?.name||host.cid}`;
+    }
+    document.getElementById('tip-text').textContent = tipText;
     tip.style.display = 'block';
     this._moveUnitTip(e);
   }
@@ -5811,11 +6034,22 @@ class Engine {
 
   _rStats() {
     const S = this.S;
+    const LAND_COLOR = { F:'#2eaa30', D:'#d08818', M:'#cc3030', W:'#2288dd', N:'#6a9a6a' };
+    const LAND_EMOJI = { F:'🌲', D:'🏜', M:'🌋', W:'🌊', N:'🌿' };
     ['A','B'].forEach(p => {
       document.getElementById(`hp-${p}`).textContent    = S.players[p].hp;
       document.getElementById(`mana-${p}`).textContent  = S.players[p].mana;
       document.getElementById(`cards-${p}`).textContent = `${S.players[p].hand.length}/${S.players[p].deck.length}`;
       document.getElementById(`hpbar-${p}`).style.width = `${S.players[p].hp/BASE_HP*100}%`;
+      // Count lands per type
+      const lc = {F:0,D:0,M:0,W:0,N:0};
+      Object.values(S.cells).forEach(c => { if (c.type==='LAND' && c.owner===p) lc[c.landType] = (lc[c.landType]||0)+1; });
+      const el = document.getElementById(`lands-${p}`);
+      if (el) {
+        const pips = ['F','D','M','W','N'].filter(t=>lc[t]>0)
+          .map(t=>`<span style="color:${LAND_COLOR[t]};font-weight:700;margin-right:3px">${LAND_EMOJI[t]}${lc[t]}</span>`).join('');
+        el.innerHTML = pips || '<span style="color:#444">—</span>';
+      }
     });
     document.getElementById('rnd').textContent = S.turn;
     const n = document.getElementById('apn');
@@ -6169,6 +6403,9 @@ class Engine {
 
     // ── Draw units ──────────────────────────────────────
     Object.values(S.units).forEach(u => {
+      // Skip units that are swallowed (no board position)
+      if (u.q === null || u.r === null) return;
+
       const [px,py] = c2p(u.q,u.r);
       const cx = px+ox, cy = py+oy;
       const cd    = cardData(u.cid);
@@ -6247,6 +6484,27 @@ class Engine {
         ab.setAttribute('cx',cx-11); ab.setAttribute('cy',cy-11); ab.setAttribute('r','4');
         ab.setAttribute('fill','#aacc22'); ab.setAttribute('stroke','#ccee44'); ab.setAttribute('stroke-width','1');
         ab.setAttribute('pointer-events','none'); svg.appendChild(ab);
+      }
+
+      // Swallow indicator: small 🌀 badge on top-left if this unit has swallowed something
+      if (u.swallowedUnit && S.units[u.swallowedUnit]) {
+        const sw = S.units[u.swallowedUnit];
+        const swName = (cardData(sw.cid)?.name || sw.cid).substring(0,3);
+        const swCol = sw.own === 'A' ? '#ff6060' : '#6090ff';
+        // Background pill
+        const pill = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        pill.setAttribute('x', cx-17); pill.setAttribute('y', cy-28);
+        pill.setAttribute('width','34'); pill.setAttribute('height','9');
+        pill.setAttribute('rx','4'); pill.setAttribute('fill','rgba(0,0,0,0.7)');
+        pill.setAttribute('stroke',swCol); pill.setAttribute('stroke-width','0.8');
+        pill.setAttribute('pointer-events','none'); svg.appendChild(pill);
+        const swT = document.createElementNS('http://www.w3.org/2000/svg','text');
+        swT.setAttribute('x',cx); swT.setAttribute('y',cy-21);
+        swT.setAttribute('text-anchor','middle'); swT.setAttribute('font-size','6.5');
+        swT.setAttribute('fill',swCol); swT.setAttribute('font-weight','bold');
+        swT.setAttribute('pointer-events','none');
+        swT.textContent = `◉ ${swName}`;
+        svg.appendChild(swT);
       }
 
       // Keyword icons on unit (tiny)
