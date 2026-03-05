@@ -597,6 +597,8 @@ svg#board { display: block; overflow: visible; }
       <button class="ab"    id="btn-rnd"    onclick="G.devRandomize()" style="background:rgba(80,40,120,.35);border-color:#6a3a9a;color:#bb88ff;display:none">🎲 Randomize</button>
       <button class="ab"    id="btn-addmana" onclick="G.devAddMana()" style="background:rgba(40,80,40,.35);border-color:#3a6a3a;color:#88cc88;display:none">+5 Mana</button>
       <button class="ab"    id="btn-drawall" onclick="G.devDrawAll()" style="background:rgba(40,60,80,.35);border-color:#3a5a7a;color:#88aacc;display:none">+3 Karten</button>
+      <button class="ab"    id="btn-addcard" onclick="G.devAddCard()" style="background:rgba(80,60,20,.35);border-color:#8a6a1a;color:#ccaa44;display:none">🃏 Karte holen</button>
+      <button class="ab"    id="btn-addland" onclick="G.devAddLand()" style="background:rgba(20,60,60,.35);border-color:#1a7a7a;color:#44cccc;display:none">🏔 Land setzen</button>
       <div id="action-hint" style="font-size:.6rem;color:var(--gold);letter-spacing:1px;margin-top:6px;min-height:1em;font-family:'Cinzel',serif;text-align:center"></div>
     </div>
   </div>
@@ -4997,6 +4999,12 @@ class Engine {
     const S   = this.S;
     const isV = this.vt.some(([a,b,c]) => a===q&&b===r&&c===s);
 
+    // DEV: Land placement mode intercepts all cell clicks
+    if (window._devLandMode) {
+      this._devPlaceLand(q, r, s);
+      return;
+    }
+
     if (this.pact && isV) {
 
       if (this.pact === 'land') {
@@ -5272,7 +5280,7 @@ class Engine {
   _devInit() {
     if (!DEV_MODE) return;
     // Show DEV buttons
-    ['btn-rnd','btn-addmana','btn-drawall'].forEach(id => {
+    ['btn-rnd','btn-addmana','btn-drawall','btn-addcard','btn-addland'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = '';
     });
@@ -5337,6 +5345,164 @@ class Engine {
     const S = this.S;
     deal(S, S.ap, 3);
     lg(S, S.ap, `🛠 DEV: 3 Karten gezogen`);
+    this._render();
+  }
+
+  // ── DEV: Add a specific card to active player's hand ──────────────────────
+  devAddCard() {
+    if (!DEV_MODE) return;
+    const S = this.S;
+
+    // Build a modal overlay with autocomplete search
+    const existing = document.getElementById('dev-card-modal');
+    if (existing) existing.remove();
+
+    const allCardsList = Object.values(CARDS)
+      .filter(c => c.type !== 'LAND')
+      .sort((a,b) => a.name.localeCompare(b.name));
+
+    const overlay = document.createElement('div');
+    overlay.id = 'dev-card-modal';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML = `
+      <div style="background:#1a1228;border:1px solid #6a3a9a;border-radius:8px;padding:16px 20px;min-width:320px;max-width:440px;color:#ddd;font-family:sans-serif;">
+        <div style="font-size:.75rem;color:#aa77ff;margin-bottom:10px;font-weight:bold;">🃏 DEV — Karte in Hand holen (${S.ap})</div>
+        <input id="dev-card-input" placeholder="Kartenname oder ID eingeben…"
+          style="width:100%;box-sizing:border-box;background:#0d0a15;border:1px solid #4a2a6a;border-radius:4px;color:#eee;padding:6px 8px;font-size:.7rem;outline:none;"
+          autocomplete="off" />
+        <div id="dev-card-list" style="max-height:200px;overflow-y:auto;margin-top:6px;background:#0d0a15;border:1px solid #2a1a4a;border-radius:4px;"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;">
+          <button id="dev-card-cancel" style="padding:4px 12px;background:#2a1a3a;border:1px solid #4a2a6a;color:#aaa;border-radius:4px;cursor:pointer;font-size:.65rem;">Abbruch</button>
+          <button id="dev-card-ok" style="padding:4px 12px;background:#5a2a9a;border:1px solid #8a5acc;color:#fff;border-radius:4px;cursor:pointer;font-size:.65rem;">Zur Hand hinzufügen</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    let selectedId = null;
+
+    const input = document.getElementById('dev-card-input');
+    const list  = document.getElementById('dev-card-list');
+
+    const renderList = (query) => {
+      const q = query.trim().toLowerCase();
+      const matches = q.length < 1
+        ? allCardsList.slice(0, 30)
+        : allCardsList.filter(c => c.name.toLowerCase().includes(q) || c.id.includes(q)).slice(0, 40);
+      list.innerHTML = matches.map(c => {
+        const col = c.color === 'blue' ? '#3a8acc' : c.color === 'green' ? '#4aaa44' : c.color === 'red' ? '#cc4444' : c.color === 'yellow' ? '#ccaa22' : '#888';
+        return `<div data-id="${c.id}" style="padding:4px 8px;cursor:pointer;font-size:.65rem;border-bottom:1px solid #1a1228;display:flex;align-items:center;gap:6px;" onmouseenter="this.style.background='#2a1a4a'" onmouseleave="this.style.background=''">`+
+          `<span style="width:8px;height:8px;background:${col};border-radius:50%;flex-shrink:0;"></span>`+
+          `<span style="flex:1">${c.name}</span>`+
+          `<span style="opacity:.5;font-size:.6rem">${c.cost}💎 ${c.rarity||''}</span>`+
+          `</div>`;
+      }).join('');
+      // click on item
+      list.querySelectorAll('[data-id]').forEach(el => {
+        el.addEventListener('click', () => {
+          selectedId = el.dataset.id;
+          input.value = CARDS[selectedId]?.name || selectedId;
+          list.innerHTML = '';
+        });
+      });
+    };
+
+    renderList('');
+    input.addEventListener('input', () => renderList(input.value));
+    input.focus();
+
+    document.getElementById('dev-card-cancel').onclick = () => overlay.remove();
+    document.getElementById('dev-card-ok').onclick = () => {
+      // Accept either selectedId from list click, or try to match input text
+      let id = selectedId;
+      if (!id) {
+        const q = input.value.trim().toLowerCase();
+        const match = allCardsList.find(c => c.name.toLowerCase() === q || c.id === q);
+        if (match) id = match.id;
+      }
+      if (!id || !CARDS[id]) {
+        input.style.borderColor = '#cc4444';
+        input.placeholder = 'Karte nicht gefunden!';
+        return;
+      }
+      overlay.remove();
+      const pl = S.players[S.ap];
+      if (pl.hand.length >= HAND_MAX) {
+        lg(S, S.ap, `🛠 Hand voll — konnte ${CARDS[id].name} nicht hinzufügen`);
+      } else {
+        pl.hand.push({ id, buff:0 });
+        lg(S, S.ap, `🛠 DEV: ${CARDS[id].name} zur Hand hinzugefügt`);
+      }
+      this._render();
+    };
+
+    // Close on outside click
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  }
+
+  // ── DEV: Instantly place a special land on any empty cell ─────────────────
+  devAddLand() {
+    if (!DEV_MODE) return;
+    const S = this.S;
+
+    const existing = document.getElementById('dev-land-modal');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'dev-land-modal';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML = `
+      <div style="background:#1a1228;border:1px solid #1a7a7a;border-radius:8px;padding:16px 20px;min-width:300px;color:#ddd;font-family:sans-serif;">
+        <div style="font-size:.75rem;color:#44cccc;margin-bottom:10px;font-weight:bold;">🏔 DEV — Special Land platzieren</div>
+        <div style="font-size:.65rem;color:#aaa;margin-bottom:8px;">Landtyp & Besitzer wählen, dann auf ein leeres Feld klicken.</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          ${[['F','🌲 Wald','#4aaa44'],['D','⛰ Wüste','#cc9933'],['M','🌋 Berg','#cc4422'],['W','🌊 See','#3a8acc'],['N','🌿 Wiese','#8aaa55']].map(([t,label,col])=>
+            `<button data-lt="${t}" onclick="document.querySelectorAll('[data-lt]').forEach(b=>b.style.outline=''); this.style.outline='2px solid ${col}'; window._devLandType='${t}';"
+              style="padding:4px 10px;background:#0d0a15;border:1px solid ${col};color:${col};border-radius:4px;cursor:pointer;font-size:.65rem;">${label}</button>`
+          ).join('')}
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          ${[['A','Spieler A'],['B','Spieler B']].map(([p,label])=>
+            `<button data-own="${p}" onclick="document.querySelectorAll('[data-own]').forEach(b=>b.style.outline=''); this.style.outline='2px solid #aaa'; window._devLandOwner='${p}';"
+              style="padding:4px 10px;background:#0d0a15;border:1px solid #444;color:#ccc;border-radius:4px;cursor:pointer;font-size:.65rem;">${label}</button>`
+          ).join('')}
+        </div>
+        <div id="dev-land-hint" style="font-size:.6rem;color:#44cccc;margin-bottom:8px;min-height:1em;"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button onclick="document.getElementById('dev-land-modal').remove(); window._devLandMode=false;" style="padding:4px 12px;background:#1a2a2a;border:1px solid #1a6a6a;color:#aaa;border-radius:4px;cursor:pointer;font-size:.65rem;">Fertig</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    // Default selections
+    window._devLandType  = 'F';
+    window._devLandOwner = S.ap;
+    window._devLandMode  = true;
+
+    // Pre-select first buttons
+    overlay.querySelectorAll('[data-lt="F"]')[0].style.outline = '2px solid #4aaa44';
+    overlay.querySelectorAll(`[data-own="${S.ap}"]`)[0].style.outline = '2px solid #aaa';
+
+    document.getElementById('dev-land-hint').textContent = 'Klicke jetzt auf ein leeres Feld im Spielbereich.';
+
+    // Intercept hex clicks while mode active — handled in _onCellClick
+    // Modal stays open so player can keep placing until they click Fertig
+  }
+
+  // Called from _onCellClick if dev land mode active
+  _devPlaceLand(q, r, s) {
+    const S = this.S;
+    const k = cK(q, r);
+    const cell = S.cells[k];
+    if (!cell || (cell.type !== 'EMPTY' && cell.type !== 'OCEAN')) {
+      document.getElementById('dev-land-hint') && (document.getElementById('dev-land-hint').textContent = '⚠ Nur auf leere/Ozean-Felder!');
+      return;
+    }
+    const lt    = window._devLandType  || 'F';
+    const owner = window._devLandOwner || S.ap;
+    S.cells[k] = { type:'LAND', owner, landType:lt };
+    lg(S, S.ap, `🛠 DEV: ${lt}-Land für ${owner} @ [${q},${r}]`);
+    const hint = document.getElementById('dev-land-hint');
+    if (hint) hint.textContent = `✓ ${lt}-Land platziert. Klicke weitere Felder oder schließe.`;
     this._render();
   }
 

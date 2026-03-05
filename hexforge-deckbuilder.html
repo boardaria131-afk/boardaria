@@ -426,6 +426,8 @@ header nav {
 .dact.go:hover { background:rgba(200,168,75,.2); border-color:var(--gold); }
 .dact.danger { border-color:#5a2020; color:#cc5555; }
 .dact.danger:hover { border-color:var(--red); background:rgba(204,68,68,.1); }
+.dact.random { border-color:#3a6e3a; color:#7ec87e; }
+.dact.random:hover { border-color:#5a9e5a; background:rgba(94,180,94,.1); }
 
 /* ── Starter deck picker overlay ─────────────────── */
 #starter-overlay {
@@ -637,6 +639,7 @@ header nav {
         <button class="dact" onclick="exportDeck()">⬇ Export</button>
         <button class="dact" onclick="importDeck()">⬆ Import</button>
       </div>
+      <button class="dact random" onclick="randomDeck()">🎲 Zufallsdeck</button>
       <button class="dact go" onclick="startGame()">▶ Mit diesem Deck spielen</button>
       <button class="dact danger" onclick="clearCurrentDeck()">✕ Deck leeren</button>
     </div>
@@ -3564,6 +3567,47 @@ function importDeck() {
     reader.readAsText(file);
   };
   input.click();
+}
+
+// ══════════════════════════════════════════════════
+//  RANDOM DECK
+// ══════════════════════════════════════════════════
+function randomDeck() {
+  // Build pool from currently active filters (colors + sets), no treasures
+  let pool = allCards().filter(c => {
+    if (c.treasure) return false;
+    if (filters.sets.size > 0 && !filters.sets.has(c.set || 'core')) return false;
+    return true;
+  });
+
+  // If pool too small, fall back to full card pool
+  if (pool.length < 15) pool = allCards().filter(c => !c.treasure);
+
+  // Weighted by rarity: legendary=1, epic=2, rare=4, common/exceptional=6
+  const weight = { legendary:1, epic:2, rare:4, exceptional:6, common:6 };
+  const weighted = [];
+  pool.forEach(c => {
+    const w = weight[c.rarity] || 4;
+    for (let i = 0; i < w; i++) weighted.push(c.id);
+  });
+
+  const deck = [];
+  const counts = {};
+  let attempts = 0;
+  while (deck.length < MAX_DECK && attempts < 2000) {
+    attempts++;
+    const id = weighted[Math.floor(Math.random() * weighted.length)];
+    if ((counts[id] || 0) < MAX_COPIES) {
+      deck.push(id);
+      counts[id] = (counts[id] || 0) + 1;
+    }
+  }
+
+  if (deck.length < 10) { toast('Nicht genug Karten im Pool!'); return; }
+
+  decks[activeDeck] = deck;
+  save(); renderDeck(); renderGrid();
+  toast(`🎲 Zufallsdeck generiert (${deck.length} Karten)`);
 }
 
 // ══════════════════════════════════════════════════
