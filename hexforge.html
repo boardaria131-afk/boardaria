@@ -594,11 +594,12 @@ svg#board { display: block; overflow: visible; }
       <button class="ab"    id="btn-land"   onclick="G.openLandMenu()">⬡ Land / Action</button>
       <button class="ab pr" id="btn-next"   onclick="G.endTurn()">End Turn ▶</button>
       <button class="ab dn" id="btn-cancel" onclick="G.cancelSel()">✕ Cancel</button>
-      <button class="ab"    id="btn-rnd"    onclick="G.devRandomize()" style="background:rgba(80,40,120,.35);border-color:#6a3a9a;color:#bb88ff;display:none">🎲 Randomize</button>
-      <button class="ab"    id="btn-addmana" onclick="G.devAddMana()" style="background:rgba(40,80,40,.35);border-color:#3a6a3a;color:#88cc88;display:none">+5 Mana</button>
-      <button class="ab"    id="btn-drawall" onclick="G.devDrawAll()" style="background:rgba(40,60,80,.35);border-color:#3a5a7a;color:#88aacc;display:none">+3 Cards</button>
-      <button class="ab"    id="btn-addcard" onclick="G.devAddCard()" style="background:rgba(80,60,20,.35);border-color:#8a6a1a;color:#ccaa44;display:none">🃏 Get Card</button>
-      <button class="ab"    id="btn-addland" onclick="G.devAddLand()" style="background:rgba(20,60,60,.35);border-color:#1a7a7a;color:#44cccc;display:none">🏔 Place Land</button>
+      <button class="ab"    id="btn-rnd"       onclick="G.devRandomize()" style="background:rgba(80,40,120,.35);border-color:#6a3a9a;color:#bb88ff;display:none">🎲 Randomize</button>
+      <button class="ab"    id="btn-addmana"   onclick="G.devAddMana()"   style="background:rgba(40,80,40,.35);border-color:#3a6a3a;color:#88cc88;display:none">+5 Mana</button>
+      <button class="ab"    id="btn-drawall"   onclick="G.devDrawAll()"   style="background:rgba(40,60,80,.35);border-color:#3a5a7a;color:#88aacc;display:none">+3 Cards</button>
+      <button class="ab"    id="btn-addcard"   onclick="G.devAddCard()"   style="background:rgba(80,60,20,.35);border-color:#8a6a1a;color:#ccaa44;display:none">🃏 Get Card</button>
+      <button class="ab"    id="btn-addland"   onclick="G.devAddLand()"   style="background:rgba(20,60,60,.35);border-color:#1a7a7a;color:#44cccc;display:none">🏔 Place Land</button>
+      <button class="ab"    id="btn-skipround" onclick="G.devSkipRound()" style="background:rgba(60,10,80,.35);border-color:#8a1acc;color:#dd88ff;display:none">⏭ Skip Round</button>
       <div id="action-hint" style="font-size:.6rem;color:var(--gold);letter-spacing:1px;margin-top:6px;min-height:1em;font-family:'Cinzel',serif;text-align:center"></div>
     </div>
   </div>
@@ -781,8 +782,8 @@ function allCells() {
 }
 
 // ── Land visuals ──────────────────────────────────────────
-const LF = { N:'#1e2530', F:'#1a3a18', D:'#3a2810', M:'#22222e', W:'#0d1e3a' };
-const LS = { N:'#3a4a60', F:'#2d5a27', D:'#6a4a18', M:'#4a4a60', W:'#1a4a7a' };
+const LF = { N:'#1c2820', F:'#0d3a10', D:'#3d2200', M:'#2a0808', W:'#061a38' };
+const LS = { N:'#4a7a50', F:'#28a030', D:'#d08010', M:'#cc2828', W:'#1a6acc' };
 
 // ── Phase list ────────────────────────────────────────────
 const PHASES = ['DRAW','MANA','FREE','CLEANUP'];
@@ -828,8 +829,8 @@ const CARDS = (function() {
   add({ id:'land_F', set:'core', name:'Forest Clearing', color:'green',   type:'LAND', landType:'F', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Places a Forest tile.' });
   add({ id:'land_D', set:'core', name:'Desert Oasis',   color:'yellow',  type:'LAND', landType:'D', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Places a Desert tile.' });
   add({ id:'land_M', set:'core', name:'Mountain Pass',     color:'red',     type:'LAND', landType:'M', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Places a Mountain tile.' });
-  add({ id:'land_W', set:'core', name:'Flachufer',    color:'blue',    type:'LAND', landType:'W', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Seefeld.' });
-  add({ id:'land_N', set:'core', name:'Grasland',     color:'neutral', type:'LAND', landType:'N', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert 2 neutrale Felder.' });
+  add({ id:'land_W', set:'core', name:'Lakeshore',    color:'blue',    type:'LAND', landType:'W', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Places a Lake tile.' });
+  add({ id:'land_N', set:'core', name:'Prairie',     color:'neutral', type:'LAND', landType:'N', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Places 2 Prairie tiles.' });
 
   // ── BLUE CREATURES ────────────────────────────────────
   add({ id:'triton_warrior', set:'core',  name:'Triton Warrior',  color:'blue', type:'creature', subtype:'Triton', cost:4, req:{lake:2}, kw:kw('jump'),                   atk:4,hp:4, rarity:'common', text:'Jump.' });
@@ -3985,7 +3986,7 @@ function doPlay(S, p, id, q, r, s) {
     } else {
       S.cells[cK(q,r)]={type:'LAND',owner:p,landType:cd.landType};
     }
-    lg(S,p,`Platziert ${cd.name}`);
+    lg(S,p,`${cd.name} placed`);
     S.lobDone=true;
     return true;
   }
@@ -4286,11 +4287,11 @@ function kwBadge(kwKey) {
 
 // ── Radial Menu Options ────────────────────────────────────
 const MENU_OPTS = [
-  { id:'land_F',  label:'Forest',       sub:'🌲',  fill:'#1c4a14', stroke:'#4a9e40', textCol:'#7dd870' },
-  { id:'land_D',  label:'Desert',      sub:'🏜',  fill:'#5a2e08', stroke:'#d4982a', textCol:'#f0b84a' },
-  { id:'land_M',  label:'Mountain',       sub:'⛰',   fill:'#282838', stroke:'#8a8aaa', textCol:'#aaaacc' },
-  { id:'land_W',  label:'Wasser',     sub:'🌊',  fill:'#083050', stroke:'#3a8acc', textCol:'#60aaee' },
-  { id:'land_N',  label:'2×Neutral',  sub:'··',  fill:'#1a2236', stroke:'#4a5a70', textCol:'#7a9ab0' },
+  { id:'land_F',  label:'Forest',    sub:'🌲',  fill:'#0d3a10', stroke:'#28a030', textCol:'#7de870' },
+  { id:'land_D',  label:'Desert',    sub:'🏜',  fill:'#3d2200', stroke:'#d08010', textCol:'#f0b84a' },
+  { id:'land_M',  label:'Mountain',  sub:'🌋',  fill:'#2a0808', stroke:'#cc2828', textCol:'#ff9090' },
+  { id:'land_W',  label:'Lake',      sub:'🌊',  fill:'#061a38', stroke:'#1a6acc', textCol:'#60aaee' },
+  { id:'land_N',  label:'2×Prairie', sub:'🌿',  fill:'#1c2820', stroke:'#4a7a50', textCol:'#90ba90' },
   { id:'_draw',   label:'Karte +1',   sub:'🃏',  fill:'#2a1c08', stroke:'#c8a84b', textCol:'#e8c870' },
   { id:'_boost',  label:'+1 Mana',    sub:'◆',   fill:'#081828', stroke:'#4488cc', textCol:'#68aaee' },
 ];
@@ -4804,7 +4805,7 @@ class Engine {
       this.pact         = 'land_N';
       this.landN_left   = 2;           // still need to place 2 tiles
       this.vt           = adjPlace(S, this.ap);
-      lg(S, this.ap, '2× Grasland — wähle 1. Feld');
+      lg(S, this.ap, '2× Prairie — choose 1st tile');
       this._render();
       return;
     }
@@ -5068,7 +5069,7 @@ class Engine {
         this.landN_left--;
         if (this.landN_left > 0) {
           this.vt = adjPlace(S, this.ap).filter(([qq,rr]) => cK(qq,rr) !== cK(q,r));
-          lg(S, this.ap, '1. Grasland gesetzt — wähle 2. Feld');
+          lg(S, this.ap, '1st Prairie placed — choose 2nd tile');
           this._render();
         } else {
           S.lobDone = true;
@@ -5285,7 +5286,7 @@ class Engine {
   _devInit() {
     if (!isDevMode()) return;
     // Show DEV buttons
-    ['btn-rnd','btn-addmana','btn-drawall','btn-addcard','btn-addland'].forEach(id => {
+    ['btn-rnd','btn-addmana','btn-drawall','btn-addcard','btn-addland','btn-skipround'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = '';
     });
@@ -5354,12 +5355,77 @@ class Engine {
     this._render();
   }
 
+  // Skip full round for BOTH players and return to current player's FREE phase
+  // Runs: CLEANUP(current) → full DRAW+MANA+FREE for opponent → CLEANUP(opponent) → DRAW+MANA for current player → FREE
+  devSkipRound() {
+    if (!isDevMode()) return;
+    const S   = this.S;
+    const cur = S.ap;           // player who pressed the button
+    const opp = cur === 'A' ? 'B' : 'A';
+
+    // ── 1. Cleanup current player's turn ─────────────────────────────────
+    doCleanup(S);
+    S.lobDone   = false;
+    S.landNLeft = 0;
+
+    // ── 2. Opponent's full turn (Draw → Mana → FREE-skip → Cleanup) ──────
+    // Switch to opponent
+    S.ap    = opp;
+    S.phase = 'DRAW';
+
+    // Draw (skip round-1 rule — always draw in dev)
+    runProduction(S, opp);
+    deal(S, opp, 1);
+
+    // Mana income
+    updWells(S);
+    const boostOpp = S.players[opp].boostUsed ? 1 : 0;
+    S.players[opp].boostUsed = false;
+    S.players[opp].mana += BASE_MANA + boostOpp;
+    harvestMana(S, opp);
+
+    // Opponent's cleanup (no FREE phase — we skip it)
+    doCleanup(S);
+    S.lobDone   = false;
+    S.landNLeft = 0;
+    if (opp === 'B') S.turn++;
+
+    // ── 3. Back to current player: Draw → Mana → FREE ────────────────────
+    S.ap    = cur;
+    S.phase = 'DRAW';
+
+    runProduction(S, cur);
+    deal(S, cur, 1);
+
+    updWells(S);
+    const boostCur = S.players[cur].boostUsed ? 1 : 0;
+    S.players[cur].boostUsed = false;
+    S.players[cur].mana += BASE_MANA + boostCur;
+    harvestMana(S, cur);
+    if (cur === 'B') S.turn++;
+
+    // Land for new turn
+    S.lobDone   = false;
+    S.landNLeft = 0;
+
+    // All units ready (no summon sickness, not exhausted)
+    Object.values(S.units).forEach(u => { u.moved=false; u.atked=false; u.summonSick=false; });
+
+    // Go straight to FREE phase
+    S.phase = 'FREE';
+    this.handVisible = true;
+    this._clr();
+
+    lg(S, cur, `🛠 DEV: Round skipped — ${cur}'s turn again (Round ${S.turn})`);
+    this._render();
+  }
+
   // Toggle DEV mode on/off at runtime
   devToggle() {
     _devEnabled = !_devEnabled;
     const btn = document.getElementById('dev-toggle-btn');
     const lbl = document.getElementById('dev-label');
-    const devButtons = ['btn-rnd','btn-addmana','btn-drawall','btn-addcard','btn-addland'];
+    const devButtons = ['btn-rnd','btn-addmana','btn-drawall','btn-addcard','btn-addland','btn-skipround'];
     if (_devEnabled) {
       if (btn) { btn.textContent = 'ON';  btn.style.background='rgba(40,120,40,.5)'; btn.style.borderColor='#3a8a3a'; btn.style.color='#88ff88'; }
       if (lbl) lbl.style.opacity = '.7';
@@ -5784,7 +5850,7 @@ class Engine {
     const hint = document.getElementById('action-hint');
     if (hint) {
       if      (this.pact === 'land')   hint.textContent = '🗺 Klicke ein Feld um Land zu platzieren';
-      else if (this.pact === 'land_N') hint.textContent = `🗺 Grasland ${3 - this.landN_left}/2 — wähle ein Feld`;
+      else if (this.pact === 'land_N') hint.textContent = `🗺 Prairie ${3 - this.landN_left}/2 — choose a tile`;
       else if (this.pact === 'unit')   hint.textContent = '⚔ Klicke ein eigenes Feld zum Beschwören';
       else if (this.pact === 'move') {
         const su = this.selUnit ? S.units[this.selUnit] : null;
@@ -6036,16 +6102,41 @@ class Engine {
         hp.textContent=`${S.players[cd.owner].hp}HP`; g.appendChild(hp);
       }
 
-      // Land emoji + owner dot
+      // Land: colored inner fill + emoji + owner dot
       if (cd?.type==='LAND') {
-        const em = {F:'🌲',D:'🏜',M:'⛰',W:'🌊',N:'·'}[cd.landType]||'';
+        // Inner hex fill (slightly smaller, so the colored border shows clearly)
+        const r80 = HS * 0.80;
+        const iPts = Array.from({length:6},(_,i)=>{
+          const a=(Math.PI/180)*(60*i);
+          return `${(cx+r80*Math.cos(a)).toFixed(1)},${(cy+r80*Math.sin(a)).toFixed(1)}`;
+        }).join(' ');
+        const inner = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+        inner.setAttribute('points', iPts);
+        const innerFill = {F:'rgba(18,130,25,0.38)',D:'rgba(200,120,10,0.38)',M:'rgba(190,30,30,0.34)',W:'rgba(15,100,210,0.38)',N:'rgba(60,130,70,0.30)'}[cd.landType]||'rgba(50,70,50,0.2)';
+        inner.setAttribute('fill', innerFill);
+        inner.setAttribute('stroke','none');
+        inner.setAttribute('pointer-events','none');
+        g.appendChild(inner);
+
+        // Emoji symbol — bigger and centered
+        const em = {F:'🌲',D:'🏜',M:'🌋',W:'🌊',N:'🌿'}[cd.landType]||'';
         const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-        t.setAttribute('x',cx); t.setAttribute('y',cy+6); t.setAttribute('text-anchor','middle');
-        t.setAttribute('font-size','14'); t.setAttribute('pointer-events','none'); t.textContent=em; g.appendChild(t);
-        const od = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        od.setAttribute('cx',cx+HS*.56); od.setAttribute('cy',cy-HS*.56); od.setAttribute('r','4');
-        od.setAttribute('fill',cd.owner==='A'?'rgba(200,60,60,.65)':'rgba(60,100,200,.65)');
-        od.setAttribute('pointer-events','none'); g.appendChild(od);
+        t.setAttribute('x',cx); t.setAttribute('y',cy+6);
+        t.setAttribute('text-anchor','middle');
+        t.setAttribute('font-size','15');
+        t.setAttribute('pointer-events','none');
+        t.textContent = em; g.appendChild(t);
+
+        // Owner indicator: glow halo + solid dot (top-right corner)
+        const dotX = cx + HS*0.52, dotY = cy - HS*0.52;
+        const ownerSolid = cd.owner==='A' ? '#ff4444' : '#4488ff';
+        const ownerHalo  = cd.owner==='A' ? 'rgba(255,60,60,0.4)' : 'rgba(50,120,255,0.4)';
+        const halo = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        halo.setAttribute('cx',dotX); halo.setAttribute('cy',dotY); halo.setAttribute('r','6.5');
+        halo.setAttribute('fill',ownerHalo); halo.setAttribute('pointer-events','none'); g.appendChild(halo);
+        const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        dot.setAttribute('cx',dotX); dot.setAttribute('cy',dotY); dot.setAttribute('r','3.8');
+        dot.setAttribute('fill',ownerSolid); dot.setAttribute('pointer-events','none'); g.appendChild(dot);
       }
 
       // Valid-target highlight
@@ -6056,9 +6147,10 @@ class Engine {
         hl.setAttribute('pointer-events','none'); g.appendChild(hl);
       }
 
-      // ── Invisible full-hex top-layer overlay (in targeting modes) ──
+      // ── Invisible full-hex top-layer overlay (in targeting modes + devLandMode) ──
       // Placed last in group so it catches clicks over unit circles too
-      const targetingMode = this.pact==='atk'||this.pact==='inst'||this.pact==='gift'||
+      const targetingMode = window._devLandMode ||
+                            this.pact==='atk'||this.pact==='inst'||this.pact==='gift'||
                             this.pact==='move'||this.pact==='dash'||this.pact==='land'||
                             this.pact==='land_N'||this.pact==='shifting_land_pick'||
                             this.pact==='shifting_land_dest';
@@ -6067,7 +6159,7 @@ class Engine {
         hit.setAttribute('points', P);
         hit.setAttribute('fill', 'transparent');
         hit.setAttribute('stroke', 'none');
-        hit.style.cursor = isV ? 'pointer' : 'default';
+        hit.style.cursor = (window._devLandMode || isV) ? 'crosshair' : 'default';
         hit.onclick = () => this.clickCell(q, r, s);
         g.appendChild(hit);
       }
@@ -6098,11 +6190,12 @@ class Engine {
       circ.onmouseenter = e => this._showUnitTip(u, e);
       circ.onmousemove  = e => this._moveUnitTip(e);
       circ.onmouseleave = () => this._hideUnitTip();
-      // In targeting modes (atk/inst/gift/dash) route to clickCell; otherwise selUnitFn
+      // In targeting modes (atk/inst/gift/dash) or devLandMode, route to clickCell
       circ.onclick = e => {
         e.stopPropagation();
         const tm = this.pact;
-        if (tm==='atk'||tm==='inst'||tm==='gift'||tm==='dash'||
+        if (window._devLandMode ||
+            tm==='atk'||tm==='inst'||tm==='gift'||tm==='dash'||
             tm==='shifting_land_pick'||tm==='shifting_land_dest') {
           this.clickCell(u.q, u.r, u.s);
         } else {
