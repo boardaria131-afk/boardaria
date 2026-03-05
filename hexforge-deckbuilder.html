@@ -429,6 +429,37 @@ header nav {
 .dact.random { border-color:#3a6e3a; color:#7ec87e; }
 .dact.random:hover { border-color:#5a9e5a; background:rgba(94,180,94,.1); }
 
+/* ── Pagination ─────────────────────────────────── */
+.page-btn {
+  font-family: 'Cinzel', serif;
+  font-size: .58rem;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--dim);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all .12s;
+  min-width: 28px;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--goldd); color: var(--text); }
+.page-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(200,168,75,.1); }
+.page-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+/* ── Legendary badge ────────────────────────────── */
+.leg-badge {
+  font-size: .5rem;
+  color: #d4aa40;
+  background: rgba(200,168,64,.15);
+  border: 1px solid #6a5020;
+  border-radius: 2px;
+  padding: 0 3px;
+  margin-left: 4px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 /* ── Starter deck picker overlay ─────────────────── */
 #starter-overlay {
   position:fixed; inset:0; z-index:500;
@@ -533,42 +564,42 @@ header nav {
 
   <!-- LEFT: Filters -->
   <aside id="filters">
-    <div class="sec-title">Filter</div>
+    <div class="sec-title">Filters</div>
     <div id="filters-inner">
 
       <div class="fgroup">
-        <label>Suche</label>
-        <input type="text" id="search" placeholder="Kartenname…" oninput="applyFilters()">
+        <label>Search</label>
+        <input type="text" id="search" placeholder="Card name…" oninput="applyFilters()">
       </div>
 
       <div class="fgroup">
-        <label>Farbe</label>
+        <label>Color</label>
         <div class="chip-group" id="color-chips">
-          <button class="chip c-blue on"    data-color="blue"    onclick="toggleChip(this,'color')">🌊 Blau</button>
-          <button class="chip c-green on"   data-color="green"   onclick="toggleChip(this,'color')">🌲 Grün</button>
-          <button class="chip c-red on"     data-color="red"     onclick="toggleChip(this,'color')">⛰ Rot</button>
-          <button class="chip c-yellow on"  data-color="yellow"  onclick="toggleChip(this,'color')">🏜 Gelb</button>
+          <button class="chip c-blue on"    data-color="blue"    onclick="toggleChip(this,'color')">🌊 Blue</button>
+          <button class="chip c-green on"   data-color="green"   onclick="toggleChip(this,'color')">🌲 Green</button>
+          <button class="chip c-red on"     data-color="red"     onclick="toggleChip(this,'color')">⛰ Red</button>
+          <button class="chip c-yellow on"  data-color="yellow"  onclick="toggleChip(this,'color')">🏜 Yellow</button>
           <button class="chip c-neutral on" data-color="neutral" onclick="toggleChip(this,'color')">◆ Neutral</button>
         </div>
       </div>
 
       <div class="fgroup">
-        <label>Typ</label>
+        <label>Type</label>
         <div class="chip-group" id="type-chips">
-          <button class="chip on" data-type="creature"  onclick="toggleChip(this,'type')">Kreatur</button>
-          <button class="chip on" data-type="event"     onclick="toggleChip(this,'type')">Ereignis</button>
-          <button class="chip on" data-type="structure" onclick="toggleChip(this,'type')">Struktur</button>
+          <button class="chip on" data-type="creature" onclick="toggleChip(this,'type')">Creature</button>
+          <button class="chip on" data-type="event"     onclick="toggleChip(this,'type')">Event</button>
+          <button class="chip on" data-type="structure" onclick="toggleChip(this,'type')">Structure</button>
         </div>
       </div>
 
       <div class="fgroup">
-        <label>Rarität</label>
+        <label>Rarity</label>
         <div class="chip-group" id="rarity-chips">
-          <button class="chip r-common on"      data-rarity="common"      onclick="toggleChip(this,'rarity')">Häufig</button>
-          <button class="chip r-exceptional on" data-rarity="exceptional" onclick="toggleChip(this,'rarity')">Selten</button>
-          <button class="chip r-epic on"        data-rarity="epic"        onclick="toggleChip(this,'rarity')">Episch</button>
-          <button class="chip r-legendary on"   data-rarity="legendary"   onclick="toggleChip(this,'rarity')">Legendär</button>
-          <button class="chip on" class="chip r-rare on" data-rarity="rare" onclick="toggleChip(this,'rarity')">Rar</button>
+          <button class="chip r-common on"      data-rarity="common"      onclick="toggleChip(this,'rarity')">Common</button>
+          <button class="chip r-exceptional on" data-rarity="exceptional" onclick="toggleChip(this,'rarity')">Exceptional</button>
+          <button class="chip r-epic on"        data-rarity="epic"        onclick="toggleChip(this,'rarity')">Epic</button>
+          <button class="chip r-legendary on"   data-rarity="legendary"   onclick="toggleChip(this,'rarity')">Legendary</button>
+          <button class="chip on" class="chip r-rare on" data-rarity="rare" onclick="toggleChip(this,'rarity')">Rare</button>
         </div>
       </div>
 
@@ -578,7 +609,7 @@ header nav {
       </div>
 
       <div class="fgroup">
-        <label>Max. Manakosten: <span id="cost-val">10+</span></label>
+        <label>Max. Mana Cost: <span id="cost-val">10+</span></label>
         <input type="range" class="cost-slider" id="cost-filter"
                min="0" max="11" value="11" oninput="updateCostLabel();applyFilters()">
       </div>
@@ -589,8 +620,8 @@ header nav {
   <!-- CENTER: Card collection -->
   <main id="collection">
     <div class="sec-title">
-      Kartensammlung
-      <span class="sec-badge" id="visible-count">50 Karten</span>
+      Card Collection
+      <span class="sec-badge" id="visible-count">50 Cards</span>
     </div>
     <div id="card-grid"></div>
   </main>
@@ -610,12 +641,12 @@ header nav {
     </div>
 
     <div class="sec-title" style="flex-shrink:0">
-      Karteninhalt
+      Contents
     </div>
     <div id="deck-list"></div>
 
     <div id="mana-curve">
-      <div class="curve-title">Manakurve</div>
+      <div class="curve-title">Mana Curve</div>
       <div class="curve-bars" id="curve-bars"></div>
     </div>
 
@@ -625,11 +656,11 @@ header nav {
         <span class="dstat-val" id="stat-count">0 / 30</span>
       </div>
       <div class="dstat-row">
-        <span class="dstat-label">Ø Kosten</span>
+        <span class="dstat-label">Avg. Cost</span>
         <span class="dstat-val" id="stat-avg">—</span>
       </div>
       <div class="dstat-row">
-        <span class="dstat-label">Farben</span>
+        <span class="dstat-label">Colors</span>
         <span class="dstat-val" id="stat-colors">—</span>
       </div>
     </div>
@@ -639,9 +670,9 @@ header nav {
         <button class="dact" onclick="exportDeck()">⬇ Export</button>
         <button class="dact" onclick="importDeck()">⬆ Import</button>
       </div>
-      <button class="dact random" onclick="randomDeck()">🎲 Zufallsdeck</button>
-      <button class="dact go" onclick="startGame()">▶ Mit diesem Deck spielen</button>
-      <button class="dact danger" onclick="clearCurrentDeck()">✕ Deck leeren</button>
+      <button class="dact random" onclick="randomDeck()">🎲 Random Deck</button>
+      <button class="dact go" onclick="startGame()">▶ Play with this Deck</button>
+      <button class="dact danger" onclick="clearCurrentDeck()">✕ Clear Deck</button>
     </div>
   </aside>
 
@@ -651,12 +682,12 @@ header nav {
 <div id="starter-overlay">
   <div id="starter-box">
     <h2>STARTER DECKS</h2>
-    <p>Wähle ein vorgefertigtes Deck als Ausgangspunkt — oder baue dein eigenes.</p>
+    <p>Choose a pre-built deck as a starting point — or build your own.</p>
     <div class="starter-grid">
 
       <div class="starter-card" data-deck="tide" onclick="selectStarter(this)">
         <div class="sc-icon">🌊</div>
-        <div class="sc-name">Gezeitenflut</div>
+        <div class="sc-name">Tidal Surge</div>
         <div class="sc-colors">
           <div class="sc-dot" style="background:#3a8acc"></div>
           <div class="sc-dot" style="background:#8a9ab0"></div>
@@ -676,7 +707,7 @@ header nav {
 
       <div class="starter-card" data-deck="storm" onclick="selectStarter(this)">
         <div class="sc-icon">⚡</div>
-        <div class="sc-name">Wüstensturm</div>
+        <div class="sc-name">Sandstorm</div>
         <div class="sc-colors">
           <div class="sc-dot" style="background:#cc4444"></div>
           <div class="sc-dot" style="background:#d4982a"></div>
@@ -3169,6 +3200,9 @@ function allSets() {
 // ══════════════════════════════════════════════════
 const MAX_DECK   = 30;
 const MAX_COPIES = 3;
+const MAX_LEGENDARY = 1;
+const CARDS_PER_PAGE = 20;
+let currentPage = 1;
 
 // 6 deck slots: 0-2 are the 3 editable decks, 3-5 are reserved for Player B on start screen
 const decks      = [[], [], [], [], [], []];
@@ -3317,6 +3351,7 @@ function updateCostLabel() {
 
 function applyFilters() {
   filters.search = document.getElementById('search').value.toLowerCase();
+  currentPage = 1;
   renderGrid();
 }
 
@@ -3329,7 +3364,7 @@ function visibleCards() {
     if (filters.sets.size > 0 && !filters.sets.has(c.set || 'core')) return false;
     if (filters.search && !c.name.toLowerCase().includes(filters.search)) return false;
     return true;
-  });
+  }).sort((a,b) => a.cost - b.cost || a.name.localeCompare(b.name));
 }
 
 // ══════════════════════════════════════════════════
@@ -3340,24 +3375,38 @@ function deckCount(id) {
 }
 function totalDeckCount() { return decks[activeDeck].length; }
 
+function maxCopies(id) {
+  const card = CARDS[id];
+  if (!card) return MAX_COPIES;
+  return card.rarity === 'legendary' ? MAX_LEGENDARY : MAX_COPIES;
+}
+
 function renderGrid() {
-  const cards = visibleCards();
-  document.getElementById('visible-count').textContent = `${cards.length} Karten`;
+  const allVisible = visibleCards();
+  const totalPages = Math.max(1, Math.ceil(allVisible.length / CARDS_PER_PAGE));
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const start = (currentPage - 1) * CARDS_PER_PAGE;
+  const cards = allVisible.slice(start, start + CARDS_PER_PAGE);
+
+  document.getElementById('visible-count').textContent =
+    `${allVisible.length} Cards`;
+
   const grid = document.getElementById('card-grid');
   grid.innerHTML = '';
 
-  if (!cards.length) {
-    grid.innerHTML = '<div class="empty-state"><span>🔍</span>Keine Karten gefunden</div>';
+  if (!allVisible.length) {
+    grid.innerHTML = '<div class="empty-state"><span>🔍</span>No cards found</div>';
+    renderPagination(0, 1);
     return;
   }
 
-  cards.sort((a,b) => a.cost - b.cost || a.name.localeCompare(b.name));
-
   cards.forEach(card => {
-    const cnt    = deckCount(card.id);
-    const full   = totalDeckCount() >= MAX_DECK || cnt >= MAX_COPIES;
-    const tile   = document.createElement('div');
-    tile.className = `card-tile ${card.color} ${cnt > 0 ? 'in-deck':''} ${full && cnt >= MAX_COPIES ? 'maxed':''}`;
+    const cnt  = deckCount(card.id);
+    const mc   = maxCopies(card.id);
+    const full = totalDeckCount() >= MAX_DECK || cnt >= mc;
+    const tile = document.createElement('div');
+    tile.className = `card-tile ${card.color} ${cnt > 0 ? 'in-deck':''} ${full && cnt >= mc ? 'maxed':''}`;
     tile.title   = card.text;
     tile.onclick = () => addCard(card.id);
 
@@ -3366,13 +3415,15 @@ function renderGrid() {
       .map(([k,v]) => `<span class="req-pip pip-${k}">${v} ${k[0].toUpperCase()}</span>`)
       .join('');
 
+    const legBadge = card.rarity === 'legendary' ? '<span class="leg-badge">★ 1×</span>' : '';
+
     tile.innerHTML = `
       ${cnt > 0 ? `<div class="ct-count">${cnt}</div>` : ''}
       <div class="ct-header">
         <span class="ct-name">${card.name}</span>
         <span class="ct-cost">${card.cost}◆</span>
       </div>
-      <div class="ct-type">${typeLabel(card)}</div>
+      <div class="ct-type">${typeLabel(card)}${legBadge}</div>
       ${card.atk != null ? `<div class="ct-stats"><span class="ct-atk">⚔${card.atk}</span><span class="ct-hp">♥${card.hp}</span></div>` : ''}
       ${card.text ? `<div class="ct-text">${card.text}</div>` : ''}
       ${reqPips ? `<div class="ct-req">${reqPips}</div>` : ''}
@@ -3380,10 +3431,58 @@ function renderGrid() {
     `;
     grid.appendChild(tile);
   });
+
+  renderPagination(allVisible.length, totalPages);
+}
+
+function renderPagination(total, totalPages) {
+  // Remove existing pagination
+  const old = document.getElementById('pagination-bar');
+  if (old) old.remove();
+
+  if (totalPages <= 1) return;
+
+  const bar = document.createElement('div');
+  bar.id = 'pagination-bar';
+  bar.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;flex-shrink:0;';
+
+  const mkBtn = (label, page, disabled, active) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.disabled = disabled;
+    b.className = 'page-btn' + (active ? ' active' : '');
+    if (!disabled) b.onclick = () => { currentPage = page; renderGrid(); };
+    return b;
+  };
+
+  bar.appendChild(mkBtn('‹', currentPage - 1, currentPage === 1, false));
+
+  // Show max 7 page buttons with ellipsis
+  const pages = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 2) pages.push(i);
+    else if (pages[pages.length-1] !== '…') pages.push('…');
+  }
+  pages.forEach(p => {
+    if (p === '…') {
+      const s = document.createElement('span');
+      s.textContent = '…';
+      s.style.cssText = 'color:var(--dim);font-size:.7rem;padding:0 2px;';
+      bar.appendChild(s);
+    } else {
+      bar.appendChild(mkBtn(p, p, false, p === currentPage));
+    }
+  });
+
+  bar.appendChild(mkBtn('›', currentPage + 1, currentPage === totalPages, false));
+
+  // Insert after grid
+  const grid = document.getElementById('card-grid');
+  grid.parentNode.insertBefore(bar, grid.nextSibling);
 }
 
 function typeLabel(card) {
-  const t = { creature:'Kreatur', event:'Ereignis', structure:'Struktur' }[card.type] || card.type;
+  const t = { creature:'Creature', event:'Event', structure:'Structure' }[card.type] || card.type;
   return card.subtype ? `${t} · ${card.subtype}` : t;
 }
 
@@ -3393,8 +3492,9 @@ function typeLabel(card) {
 function addCard(id) {
   const deck = decks[activeDeck];
   const cnt  = deck.filter(x => x === id).length;
-  if (deck.length >= MAX_DECK)  { toast('Deck voll! (max 30)'); return; }
-  if (cnt >= MAX_COPIES)        { toast(`Max. ${MAX_COPIES}x erlaubt`); return; }
+  const mc   = maxCopies(id);
+  if (deck.length >= MAX_DECK)  { toast('Deck full! (max 30)'); return; }
+  if (cnt >= mc)                { toast(mc === 1 ? 'Legendaries: max 1×' : `Max. ${mc}× allowed`); return; }
   deck.push(id);
   save();
   renderDeck();
@@ -3415,7 +3515,7 @@ function clearCurrentDeck() {
   save();
   renderDeck();
   renderGrid();
-  toast('Deck geleert');
+  toast('Deck cleared');
 }
 
 function switchDeck(idx) {
@@ -3526,7 +3626,7 @@ function loadStarterOverlay() {
 // ══════════════════════════════════════════════════
 function exportDeck() {
   const deck = decks[activeDeck];
-  if (!deck.length) { toast('Deck ist leer'); return; }
+  if (!deck.length) { toast('Deck is empty'); return; }
   const counts = {};
   deck.forEach(id => counts[id] = (counts[id]||0)+1);
   const lines = Object.entries(counts).map(([id,n]) => `${n}x ${cardData(id)?.name || id}`).join('\n');
@@ -3535,7 +3635,7 @@ function exportDeck() {
   a.href     = URL.createObjectURL(blob);
   a.download = `hexforge-deck-${activeDeck+1}.txt`;
   a.click();
-  toast('Deck exportiert!');
+  toast('Deck exported!');
 }
 
 function importDeck() {
@@ -3554,14 +3654,14 @@ function importDeck() {
         if (!m) return;
         const [,n,name] = m;
         const card = Object.values(CARDS).find(c => c.name === name.trim());
-        if (card) for (let i=0;i<Math.min(+n,MAX_COPIES);i++) newDeck.push(card.id);
+        if (card) for (let i=0;i<Math.min(+n,maxCopies(card.id));i++) newDeck.push(card.id);
       });
       if (newDeck.length) {
         decks[activeDeck] = newDeck.slice(0, MAX_DECK);
         save(); renderDeck(); renderGrid();
-        toast(`${newDeck.length} Karten importiert`);
+        toast(`${newDeck.length} cards imported`);
       } else {
-        toast('Keine gültigen Karten gefunden');
+        toast('No valid cards found');
       }
     };
     reader.readAsText(file);
@@ -3597,17 +3697,17 @@ function randomDeck() {
   while (deck.length < MAX_DECK && attempts < 2000) {
     attempts++;
     const id = weighted[Math.floor(Math.random() * weighted.length)];
-    if ((counts[id] || 0) < MAX_COPIES) {
+    if ((counts[id] || 0) < maxCopies(id)) {
       deck.push(id);
       counts[id] = (counts[id] || 0) + 1;
     }
   }
 
-  if (deck.length < 10) { toast('Nicht genug Karten im Pool!'); return; }
+  if (deck.length < 10) { toast('Not enough cards in the pool!'); return; }
 
   decks[activeDeck] = deck;
   save(); renderDeck(); renderGrid();
-  toast(`🎲 Zufallsdeck generiert (${deck.length} Karten)`);
+  toast(`🎲 Random deck generated (${deck.length} cards)`);
 }
 
 // ══════════════════════════════════════════════════

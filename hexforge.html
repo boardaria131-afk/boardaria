@@ -552,7 +552,7 @@ svg#board { display: block; overflow: visible; }
     <div id="ph-dots"></div>
   </div>
   <div id="turdis">
-    Runde <span id="rnd">1</span> &nbsp;
+    Round <span id="rnd">1</span> &nbsp;
     <span class="pn A" id="apn">SPIELER A</span>
   </div>
 </div>
@@ -570,11 +570,11 @@ svg#board { display: block; overflow: visible; }
 
   <!-- Left panel: Player A + hand -->
   <div class="sp">
-    <div class="pt">Spieler A</div>
+    <div class="pt">Player A</div>
     <div class="ps A">
       <div class="nm">⚔ SPIELER A</div>
       <div class="hbw"><div class="hb A" id="hpbar-A" style="width:100%"></div></div>
-      <div class="sr"><span class="sl">Basis HP</span>  <span class="sv hp" id="hp-A">20</span></div>
+      <div class="sr"><span class="sl">Base HP</span>  <span class="sv hp" id="hp-A">20</span></div>
       <div class="sr"><span class="sl">Mana</span>       <span class="sv mn" id="mana-A">3</span></div>
       <div class="sr"><span class="sl">Hand/Deck</span>  <span class="sv cd" id="cards-A">5/25</span></div>
     </div>
@@ -591,30 +591,30 @@ svg#board { display: block; overflow: visible; }
     </div>
     <svg id="board"></svg>
     <div id="abar">
-      <button class="ab"    id="btn-land"   onclick="G.openLandMenu()">⬡ Land / Aktion</button>
-      <button class="ab pr" id="btn-next"   onclick="G.endTurn()">Zug beenden ▶</button>
-      <button class="ab dn" id="btn-cancel" onclick="G.cancelSel()">✕ Abbruch</button>
+      <button class="ab"    id="btn-land"   onclick="G.openLandMenu()">⬡ Land / Action</button>
+      <button class="ab pr" id="btn-next"   onclick="G.endTurn()">End Turn ▶</button>
+      <button class="ab dn" id="btn-cancel" onclick="G.cancelSel()">✕ Cancel</button>
       <button class="ab"    id="btn-rnd"    onclick="G.devRandomize()" style="background:rgba(80,40,120,.35);border-color:#6a3a9a;color:#bb88ff;display:none">🎲 Randomize</button>
       <button class="ab"    id="btn-addmana" onclick="G.devAddMana()" style="background:rgba(40,80,40,.35);border-color:#3a6a3a;color:#88cc88;display:none">+5 Mana</button>
-      <button class="ab"    id="btn-drawall" onclick="G.devDrawAll()" style="background:rgba(40,60,80,.35);border-color:#3a5a7a;color:#88aacc;display:none">+3 Karten</button>
-      <button class="ab"    id="btn-addcard" onclick="G.devAddCard()" style="background:rgba(80,60,20,.35);border-color:#8a6a1a;color:#ccaa44;display:none">🃏 Karte holen</button>
-      <button class="ab"    id="btn-addland" onclick="G.devAddLand()" style="background:rgba(20,60,60,.35);border-color:#1a7a7a;color:#44cccc;display:none">🏔 Land setzen</button>
+      <button class="ab"    id="btn-drawall" onclick="G.devDrawAll()" style="background:rgba(40,60,80,.35);border-color:#3a5a7a;color:#88aacc;display:none">+3 Cards</button>
+      <button class="ab"    id="btn-addcard" onclick="G.devAddCard()" style="background:rgba(80,60,20,.35);border-color:#8a6a1a;color:#ccaa44;display:none">🃏 Get Card</button>
+      <button class="ab"    id="btn-addland" onclick="G.devAddLand()" style="background:rgba(20,60,60,.35);border-color:#1a7a7a;color:#44cccc;display:none">🏔 Place Land</button>
       <div id="action-hint" style="font-size:.6rem;color:var(--gold);letter-spacing:1px;margin-top:6px;min-height:1em;font-family:'Cinzel',serif;text-align:center"></div>
     </div>
   </div>
 
   <!-- Right panel: Player B + unit detail + log -->
   <div class="sp">
-    <div class="pt">Spieler B</div>
+    <div class="pt">Player B</div>
     <div class="ps B">
       <div class="nm">⚔ SPIELER B</div>
       <div class="hbw"><div class="hb B" id="hpbar-B" style="width:100%"></div></div>
-      <div class="sr"><span class="sl">Basis HP</span>  <span class="sv hp" id="hp-B">20</span></div>
+      <div class="sr"><span class="sl">Base HP</span>  <span class="sv hp" id="hp-B">20</span></div>
       <div class="sr"><span class="sl">Mana</span>       <span class="sv mn" id="mana-B">3</span></div>
       <div class="sr"><span class="sl">Hand/Deck</span>  <span class="sv cd" id="cards-B">5/25</span></div>
     </div>
-    <div class="pt">Einheit</div>
-    <div id="ud"><span style="color:var(--dim);font-size:.68rem">Einheit auswählen…</span></div>
+    <div class="pt">Unit</div>
+    <div id="ud"><span style="color:var(--dim);font-size:.68rem">Select a unit…</span></div>
     <div class="pt">Log</div>
     <div id="lp"></div>
   </div>
@@ -632,23 +632,23 @@ svg#board { display: block; overflow: visible; }
 
 <!-- ── Pass & Play Übergabe-Overlay ────────────────────── -->
 <div id="sw-ov">
-  <!-- Schritt 1: Zug beendet — Gerät weitergeben -->
+  <!-- Step 1: Turn ended — pass device -->
   <div id="sw-pass" class="sw-panel">
     <div class="sc-sub">Zug beendet</div>
     <div class="sc-nm" id="sw-pass-name">SPIELER A</div>
     <div class="sc-divider"></div>
-    <div class="sc-instruct">Bitte das Gerät an<br><span id="sw-next-name">Spieler B</span> weitergeben.</div>
-    <div class="sc-warning">⚠ Hand verdeckt</div>
-    <button onclick="G.handOff()">Gerät übergeben ▶</button>
+    <div class="sc-instruct">Please pass the device to<br><span id="sw-next-name">Player B</span>.</div>
+    <div class="sc-warning">⚠ Hand hidden</div>
+    <button onclick="G.handOff()">Pass Device ▶</button>
   </div>
 
-  <!-- Schritt 2: Neuer Spieler bestätigt -->
+  <!-- Step 2: New player confirms -->
   <div id="sw-ready" class="sw-panel" style="display:none">
     <div class="sc-sub">Du bist dran</div>
     <div class="sc-nm" id="sw-ready-name">SPIELER B</div>
     <div class="sc-yt">Dein Zug!</div>
-    <div class="sc-hand-hint">Deine Hand wird nach Bestätigung angezeigt.</div>
-    <button onclick="G.dismissSwitch()">Bereit — Hand anzeigen ▶</button>
+    <div class="sc-hand-hint">Your hand will be shown after confirmation.</div>
+    <button onclick="G.dismissSwitch()">Ready — Show Hand ▶</button>
   </div>
 
 </div>
@@ -669,9 +669,9 @@ svg#board { display: block; overflow: visible; }
 <!-- ── Victory Screen ──────────────────────────────────── -->
 <div id="win-ov">
   <div id="win-card">
-    <h2 id="win-title">Spieler A gewinnt!</h2>
-    <p>Die gegnerische Basis wurde zerstört.</p>
-    <button onclick="location.href='hexforge-start.html'">Neues Spiel</button>
+    <h2 id="win-title">Player A wins!<//h2>
+    <p>The enemy base has been destroyed.</p>
+    <button onclick="location.href='hexforge-start.html'">New Game</button>
   </div>
 </div>
 
@@ -732,7 +732,12 @@ svg#board { display: block; overflow: visible; }
 
 // ── Dev flag ──────────────────────────────────────────────
 // ⚠ set to false before release
-const DEV_MODE  = true;
+const DEV_MODE_DEFAULT = true;
+let   _devEnabled = DEV_MODE_DEFAULT;
+// Proxy so existing `if(!DEV_MODE)` checks still work
+const DEV_MODE_PROXY = new Proxy({}, { get:() => _devEnabled });
+// Alias used everywhere
+function isDevMode() { return _devEnabled; }
 
 // ── Board constants ───────────────────────────────────────
 const BOARD_R   = 3;
@@ -782,7 +787,7 @@ const LS = { N:'#3a4a60', F:'#2d5a27', D:'#6a4a18', M:'#4a4a60', W:'#1a4a7a' };
 // ── Phase list ────────────────────────────────────────────
 const PHASES = ['DRAW','MANA','FREE','CLEANUP'];
 const PN = {
-  DRAW:'Ziehen', MANA:'Mana', FREE:'Freier Zug', CLEANUP:'Aufräumen'
+  DRAW:'Draw', MANA:'Mana', FREE:'Free Turn', CLEANUP:'Cleanup'
 };
 
 // ══════════════════════════════════════════════════════════
@@ -809,7 +814,7 @@ function kwCharge(kw) { for (const k of kw){const m=k.match(/^charge:(\d)$/); if
 const CARDS = (function() {
   // ── Ability helpers (used below) ──────────────────────
   const manaGain  = (n, label) => (S,u) => { S.players[u.own].mana+=n; lg(S,u.own,`${label}: +${n} Mana → ${S.players[u.own].mana}`); };
-  const dmgGod    = (n, label) => (S,u) => { const o=u.own==='A'?'B':'A'; S.players[o].hp-=n; lg(S,u.own,`${label}: ${n} Schaden → ${S.players[o].hp} HP`); if(S.players[o].hp<=0) S.winner=u.own; };
+  const dmgGod    = (n, label) => (S,u) => { const o=u.own==='A'?'B':'A'; S.players[o].hp-=n; lg(S,u.own,`${label}: ${n} damage → ${S.players[o].hp} HP`); if(S.players[o].hp<=0) S.winner=u.own; };
   const drawCard  = (label)    => (S,u) => { deal(S,u.own,1); lg(S,u.own,`${label}: +1 Karte`); };
 
   const kw = (...args) => new Set(args);
@@ -820,9 +825,9 @@ const CARDS = (function() {
   const add = (card) => { db[card.id] = card; return card; };
 
   // ── LANDS ──────────────────────────────────────────────
-  add({ id:'land_F', set:'core', name:'Waldlichtung', color:'green',   type:'LAND', landType:'F', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Waldfeld.' });
-  add({ id:'land_D', set:'core', name:'Wüstenoase',   color:'yellow',  type:'LAND', landType:'D', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Wüstenfeld.' });
-  add({ id:'land_M', set:'core', name:'Bergpass',     color:'red',     type:'LAND', landType:'M', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Bergfeld.' });
+  add({ id:'land_F', set:'core', name:'Forest Clearing', color:'green',   type:'LAND', landType:'F', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Places a Forest tile.' });
+  add({ id:'land_D', set:'core', name:'Desert Oasis',   color:'yellow',  type:'LAND', landType:'D', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Places a Desert tile.' });
+  add({ id:'land_M', set:'core', name:'Mountain Pass',     color:'red',     type:'LAND', landType:'M', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Places a Mountain tile.' });
   add({ id:'land_W', set:'core', name:'Flachufer',    color:'blue',    type:'LAND', landType:'W', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert ein Seefeld.' });
   add({ id:'land_N', set:'core', name:'Grasland',     color:'neutral', type:'LAND', landType:'N', cost:0, req:{}, kw:kw(), atk:null,hp:null, text:'Platziert 2 neutrale Felder.' });
 
@@ -834,7 +839,7 @@ const CARDS = (function() {
   add({ id:'snowstorm_lancer', set:'core',name:'Snowstorm Lancer',color:'blue', type:'creature', subtype:'Triton', cost:5, req:{lake:2}, kw:kw('jump'),                   atk:3,hp:5, rarity:'common', text:'Jump.' });
   add({ id:'aurora_myth_maker', set:'core',name:'Aurora, Myth Maker',color:'blue',type:'creature',cost:4,req:{lake:3},kw:kw(), atk:1,hp:1,
     rarity:'legendary', text:'Gift - Change another friendly creature to 6/6.',
-    onGift:(S,p,unit) => { unit.pendingGift={type:'set_6_6'}; lg(S,p,'✦ Aurora Gift: Wähle eigene Kreatur'); }
+    onGift:(S,p,unit) => { unit.pendingGift={type:'set_6_6'}; lg(S,p,'✦ Aurora Gift: Choose your creature'); }
   });
   add({ id:'orosei', set:'core', name:'Orosei, Dream of the Deep', color:'blue', type:'creature', cost:10, req:{lake:2}, kw:kw('flying','charge:2'), atk:6,hp:6,
     rarity:'legendary', text:'Flying, Charge 2. Gift - Transform all your other creatures into creatures that cost 2 more.',
@@ -851,7 +856,7 @@ const CARDS = (function() {
   // ── GREEN CREATURES ───────────────────────────────────
   add({ id:'tiki_chieftain', set:'core', name:'Tiki Chieftain', color:'green', type:'creature', cost:2, req:{forest:2}, kw:kw(), atk:2,hp:2,
     rarity:'common', text:'Gift - Give a creature Taunt.',
-    onGift:(S,p,unit) => { unit.pendingGift={type:'give_taunt'}; lg(S,p,'✦ Tiki Chieftain Gift: Wähle eigene Kreatur für Taunt'); }
+    onGift:(S,p,unit) => { unit.pendingGift={type:'give_taunt'}; lg(S,p,'✦ Tiki Chieftain Gift: Choose your creature for Taunt'); }
   });
   add({ id:'living_willow', set:'core',  name:'Living Willow',  color:'green', type:'creature', cost:3, req:{forest:2}, kw:kw('taunt'),  atk:1,hp:7, rarity:'common', text:'Taunt.' });
   add({ id:'sagami_warrior', set:'core', name:'Sagami Warrior', color:'green', type:'creature', cost:3, req:{forest:1}, kw:kw('dash:2'), atk:3,hp:4, rarity:'common', text:'Dash 2.' });
@@ -871,12 +876,12 @@ const CARDS = (function() {
     onDeath:(S,u) => {
       if (!S._pendingReturn) S._pendingReturn=[];
       S._pendingReturn.push({cid:u.cid, own:u.own, buffAtk:2, buffHp:2});
-      lg(S,u.own,'🌿 Ruunin: kehrt am Zugend mit +2/+2 zur Hand zurück');
+      lg(S,u.own,'🌿 Ruunin: returns to hand at turn end with +2/+2');
     }
   });
   add({ id:'tethra', set:'core', name:'Tethra, Soul of the Wild', color:'green', type:'creature', cost:10, req:{forest:2}, kw:kw('flying','charge:2'), atk:6,hp:6,
     rarity:'legendary', text:'Flying, Charge 2. Gift - Give a creature +5/+5.',
-    onGift:(S,p,unit) => { unit.pendingGift={type:'buff_creature', atk:5, hp:5}; lg(S,p,'✦ Tethra Gift: Wähle eigene Kreatur für +5/+5'); }
+    onGift:(S,p,unit) => { unit.pendingGift={type:'buff_creature', atk:5, hp:5}; lg(S,p,'✦ Tethra Gift: Choose your creature for +5/+5'); }
   });
 
   // ── RED CREATURES ─────────────────────────────────────
@@ -932,7 +937,7 @@ const CARDS = (function() {
       Object.values(S.units).filter(u=>u.own===opp).forEach(u=>{
         applyDmg(S,u,3,unit);if(u.hp<=0)resolveDeath(S,u.id);
       });
-      lg(S,p,'✦ Garudan Gift: 3 Schaden an alle Feinde');
+      lg(S,p,'✦ Garudan Gift: 3 damage to all enemies');
     }
   });
 
@@ -963,7 +968,7 @@ const CARDS = (function() {
       if(pl.hand.length<HAND_MAX){
         pl.hand.push({id:follower,buff:{atk:0,hp:0}});
         S._permZeroCost.add(follower);
-        lg(S,u.own,"✦ Khalim: Khalim's Follower zur Hand (0 Mana)");
+        lg(S,u.own,"✦ Khalim: Khalim's Follower to hand (0 Mana)");
       }
     }
   });
@@ -998,7 +1003,7 @@ const CARDS = (function() {
       const pl=S.players[p];
       if(pl.hand.length<HAND_MAX){
         pl.hand.push({id:'campfire',buff:{atk:0,hp:0}});
-        lg(S,p,'✦ Outland Ranger Gift: Campfire zur Hand');
+        lg(S,p,'✦ Outland Ranger Gift: Campfire to hand');
       }
     }
   });
@@ -1195,7 +1200,7 @@ const CARDS = (function() {
       buffUnit(unit,n,n);
       lg(S,p,`Celeste Gift: +${n}/+${n} (${n} Karten in Hand)`);
     },
-    onDeath:(S,u)=>{deal(S,u.own,3);lg(S,u.own,'Celeste Last Words: 3 Karten gezogen');},
+    onDeath:(S,u)=>{deal(S,u.own,3);lg(S,u.own,'Celeste Last Words: 3 cards drawn');},
   });
   add({ id:'sorocco', set:'gagana',
     name:'Sorocco, First Mate', color:'neutral', type:'creature',
@@ -1215,7 +1220,7 @@ const CARDS = (function() {
     text:'Jump. End of turn: if on enemy land, draw a card.',
     onTurnStart:(S,u)=>{
       const c=S.cells[cK(u.q,u.r)];
-      if(c&&c.owner&&c.owner!==u.own){deal(S,u.own,1);lg(S,u.own,'Triton Adventurer: Karte gezogen (Feindland)');}
+      if(c&&c.owner&&c.owner!==u.own){deal(S,u.own,1);lg(S,u.own,'Triton Adventurer: Card drawn (enemy land)');}
     },
   });
   add({ id:'triton_stargazer', set:'gagana',
@@ -1230,8 +1235,8 @@ const CARDS = (function() {
         handPush(S,p,drawn);
         if(drawn==='treasure_map')gotMap=true;
       }
-      if(gotMap){buffUnit(unit,2,2);lg(S,p,'Triton Stargazer Gift: Treasure Map gezogen! +2/+2');}
-      else lg(S,p,'Triton Stargazer Gift: 3 Karten gezogen');
+      if(gotMap){buffUnit(unit,2,2);lg(S,p,'Triton Stargazer Gift: Treasure Map drawn! +2/+2');}
+      else lg(S,p,'Triton Stargazer Gift: 3 cards drawn');
     },
   });
   add({ id:'starshell_keeper', set:'gagana',
@@ -1318,7 +1323,7 @@ const CARDS = (function() {
           const adj=unitAt(S,u.q+dq,u.r+dr,u.s+ds);
           if(adj&&adj.own===u.own)buffUnit(adj,1,1);
         });
-        lg(S,u.own,'Tiki Adventurer: Benachbarte Kreaturen +1/+1');
+        lg(S,u.own,'Tiki Adventurer: Adjacent creatures +1/+1');
       }
     },
   });
@@ -3328,7 +3333,7 @@ function applyDmg(S, target, amount, source) {
   if (!target || amount <= 0) return 0;
 
   if (target.cid==='sharra_dragonslayer' && amount >= 4) {
-    lg(S, target.own, `🛡 Sharra ignoriert ${amount} Schaden (≥4)`);
+    lg(S, target.own, `🛡 Sharra ignores ${amount} damage (≥4)`);
     return 0;
   }
   if (target.kw?.has('divine') && !(source?.kw?.has('divine'))) {
@@ -3474,7 +3479,7 @@ function mkState() {
 
   const S = {
     turn:1, ap:'A', phase:'DRAW', phaseStep:0, lobDone:false,
-    playerNames:{ A:params?.nameA||'Spieler A', B:params?.nameB||'Spieler B' },
+    playerNames:{ A:params?.nameA||'Player A', B:params?.nameB||'Player B' },
     players:{
       A:{ hp:BASE_HP, mana:BASE_MANA, deck:filteredA, hand:[], grave:[], boostUsed:false, boostCount:0 },
       B:{ hp:BASE_HP, mana:BASE_MANA, deck:filteredB, hand:[], grave:[], boostUsed:false, boostCount:0 },
@@ -3516,7 +3521,7 @@ function doMulligan(S, p, replaceIds) {
   const toRemove = new Set(replaceIds);
   pl.deck = pl.deck.filter(id => !toRemove.has(id));
   deal(S, p, replaceIds.length);
-  lg(S, p, `Mulligan: ${replaceIds.length} Karte${replaceIds.length!==1?'n':''} ersetzt`);
+  lg(S, p, `Mulligan: ${replaceIds.length} card${replaceIds.length!==1?"s":""} replaced`);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -3907,7 +3912,7 @@ function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
     const tu = unitAt(S, targetQ, targetR, targetS);
     if (tu && tu.own===opp) {
       applyDmg(S,tu,1,unit); if(tu.hp<=0)resolveDeath(S,tu.id);
-      lg(S,p,`✦ Gift: 1 Schaden an ${cardData(tu.cid)?.name||tu.id}`);
+      lg(S,p,`✦ Gift: 1 damage to ${cardData(tu.cid)?.name||tu.id}`);
       return true;
     }
     const [bq,br,bs]=BASE_B; // allow hitting enemy base
@@ -4016,14 +4021,14 @@ function doPlay(S, p, id, q, r, s) {
     }
     case 'shifting_tide': {
       // Handled interactively in UI (choose move/draw)
-      lg(S,p,`${cd.name}: gewählt`);
+      lg(S,p,`${cd.name}: selected`);
       break;
     }
     case 'falcon_dive': {
       const tu=unitAt(S,q,r,s);
       if(tu&&tu.own!==p){applyDmg(S,tu,1,null);if(tu.hp<=0)resolveDeath(S,tu.id);}
       else{const opp=p==='A'?'B':'A';S.players[opp].hp-=1;if(S.players[opp].hp<=0)S.winner=p;}
-      lg(S,p,`${cd.name}: 1 Schaden`);
+      lg(S,p,`${cd.name}: 1 damage`);
       break;
     }
     case 'elderwood_embrace': {
@@ -4035,7 +4040,7 @@ function doPlay(S, p, id, q, r, s) {
       const tu=unitAt(S,q,r,s);
       if(tu){applyDmg(S,tu,4,null);if(tu.hp<=0)resolveDeath(S,tu.id);}
       else{const opp=p==='A'?'B':'A';S.players[opp].hp-=4;if(S.players[opp].hp<=0)S.winner=p;}
-      lg(S,p,`${cd.name}: 4 Schaden`);
+      lg(S,p,`${cd.name}: 4 damage`);
       break;
     }
     case 'flame_burst': {
@@ -4043,7 +4048,7 @@ function doPlay(S, p, id, q, r, s) {
       const tu=unitAt(S,q,r,s);
       if(tu){applyDmg(S,tu,3,null);if(tu.hp<=0)resolveDeath(S,tu.id);}
       else{S.players[opp].hp-=3;if(S.players[opp].hp<=0)S.winner=p;}
-      lg(S,p,`${cd.name}: 3 Schaden`);
+      lg(S,p,`${cd.name}: 3 damage`);
       break;
     }
     case 'soul_drain': {
@@ -4051,7 +4056,7 @@ function doPlay(S, p, id, q, r, s) {
       if(tu){
         const drain=Math.min(2,tu.hp-1);
         tu.hp-=drain; S.players[p].hp=Math.min(BASE_HP,S.players[p].hp+drain);
-        lg(S,p,`${cd.name}: ${drain} Leben abgezogen`);
+        lg(S,p,`${cd.name}: ${drain} life drained`);
         if(tu.hp<=0)resolveDeath(S,tu.id);
       }
       break;
@@ -4070,7 +4075,7 @@ function doPlay(S, p, id, q, r, s) {
       const k=cK(q,r), ec=S.cells[k];
       if(ec&&ec.type==='EMPTY'){S.cells[k]={type:'LAND',owner:p,landType:'N'};}
       S.players[p].mana+=2;
-      lg(S,p,`Erkundung: Prärie platziert, +2 Mana → ${S.players[p].mana}`);
+      lg(S,p,`Explore: Prairie placed, +2 Mana → ${S.players[p].mana}`);
       break;
     }
     case 'wild_growth': {
@@ -4078,7 +4083,7 @@ function doPlay(S, p, id, q, r, s) {
       if(spots.length){
         const [tq,tr]=spots[Math.floor(Math.random()*spots.length)];
         S.cells[cK(tq,tr)]={type:'LAND',owner:p,landType:'F'};
-        lg(S,p,'Wildes Wachstum: Wald erzeugt');
+        lg(S,p,'Wild Growth: Forest created');
       }
       break;
     }
@@ -4108,8 +4113,8 @@ function doPlay(S, p, id, q, r, s) {
     }
     case 'seek_shelter': {
       const pool=Object.values(CARDS).filter(c=>c.type==='creature'&&c.kw.has('taunt')&&c.set==='core').sort(()=>Math.random()-.5).slice(0,3);
-      if(pool.length>0)S._discoverQueue.push({p,pool:pool.map(c=>c.id),onPick:'add_to_hand',label:'Seek Shelter: Kreatur mit Taunt'});
-      else lg(S,p,'Seek Shelter: Keine Taunt-Kreaturen gefunden');
+      if(pool.length>0)S._discoverQueue.push({p,pool:pool.map(c=>c.id),onPick:'add_to_hand',label:'Seek Shelter: Creature with Taunt'});
+      else lg(S,p,'Seek Shelter: No Taunt creatures found');
       break;
     }
     case 'thyrian_expedition': {
@@ -4131,14 +4136,14 @@ function doPlay(S, p, id, q, r, s) {
     case 'spirit_spice': {
       // Handled via pendingGift targeting — mark pending target pick
       S._pendingSpiritSpice=p;
-      lg(S,p,'Spirit Spice: Kreatur auswählen');
+      lg(S,p,'Spirit Spice: Select a creature');
       pl.grave.push(id);
       return true; // skip normal grave push below
     }
     case 'key_elements': {
       // Discover creature of any color — show color picker UI then trigger discover
       S._discoverQueue.push({p,pool:null,onPick:'discover_by_color',label:'Key of the Elements'});
-      lg(S,p,'Key of the Elements: Farbe wählen...');
+      lg(S,p,'Key of the Elements: Choose a color...');
       break;
     }
     case 'key_giants': {
@@ -4231,7 +4236,7 @@ function doCleanup(S) {
         if(!S._returnBuffs[cid]) S._returnBuffs[cid]={atk:0,hp:0};
         S._returnBuffs[cid].atk+=buffAtk;
         S._returnBuffs[cid].hp+=buffHp;
-        lg(S,own,`🌿 Ruunin kehrt zur Hand zurück (+${buffAtk}/+${buffHp})`);
+        lg(S,own,`🌿 Ruunin returns to hand (+${buffAtk}/+${buffHp})`);
       }
     });
     S._pendingReturn=[];
@@ -4281,9 +4286,9 @@ function kwBadge(kwKey) {
 
 // ── Radial Menu Options ────────────────────────────────────
 const MENU_OPTS = [
-  { id:'land_F',  label:'Wald',       sub:'🌲',  fill:'#1c4a14', stroke:'#4a9e40', textCol:'#7dd870' },
-  { id:'land_D',  label:'Wüste',      sub:'🏜',  fill:'#5a2e08', stroke:'#d4982a', textCol:'#f0b84a' },
-  { id:'land_M',  label:'Berg',       sub:'⛰',   fill:'#282838', stroke:'#8a8aaa', textCol:'#aaaacc' },
+  { id:'land_F',  label:'Forest',       sub:'🌲',  fill:'#1c4a14', stroke:'#4a9e40', textCol:'#7dd870' },
+  { id:'land_D',  label:'Desert',      sub:'🏜',  fill:'#5a2e08', stroke:'#d4982a', textCol:'#f0b84a' },
+  { id:'land_M',  label:'Mountain',       sub:'⛰',   fill:'#282838', stroke:'#8a8aaa', textCol:'#aaaacc' },
   { id:'land_W',  label:'Wasser',     sub:'🌊',  fill:'#083050', stroke:'#3a8acc', textCol:'#60aaee' },
   { id:'land_N',  label:'2×Neutral',  sub:'··',  fill:'#1a2236', stroke:'#4a5a70', textCol:'#7a9ab0' },
   { id:'_draw',   label:'Karte +1',   sub:'🃏',  fill:'#2a1c08', stroke:'#c8a84b', textCol:'#e8c870' },
@@ -4326,7 +4331,7 @@ class Engine {
   // ── Mulligan UI ────────────────────────────────────────
   _showMulligan(p) {
     const S    = this.S;
-    const name = S.playerNames?.[p] || `Spieler ${p}`;
+    const name = S.playerNames?.[p] || `Player ${p}`;
     this.mulliganSel.clear();
     this.handVisible = false;
     this._rHand();
@@ -4384,9 +4389,9 @@ class Engine {
         ${cardsHtml}
       </div>
       <div style="font-size:.55rem;color:var(--dim);margin-bottom:14px;font-family:'Cinzel',serif">
-        Ersetzte Karten können nicht erneut gezogen werden
+        Replaced cards cannot be drawn again
       </div>
-      <button onclick="G.confirmMulligan('${p}')">Bestätigen ▶</button>`;
+      <button onclick="G.confirmMulligan('${p}')">Confirm ▶</button>`;
 
     document.getElementById('sw-ov').classList.add('on');
   }
@@ -4426,8 +4431,8 @@ class Engine {
       // Show pass-device screen before B's mulligan
       document.getElementById('sw-pass').style.display  = '';
       document.getElementById('sw-ready').style.display = 'none';
-      const nameA = S.playerNames?.['A'] || 'Spieler A';
-      const nameB = S.playerNames?.['B'] || 'Spieler B';
+      const nameA = S.playerNames?.['A'] || 'Player A';
+      const nameB = S.playerNames?.['B'] || 'Player B';
       const el = document.getElementById('sw-pass-name');
       el.textContent = nameA.toUpperCase();
       el.className   = `sc-nm A`;
@@ -4462,8 +4467,8 @@ class Engine {
   _showSwitch(incoming) {
     const S      = this.S;
     const out    = incoming === 'A' ? 'B' : 'A';
-    const inName = S.playerNames?.[incoming] || `Spieler ${incoming}`;
-    const outName= S.playerNames?.[out]      || `Spieler ${out}`;
+    const inName = S.playerNames?.[incoming] || `Player ${incoming}`;
+    const outName= S.playerNames?.[out]      || `Player ${out}`;
 
     this.handVisible = false;
     this._rHand();
@@ -4484,7 +4489,7 @@ class Engine {
   // Step 2: incoming player sees "your turn — confirm to reveal hand"
   handOff() {
     const p    = this.S.ap;
-    const name = this.S.playerNames?.[p] || `Spieler ${p}`;
+    const name = this.S.playerNames?.[p] || `Player ${p}`;
 
     document.getElementById('sw-pass').style.display  = 'none';
     document.getElementById('sw-ready').style.display = '';
@@ -4504,7 +4509,7 @@ class Engine {
 
   // Helper: show "ready" directly (used for first turn / after mulligan)
   _showReady(p) {
-    const name = this.S.playerNames?.[p] || `Spieler ${p}`;
+    const name = this.S.playerNames?.[p] || `Player ${p}`;
 
     // Hide mulligan panel if present
     const mp = document.getElementById('sw-mulligan');
@@ -4540,10 +4545,10 @@ class Engine {
         }
         // Round 1: no card draw (players already have their starting hand from mulligan)
         if (S.turn === 1) {
-          lg(S, this.ap, 'Runde 1 — kein Kartenzug');
+          lg(S, this.ap, 'Round 1 — no card draw');
         } else {
           deal(S, this.ap, 1);
-          lg(S, this.ap, 'Karte gezogen');
+          lg(S, this.ap, 'Card drawn');
         }
         this._auto(350);
         break;
@@ -4580,7 +4585,7 @@ class Engine {
         // so the boost carries forward as income next turn
         S.lobDone   = false;
         S.landNLeft = 0;
-        lg(S, this.ap, '— Runde Ende —');
+        lg(S, this.ap, '— Round End —');
         if (this.ap === 'B') S.turn++;
         S.ap    = this.ap === 'A' ? 'B' : 'A';
         S.phase = 'DRAW';
@@ -4780,7 +4785,7 @@ class Engine {
     if (id === '_draw') {
       deal(S, this.ap, 1);
       S.lobDone = true;
-      lg(S, this.ap, 'Karte gezogen (Aktion)');
+      lg(S, this.ap, 'Card drawn (action)');
       this._render();
       return;
     }
@@ -5012,7 +5017,7 @@ class Engine {
         if (cd) {
           S.cells[cK(q,r)] = { type:'LAND', owner:this.ap, landType:cd.landType };
           S.lobDone = true;
-          lg(S, this.ap, `${cd.name} platziert`);
+          lg(S, this.ap, `${cd.name} placed`);
         }
         this._clr(); this._render();
         return;
@@ -5067,7 +5072,7 @@ class Engine {
           this._render();
         } else {
           S.lobDone = true;
-          lg(S, this.ap, '2× Grasland platziert');
+          lg(S, this.ap, '2× Prairie placed');
           this._clr(); this._render();
         }
         return;
@@ -5225,7 +5230,7 @@ class Engine {
       S.players[this.ap].hand.splice(handIdxOf(S.players[this.ap].hand, 'shifting_tide'), 1);
       S.players[this.ap].grave.push('shifting_tide');
       deal(S, this.ap, 1);
-      lg(S, this.ap, 'Shifting Tide: Karte gezogen');
+      lg(S, this.ap, 'Shifting Tide: Card drawn');
       this._render();
     } else {
       // Land move: player picks ANY land to move (own or enemy), then adjacent empty destination
@@ -5278,7 +5283,7 @@ class Engine {
   //  DEV / PLAYTEST TOOLS  (DEV_MODE only — remove for release)
   // ══════════════════════════════════════════════════════════
   _devInit() {
-    if (!DEV_MODE) return;
+    if (!isDevMode()) return;
     // Show DEV buttons
     ['btn-rnd','btn-addmana','btn-drawall','btn-addcard','btn-addland'].forEach(id => {
       const el = document.getElementById(id);
@@ -5288,9 +5293,10 @@ class Engine {
     const banner = document.createElement('div');
     banner.id = 'dev-banner';
     banner.innerHTML = `
-      <span style="opacity:.7">🛠 DEV</span>
-      <button onclick="G.devSkipMulligan()" title="Mulligan überspringen" style="margin-left:6px;padding:1px 6px;font-size:.55rem;background:rgba(80,40,120,.5);border:1px solid #6a3a9a;color:#cc99ff;border-radius:3px;cursor:pointer">Skip Mulligan</button>
-      <button onclick="G.devSetHP()" title="HP auf 5 setzen" style="margin-left:4px;padding:1px 6px;font-size:.55rem;background:rgba(120,30,30,.5);border:1px solid #882222;color:#ff9090;border-radius:3px;cursor:pointer">HP→5</button>
+      <span id="dev-label" style="opacity:.7">🛠 DEV</span>
+      <button onclick="G.devSkipMulligan()" title="Skip Mulligan" style="margin-left:6px;padding:1px 6px;font-size:.55rem;background:rgba(80,40,120,.5);border:1px solid #6a3a9a;color:#cc99ff;border-radius:3px;cursor:pointer">Skip Mulligan</button>
+      <button onclick="G.devSetHP()" title="Set HP to 5" style="margin-left:4px;padding:1px 6px;font-size:.55rem;background:rgba(120,30,30,.5);border:1px solid #882222;color:#ff9090;border-radius:3px;cursor:pointer">HP→5</button>
+      <button id="dev-toggle-btn" onclick="G.devToggle()" title="Toggle DEV mode on/off" style="margin-left:8px;padding:1px 7px;font-size:.55rem;background:rgba(40,120,40,.5);border:1px solid #3a8a3a;color:#88ff88;border-radius:3px;cursor:pointer">ON</button>
     `;
     banner.style.cssText = 'position:fixed;top:4px;right:4px;z-index:9999;font-size:.6rem;font-family:monospace;color:#aa77ff;background:rgba(20,10,30,.8);border:1px solid #4a2a6a;border-radius:4px;padding:3px 8px;display:flex;align-items:center;gap:2px;';
     document.body.appendChild(banner);
@@ -5298,7 +5304,7 @@ class Engine {
 
   // Skip mulligan for both players and jump straight to FREE
   devSkipMulligan() {
-    if (!DEV_MODE) return;
+    if (!isDevMode()) return;
     const S = this.S;
     // Complete mulligan for both players (no replacements)
     if (S.mulligan?.active) {
@@ -5323,7 +5329,7 @@ class Engine {
 
   // Set both gods to 5 HP (stress-test win conditions)
   devSetHP() {
-    if (!DEV_MODE) return;
+    if (!isDevMode()) return;
     const S = this.S;
     ['A','B'].forEach(p => { S.players[p].hp = 5; });
     lg(S, S.ap, `🛠 DEV: Beide Götter auf 5 HP gesetzt`);
@@ -5332,7 +5338,7 @@ class Engine {
 
   // +5 Mana for active player
   devAddMana() {
-    if (!DEV_MODE) return;
+    if (!isDevMode()) return;
     const S = this.S;
     S.players[S.ap].mana += 5;
     lg(S, S.ap, `🛠 DEV: +5 Mana → ${S.players[S.ap].mana}`);
@@ -5341,16 +5347,33 @@ class Engine {
 
   // Draw 3 cards for active player
   devDrawAll() {
-    if (!DEV_MODE) return;
+    if (!isDevMode()) return;
     const S = this.S;
     deal(S, S.ap, 3);
-    lg(S, S.ap, `🛠 DEV: 3 Karten gezogen`);
+    lg(S, S.ap, `🛠 DEV: 3 cards drawn`);
     this._render();
+  }
+
+  // Toggle DEV mode on/off at runtime
+  devToggle() {
+    _devEnabled = !_devEnabled;
+    const btn = document.getElementById('dev-toggle-btn');
+    const lbl = document.getElementById('dev-label');
+    const devButtons = ['btn-rnd','btn-addmana','btn-drawall','btn-addcard','btn-addland'];
+    if (_devEnabled) {
+      if (btn) { btn.textContent = 'ON';  btn.style.background='rgba(40,120,40,.5)'; btn.style.borderColor='#3a8a3a'; btn.style.color='#88ff88'; }
+      if (lbl) lbl.style.opacity = '.7';
+      devButtons.forEach(id => { const el=document.getElementById(id); if(el) el.style.display=''; });
+    } else {
+      if (btn) { btn.textContent = 'OFF'; btn.style.background='rgba(80,20,20,.5)'; btn.style.borderColor='#6a2a2a'; btn.style.color='#ff8888'; }
+      if (lbl) lbl.style.opacity = '.3';
+      devButtons.forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
+    }
   }
 
   // ── DEV: Add a specific card to active player's hand ──────────────────────
   devAddCard() {
-    if (!DEV_MODE) return;
+    if (!isDevMode()) return;
     const S = this.S;
 
     // Build a modal overlay with autocomplete search
@@ -5367,12 +5390,12 @@ class Engine {
     overlay.innerHTML = `
       <div style="background:#1a1228;border:1px solid #6a3a9a;border-radius:8px;padding:16px 20px;min-width:320px;max-width:440px;color:#ddd;font-family:sans-serif;">
         <div style="font-size:.75rem;color:#aa77ff;margin-bottom:10px;font-weight:bold;">🃏 DEV — Karte in Hand holen (${S.ap})</div>
-        <input id="dev-card-input" placeholder="Kartenname oder ID eingeben…"
+        <input id="dev-card-input" placeholder="Enter card name or ID…"
           style="width:100%;box-sizing:border-box;background:#0d0a15;border:1px solid #4a2a6a;border-radius:4px;color:#eee;padding:6px 8px;font-size:.7rem;outline:none;"
           autocomplete="off" />
         <div id="dev-card-list" style="max-height:200px;overflow-y:auto;margin-top:6px;background:#0d0a15;border:1px solid #2a1a4a;border-radius:4px;"></div>
         <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;">
-          <button id="dev-card-cancel" style="padding:4px 12px;background:#2a1a3a;border:1px solid #4a2a6a;color:#aaa;border-radius:4px;cursor:pointer;font-size:.65rem;">Abbruch</button>
+          <button id="dev-card-cancel" style="padding:4px 12px;background:#2a1a3a;border:1px solid #4a2a6a;color:#aaa;border-radius:4px;cursor:pointer;font-size:.65rem;">Cancel</button>
           <button id="dev-card-ok" style="padding:4px 12px;background:#5a2a9a;border:1px solid #8a5acc;color:#fff;border-radius:4px;cursor:pointer;font-size:.65rem;">Zur Hand hinzufügen</button>
         </div>
       </div>`;
@@ -5427,7 +5450,7 @@ class Engine {
       overlay.remove();
       const pl = S.players[S.ap];
       if (pl.hand.length >= HAND_MAX) {
-        lg(S, S.ap, `🛠 Hand voll — konnte ${CARDS[id].name} nicht hinzufügen`);
+        lg(S, S.ap, `🛠 Hand full — could not add ${CARDS[id].name}`);
       } else {
         pl.hand.push({ id, buff:0 });
         lg(S, S.ap, `🛠 DEV: ${CARDS[id].name} zur Hand hinzugefügt`);
@@ -5441,7 +5464,7 @@ class Engine {
 
   // ── DEV: Instantly place a special land on any empty cell ─────────────────
   devAddLand() {
-    if (!DEV_MODE) return;
+    if (!isDevMode()) return;
     const S = this.S;
 
     const existing = document.getElementById('dev-land-modal');
@@ -5452,23 +5475,23 @@ class Engine {
     overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;';
     overlay.innerHTML = `
       <div style="background:#1a1228;border:1px solid #1a7a7a;border-radius:8px;padding:16px 20px;min-width:300px;color:#ddd;font-family:sans-serif;">
-        <div style="font-size:.75rem;color:#44cccc;margin-bottom:10px;font-weight:bold;">🏔 DEV — Special Land platzieren</div>
-        <div style="font-size:.65rem;color:#aaa;margin-bottom:8px;">Landtyp & Besitzer wählen, dann auf ein leeres Feld klicken.</div>
+        <div style="font-size:.75rem;color:#44cccc;margin-bottom:10px;font-weight:bold;">🏔 DEV — Place Special Land</div>
+        <div style="font-size:.65rem;color:#aaa;margin-bottom:8px;">Choose land type &amp; owner, then click any empty cell.</div>
         <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-          ${[['F','🌲 Wald','#4aaa44'],['D','⛰ Wüste','#cc9933'],['M','🌋 Berg','#cc4422'],['W','🌊 See','#3a8acc'],['N','🌿 Wiese','#8aaa55']].map(([t,label,col])=>
+          ${[['F','🌲 Forest','#4aaa44'],['D','⛰ Desert','#cc9933'],['M','🌋 Mountain','#cc4422'],['W','🌊 Lake','#3a8acc'],['N','🌿 Prairie','#8aaa55']].map(([t,label,col])=>
             `<button data-lt="${t}" onclick="document.querySelectorAll('[data-lt]').forEach(b=>b.style.outline=''); this.style.outline='2px solid ${col}'; window._devLandType='${t}';"
               style="padding:4px 10px;background:#0d0a15;border:1px solid ${col};color:${col};border-radius:4px;cursor:pointer;font-size:.65rem;">${label}</button>`
           ).join('')}
         </div>
         <div style="display:flex;gap:8px;margin-bottom:12px;">
-          ${[['A','Spieler A'],['B','Spieler B']].map(([p,label])=>
+          ${[['A','Player A'],['B','Player B']].map(([p,label])=>
             `<button data-own="${p}" onclick="document.querySelectorAll('[data-own]').forEach(b=>b.style.outline=''); this.style.outline='2px solid #aaa'; window._devLandOwner='${p}';"
               style="padding:4px 10px;background:#0d0a15;border:1px solid #444;color:#ccc;border-radius:4px;cursor:pointer;font-size:.65rem;">${label}</button>`
           ).join('')}
         </div>
         <div id="dev-land-hint" style="font-size:.6rem;color:#44cccc;margin-bottom:8px;min-height:1em;"></div>
         <div style="display:flex;gap:8px;justify-content:flex-end;">
-          <button onclick="document.getElementById('dev-land-modal').remove(); window._devLandMode=false;" style="padding:4px 12px;background:#1a2a2a;border:1px solid #1a6a6a;color:#aaa;border-radius:4px;cursor:pointer;font-size:.65rem;">Fertig</button>
+          <button onclick="document.getElementById('dev-land-modal').remove(); window._devLandMode=false;" style="padding:4px 12px;background:#1a2a2a;border:1px solid #1a6a6a;color:#aaa;border-radius:4px;cursor:pointer;font-size:.65rem;">Done</button>
         </div>
       </div>`;
     document.body.appendChild(overlay);
@@ -5482,7 +5505,7 @@ class Engine {
     overlay.querySelectorAll('[data-lt="F"]')[0].style.outline = '2px solid #4aaa44';
     overlay.querySelectorAll(`[data-own="${S.ap}"]`)[0].style.outline = '2px solid #aaa';
 
-    document.getElementById('dev-land-hint').textContent = 'Klicke jetzt auf ein leeres Feld im Spielbereich.';
+    document.getElementById('dev-land-hint').textContent = 'Click any empty cell on the board.';
 
     // Intercept hex clicks while mode active — handled in _onCellClick
     // Modal stays open so player can keep placing until they click Fertig
@@ -5494,21 +5517,21 @@ class Engine {
     const k = cK(q, r);
     const cell = S.cells[k];
     if (!cell || (cell.type !== 'EMPTY' && cell.type !== 'OCEAN')) {
-      document.getElementById('dev-land-hint') && (document.getElementById('dev-land-hint').textContent = '⚠ Nur auf leere/Ozean-Felder!');
+      document.getElementById('dev-land-hint') && (document.getElementById('dev-land-hint').textContent = '⚠ Only empty/ocean cells!');
       return;
     }
     const lt    = window._devLandType  || 'F';
     const owner = window._devLandOwner || S.ap;
     S.cells[k] = { type:'LAND', owner, landType:lt };
-    lg(S, S.ap, `🛠 DEV: ${lt}-Land für ${owner} @ [${q},${r}]`);
+    lg(S, S.ap, `🛠 DEV: ${lt} land for ${owner} @ [${q},${r}]`);
     const hint = document.getElementById('dev-land-hint');
-    if (hint) hint.textContent = `✓ ${lt}-Land platziert. Klicke weitere Felder oder schließe.`;
+    if (hint) hint.textContent = `✓ ${lt} land placed. Click more cells or close.`;
     this._render();
   }
 
   // Randomize: place ~6 lands + 3 creatures per player
   devRandomize() {
-    if (!DEV_MODE) return;
+    if (!isDevMode()) return;
     const S = this.S;
     this._clr();
 
@@ -5669,7 +5692,7 @@ class Engine {
     elA.className    = `cf-name cf-name${aOwn === 'A' ? 'A' : 'B'}`;
     elB.textContent  = aOwn === 'A' ? bName : aName;
     elB.className    = `cf-name cf-name${aOwn === 'A' ? 'B' : 'A'}`;
-    elDmg.textContent = `${effAtk(a,false,S)} Schaden${targetType==='unit'?` | ${effAtk(S.units[targetId]||{atk:0,atkBuff:0},false,S)||0} Gegenschlag`:''}`;
+    elDmg.textContent = `${effAtk(a,false,S)} DMG${targetType==='unit'?` | ${effAtk(S.units[targetId]||{atk:0,atkBuff:0},false,S)||0} counter-attack`:''}`;
     elRes.textContent = '';
 
     flash.classList.add('show');
@@ -5694,7 +5717,7 @@ class Engine {
   }
 
   _win() {
-    const name = this.S.playerNames?.[this.S.winner] || `Spieler ${this.S.winner}`;
+    const name = this.S.playerNames?.[this.S.winner] || `Player ${this.S.winner}`;
     document.getElementById('win-title').textContent = `${name} gewinnt!`;
     document.getElementById('win-ov').classList.add('on');
   }
@@ -5730,14 +5753,14 @@ class Engine {
     });
     document.getElementById('rnd').textContent = S.turn;
     const n = document.getElementById('apn');
-    const nm = S.playerNames?.[S.ap] || `Spieler ${S.ap}`;
+    const nm = S.playerNames?.[S.ap] || `Player ${S.ap}`;
     n.textContent = nm.toUpperCase();
     n.className   = `pn ${S.ap}`;
   }
 
   _rPhase() {
     const S = this.S;
-    const labels = { DRAW:'Ziehen', MANA:'Mana', FREE:'Freier Zug', CLEANUP:'Aufräumen' };
+    const labels = { DRAW:'Draw', MANA:'Mana', FREE:'Free Turn', CLEANUP:'Cleanup' };
     const phases = ['DRAW','MANA','FREE','CLEANUP'];
     document.getElementById('ph-name').textContent = labels[S.phase] || S.phase;
     const cur = phases.indexOf(S.phase);
@@ -5823,7 +5846,7 @@ class Engine {
 
       // Land requirements
       const reqEntries = Object.entries(cd.req||{}).filter(([,v])=>v>0);
-      const landNames  = { lake:'See', forest:'Wald', mountain:'Berg', desert:'Wüste', F:'Wald', M:'Berg', D:'Wüste', W:'See', N:'Neutral' };
+      const landNames  = { lake:'Lake', forest:'Forest', mountain:'Mountain', desert:'Desert', F:'Forest', M:'Mountain', D:'Desert', W:'Lake', N:'Prairie' };
       const reqStr     = reqEntries.map(([lt,n])=>`${n}× ${landNames[lt]||lt}`).join(', ');
 
       const d = document.createElement('div');
