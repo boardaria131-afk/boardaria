@@ -3079,12 +3079,12 @@ class Engine {
     this.selUnit = uid;
 
     // Spirit Spice target
-    if (S._pendingSpiritSpice === p) {
+    if (S._pendingSpiritSpice === this.ap) {
       S._pendingSpiritSpice = null;
       buffUnit(u, 4, 4);
       u.kw.add('flying');
       if (!u.kw.has('charge:2') && !u.kw.has('charge:3')) u.kw.add('charge:2');
-      lg(S, p, `Spirit Spice: ${cardData(u.cid)?.name} +4/+4, Flying, Charge 2`);
+      lg(S, this.ap, `Spirit Spice: ${cardData(u.cid)?.name} +4/+4, Flying, Charge 2`);
       this._clr(); this._render();
       return;
     }
