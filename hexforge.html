@@ -846,7 +846,24 @@ const CARDS = (function() {
   });
   add({ id:'orosei', set:'core', name:'Orosei, Dream of the Deep', color:'blue', type:'creature', cost:10, req:{lake:2}, kw:kw('flying','charge:2'), atk:6,hp:6,
     rarity:'legendary', text:'Flying, Charge 2. Gift - Transform all your other creatures into creatures that cost 2 more.',
-    onGift:(S,p,unit) => { lg(S,p,'✦ Orosei Gift: (Transform — not yet implemented)'); }
+    onGift:(S,p,unit) => {
+      // Transform all OTHER friendly creatures into a random creature costing exactly 2 more
+      const friends = Object.values(S.units).filter(u => u.own===p && u.id!==unit.id && u.q!==null);
+      let count = 0;
+      friends.forEach(u => {
+        const curCd = cardData(u.cid);
+        if (!curCd) return;
+        const targetCost = (curCd.cost || 0) + 2;
+        const pool = Object.values(CARDS).filter(c =>
+          c.type === 'creature' && c.cost === targetCost && c.id !== u.cid && !c.treasure
+        );
+        if (!pool.length) return;
+        const pick = pool[Math.floor(Math.random() * pool.length)];
+        doTransform(S, u.id, pick.id);
+        count++;
+      });
+      lg(S, p, `✦ Orosei Gift: ${count} creature(s) transformed`);
+    }
   });
   add({ id:'water_elemental', set:'core', name:'Water Elemental', color:'blue', type:'creature', cost:4, req:{lake:1}, kw:kw('jump'), atk:3,hp:3,
     rarity:'common', text:'Jump. Gift - Create a Lake.',
@@ -1392,9 +1409,15 @@ const CARDS = (function() {
       lg(S,p,'Aryana Gift: Treasure Map oben auf dem Deck');
     },
     onDeath:(S,u)=>{
-      if(!S._pendingReturn)S._pendingReturn=[];
-      S._pendingReturn.push({cid:u.cid,own:u.own,buffAtk:0,buffHp:0});
-      lg(S,u.own,'Aryana: kehrt zur Hand zurueck');
+      // Immediate return — not at end of turn like Ruunin
+      const pl = S.players[u.own];
+      if (pl.hand.length < HAND_MAX) {
+        pl.hand.unshift({id:'aryana', buff:{atk:0,hp:0}});
+        lg(S,u.own,'✨ Aryana Last Words: returns to hand immediately');
+      } else {
+        pl.grave.push('aryana');
+        lg(S,u.own,'✨ Aryana Last Words: hand full, sent to grave');
+      }
     },
   });
   add({ id:'barter', set:'gagana',
@@ -1490,6 +1513,15 @@ const CARDS = (function() {
     cost:7, req:{lake:2}, kw:kw(), atk:5, hp:5,
     rarity:'epic', treasure:false,
     text:'Gift: Transform another creature into a 5/5 Mirror Phantasm.',
+    onGift:(S,p,unit) => {
+      // Target: any other creature on the board (own or enemy)
+      // Divine units cannot be targeted
+      const targets = Object.values(S.units)
+        .filter(t => t.id !== unit.id && t.q !== null && !isDivine(t));
+      if (!targets.length) { lg(S,p,'Mirror Phantasm: No valid targets'); return; }
+      unit.pendingGift = { type:'transform_any', targetCardId:'mirror_phantasm' };
+      lg(S, p, '🔀 Mirror Phantasm Gift: Choose a creature to transform');
+    }
   });
   add({ id:'ninja_toad', set:'dlc', name:'Ninja Toad', color:'blue', type:'creature', subtype:'Triton',
     cost:4, req:{lake:3}, kw:kw('jump', 'haste'), atk:3, hp:2,
@@ -3515,6 +3547,65 @@ function releaseSwallowed(S, hostId) {
   lg(S, target.own, `🌀 ${tName} released from ${hName}${ownerNote}`);
 }
 
+// ══════════════════════════════════════════════════════════
+//  TRANSFORM MECHANIC
+// ══════════════════════════════════════════════════════════
+// Transform: Change a unit's card identity to targetCardId.
+//   - Stats reset to printed values of the target card (no buffs, no damage)
+//   - Keywords reset to target card's base keywords
+//   - Abilities (onGift, onCombat, onDeath, onTurnStart) reset to target card's
+//   - Position, owner, and summoning sickness are KEPT
+//   - Haste on the new card is NOT applied (no new summon event — unit keeps
+//     its current moved/atked state; if it already acted this turn it stays exhausted)
+//   - If host has swallowed a creature, that creature is destroyed (per spec)
+//   - Card ID in S.units changes; grave entry uses the OLD card id
+function doTransform(S, uid, targetCardId) {
+  const u = S.units[uid];
+  if (!u) return false;
+  const newCd = cardData(targetCardId);
+  if (!newCd || !isUnitCard(newCd)) return false;
+
+  const oldName = cardData(u.cid)?.name || u.cid;
+  const newName = newCd.name;
+
+  // Destroy any swallowed creature (per spec)
+  if (u.swallowedUnit) {
+    const sw = S.units[u.swallowedUnit];
+    if (sw) {
+      lg(S, u.own, `🔀 Transform: ${sw.name||u.swallowedUnit} inside ${oldName} is destroyed`);
+      sw.swallowedBy = null;
+      S.players[sw.own].grave.push(sw.cid);
+      delete S.units[u.swallowedUnit];
+    }
+    u.swallowedUnit = null;
+  }
+
+  // Reset stats to printed values of new card
+  u.cid    = targetCardId;
+  u.hp     = newCd.hp;
+  u.maxHp  = newCd.hp;
+  u.atk    = newCd.atk ?? 0;
+  u.bew    = newCd.bew ?? 1;
+  u.kw     = new Set(newCd.kw);      // reset to base keywords (haste, etc. gone unless on new card)
+  u.atkBuff = 0;
+  u.hpBuff  = 0;
+  u.protHit = false;
+  u.pendingDash = 0;
+  u.swallowedBy = null;
+
+  // Reset ability hooks to new card's
+  u.onGift      = newCd.onGift      || null;
+  u.onCombat    = newCd.onCombat    || null;
+  u.onDeath     = newCd.onDeath     || null;
+  u.onTurnStart = newCd.onTurnStart || null;
+
+  // Do NOT reset moved/atked/summonSick — existing turn state is preserved
+  // (A creature that already moved cannot attack after transforming)
+
+  lg(S, u.own, `🔀 ${oldName} transformed into ${newName} (${u.atk}/${u.hp})`);
+  return true;
+}
+
 function resolveDeath(S, uid) {
   const u = S.units[uid];
   if (!u) return;
@@ -4081,7 +4172,7 @@ function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
 
   // Divine: before resolving any gift that targets a unit, check and block
   const _targetUnit = unitAt(S, targetQ, targetR, targetS);
-  const UNIT_TARGETING_GIFTS = new Set(['dmg1_enemy','give_taunt','buff_creature','set_6_6','swallow_friendly','swallow_any']);
+  const UNIT_TARGETING_GIFTS = new Set(['dmg1_enemy','give_taunt','buff_creature','set_6_6','swallow_friendly','swallow_any','transform_any']);
   if (UNIT_TARGETING_GIFTS.has(gift.type) && _targetUnit && isDivine(_targetUnit)) {
     lg(S, p, `✶ Divine: ${cardData(_targetUnit.cid)?.name||_targetUnit.id} cannot be targeted by abilities`);
     unit.pendingGift = gift; // restore so player can pick again
@@ -4145,6 +4236,15 @@ function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
     if (tu.swallowedBy || tu.swallowedUnit) return false;
     const keepOwner = gift.keepOwner !== false; // true = Mobie, false = Shozen-style
     return doSwallow(S, unit.id, tu.id, keepOwner);
+  }
+
+  // ── Transform any (Mirror Phantasm) ──────────────────────────────────────
+  if (gift.type==='transform_any') {
+    const tu = unitAt(S, targetQ, targetR, targetS);
+    if (!tu || tu.id === unit.id) return false;
+    if (isDivine(tu)) return false;
+    const ok = doTransform(S, tu.id, gift.targetCardId);
+    return ok;
   }
 
   return false;
@@ -5192,6 +5292,11 @@ class Engine {
         // Any unit on board — Divine units untargetable
         this.vt = Object.values(S.units)
           .filter(t => t.id!==u.id && t.q!==null && !t.swallowedBy && !t.swallowedUnit && !isDivine(t))
+          .map(t=>[t.q,t.r,t.s]);
+      } else if (u.pendingGift.type === 'transform_any') {
+        // Any other unit on board — Divine untargetable
+        this.vt = Object.values(S.units)
+          .filter(t => t.id!==u.id && t.q!==null && !isDivine(t))
           .map(t=>[t.q,t.r,t.s]);
       }
       this._showUD(u);
