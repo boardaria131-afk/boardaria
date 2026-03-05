@@ -1405,8 +1405,10 @@ const CARDS = (function() {
     cost:4, req:{desert:2}, kw:kw('flying'), atk:4, hp:2, rarity:'legendary',
     text:'Flying. Gift: Put a Treasure Map on top of your deck. Last Words: Return this to your hand.',
     onGift:(S,p,unit)=>{
+      // Put Treasure Map on top of deck then draw it immediately
       S.players[p].deck.unshift('treasure_map');
-      lg(S,p,'Aryana Gift: Treasure Map oben auf dem Deck');
+      deal(S, p, 1);  // draw it right away — it will be treasure_map
+      lg(S,p,'✨ Aryana Gift: Treasure Map drawn immediately');
     },
     onDeath:(S,u)=>{
       // Immediate return — not at end of turn like Ruunin
@@ -3347,8 +3349,9 @@ const CARDS = (function() {
 function cardData(id) { return CARDS[id] || null; }
 
 // ── Type helpers ──────────────────────────────────────────
-function isUnitCard(cd)    { return cd && (cd.type==='UNIT' || cd.type==='creature'); }
-function isInstantCard(cd) { return cd && (cd.type==='INSTANT'||cd.type==='event'||cd.type==='structure'); }
+function isUnitCard(cd)     { return cd && (cd.type==='UNIT' || cd.type==='creature'); }
+function isStructureCard(cd){ return cd && cd.type==='structure'; }
+function isInstantCard(cd)  { return cd && (cd.type==='INSTANT'||cd.type==='event'); }
 function isLandCard(cd)    { return cd && cd.type==='LAND'; }
 
 // ══════════════════════════════════════════════════════════
@@ -3804,8 +3807,14 @@ function canPlay(S, p, id) {
   const reqMap = { lake:'W', forest:'F', mountain:'M', desert:'D' };
   for (const [lt,n] of Object.entries(cd.req||{})) {
     if (!n) continue;
-    const key = reqMap[lt] || lt;
-    if (landCnt(S,p,key) < n) return false;
+    if (lt === 'wild') {
+      // wild = any land type; total own lands must be >= n
+      const total = Object.values(S.cells).filter(c=>c.owner===p&&c.type==='LAND').length;
+      if (total < n) return false;
+    } else {
+      const key = reqMap[lt] || lt;
+      if (landCnt(S,p,key) < n) return false;
+    }
   }
   return true;
 }
@@ -4328,6 +4337,34 @@ function doPlay(S, p, id, q, r, s) {
     return u.id;
   }
 
+  // ── STRUCTURE ──────────────────────────────────────────
+  if (isStructureCard(cd)) {
+    // Structures are placed on board as permanent units (no ATK, have HP)
+    // They fire onTurnStart each Production step and onGift when activated
+    const suid = `u${S.uid++}`;
+    const strU = {
+      id: suid, own: p, cid: id,
+      q, r, s,
+      hp: cd.hp, maxHp: cd.hp, atk: 0,
+      bew: 0, rei: 0,
+      kw: new Set(cd.kw),
+      moved: true, atked: true,   // structures never move or attack
+      summonSick: true,
+      noHarvest: true,
+      atkBuff: 0, hpBuff: 0,
+      protHit: false, pendingDash: 0,
+      swallowedUnit: null, swallowedBy: null,
+      onGift:      cd.onGift      || null,
+      onCombat:    null,
+      onDeath:     cd.onDeath     || null,
+      onTurnStart: cd.onTurnStart || null,
+    };
+    S.units[suid] = strU;
+    lg(S, p, `🏛 ${cd.name} erected`);
+    if (strU.onGift) doGift(S, p, strU);
+    return suid;
+  }
+
   // ── INSTANT / EVENT ────────────────────────────────────
   switch(id) {
     case 'campfire': {
@@ -4438,6 +4475,19 @@ function doPlay(S, p, id, q, r, s) {
       for(let i=0;i<2;i++){const pos=Math.floor(Math.random()*pl.deck.length);pl.deck.splice(pos,0,'treasure_map');}
       deal(S,p,1);
       lg(S,p,'Message in a Bottle: 2 Treasure Maps eingemischt + 1 Karte');
+      break;
+    }
+    case 'famine': {
+      // AoE 1 damage to ALL creatures (bypasses Divine — it's area of effect)
+      const snapshot = Object.values(S.units).filter(u => u.q !== null).map(u => u.id);
+      let cnt = 0;
+      snapshot.forEach(uid => {
+        const tu = S.units[uid]; if (!tu) return;
+        applyDmg(S, tu, 1, null, /*isAoE=*/true);
+        if (tu.hp <= 0) resolveDeath(S, uid);
+        cnt++;
+      });
+      lg(S, p, `💀 Famine: 1 damage to all ${cnt} creatures`);
       break;
     }
     case 'seek_shelter': {
@@ -4589,8 +4639,9 @@ function doCleanup(S) {
 // ── Keyword display config ─────────────────────────────────
 // Normalise card types: Faeria uses lowercase ('creature','event'),
 // legacy engine uses uppercase ('UNIT','INSTANT','LAND')
-function isUnitCard(cd)    { return cd.type === 'UNIT'    || cd.type === 'creature';  }
-function isInstantCard(cd) { return cd.type === 'INSTANT' || cd.type === 'event' || cd.type === 'structure'; }
+function isUnitCard(cd)     { return cd.type === 'UNIT'     || cd.type === 'creature';  }
+function isStructureCard(cd){ return cd.type === 'structure'; }
+function isInstantCard(cd)  { return cd.type === 'INSTANT'  || cd.type === 'event'; }
 function isLandCard(cd)    { return cd.type === 'LAND'; }
 const KW_STYLE = {
   'flying':      { label:'✦ Flying',      bg:'#0d2040', border:'#3a8acc', col:'#60aaee' },
@@ -4636,7 +4687,12 @@ const TARGET_ALL_UNITS  = new Set(['firebomb', 'gabrian_enchantment', 'falcon_di
 // Cards with unrestricted damage targets: any creature + any god (BASE)
 const TARGET_ALL        = new Set(['flame_burst', 'soul_drain']);
 // Cards with no board target (self-effect, play immediately)
-const TARGET_SELF  = new Set(['healing_song', 'wisdom', 'wild_growth', 'tidal_force']);
+const TARGET_SELF      = new Set(['healing_song', 'wisdom', 'wild_growth', 'tidal_force']);
+// Cards that need no target at all — auto-play on card click
+const TARGET_NO_TARGET = new Set([
+  'treasure_map','message_bottle','famine','seek_shelter',
+  'thyrian_expedition','crystal_spice','barter',
+]);
 // Cards that target empty adjacent land cells
 const TARGET_LAND  = new Set(['explore']);
 
@@ -5162,26 +5218,24 @@ class Engine {
 
     this.selCard = id;
 
-    if (isUnitCard(cd)) {
+    if (isUnitCard(cd) || isStructureCard(cd)) {
       this.pact = 'unit';
 
-      // Determine which land types this unit can spawn on
-      // Rules: req = {} → any own land/base (neutral creatures)
-      //        req = {F:1} → must spawn on forest land
-      //        req = {F:1, M:1} → can spawn on forest OR mountain (multi-color)
       const reqEntries = Object.entries(cd.req || {}).filter(([,v]) => v > 0);
-      const reqTypes   = reqEntries.map(([lt]) => {
-        // Normalize land type keys: lake→W, forest→F, mountain→M, desert→D
-        return { lake:'W', forest:'F', mountain:'M', desert:'D' }[lt] || lt;
-      });
+      // 'wild' requirement → can spawn on any own land type
+      const hasWild = reqEntries.some(([lt]) => lt === 'wild');
+      const typedReqs = reqEntries.filter(([lt]) => lt !== 'wild');
+      const reqTypes  = typedReqs.map(([lt]) =>
+        ({ lake:'W', forest:'F', mountain:'M', desert:'D' }[lt] || lt)
+      );
 
       this.vt = Object.entries(S.cells)
         .filter(([k, c]) => {
           if (c.owner !== this.ap) return false;
-          if (c.type !== 'LAND') return false;  // BASE excluded — no spawning on base
-          // No requirements → any own land
+          if (c.type !== 'LAND') return false;
+          // No typed requirements (or wild-only) → any own land
           if (reqTypes.length === 0) return true;
-          // LAND must match at least one of the required types
+          // Must match at least one typed land requirement
           return reqTypes.includes(c.landType);
         })
         .map(([k]) => pK(k))
@@ -5201,7 +5255,7 @@ class Engine {
 
       this.pact = 'inst';
 
-      if (TARGET_SELF.has(id)) {
+      if (TARGET_SELF.has(id) || TARGET_NO_TARGET.has(id)) {
         // No target needed → play immediately
         doPlay(S, this.ap, id, 0, 0, 0);
         if (this._checkDiscover()) return;
