@@ -1129,6 +1129,12 @@ const CARDS = (function() {
     name:'Guardian', color:'neutral', type:'creature',
     cost:0, req:{}, kw:kw('taunt'), atk:5, hp:5, rarity:'common', text:'Taunt.',
   });
+  // Token spawned by Bloated Toad — goes to opponent when Toad dies
+  add({ id:'frog_token', set:'core', treasure:false,
+    name:'Frog', color:'blue', type:'creature', subtype:'Frog',
+    cost:0, req:{}, kw:kw('jump'), atk:2, hp:2, rarity:'common',
+    text:'Jump. (Can move 1 or 2 tiles, jumping over obstacles.)',
+  });
 
   // ── NORMAL GAGANA CARDS ──────────────────────────────────
 
@@ -2949,18 +2955,19 @@ const CARDS = (function() {
     rarity:'legendary', treasure:false,
     text:'Flying. Charge 3. First time Shozen would kill in combat, swallow and gain control instead.',
     onCombat:(S, u, other) => {
-      // Only triggers once (flag reset each turn in doCleanup)
+      // Shozen swallows instead of killing — only if:
+      // 1. First time this turn  2. Shozen himself survives  3. Enemy would die
       if (u._shozenUsed) return;
       if (!other) return;
-      if (other.own === u.own) return;                     // only enemy
-      if (other.hp <= 0 && S.units[other.id]) {           // enemy would die
-        u._shozenUsed = true;
-        // Cancel the death — restore 1 hp so resolveDeath won't fire
-        other.hp = 1;
-        // Steal ownership and swallow
-        const ok = doSwallow(S, u.id, other.id, false);   // keepOwner=false → Shozen controls on release
-        if (ok) lg(S, u.own, `👹 Shozen devours ${cardData(other.cid)?.name} — it will serve you!`);
-      }
+      if (other.own === u.own) return;      // only enemies
+      if (u.hp <= 0) return;                // Shozen dies too → no swallow
+      if (other.hp > 0) return;             // enemy survives → no swallow
+      if (!S.units[other.id]) return;       // already removed
+      u._shozenUsed = true;
+      // Cancel the enemy's death — restore 1 hp so resolveDeath won't fire
+      other.hp = 1;
+      const ok = doSwallow(S, u.id, other.id, false); // keepOwner=false → Shozen's team controls on release
+      if (ok) lg(S, u.own, `👹 Shozen devours ${cardData(other.cid)?.name||other.id} — it will serve you!`);
     }
   });
   add({ id:'imperial_outpost', set:'dlc', name:'Imperial Outpost', color:'neutral', type:'structure', subtype:null,
@@ -4015,23 +4022,22 @@ function doAtk(S, attackerId, targetType, targetId) {
 
     lg(S, a.own, `→ ${dName}: ${Math.max(0,d.hp)} HP | ${aName}: ${Math.max(0,a.hp)} HP`);
 
-    const dDied = d.hp <= 0;
-    const aDied = a.hp <= 0;
-
-    // Seifer: gains stats of unit he kills (attacker or defender)
-    if (dDied && !aDied && a.cid==='seifer_blood_tyrant')
+    // Seifer: flag kills BEFORE onCombat fires
+    if (d.hp<=0 && a.hp>0 && a.cid==='seifer_blood_tyrant')
       S._seiferKill = {seiferId:attackerId, targetId};
-    if (aDied && !dDied && d.cid==='seifer_blood_tyrant')
+    if (a.hp<=0 && d.hp>0 && d.cid==='seifer_blood_tyrant')
       S._seiferKill = {seiferId:targetId, targetId:attackerId};
 
-    if (dDied && S.units[targetId])   resolveDeath(S, targetId);
-    if (aDied && S.units[attackerId]) { resolveDeath(S, attackerId); return; }
-
-    // Combat triggers: attacker always; defender if it can retaliate
+    // ── onCombat fires BEFORE resolveDeath so abilities can react to lethal hits ──
+    // e.g. Shozen swallows instead of killing — but only if Shozen himself survives.
     if (S.units[attackerId] && typeof a.onCombat==='function')
       try { a.onCombat(S, a, d); } catch(e) { console.warn('onCombat atk',e); }
     if (S.units[targetId] && defRetaliates && typeof d.onCombat==='function')
       try { d.onCombat(S, d, a); } catch(e) { console.warn('onCombat def',e); }
+
+    // ── Resolve deaths after onCombat (abilities may have modified hp) ──
+    if (d.hp <= 0 && S.units[targetId])   resolveDeath(S, targetId);
+    if (a.hp <= 0 && S.units[attackerId]) { resolveDeath(S, attackerId); return; }
 
   } else {
     // Attack enemy base
@@ -4175,27 +4181,29 @@ function doPlay(S, p, id, q, r, s) {
     lg(S, p, `✦ ${cd.name} beschworen`);
     harvestMana(S, p); // harvest if spawned adjacent to well
 
-    // Bloated Toad: enters with an enemy 2/2 Frog swallowed
+    // Bloated Toad: enters with an enemy 2/2 Frog (Jump) swallowed
     if (id === 'bloated_toad') {
-      const opp = p === 'A' ? 'B' : 'A';
+      const opp    = p === 'A' ? 'B' : 'A';
+      const frogCd = cardData('frog_token');                   // in CARDS — has kw('jump')
       const frogId = `u${S.uid++}`;
       const frog = {
         id: frogId, own: opp, cid: 'frog_token',
         q: null, r: null, s: null,
-        hp: 2, maxHp: 2, atk: 2,
+        hp: frogCd?.hp ?? 2, maxHp: frogCd?.hp ?? 2, atk: frogCd?.atk ?? 2,
         bew: 1, rei: 1,
-        kw: new Set(),
+        kw: frogCd ? new Set(frogCd.kw) : new Set(['jump']),  // Jump keyword
         moved: false, atked: false,
         summonSick: true,
         noHarvest: false,
         atkBuff: 0, hpBuff: 0,
         protHit: false, pendingDash: 0,
         swallowedUnit: null, swallowedBy: null,
-        onGift: null, onCombat: null, onDeath: null, onTurnStart: null,
+        onGift: frogCd?.onGift||null, onCombat: frogCd?.onCombat||null,
+        onDeath: frogCd?.onDeath||null, onTurnStart: frogCd?.onTurnStart||null,
       };
       S.units[frogId] = frog;
-      doSwallow(S, u.id, frogId, true); // frog returns to opponent on release
-      lg(S, p, `🐸 Bloated Toad enters with a 2/2 Frog swallowed (opponent's)`);
+      doSwallow(S, u.id, frogId, true);  // keepOwner=true: returns to opponent when Toad dies
+      lg(S, p, `🐸 Bloated Toad enters with a 2/2 Frog (Jump) swallowed — opponent gains it when Toad dies`);
     }
 
     // Trigger Gift if card has one
