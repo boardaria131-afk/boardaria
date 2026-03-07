@@ -1495,6 +1495,10 @@ const CARDS = (function() {
     cost:3, req:{lake:2}, kw:kw(), atk:1, hp:1,
     rarity:'common', treasure:false,
     text:'Choose one: Gain +2/+2. Or draw 2 cards.',
+    onGift:(S,p,unit,choice) => {
+      if (choice==='buff') { buffUnit(unit,2,2); lg(S,p,'🕵 Lore Thief: +2/+2'); }
+      else if (choice==='draw') { deal(S,p,2); lg(S,p,'🕵 Lore Thief: Draw 2'); }
+    }
   });
   add({ id:'gabrian_enchantress', set:'dlc', name:'Gabrian Enchantress', color:'blue', type:'creature', subtype:null,
     cost:4, req:{lake:2}, kw:kw(), atk:2, hp:5,
@@ -2773,6 +2777,20 @@ const CARDS = (function() {
     cost:5, req:{}, kw:kw(), atk:1, hp:1,
     rarity:'epic', treasure:false,
     text:'Choose one: Add a free Safeguard or free Punishment to hand.',
+    onGift:(S,p,unit,choice) => {
+      const pl = S.players[p];
+      if (choice==='safeguard' && pl.hand.length<HAND_MAX) {
+        pl.hand.push({id:'safeguard',buff:{atk:0,hp:0}});
+        if(!S._permZeroCost)S._permZeroCost=new Set();
+        S._permZeroCost.add('safeguard');
+        lg(S,p,'⚖ Royal Judge: Free Safeguard added to hand');
+      } else if (choice==='punishment' && pl.hand.length<HAND_MAX) {
+        pl.hand.push({id:'punishment',buff:{atk:0,hp:0}});
+        if(!S._permZeroCost)S._permZeroCost=new Set();
+        S._permZeroCost.add('punishment');
+        lg(S,p,'⚖ Royal Judge: Free Punishment added to hand');
+      }
+    }
   });
   add({ id:'imperial_drain', set:'dlc', name:'Imperial Drain', color:'neutral', type:'structure', subtype:null,
     cost:1, req:{}, kw:kw(), atk:null, hp:2,
@@ -2938,6 +2956,7 @@ const CARDS = (function() {
     cost:4, req:{lake:1, forest:1, wild:1}, kw:kw(), atk:3, hp:3,
     rarity:'rare', treasure:false,
     text:'Choose one twice: +2/+0, +0/+2, Jump, or Taunt.',
+    // picks applied by UI (_octopusApply) after both choices made
   });
   add({ id:'sky_anemone', set:'dlc', name:'Sky Anemone', color:'neutral', type:'structure', subtype:null,
     cost:0, req:{lake:1, forest:1}, kw:kw('flying', 'taunt'), atk:null, hp:3,
@@ -3273,6 +3292,7 @@ const CARDS = (function() {
     rarity:'rare', treasure:true,
     text:'Choose one: Destroy 2 unoccupied lands. Or destroy a creature ≤5 Attack. Or gain 7 Life.',
   });
+  // wheel_of_chaos choices handled in doPlay via choice param and _wheelOfChaosTarget()
   add({ id:'auroras_teapot', set:'dlc', name:'Aurora\'s Teapot', color:'neutral', type:'event', subtype:null,
     cost:5, req:{}, kw:kw(), atk:null, hp:null,
     rarity:'rare', treasure:true,
@@ -3293,6 +3313,7 @@ const CARDS = (function() {
     rarity:'rare', treasure:true,
     text:'Choose one: Deal 3 damage. Or deal 3 damage to everything.',
   });
+  // flame_burst_ruby 'aoe' choice in doPlay; 'target' handled via _flameBurstRubyTarget()
   add({ id:'crystalis', set:'dlc', name:'Crystalis', color:'neutral', type:'structure', subtype:null,
     cost:0, req:{}, kw:kw(), atk:null, hp:6,
     rarity:'rare', treasure:true,
@@ -4262,7 +4283,7 @@ function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
 // ══════════════════════════════════════════════════════════
 //  CARD PLAY
 // ══════════════════════════════════════════════════════════
-function doPlay(S, p, id, q, r, s) {
+function doPlay(S, p, id, q, r, s, p_choice) {
   const cd = cardData(id);
   const pl = S.players[p];
   if (!canPlay(S,p,id)) return false;
@@ -4332,8 +4353,13 @@ function doPlay(S, p, id, q, r, s) {
       lg(S, p, `🐸 Bloated Toad enters with a 2/2 Frog (Jump) swallowed — opponent gains it when Toad dies`);
     }
 
-    // Trigger Gift if card has one
-    if (u.onGift) doGift(S, p, u);
+    // Trigger Gift if card has one (pass pending choice for Choose One cards)
+    if (u.onGift) {
+      const choice = S._pendingChoice || null;
+      S._pendingChoice = null;
+      if (choice) u.onGift(S, p, u, choice);
+      else doGift(S, p, u);
+    }
     return u.id;
   }
 
@@ -4477,6 +4503,35 @@ function doPlay(S, p, id, q, r, s) {
       lg(S,p,'Message in a Bottle: 2 Treasure Maps eingemischt + 1 Karte');
       break;
     }
+    case 'lore_thief_effect': {
+      // Called after creature is placed when choice is set (handled via onGift)
+      break;
+    }
+    case 'wheel_of_chaos': {
+      if (p_choice === 'lands') {
+        // Destroy 2 random unoccupied (no unit) enemy lands
+        const opp=p==='A'?'B':'A';
+        const lands=Object.entries(S.cells)
+          .filter(([k,c])=>c.type==='LAND'&&c.owner===opp&&!Object.values(S.units).some(u=>cK(u.q,u.r)===k))
+          .map(([k])=>k).sort(()=>Math.random()-.5).slice(0,2);
+        lands.forEach(k=>{S.cells[k]={type:'EMPTY'};});
+        lg(S,p,`🎡 Wheel: ${lands.length} empty enemy land(s) destroyed`);
+      } else if (p_choice === 'life') {
+        S.players[p].hp=Math.min(BASE_HP,S.players[p].hp+7);
+        lg(S,p,'🎡 Wheel: +7 Life');
+      }
+      // 'destroy creature' is handled in _wheelOfChaosTarget via inst targeting
+      break;
+    }
+    case 'flame_burst_ruby': {
+      if (p_choice === 'aoe') {
+        // 3 damage to all creatures
+        const snap=Object.values(S.units).filter(u=>u.q!==null).map(u=>u.id);
+        snap.forEach(uid=>{const u=S.units[uid];if(!u)return;applyDmg(S,u,3,null,true);if(u.hp<=0)resolveDeath(S,uid);});
+        lg(S,p,'💎 Flame Burst Ruby: 3 AoE damage');
+      }
+      break;
+    }
     case 'famine': {
       // AoE 1 damage to ALL creatures (bypasses Divine — it's area of effect)
       const snapshot = Object.values(S.units).filter(u => u.q !== null).map(u => u.id);
@@ -4603,7 +4658,8 @@ function doCleanup(S) {
   clearTempBuffs(S);
   Object.values(S.units).forEach(u=>{
     u.moved=false; u.atked=false; u.summonSick=false;
-    if (u._shozenUsed) u._shozenUsed = false; // reset once-per-turn swallow
+    if (u._shozenUsed)  u._shozenUsed  = false;
+    if (u._activated)   u._activated   = false; // reset Activate once-per-turn
   });
   // Reset per-turn discounts
   if(S._handDiscount)S._handDiscount[S.ap]=0;
@@ -4692,6 +4748,7 @@ const TARGET_SELF      = new Set(['healing_song', 'wisdom', 'wild_growth', 'tida
 const TARGET_NO_TARGET = new Set([
   'treasure_map','message_bottle','famine','seek_shelter',
   'thyrian_expedition','crystal_spice','barter',
+  'lore_thief','royal_judge','shifting_octopus','wheel_of_chaos','flame_burst_ruby',
 ]);
 // Cards that target empty adjacent land cells
 const TARGET_LAND  = new Set(['explore']);
@@ -5255,6 +5312,87 @@ class Engine {
 
       this.pact = 'inst';
 
+      // ── Choose One cards: show modal, then doPlay with choice embedded ──
+      if (id === 'lore_thief') {
+        this._chooseOnePending = {p:this.ap, id, cost:cardData(id).cost};
+        this._chooseOne('LORE THIEF', [
+          { icon:'⚔', label:'+2/+2', fn: () => {
+            S._pendingChoice = 'buff';
+            // Lore Thief is a creature — need target cell; enter unit placement mode
+            const reqTypes = [];
+            this.vt = Object.entries(S.cells)
+              .filter(([k,c]) => c.owner===this.ap && c.type==='LAND')
+              .map(([k]) => pK(k))
+              .filter(([q,r,s]) => !unitAt(S,q,r,s));
+            this.pact = 'unit';
+            this._render();
+          }},
+          { icon:'🃏', label:'Draw 2 Cards', fn: () => {
+            S._pendingChoice = 'draw';
+            this.vt = Object.entries(S.cells)
+              .filter(([k,c]) => c.owner===this.ap && c.type==='LAND')
+              .map(([k]) => pK(k))
+              .filter(([q,r,s]) => !unitAt(S,q,r,s));
+            this.pact = 'unit';
+            this._render();
+          }},
+        ]); return;
+      }
+      if (id === 'royal_judge') {
+        this._chooseOnePending = {p:this.ap, id, cost:cardData(id).cost};
+        this._chooseOne('ROYAL JUDGE', [
+          { icon:'🛡', label:'Free Safeguard', fn: () => {
+            S._pendingChoice = 'safeguard';
+            this.vt = Object.entries(S.cells)
+              .filter(([k,c]) => c.owner===this.ap && c.type==='LAND')
+              .map(([k]) => pK(k))
+              .filter(([q,r,s]) => !unitAt(S,q,r,s));
+            this.pact = 'unit'; this._render();
+          }},
+          { icon:'⚖', label:'Free Punishment', fn: () => {
+            S._pendingChoice = 'punishment';
+            this.vt = Object.entries(S.cells)
+              .filter(([k,c]) => c.owner===this.ap && c.type==='LAND')
+              .map(([k]) => pK(k))
+              .filter(([q,r,s]) => !unitAt(S,q,r,s));
+            this.pact = 'unit'; this._render();
+          }},
+        ]); return;
+      }
+      if (id === 'shifting_octopus') {
+        // Show first choice, then second; apply after creature is placed
+        this._octopusPicks = [];
+        this._octopusUnit = null;
+        this._chooseOnePending = {p:this.ap, id, cost:cardData(id).cost};
+        this._chooseOne('SHIFTING OCTOPUS (Pick 1 of 2)', [
+          { icon:'⚔', label:'+2/+0', fn: () => { this._octopusPicks.push('atk');  this._octopusPick2(); } },
+          { icon:'🛡', label:'+0/+2', fn: () => { this._octopusPicks.push('hp');   this._octopusPick2(); } },
+          { icon:'🐸', label:'Jump',  fn: () => { this._octopusPicks.push('jump'); this._octopusPick2(); } },
+          { icon:'🛡', label:'Taunt', fn: () => { this._octopusPicks.push('taunt'); this._octopusPick2(); } },
+        ]); return;
+      }
+      if (id === 'wheel_of_chaos') {
+        this._chooseOnePending = {p:this.ap, id, cost:cardData(id).cost};
+        this._chooseOne('WHEEL OF CHAOS', [
+          { icon:'🌋', label:'Destroy 2 empty lands', fn: () => { doPlay(S,this.ap,id,0,0,0,'lands'); if(this._checkDiscover())return; this._render(); } },
+          { icon:'💀', label:'Destroy creature ≤5 Atk', fn: () => {
+            // Need to pick a target
+            this._wheelOfChaosTarget();
+          }},
+          { icon:'❤', label:'Gain 7 Life', fn: () => { doPlay(S,this.ap,id,0,0,0,'life'); if(this._checkDiscover())return; this._render(); } },
+        ]); return;
+      }
+      if (id === 'flame_burst_ruby') {
+        this._chooseOnePending = {p:this.ap, id, cost:cardData(id).cost};
+        this._chooseOne('FLAME BURST RUBY', [
+          { icon:'🎯', label:'Deal 3 to one target', fn: () => {
+            // Need to pick a target
+            this._flameBurstRubyTarget();
+          }},
+          { icon:'💥', label:'Deal 3 to everything', fn: () => { doPlay(S,this.ap,id,0,0,0,'aoe'); if(this._checkDiscover())return; this._render(); } },
+        ]); return;
+      }
+
       if (TARGET_SELF.has(id) || TARGET_NO_TARGET.has(id)) {
         // No target needed → play immediately
         doPlay(S, this.ap, id, 0, 0, 0);
@@ -5356,6 +5494,31 @@ class Engine {
       this._showUD(u);
       this._render();
       return;
+    }
+
+    // ── ACTIVATE: Structures fire their Gift once per turn ──────────────
+    const cd2 = cardData(u.cid);
+    if (isStructureCard(cd2)) {
+      // Structures can Activate (use Gift) once per turn — even same turn as played
+      // They never move or attack — clicking them just activates if available
+      if (!u._activated && u.onGift) {
+        u._activated = true;
+        doGift(S, this.ap, u);
+        // If there's a pendingGift, enter gift targeting mode
+        if (u.pendingGift) {
+          this.selUnit = uid;
+          this.selUnitFn(uid);
+          return;
+        }
+        this._clr(); this._render();
+        return;
+      } else {
+        // Already activated this turn — just show stats
+        lg(S, this.ap, `🏛 ${cd2.name} — already activated this turn`);
+        this.pact = null; this.vt = [];
+        this._showUD(u); this._render();
+        return;
+      }
     }
 
     // ── Decide initial mode OR toggle if already selected ──
@@ -5506,7 +5669,19 @@ class Engine {
       }
 
       if (this.pact === 'inst') {
-        doPlay(S, this.ap, this.selCard, q, r, s);
+        if (this.selCard === '_wheel_destroy') {
+          const tu = unitAt(S,q,r,s);
+          if (tu && tu.own!==(this.ap==='A'?'B':'A')) { this._render(); return; }
+          if (tu && (tu.atk||0)<=5) { lg(S,this.ap,`🎡 Wheel: ${cardData(tu.cid)?.name||tu.id} destroyed`); resolveDeath(S,tu.id); }
+        } else if (this.selCard === '_ruby_target') {
+          const tu = unitAt(S,q,r,s);
+          const opp=this.ap==='A'?'B':'A';
+          const [bq,br,bs]=opp==='A'?BASE_A:BASE_B;
+          if (tu && !isDivine(tu)) { applyDmg(S,tu,3,null); if(tu.hp<=0)resolveDeath(S,tu.id); lg(S,this.ap,`💎 Flame Burst Ruby: 3 to ${cardData(tu.cid)?.name||tu.id}`); }
+          else if (q===bq&&r===br&&s===bs) { S.players[opp].hp-=3; if(S.players[opp].hp<=0)S.winner=this.ap; lg(S,this.ap,'💎 Flame Burst Ruby: 3 to base'); }
+        } else {
+          doPlay(S, this.ap, this.selCard, q, r, s);
+        }
         this._clr();
         if (this._checkDiscover()) return;
       }
@@ -5548,6 +5723,17 @@ class Engine {
           if (u.kw.has('ranged')) u.atked = true;
           harvestMana(S, this.ap); // grant mana for newly controlled wells
           lg(S, this.ap, `${cardData(u.cid)?.name || u.id} bewegt`);
+          // ── CORRUPT: fires once when creature first moves to enemy land ──
+          if (u.kw.has('corrupt') && !u._corrupted) {
+            const destCell = S.cells[cK(q,r)];
+            if (destCell && destCell.type==='LAND' && destCell.owner && destCell.owner !== this.ap) {
+              u._corrupted = true;
+              if (typeof u.onCombat === 'function') {
+                try { u.onCombat(S, u, null); } catch(e) { console.warn('Corrupt trigger',e); }
+              }
+              lg(S, this.ap, `⚡ Corrupt: ${cardData(u.cid)?.name||u.id} triggers on enemy land`);
+            }
+          }
           // Auto-switch to attack if targets available (non-ranged only)
           if (!u.kw.has('ranged')) {
             const atks = validAtks(S, this.selUnit);
@@ -5592,6 +5778,137 @@ class Engine {
     // Fall-through: select unit
     const u = unitAt(S, q, r, s);
     if (u) this.selUnitFn(u.id);
+  }
+
+
+  // ── Shifting Octopus second pick ────────────────────────
+  _octopusPick2() {
+    this._chooseOne('SHIFTING OCTOPUS (Pick 2 of 2)', [
+      { icon:'⚔', label:'+2/+0', fn: () => { this._octopusPicks.push('atk');  this._octopusApply(); } },
+      { icon:'🛡', label:'+0/+2', fn: () => { this._octopusPicks.push('hp');   this._octopusApply(); } },
+      { icon:'🐸', label:'Jump',  fn: () => { this._octopusPicks.push('jump'); this._octopusApply(); } },
+      { icon:'🛡', label:'Taunt', fn: () => { this._octopusPicks.push('taunt'); this._octopusApply(); } },
+    ]);
+  }
+
+  _octopusApply() {
+    const S = this.S;
+    // Find the Shifting Octopus unit (most recently placed)
+    const unit = Object.values(S.units).find(u=>u.own===this.ap && u.cid==='shifting_octopus');
+    if (!unit) return;
+    const picks = this._octopusPicks || [];
+    picks.forEach(pick => {
+      if (pick==='atk')  { buffUnit(unit,2,0); lg(S,this.ap,'🐙 Octopus: +2/+0'); }
+      if (pick==='hp')   { buffUnit(unit,0,2); lg(S,this.ap,'🐙 Octopus: +0/+2'); }
+      if (pick==='jump') { unit.kw.add('jump'); lg(S,this.ap,'🐙 Octopus: Jump'); }
+      if (pick==='taunt'){ unit.kw.add('taunt'); lg(S,this.ap,'🐙 Octopus: Taunt'); }
+    });
+    this._octopusPicks = [];
+    this._chooseOnePending = null;
+    if(this._checkDiscover())return;
+    this._clr(); this._render();
+  }
+
+  // ── Wheel of Chaos — destroy creature ≤5 Atk ───────────
+  _wheelOfChaosTarget() {
+    const S = this.S;
+    // Remove card from hand, pay cost, then pick target
+    const pl = S.players[this.ap];
+    const idx = handIdxOf(pl.hand, 'wheel_of_chaos');
+    if (idx !== -1) pl.hand.splice(idx,1);
+    const cd = cardData('wheel_of_chaos');
+    pl.mana -= Math.max(0, cd.cost);
+    // Choose target: enemy creature with ATK ≤ 5
+    const opp = this.ap==='A'?'B':'A';
+    this.pact = 'inst';
+    this.selCard = '_wheel_destroy';
+    this.vt = Object.values(S.units)
+      .filter(u=>u.own===opp && u.q!==null && (u.atk||0)<=5)
+      .map(u=>[u.q,u.r,u.s]);
+    pl.grave.push('wheel_of_chaos');
+    lg(S, this.ap, '🎡 Wheel: Choose creature ≤5 ATK to destroy');
+    this._clr(); this._render();
+  }
+
+  // ── Flame Burst Ruby — single target 3 damage ──────────
+  _flameBurstRubyTarget() {
+    const S = this.S;
+    const pl = S.players[this.ap];
+    const idx = handIdxOf(pl.hand, 'flame_burst_ruby');
+    if (idx !== -1) pl.hand.splice(idx,1);
+    const cd = cardData('flame_burst_ruby');
+    pl.mana -= Math.max(0, cd.cost);
+    const opp = this.ap==='A'?'B':'A';
+    const [bq,br,bs] = opp==='A'?BASE_A:BASE_B;
+    this.pact = 'inst';
+    this.selCard = '_ruby_target';
+    this.vt = [
+      ...Object.values(S.units).filter(u=>u.q!==null && !isDivine(u)).map(u=>[u.q,u.r,u.s]),
+      [bq,br,bs],
+    ];
+    pl.grave.push('flame_burst_ruby');
+    lg(S, this.ap, '💎 Flame Burst Ruby: Choose target (3 damage)');
+    this._clr(); this._render();
+  }
+
+
+  // ── Generic "Choose One" modal ─────────────────────────
+  // options: [ { label, icon, fn } ]
+  _chooseOne(title, options) {
+    const existing = document.getElementById('choose-one-modal');
+    if (existing) existing.remove();
+    const modal = document.createElement('div');
+    modal.id = 'choose-one-modal';
+    modal.style.cssText = `position:fixed;inset:0;z-index:950;display:flex;
+      align-items:center;justify-content:center;background:rgba(0,0,0,.75)`;
+    const btns = options.map((o,i) =>
+      `<button onclick="G._chooseOnePick(${i})"
+        style="padding:10px 16px;font-size:.65rem;margin:4px;min-width:120px">
+        ${o.icon||''} ${o.label}
+      </button>`
+    ).join('');
+    modal.innerHTML = `
+      <div style="background:#0e1520;border:2px solid #c8a84b;border-radius:10px;
+           padding:24px 32px;text-align:center;font-family:'Cinzel',serif;max-width:360px">
+        <div style="color:#c8a84b;font-size:.8rem;letter-spacing:2px;margin-bottom:14px">
+          ${title}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px">
+          ${btns}
+        </div>
+        <div style="margin-top:12px">
+          <button onclick="G._chooseOneCancel()"
+            style="font-size:.55rem;opacity:.5;background:transparent;border:1px solid #555;
+                   color:#999;padding:4px 10px">✕ Abbrechen</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    this._chooseOneOptions = options;
+    this._render();
+  }
+
+  _chooseOnePick(idx) {
+    const modal = document.getElementById('choose-one-modal');
+    if (modal) modal.remove();
+    const opt = this._chooseOneOptions?.[idx];
+    if (opt?.fn) opt.fn();
+    this._chooseOneOptions = null;
+    this._clr(); this._render();
+    if (this.S.winner) this._win();
+  }
+
+  _chooseOneCancel() {
+    const modal = document.getElementById('choose-one-modal');
+    if (modal) modal.remove();
+    this._chooseOneOptions = null;
+    // Refund cost and return card to hand
+    if (this._chooseOnePending) {
+      const {p, id, cost} = this._chooseOnePending;
+      this.S.players[p].mana += cost;
+      this.S.players[p].hand.unshift({id, buff:{atk:0,hp:0}});
+      this._chooseOnePending = null;
+    }
+    this._clr(); this._render();
   }
 
   // ── Shifting Tide: modal choice ────────────────────────
