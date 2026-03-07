@@ -1213,8 +1213,6 @@ const CARDS = (function() {
     name:'Airbot', color:'neutral', type:'creature', subtype:'Mecha',
     cost:2, req:{mountain:1}, kw:kw('flying','dash:2'), atk:2, hp:2, rarity:'epic',
     text:'Flying. Dash 2.',
-    colors:['red','yellow'],         // split-color card rendering
-    reqAny:[{mountain:1},{desert:1}], // placeable on Mountain OR Desert land
   });
   add({ id:'celeste', set:'gagana',
     name:'Celeste, Crystal Dragon', color:'neutral', type:'creature',
@@ -1848,6 +1846,7 @@ const CARDS = (function() {
     cost:4, req:{forest:1}, kw:kw('taunt'), atk:2, hp:4,
     rarity:'common', treasure:false,
     text:'Taunt. Gift: Create a forest.',
+    onGift:(S,p,unit) => { unit.pendingGift={type:'create_forest'}; lg(S,p,'Wood Elemental Gift: Wähle ein leeres Feld für einen Wald'); },
   });
   add({ id:'everbloom_wisp', set:'dlc', name:'Everbloom Wisp', color:'green', type:'creature', subtype:null,
     cost:4, req:{forest:2}, kw:kw(), atk:1, hp:2,
@@ -2115,6 +2114,7 @@ const CARDS = (function() {
     cost:4, req:{lake:1}, kw:kw(), atk:5, hp:2,
     rarity:'common', treasure:false,
     text:'Gift: Create a mountain.',
+    onGift:(S,p,unit) => { unit.pendingGift={type:'create_mountain'}; lg(S,p,'Fire Elemental Gift: Wähle ein leeres Feld für einen Berg'); },
   });
   add({ id:'blood_singer', set:'dlc', name:'Blood Singer', color:'red', type:'creature', subtype:null,
     cost:3, req:{lake:2}, kw:kw(), atk:2, hp:4,
@@ -2433,6 +2433,7 @@ const CARDS = (function() {
     cost:4, req:{desert:1}, kw:kw('flying'), atk:4, hp:2,
     rarity:'common', treasure:false,
     text:'Flying. Gift: Create a desert.',
+    onGift:(S,p,unit) => { unit.pendingGift={type:'create_desert'}; lg(S,p,'Air Elemental Gift: Wähle ein leeres Feld für eine Wüste'); },
   });
   add({ id:'sunsilk_faerie', set:'dlc', name:'Sunsilk Faerie', color:'yellow', type:'creature', subtype:null,
     cost:2, req:{desert:2}, kw:kw('flying'), atk:1, hp:1,
@@ -4437,6 +4438,30 @@ function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
     return false;
   }
 
+  if (gift.type==='create_forest') {
+    const k=cK(targetQ,targetR), c=S.cells[k];
+    if(c&&c.type==='EMPTY'){
+      S.cells[k]={type:'LAND',owner:p,landType:'F'};
+      // Everbloom Wisp: +1/+1 whenever a forest is created
+      Object.values(S.units).filter(u=>u.own===p&&u.cid==='everbloom_wisp')
+        .forEach(u=>{buffUnit(u,1,1);lg(S,p,'Everbloom Wisp: +1/+1');});
+      lg(S,p,'✦ Wald erschaffen');return true;
+    }
+    return false;
+  }
+
+  if (gift.type==='create_mountain') {
+    const k=cK(targetQ,targetR), c=S.cells[k];
+    if(c&&c.type==='EMPTY'){S.cells[k]={type:'LAND',owner:p,landType:'M'};lg(S,p,'✦ Berg erschaffen');return true;}
+    return false;
+  }
+
+  if (gift.type==='create_desert') {
+    const k=cK(targetQ,targetR), c=S.cells[k];
+    if(c&&c.type==='EMPTY'){S.cells[k]={type:'LAND',owner:p,landType:'D'};lg(S,p,'✦ Wüste erschaffen');return true;}
+    return false;
+  }
+
   if (gift.type==='set_6_6') {
     const tu=unitAt(S,targetQ,targetR,targetS);
     if(tu&&tu.own===p&&tu.id!==unit.id){tu.atk=6;tu.hp=6;tu.maxHp=6;lg(S,p,`✦ Aurora: ${cardData(tu.cid)?.name} → 6/6`);return true;}
@@ -5503,24 +5528,21 @@ class Engine {
     if (isUnitCard(cd) || isStructureCard(cd)) {
       this.pact = 'unit';
 
-      const LT_MAP = { lake:'W', forest:'F', mountain:'M', desert:'D' };
       const reqEntries = Object.entries(cd.req || {}).filter(([,v]) => v > 0);
-      const hasWild    = reqEntries.some(([lt]) => lt === 'wild');
-      const typedReqs  = reqEntries.filter(([lt]) => lt !== 'wild');
-      const reqTypes   = typedReqs.map(([lt]) => LT_MAP[lt] || lt);
-
-      // reqAny: card can be placed on ANY land type listed in any of the alternatives
-      // e.g. reqAny:[{mountain:1},{desert:1}] → Mountain OR Desert is fine
-      const reqAnyTypes = cd.reqAny
-        ? [...new Set(cd.reqAny.flatMap(alt => Object.keys(alt).filter(lt=>lt!=='wild').map(lt=>LT_MAP[lt]||lt)))]
-        : null;
+      // 'wild' requirement → can spawn on any own land type
+      const hasWild = reqEntries.some(([lt]) => lt === 'wild');
+      const typedReqs = reqEntries.filter(([lt]) => lt !== 'wild');
+      const reqTypes  = typedReqs.map(([lt]) =>
+        ({ lake:'W', forest:'F', mountain:'M', desert:'D' }[lt] || lt)
+      );
 
       this.vt = Object.entries(S.cells)
         .filter(([k, c]) => {
           if (c.owner !== this.ap) return false;
           if (c.type !== 'LAND') return false;
-          if (reqAnyTypes)          return reqAnyTypes.includes(c.landType); // multi-color OR
-          if (reqTypes.length === 0) return true;                            // no typed req
+          // No typed requirements (or wild-only) → any own land
+          if (reqTypes.length === 0) return true;
+          // Must match at least one typed land requirement
           return reqTypes.includes(c.landType);
         })
         .map(([k]) => pK(k))
@@ -5699,8 +5721,11 @@ class Engine {
       } else if (u.pendingGift.type === 'give_taunt') {
         // Own units — Divine units can't be targeted even by own abilities
         this.vt = Object.values(S.units).filter(t=>t.own===this.ap && !isDivine(t)).map(t=>[t.q,t.r,t.s]);
-      } else if (u.pendingGift.type === 'create_lake') {
-        // Adjacent to own territory (like normal land placement)
+      } else if (u.pendingGift.type === 'create_lake' ||
+                 u.pendingGift.type === 'create_forest' ||
+                 u.pendingGift.type === 'create_mountain' ||
+                 u.pendingGift.type === 'create_desert') {
+        // Adjacent to own territory — only empty cells
         this.vt = adjPlace(S, this.ap)
           .filter(([aq,ar]) => { const c=S.cells[cK(aq,ar)]; return c && c.type==='EMPTY'; });
       } else if (u.pendingGift.type === 'swallow_friendly') {
@@ -6600,8 +6625,10 @@ class Engine {
       const id = window._devPlaceCardId;
       if (!id || !CARDS[id]) return;
       window._devPlaceMode = true;
-      // Hide modal so board cells are clickable — cell click will restore it on error
-      overlay.style.display = 'none';
+      hint.textContent = '👆 Jetzt ein Land-Feld auf dem Board anklicken.';
+      hint.style.color = '#55ffaa';
+      // Visually indicate mode
+      btnBoard.textContent = '⌛ Warte auf Klick…';
     };
 
     // ── Cancel ───────────────────────────────────────────────────────────────
@@ -6626,47 +6653,30 @@ class Engine {
 
     const k    = cK(q, r);
     const cell = S.cells[k];
-    const overlay = document.getElementById('dev-place-modal');
 
-    // Invalid cell → re-show modal with error message
     if (!cell || cell.type !== 'LAND') {
-      window._devPlaceMode = false;
-      if (overlay) {
-        overlay.style.display = '';
-        const h = document.getElementById('dev-place-hint');
-        const b = document.getElementById('dev-place-board');
-        if (h) { h.textContent = '⚠ Bitte ein Land-Feld anklicken!'; h.style.color='#ffaa44'; }
-        if (b) b.textContent = '🗺 Aufs Board';
-      }
+      const hint = document.getElementById('dev-place-hint');
+      if (hint) { hint.textContent = '⚠ Bitte ein Land-Feld anklicken!'; hint.style.color='#ffaa44'; }
       return;
     }
     if (unitAt(S, q, r, s)) {
-      window._devPlaceMode = false;
-      if (overlay) {
-        overlay.style.display = '';
-        const h = document.getElementById('dev-place-hint');
-        const b = document.getElementById('dev-place-board');
-        if (h) { h.textContent = '⚠ Feld bereits belegt!'; h.style.color='#ffaa44'; }
-        if (b) b.textContent = '🗺 Aufs Board';
-      }
+      const hint = document.getElementById('dev-place-hint');
+      if (hint) { hint.textContent = '⚠ Feld bereits belegt!'; hint.style.color='#ffaa44'; }
       return;
     }
 
-    // Success → place unit, close modal, show toast
     const unit = mkUnit(S, own, id, q, r, s);
     if (!unit) return;
     unit.summonSick = false;
     S.units[unit.id] = unit;
     const cd = CARDS[id];
-    lg(S, own, `DEV: ${cd.name} platziert (${own})`);
+    lg(S, own, `🧬 DEV: ${cd.name} platziert für ${own} @ [${q},${r}]`);
     window._devPlaceMode = false;
-    if (overlay) overlay.remove();
 
-    const toast = document.createElement('div');
-    toast.textContent = `\u2713 ${cd.name} platziert (${own})`;
-    toast.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:99999;background:#0a2018;border:1px solid #1a6a3a;color:#88ffaa;padding:8px 20px;border-radius:6px;font-size:.7rem;font-family:sans-serif;pointer-events:none;box-shadow:0 2px 14px #000c;';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2400);
+    const hint  = document.getElementById('dev-place-hint');
+    const btnB  = document.getElementById('dev-place-board');
+    if (hint) { hint.textContent = `✓ ${cd.name} platziert! Weitere Karte wählen oder Abbrechen.`; hint.style.color='#88ffaa'; }
+    if (btnB) btnB.textContent = '🗺 Aufs Board';
     this._render();
   }
 
@@ -6761,7 +6771,7 @@ class Engine {
       }
     } else {
       const hasFlying = u.kw.has('flying');
-      // Straight-line dash
+      // Straight-line dash — flying creatures can dash over/onto ocean tiles
       HEX_DIRS.forEach(([dq,dr,ds]) => {
         let cq=u.q, cr=u.r, cs=u.s;
         for (let step=1; step<=n; step++) {
@@ -6769,13 +6779,17 @@ class Engine {
           if (!inB(cq,cr,cs)) break;
           const k = cK(cq,cr);
           const c = S.cells[k];
-          if (!c || c.type==='BASE') break;        // board edge or base = stop
-          if (unitAt(S,cq,cr,cs)) break;           // occupied = stop
+          // Flying: can cross empty ocean cells (continue past them)
           if (hasFlying) {
-            // Flying: land on LAND or ocean (EMPTY); skip WELL cells
-            if (c.type !== 'WELL') result.set(k,[cq,cr,cs]);
+            if (!c) break;
+            if (c.type==='BASE') break;
+            if (unitAt(S,cq,cr,cs)) break;
+            // Empty ocean = passable for flying, but NOT a valid destination (unless last step)
+            if (c.type==='EMPTY') continue; // fly over
+            result.set(k,[cq,cr,cs]);
           } else {
-            if (c.type==='EMPTY' || c.type==='WELL') break;  // non-flying can't cross ocean
+            if (!c || c.type==='EMPTY' || c.type==='WELL' || c.type==='BASE') break;
+            if (unitAt(S,cq,cr,cs)) break;
             result.set(k,[cq,cr,cs]);
           }
         }
@@ -6959,8 +6973,13 @@ class Engine {
       else if (this.pact === 'gift') {
         const gu = this.selUnit ? S.units[this.selUnit] : null;
         const pgType = gu?.pendingGift?.type;
-        const landMsg = { create_lake:'🌊 Wasser erschaffen — leeres Feld anklicken', create_forest:'🌲 Wald erschaffen — leeres Feld anklicken', create_mountain:'🌋 Berg erschaffen — leeres Feld anklicken', create_desert:'⛰ Wüste erschaffen — leeres Feld anklicken' };
-        hint.textContent = landMsg[pgType] || '✦ Gift: Klicke ein Ziel';
+        const landHints = {
+          create_lake:    '🌊 See erschaffen — leeres Feld anklicken',
+          create_forest:  '🌲 Wald erschaffen — leeres Feld anklicken',
+          create_mountain:'🌋 Berg erschaffen — leeres Feld anklicken',
+          create_desert:  '⛰ Wüste erschaffen — leeres Feld anklicken',
+        };
+        hint.textContent = landHints[pgType] || '✦ Gift: Klicke ein Ziel';
       }
       else if (this.pact === 'dash')   hint.textContent = '💨 Dash: Wähle ein Zielfeld (oder Abbrechen)';
       else if (free)                   hint.textContent = 'Wähle eine Karte oder Einheit — oder beende deinen Zug';
@@ -7000,20 +7019,7 @@ class Engine {
 
       // Color accent based on card color (Faeria) or type (legacy)
       const colorMap = { blue:'#1a3a5a', green:'#1a3a1a', red:'#3a1a1a', yellow:'#3a2a0a', neutral:'#1a2030' };
-      const borderMap = { blue:'#2a6aaa', green:'#2a8a2a', red:'#aa2222', yellow:'#aa7a10', neutral:'#3a4a60' };
-
-      // Split-color cards (e.g. Airbot) get a diagonal gradient background + border
-      let accent, borderExtra = '';
-      if (cd.colors && cd.colors.length >= 2) {
-        const bg1 = colorMap[cd.colors[0]] || '#1a2030';
-        const bg2 = colorMap[cd.colors[1]] || '#1a2030';
-        const b1  = borderMap[cd.colors[0]] || '#3a4a60';
-        const b2  = borderMap[cd.colors[1]] || '#3a4a60';
-        accent = `linear-gradient(135deg, ${bg1} 50%, ${bg2} 50%)`;
-        borderExtra = `border-image:linear-gradient(135deg,${b1} 50%,${b2} 50%) 1;`;
-      } else {
-        accent = colorMap[cd.color] || (isUnitCard(cd)?'#1a2030':'#0d1018');
-      }
+      const accent = colorMap[cd.color] || (isUnitCard(cd)?'#1a2030':'#0d1018');
 
       // Stats row
       const atk = cd.atk;
@@ -7027,7 +7033,7 @@ class Engine {
 
       const d = document.createElement('div');
       d.className = `hc ${ok?'':'np'} ${isSel?'sel':''}`;
-      d.style.cssText = `background:${accent};${borderExtra}border-color:${isSel?'#c8a84b':'#252d40'}`;
+      d.style.cssText = `background:${accent};border-color:${isSel?'#c8a84b':'#252d40'}`;
 
       d.innerHTML = `
         <div class="ch">
@@ -7167,7 +7173,7 @@ class Engine {
         if      (cd.type==='WELL') { fill='#0d1018'; stroke='#2a3545'; sw='1.5'; } // dezent sichtbar
         else if (cd.type==='BASE') { fill=cd.owner==='A'?'#1e0808':'#08081e'; stroke=cd.owner==='A'?'#882222':'#224488'; sw='2'; }
         else if (cd.type==='LAND') { fill=LF[cd.landType]||'#1e2530'; stroke=LS[cd.landType]||'#3a4a60'; }
-        else                        { fill='#070f1c'; stroke='#0e1e32'; }  // ocean: dark blue tint
+        else                        { fill='#0e1520'; stroke='#1a2535'; }
         // Well flash override: brief gold glow during mana animation
         if (cd.type==='WELL' && cd._flash) { fill='#2a2010'; stroke='#c8a83a'; sw='2'; }
       }
