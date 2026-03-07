@@ -596,10 +596,7 @@ svg#board { display: block; overflow: visible; }
       <button class="ab pr" id="btn-next"   onclick="G.endTurn()">End Turn ▶</button>
       <button class="ab dn" id="btn-cancel" onclick="G.cancelSel()">✕ Cancel</button>
       <button class="ab"    id="btn-rnd"       onclick="G.devRandomize()" style="background:rgba(80,40,120,.35);border-color:#6a3a9a;color:#bb88ff;display:none">🎲 Randomize</button>
-      <button class="ab"    id="btn-addmana"   onclick="G.devAddMana()"   style="background:rgba(40,80,40,.35);border-color:#3a6a3a;color:#88cc88;display:none">+5 Mana</button>
-      <button class="ab"    id="btn-drawall"   onclick="G.devDrawAll()"   style="background:rgba(40,60,80,.35);border-color:#3a5a7a;color:#88aacc;display:none">+3 Cards</button>
-      <button class="ab"    id="btn-addcard"   onclick="G.devAddCard()"   style="background:rgba(80,60,20,.35);border-color:#8a6a1a;color:#ccaa44;display:none">🃏 Get Card</button>
-      <button class="ab"    id="btn-addland"   onclick="G.devAddLand()"   style="background:rgba(20,60,60,.35);border-color:#1a7a7a;color:#44cccc;display:none">🏔 Place Land</button>
+      <button class="ab"    id="btn-placecreature" onclick="G.devPlaceCreature()" style="background:rgba(20,60,90,.35);border-color:#1a6aaa;color:#55ccff;display:none">🧬 Place Card</button>
       <button class="ab"    id="btn-skipround" onclick="G.devSkipRound()" style="background:rgba(60,10,80,.35);border-color:#8a1acc;color:#dd88ff;display:none">⏭ Skip Round</button>
       <div id="action-hint" style="font-size:.6rem;color:var(--gold);letter-spacing:1px;margin-top:6px;min-height:1em;font-family:'Cinzel',serif;text-align:center"></div>
     </div>
@@ -5799,9 +5796,9 @@ class Engine {
     const S   = this.S;
     const isV = this.vt.some(([a,b,c]) => a===q&&b===r&&c===s);
 
-    // DEV: Land placement mode intercepts all cell clicks
-    if (window._devLandMode) {
-      this._devPlaceLand(q, r, s);
+    // DEV: creature placement mode intercepts cell clicks
+    if (window._devPlaceMode) {
+      this._devPlaceCreatureCell(q, r, s);
       return;
     }
 
@@ -6244,7 +6241,7 @@ class Engine {
   _devInit() {
     if (!isDevMode()) return;
     // Show DEV buttons
-    ['btn-rnd','btn-addmana','btn-drawall','btn-addcard','btn-addland','btn-skipround'].forEach(id => {
+    ['btn-rnd','btn-placecreature','btn-skipround'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = '';
     });
@@ -6295,23 +6292,6 @@ class Engine {
     this._render();
   }
 
-  // +5 Mana for active player
-  devAddMana() {
-    if (!isDevMode()) return;
-    const S = this.S;
-    S.players[S.ap].mana += 5;
-    lg(S, S.ap, `🛠 DEV: +5 Mana → ${S.players[S.ap].mana}`);
-    this._render();
-  }
-
-  // Draw 3 cards for active player
-  devDrawAll() {
-    if (!isDevMode()) return;
-    const S = this.S;
-    deal(S, S.ap, 3);
-    lg(S, S.ap, `🛠 DEV: 3 cards drawn`);
-    this._render();
-  }
 
   // Skip full round for BOTH players and return to current player's FREE phase
   // Runs: CLEANUP(current) → full DRAW+MANA+FREE for opponent → CLEANUP(opponent) → DRAW+MANA for current player → FREE
@@ -6383,7 +6363,7 @@ class Engine {
     _devEnabled = !_devEnabled;
     const btn = document.getElementById('dev-toggle-btn');
     const lbl = document.getElementById('dev-label');
-    const devButtons = ['btn-rnd','btn-addmana','btn-drawall','btn-addcard','btn-addland','btn-skipround'];
+    const devButtons = ['btn-rnd','btn-placecreature','btn-skipround'];
     if (_devEnabled) {
       if (btn) { btn.textContent = 'ON';  btn.style.background='rgba(40,120,40,.5)'; btn.style.borderColor='#3a8a3a'; btn.style.color='#88ff88'; }
       if (lbl) lbl.style.opacity = '.7';
@@ -6486,72 +6466,6 @@ class Engine {
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   }
 
-  // ── DEV: Instantly place a special land on any empty cell ─────────────────
-  devAddLand() {
-    if (!isDevMode()) return;
-    const S = this.S;
-
-    const existing = document.getElementById('dev-land-modal');
-    if (existing) existing.remove();
-
-    const overlay = document.createElement('div');
-    overlay.id = 'dev-land-modal';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;';
-    overlay.innerHTML = `
-      <div style="background:#1a1228;border:1px solid #1a7a7a;border-radius:8px;padding:16px 20px;min-width:300px;color:#ddd;font-family:sans-serif;">
-        <div style="font-size:.75rem;color:#44cccc;margin-bottom:10px;font-weight:bold;">🏔 DEV — Place Special Land</div>
-        <div style="font-size:.65rem;color:#aaa;margin-bottom:8px;">Choose land type &amp; owner, then click any empty cell.</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-          ${[['F','🌲 Forest','#4aaa44'],['D','⛰ Desert','#cc9933'],['M','🌋 Mountain','#cc4422'],['W','🌊 Lake','#3a8acc'],['N','⬜ Prairie','#888888']].map(([t,label,col])=>
-            `<button data-lt="${t}" onclick="document.querySelectorAll('[data-lt]').forEach(b=>b.style.outline=''); this.style.outline='2px solid ${col}'; window._devLandType='${t}';"
-              style="padding:4px 10px;background:#0d0a15;border:1px solid ${col};color:${col};border-radius:4px;cursor:pointer;font-size:.65rem;">${label}</button>`
-          ).join('')}
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:12px;">
-          ${[['A','Player A'],['B','Player B']].map(([p,label])=>
-            `<button data-own="${p}" onclick="document.querySelectorAll('[data-own]').forEach(b=>b.style.outline=''); this.style.outline='2px solid #aaa'; window._devLandOwner='${p}';"
-              style="padding:4px 10px;background:#0d0a15;border:1px solid #444;color:#ccc;border-radius:4px;cursor:pointer;font-size:.65rem;">${label}</button>`
-          ).join('')}
-        </div>
-        <div id="dev-land-hint" style="font-size:.6rem;color:#44cccc;margin-bottom:8px;min-height:1em;"></div>
-        <div style="display:flex;gap:8px;justify-content:flex-end;">
-          <button onclick="document.getElementById('dev-land-modal').remove(); window._devLandMode=false;" style="padding:4px 12px;background:#1a2a2a;border:1px solid #1a6a6a;color:#aaa;border-radius:4px;cursor:pointer;font-size:.65rem;">Done</button>
-        </div>
-      </div>`;
-    document.body.appendChild(overlay);
-
-    // Default selections
-    window._devLandType  = 'F';
-    window._devLandOwner = S.ap;
-    window._devLandMode  = true;
-
-    // Pre-select first buttons
-    overlay.querySelectorAll('[data-lt="F"]')[0].style.outline = '2px solid #4aaa44';
-    overlay.querySelectorAll(`[data-own="${S.ap}"]`)[0].style.outline = '2px solid #aaa';
-
-    document.getElementById('dev-land-hint').textContent = 'Click any empty cell on the board.';
-
-    // Intercept hex clicks while mode active — handled in _onCellClick
-    // Modal stays open so player can keep placing until they click Fertig
-  }
-
-  // Called from _onCellClick if dev land mode active
-  _devPlaceLand(q, r, s) {
-    const S = this.S;
-    const k = cK(q, r);
-    const cell = S.cells[k];
-    if (!cell || (cell.type !== 'EMPTY' && cell.type !== 'OCEAN')) {
-      document.getElementById('dev-land-hint') && (document.getElementById('dev-land-hint').textContent = '⚠ Only empty/ocean cells!');
-      return;
-    }
-    const lt    = window._devLandType  || 'F';
-    const owner = window._devLandOwner || S.ap;
-    S.cells[k] = { type:'LAND', owner, landType:lt };
-    lg(S, S.ap, `🛠 DEV: ${lt} land for ${owner} @ [${q},${r}]`);
-    const hint = document.getElementById('dev-land-hint');
-    if (hint) hint.textContent = `✓ ${lt} land placed. Click more cells or close.`;
-    this._render();
-  }
 
   // Randomize: place ~6 lands + 3 creatures per player
   devRandomize() {
@@ -7133,8 +7047,7 @@ class Engine {
 
       // ── Invisible full-hex top-layer overlay (in targeting modes + devLandMode) ──
       // Placed last in group so it catches clicks over unit circles too
-      const targetingMode = window._devLandMode ||
-                            this.pact==='atk'||this.pact==='inst'||this.pact==='gift'||
+      const targetingMode =                             this.pact==='atk'||this.pact==='inst'||this.pact==='gift'||
                             this.pact==='move'||this.pact==='dash'||this.pact==='land'||
                             this.pact==='land_N'||this.pact==='shifting_land_pick'||
                             this.pact==='shifting_land_dest';
@@ -7143,7 +7056,7 @@ class Engine {
         hit.setAttribute('points', P);
         hit.setAttribute('fill', 'transparent');
         hit.setAttribute('stroke', 'none');
-        hit.style.cursor = (window._devLandMode || isV) ? 'crosshair' : 'default';
+        hit.style.cursor = (window._devPlaceMode || isV) ? 'crosshair' : 'default';
         hit.onclick = () => this.clickCell(q, r, s);
         g.appendChild(hit);
       }
@@ -7181,8 +7094,7 @@ class Engine {
       circ.onclick = e => {
         e.stopPropagation();
         const tm = this.pact;
-        if (window._devLandMode ||
-            tm==='atk'||tm==='inst'||tm==='gift'||tm==='dash'||
+        if (            tm==='atk'||tm==='inst'||tm==='gift'||tm==='dash'||
             tm==='shifting_land_pick'||tm==='shifting_land_dest') {
           this.clickCell(u.q, u.r, u.s);
         } else {
