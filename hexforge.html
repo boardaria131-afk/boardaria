@@ -1846,7 +1846,7 @@ const CARDS = (function() {
     cost:4, req:{forest:1}, kw:kw('taunt'), atk:2, hp:4,
     rarity:'common', treasure:false,
     text:'Taunt. Gift: Create a forest.',
-    onGift:(S,p,unit) => { unit.pendingGift={type:'create_forest'}; lg(S,p,'Wood Elemental Gift: Wähle ein leeres Feld für einen Wald'); },
+    onGift:(S,p,unit) => { unit.pendingGift={type:'create_forest'}; lg(S,p,'Wood Elemental: Wald erschaffen'); },
   });
   add({ id:'everbloom_wisp', set:'dlc', name:'Everbloom Wisp', color:'green', type:'creature', subtype:null,
     cost:4, req:{forest:2}, kw:kw(), atk:1, hp:2,
@@ -2114,7 +2114,7 @@ const CARDS = (function() {
     cost:4, req:{lake:1}, kw:kw(), atk:5, hp:2,
     rarity:'common', treasure:false,
     text:'Gift: Create a mountain.',
-    onGift:(S,p,unit) => { unit.pendingGift={type:'create_mountain'}; lg(S,p,'Fire Elemental Gift: Wähle ein leeres Feld für einen Berg'); },
+    onGift:(S,p,unit) => { unit.pendingGift={type:'create_mountain'}; lg(S,p,'Fire Elemental: Berg erschaffen'); },
   });
   add({ id:'blood_singer', set:'dlc', name:'Blood Singer', color:'red', type:'creature', subtype:null,
     cost:3, req:{lake:2}, kw:kw(), atk:2, hp:4,
@@ -2433,7 +2433,7 @@ const CARDS = (function() {
     cost:4, req:{desert:1}, kw:kw('flying'), atk:4, hp:2,
     rarity:'common', treasure:false,
     text:'Flying. Gift: Create a desert.',
-    onGift:(S,p,unit) => { unit.pendingGift={type:'create_desert'}; lg(S,p,'Air Elemental Gift: Wähle ein leeres Feld für eine Wüste'); },
+    onGift:(S,p,unit) => { unit.pendingGift={type:'create_desert'}; lg(S,p,'Air Elemental: Wüste erschaffen'); },
   });
   add({ id:'sunsilk_faerie', set:'dlc', name:'Sunsilk Faerie', color:'yellow', type:'creature', subtype:null,
     cost:2, req:{desert:2}, kw:kw('flying'), atk:1, hp:1,
@@ -4437,25 +4437,20 @@ function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
     if(c&&c.type==='EMPTY'){S.cells[k]={type:'LAND',owner:p,landType:'W'};lg(S,p,'✦ See erschaffen');return true;}
     return false;
   }
-
   if (gift.type==='create_forest') {
     const k=cK(targetQ,targetR), c=S.cells[k];
     if(c&&c.type==='EMPTY'){
       S.cells[k]={type:'LAND',owner:p,landType:'F'};
-      // Everbloom Wisp: +1/+1 whenever a forest is created
-      Object.values(S.units).filter(u=>u.own===p&&u.cid==='everbloom_wisp')
-        .forEach(u=>{buffUnit(u,1,1);lg(S,p,'Everbloom Wisp: +1/+1');});
+      Object.values(S.units).filter(u=>u.own===p&&u.cid==='everbloom_wisp').forEach(u=>{buffUnit(u,1,1);lg(S,p,'Everbloom Wisp +1/+1');});
       lg(S,p,'✦ Wald erschaffen');return true;
     }
     return false;
   }
-
   if (gift.type==='create_mountain') {
     const k=cK(targetQ,targetR), c=S.cells[k];
     if(c&&c.type==='EMPTY'){S.cells[k]={type:'LAND',owner:p,landType:'M'};lg(S,p,'✦ Berg erschaffen');return true;}
     return false;
   }
-
   if (gift.type==='create_desert') {
     const k=cK(targetQ,targetR), c=S.cells[k];
     if(c&&c.type==='EMPTY'){S.cells[k]={type:'LAND',owner:p,landType:'D'};lg(S,p,'✦ Wüste erschaffen');return true;}
@@ -5725,7 +5720,6 @@ class Engine {
                  u.pendingGift.type === 'create_forest' ||
                  u.pendingGift.type === 'create_mountain' ||
                  u.pendingGift.type === 'create_desert') {
-        // Adjacent to own territory — only empty cells
         this.vt = adjPlace(S, this.ap)
           .filter(([aq,ar]) => { const c=S.cells[cK(aq,ar)]; return c && c.type==='EMPTY'; });
       } else if (u.pendingGift.type === 'swallow_friendly') {
@@ -6625,10 +6619,7 @@ class Engine {
       const id = window._devPlaceCardId;
       if (!id || !CARDS[id]) return;
       window._devPlaceMode = true;
-      hint.textContent = '👆 Jetzt ein Land-Feld auf dem Board anklicken.';
-      hint.style.color = '#55ffaa';
-      // Visually indicate mode
-      btnBoard.textContent = '⌛ Warte auf Klick…';
+      overlay.style.display = 'none'; // hide modal → board is clickable
     };
 
     // ── Cancel ───────────────────────────────────────────────────────────────
@@ -6651,32 +6642,38 @@ class Engine {
     const own = window._devPlaceOwner || S.ap;
     if (!id || !CARDS[id]) return;
 
-    const k    = cK(q, r);
-    const cell = S.cells[k];
+    const k       = cK(q, r);
+    const cell    = S.cells[k];
+    const overlay = document.getElementById('dev-place-modal');
 
-    if (!cell || cell.type !== 'LAND') {
-      const hint = document.getElementById('dev-place-hint');
-      if (hint) { hint.textContent = '⚠ Bitte ein Land-Feld anklicken!'; hint.style.color='#ffaa44'; }
-      return;
-    }
-    if (unitAt(S, q, r, s)) {
-      const hint = document.getElementById('dev-place-hint');
-      if (hint) { hint.textContent = '⚠ Feld bereits belegt!'; hint.style.color='#ffaa44'; }
-      return;
-    }
+    const showErr = (msg) => {
+      window._devPlaceMode = false;
+      if (overlay) {
+        overlay.style.display = '';
+        const h = document.getElementById('dev-place-hint');
+        const b = document.getElementById('dev-place-board');
+        if (h) { h.textContent = msg; h.style.color = '#ffaa44'; }
+        if (b) b.textContent = '🗺 Aufs Board';
+      }
+    };
+
+    if (!cell || cell.type !== 'LAND') { showErr('⚠ Bitte ein Land-Feld anklicken!'); return; }
+    if (unitAt(S, q, r, s))            { showErr('⚠ Feld bereits belegt!');            return; }
 
     const unit = mkUnit(S, own, id, q, r, s);
     if (!unit) return;
     unit.summonSick = false;
     S.units[unit.id] = unit;
     const cd = CARDS[id];
-    lg(S, own, `🧬 DEV: ${cd.name} platziert für ${own} @ [${q},${r}]`);
+    lg(S, own, `DEV: ${cd.name} platziert (${own})`);
     window._devPlaceMode = false;
+    if (overlay) overlay.remove();
 
-    const hint  = document.getElementById('dev-place-hint');
-    const btnB  = document.getElementById('dev-place-board');
-    if (hint) { hint.textContent = `✓ ${cd.name} platziert! Weitere Karte wählen oder Abbrechen.`; hint.style.color='#88ffaa'; }
-    if (btnB) btnB.textContent = '🗺 Aufs Board';
+    const toast = document.createElement('div');
+    toast.textContent = '\u2713 ' + cd.name + ' platziert (' + own + ')';
+    toast.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:99999;background:#0a2018;border:1px solid #1a6a3a;color:#88ffaa;padding:8px 20px;border-radius:6px;font-size:.7rem;font-family:sans-serif;pointer-events:none;box-shadow:0 2px 14px #000c;';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2400);
     this._render();
   }
 
@@ -6973,13 +6970,8 @@ class Engine {
       else if (this.pact === 'gift') {
         const gu = this.selUnit ? S.units[this.selUnit] : null;
         const pgType = gu?.pendingGift?.type;
-        const landHints = {
-          create_lake:    '🌊 See erschaffen — leeres Feld anklicken',
-          create_forest:  '🌲 Wald erschaffen — leeres Feld anklicken',
-          create_mountain:'🌋 Berg erschaffen — leeres Feld anklicken',
-          create_desert:  '⛰ Wüste erschaffen — leeres Feld anklicken',
-        };
-        hint.textContent = landHints[pgType] || '✦ Gift: Klicke ein Ziel';
+        const lh = { create_lake:'🌊 See erschaffen — leeres Feld', create_forest:'🌲 Wald erschaffen — leeres Feld', create_mountain:'🌋 Berg erschaffen — leeres Feld', create_desert:'⛰ Wüste erschaffen — leeres Feld' };
+        hint.textContent = lh[pgType] || '✦ Gift: Klicke ein Ziel';
       }
       else if (this.pact === 'dash')   hint.textContent = '💨 Dash: Wähle ein Zielfeld (oder Abbrechen)';
       else if (free)                   hint.textContent = 'Wähle eine Karte oder Einheit — oder beende deinen Zug';
