@@ -1763,6 +1763,22 @@ const CARDS = (function() {
     cost:2, req:{forest:2}, kw:kw(), atk:1, hp:1,
     rarity:'common', treasure:false,
     text:'Last Words: Add a random green card to hand (costs 3 less).',
+    onDeath:(S,u) => {
+      const pool=Object.values(CARDS).filter(c=>{
+        const req=c.req||{};
+        const hasNonForest=Object.keys(req).some(k=>k!=='forest'&&k!=='wild'&&req[k]>0);
+        return c.color==='green'&&!c.treasure&&!hasNonForest;
+      });
+      if(!pool.length)return;
+      const pick=pool[Math.floor(Math.random()*pool.length)];
+      const pl=S.players[u.own];
+      if(pl.hand.length<HAND_MAX){
+        pl.hand.push({id:pick.id,buff:{atk:0,hp:0}});
+        if(!S._cardDiscount)S._cardDiscount={};
+        S._cardDiscount[pick.id]=(S._cardDiscount[pick.id]||0)+3;
+        lg(S,u.own,`🌸 Bloomsprite Last Words: ${pick.name} added (cost -3)`);
+      }
+    },
   });
   add({ id:'elderwood_hermit', set:'dlc', name:'Elderwood Hermit', color:'green', type:'creature', subtype:null,
     cost:3, req:{forest:1}, kw:kw(), atk:1, hp:1,
@@ -1894,12 +1910,17 @@ const CARDS = (function() {
     rarity:'epic', treasure:false,
     text:'Add a random green creature to hand. Give it +6/+6.',
   });
+  // Ruunin's Presence handled in doPlay (TARGET_NO_TARGET)
   add({ id:'ruunins_messenger', set:'dlc', name:'Ruunin\'s Messenger', color:'green', type:'creature', subtype:null,
     cost:5, req:{forest:1}, kw:kw('jump'), atk:3, hp:5,
     rarity:'epic', treasure:false,
     text:'Jump. Whenever this attacks a god, add a random green creature to hand (costs 2 less).',
     onAttackGod:(S,u) => {
-      const pool=Object.values(CARDS).filter(c=>c.type==='creature'&&c.color==='green'&&!c.treasure);
+      const pool=Object.values(CARDS).filter(c=>{
+        const req=c.req||{};
+        const hasNonForest=Object.keys(req).some(k=>k!=='forest'&&k!=='wild'&&(req[k]>0));
+        return c.type==='creature'&&c.color==='green'&&!c.treasure&&!hasNonForest;
+      });
       if(!pool.length)return;
       const pick=pool[Math.floor(Math.random()*pool.length)];
       const pl=S.players[u.own];
@@ -2276,6 +2297,17 @@ const CARDS = (function() {
     cost:5, req:{lake:1}, kw:kw(), atk:4, hp:5,
     rarity:'rare', treasure:false,
     text:'Whenever a friendly Yak is dealt damage, deal 1 damage to opponent.',
+    // Trigger is in applyDmg (watches for Yak subtype on owner's side)
+  });
+  add({ id:'sapphire_yak', set:'dlc', name:'Sapphire Yak', color:'blue', type:'creature', subtype:'Yak',
+    cost:5, req:{lake:2}, kw:kw('aquatic'), atk:3, hp:6,
+    rarity:'rare', treasure:false,
+    text:'Aquatic. Whenever a friendly Yak dies, draw a card.',
+    // onFriendlyYakDeath triggered via resolveDeath watch
+    onFriendlyYakDeath:(S,u,deadYak) => {
+      deal(S,u.own,1);
+      lg(S,u.own,`💠 Sapphire Yak: drew a card (${cardData(deadYak?.cid)?.name||'Yak'} died)`);
+    },
   });
   add({ id:'bursting_hippo', set:'dlc', name:'Bursting Hippo', color:'red', type:'creature', subtype:'Beast',
     cost:6, req:{lake:3}, kw:kw(), atk:5, hp:5,
@@ -2449,7 +2481,7 @@ const CARDS = (function() {
     text:'Charge 2. Whenever a friendly creature dies, drains its Attack.',
   });
   add({ id:'iona', set:'dlc', name:'Iona, Beloved by All', color:'yellow', type:'creature', subtype:null,
-    cost:2, req:{desert:2}, kw:kw('flying'), atk:2, hp:1,
+    cost:2, req:{desert:2}, kw:kw('flying', 'cant_be_attacked'), atk:2, hp:1,
     rarity:'legendary', treasure:false,
     text:'Flying. Can\'t be attacked.',
   });
@@ -3114,10 +3146,29 @@ const CARDS = (function() {
     rarity:'legendary', treasure:false,
     text:'Flying. Dash 3. Cost equals your Life. Gift: Gain 1 Life per card in hand.',
   });
+  add({ id:'yak_guard', set:'dlc', name:'Yak Guard', color:'neutral', type:'creature', subtype:'Yak',
+    cost:0, req:{}, kw:kw('taunt','flying'), atk:4, hp:4, rarity:'common',
+    text:'Taunt. Flying.',
+  });
   add({ id:'mother_of_all_yaks', set:'dlc', name:'Mother of All Yaks', color:'neutral', type:'creature', subtype:'Yak',
     cost:15, req:{}, kw:kw(), atk:5, hp:8,
     rarity:'legendary', treasure:false,
     text:'Gift: Summon two 4/4 Yak Guards with Taunt and Flying. Costs 1 less per friendly Yak that died.',
+    onGift:(S,p,unit) => {
+      const DIRS=[[1,-1,0],[-1,1,0],[1,0,-1],[-1,0,1],[0,1,-1],[0,-1,1]];
+      let spawned=0;
+      for(const [dq,dr,ds] of DIRS){
+        if(spawned>=2)break;
+        const nq=unit.q+dq,nr=unit.r+dr,ns=unit.s+ds;
+        if(!inB(nq,nr,ns))continue;
+        const k=cK(nq,nr),c=S.cells[k];
+        if(!c||c.type!=='LAND'||c.owner!==p)continue;
+        if(unitAt(S,nq,nr,ns))continue;
+        const tok=mkUnit(S,p,'yak_guard',nq,nr,ns);
+        if(tok){S.units[tok.id]=tok;tok.summonSick=false;spawned++;lg(S,p,'🐃 Mother: Yak Guard spawned');}
+      }
+      if(spawned<2)lg(S,p,`🐃 Mother: Only ${spawned}/2 Yak Guards fit`);
+    },
   });
   add({ id:'rakoan_champion', set:'dlc', name:'Rakoan Champion', color:'neutral', type:'creature', subtype:'Rakoan',
     cost:5, req:{wild:3}, kw:kw('dash:2'), atk:4, hp:4,
@@ -3479,9 +3530,10 @@ function mkUnit(S, p, cardId, q, r, s) {
     onCombat:             cd.onCombat             || null,
     onDeath:              cd.onDeath              || null,
     onTurnStart:          cd.onTurnStart          || null,
-    onAttack:             cd.onAttack             || null,  // "Whenever this attacks"
-    onAttackGod:          cd.onAttackGod          || null,  // "Whenever this attacks a god"
-    onFriendlyAttacksGod: cd.onFriendlyAttacksGod || null,  // "Whenever a friendly creature attacks a god" 
+    onAttack:              cd.onAttack              || null,  // "Whenever this attacks"
+    onAttackGod:           cd.onAttackGod           || null,  // "Whenever this attacks a god"
+    onFriendlyAttacksGod:  cd.onFriendlyAttacksGod  || null,  // "Whenever a friendly creature attacks a god"
+    onFriendlyYakDeath:    cd.onFriendlyYakDeath    || null,  // "Whenever a friendly Yak dies" 
   };
 
   // Apply Ruunin return buff (stat carry from previous death)
@@ -3575,6 +3627,23 @@ function applyDmg(S, target, amount, source, isAoE=false) {
   if (source?.kw?.has('deathtouch')) { target.hp=0; return amount; }
 
   target.hp -= amount;
+  // ── Ruby Yak: whenever a friendly Yak takes damage ────────
+  if (amount > 0) {
+    const yakOwner = target.own;
+    if (target.kw && (
+        (cardData(target.cid)?.subtype === 'Yak') ||
+        (target.cid && target.cid.toLowerCase().includes('yak'))
+    )) {
+      Object.values(S.units).forEach(watcher => {
+        if (watcher.own === yakOwner && watcher.cid === 'ruby_yak' && watcher.id !== target.id) {
+          const opp = yakOwner === 'A' ? 'B' : 'A';
+          S.players[opp].hp -= 1;
+          if (S.players[opp].hp <= 0) S.winner = yakOwner;
+          lg(S, yakOwner, `💎 Ruby Yak: 1 damage to opponent (${cardData(target.cid)?.name||target.cid} took damage)`);
+        }
+      });
+    }
+  }
   return amount;
 }
 
@@ -3706,12 +3775,20 @@ function doTransform(S, uid, targetCardId) {
   u.onAttack             = newCd.onAttack             || null;
   u.onAttackGod          = newCd.onAttackGod          || null;
   u.onFriendlyAttacksGod = newCd.onFriendlyAttacksGod || null;
+  u.onFriendlyYakDeath   = newCd.onFriendlyYakDeath   || null;
 
   // Do NOT reset moved/atked/summonSick — existing turn state is preserved
   // (A creature that already moved cannot attack after transforming)
 
   lg(S, u.own, `🔀 ${oldName} transformed into ${newName} (${u.atk}/${u.hp})`);
   return true;
+}
+
+// Helper: count Yak deaths per player
+function isYakUnit(u) {
+  if (!u) return false;
+  const cd = cardData(u.cid);
+  return cd?.subtype === 'Yak';
 }
 
 function resolveDeath(S, uid) {
@@ -3757,6 +3834,18 @@ function resolveDeath(S, uid) {
   });
 
   // Last Words
+  // Track Yak deaths for Mother of All Yaks cost reduction
+  if (isYakUnit(u)) {
+    if (!S._yakDeaths) S._yakDeaths = {A:0, B:0};
+    S._yakDeaths[u.own] = (S._yakDeaths[u.own] || 0) + 1;
+    lg(S, u.own, `🐃 Yak died — total ${u.own}: ${S._yakDeaths[u.own]} Yak death(s)`);
+    // Notify Sapphire Yak watchers
+    Object.values(S.units).forEach(watcher => {
+      if (watcher.own === u.own && typeof watcher.onFriendlyYakDeath === 'function')
+        try { watcher.onFriendlyYakDeath(S, watcher, u); } catch(e) {}
+    });
+  }
+
   if (typeof u.onDeath === 'function') {
     try { u.onDeath(S, u); } catch(e) { console.warn('onDeath', e); }
   }
@@ -3904,11 +3993,20 @@ function landCnt(S, p, lt) {
 function ctrlWells(S, p) {
   return WELLS.filter(([q,r,s])=>{ const c=S.cells[cK(q,r)]; return c&&c.ctrl===p; }).length;
 }
+function motherYakCost(S, p) {
+  const base = cardData('mother_of_all_yaks')?.cost || 15;
+  const deaths = S._yakDeaths?.[p] || 0;
+  return Math.max(0, base - deaths);
+}
+
 function canPlay(S, p, id) {
   const cd = cardData(id);
   if (!cd) return false;
   const isFree = S._permZeroCost?.has(id);
-  if (!isFree && S.players[p].mana < cd.cost) return false;
+  // Mother of All Yaks: cost reduced by number of friendly Yaks that died
+  const effectiveCost = (id === 'mother_of_all_yaks') ? motherYakCost(S, p)
+                      : isFree ? 0 : cd.cost;
+  if (!isFree && S.players[p].mana < effectiveCost) return false;
   const reqMap = { lake:'W', forest:'F', mountain:'M', desert:'D' };
   for (const [lt,n] of Object.entries(cd.req||{})) {
     if (!n) continue;
@@ -4179,7 +4277,9 @@ function validAtks(S, uid) {
         if (!c||c.type==='EMPTY') continue;
         const tu=unitAt(S,cq,cr,cs);
         if (tu) {
-          if (tu.own===enemy) result.push({type:'unit',id:tu.id,q:cq,r:cr,s:cs});
+          // Iona immunity: can't be ranged-targeted unless has Taunt
+          if (tu.own===enemy && (!tu.kw.has('cant_be_attacked') || tu.kw.has('taunt')))
+            result.push({type:'unit',id:tu.id,q:cq,r:cr,s:cs});
           break;
         }
         if (c.type==='BASE'&&c.owner===enemy) { result.push({type:'base',own:enemy,q:cq,r:cr,s:cs}); break; }
@@ -4194,8 +4294,11 @@ function validAtks(S, uid) {
   const adjTaunters = Object.values(S.units).filter(t=>
     t.own===enemy && t.kw.has('taunt') && cDist([u.q,u.r,u.s],[t.q,t.r,t.s])===1
   );
+  // Iona-style immunity: units with 'cant_be_attacked' can't be targeted by attacks
+  // UNLESS they have Taunt (taunt overrides the immunity)
+  const isAttackable = (t) => !t.kw.has('cant_be_attacked') || t.kw.has('taunt');
   const inRange = Object.values(S.units).filter(t=>
-    t.own===enemy && cDist([u.q,u.r,u.s],[t.q,t.r,t.s])<=u.rei
+    t.own===enemy && cDist([u.q,u.r,u.s],[t.q,t.r,t.s])<=u.rei && isAttackable(t)
   );
   const filtered = adjTaunters.length>0
     ? inRange.filter(t=>t.kw.has('taunt')&&cDist([u.q,u.r,u.s],[t.q,t.r,t.s])===1)
@@ -4394,7 +4497,12 @@ function doPlay(S, p, id, q, r, s, p_choice) {
   const isFree = S._permZeroCost?.has(id);
   const simulBonus = Object.values(S.units).some(u=>u.own===p&&u.cid==='simulacrum') ? 1 : 0;
   const discount   = (S._handDiscount?.[p]||0) + simulBonus;
-  const actualCost = isFree ? 0 : Math.max(0, cd.cost - discount);
+  let actualCost;
+  if (id === 'mother_of_all_yaks') {
+    actualCost = motherYakCost(S, p); // already accounts for Yak deaths
+  } else {
+    actualCost = isFree ? 0 : Math.max(0, cd.cost - discount);
+  }
   pl.mana -= actualCost;
 
   // Spirit of Rebirth hand buff → passed to mkUnit via state flag
@@ -4631,6 +4739,21 @@ function doPlay(S, p, id, q, r, s, p_choice) {
       }
       break;
     }
+    case 'ruunins_presence': {
+      const greenPool=Object.values(CARDS).filter(c=>{
+        const req=c.req||{};
+        const hasNonForest=Object.keys(req).some(k=>k!=='forest'&&k!=='wild'&&req[k]>0);
+        return c.type==='creature'&&c.color==='green'&&!c.treasure&&!hasNonForest;
+      });
+      if(greenPool.length>0){
+        const pick=greenPool[Math.floor(Math.random()*greenPool.length)];
+        if(pl.hand.length<HAND_MAX){
+          pl.hand.push({id:pick.id,buff:{atk:6,hp:6}});
+          lg(S,p,`🌿 Ruunin's Presence: ${pick.name} added with +6/+6`);
+        }
+      }
+      break;
+    }
     case 'famine': {
       // AoE 1 damage to ALL creatures (bypasses Divine — it's area of effect)
       const snapshot = Object.values(S.units).filter(u => u.q !== null).map(u => u.id);
@@ -4803,6 +4926,7 @@ function isLandCard(cd)    { return cd.type === 'LAND'; }
 const KW_STYLE = {
   'flying':      { label:'✦ Flying',      bg:'#0d2040', border:'#3a8acc', col:'#60aaee' },
   'jump':        { label:'↟ Jump',         bg:'#0d2040', border:'#3a8acc', col:'#60aaee' },
+  'cant_be_attacked': { label:'💛 Untargetable', bg:'#1a1a0a', border:'#c8a800', col:'#f0d040' },
   'aquatic':     { label:'⚓ Aquatic',     bg:'#0d1e3a', border:'#2a6aaa', col:'#4a9acc' },
   'ranged':      { label:'⊕ Ranged',      bg:'#2a1408', border:'#8a4a20', col:'#c07040' },
   'deathtouch':  { label:'☠ Deathtouch',  bg:'#1a0a1a', border:'#882288', col:'#cc44cc' },
@@ -4850,6 +4974,7 @@ const TARGET_NO_TARGET = new Set([
   'treasure_map','message_bottle','famine','seek_shelter',
   'thyrian_expedition','crystal_spice','barter',
   'lore_thief','royal_judge','shifting_octopus','wheel_of_chaos','flame_burst_ruby',
+  'ruunins_presence',
 ]);
 // Cards that target empty adjacent land cells
 const TARGET_LAND  = new Set(['explore']);
@@ -6777,7 +6902,11 @@ class Engine {
       d.innerHTML = `
         <div class="ch">
           <span class="cn">${cd.name}</span>
-          <span class="cc">${isFree ? '0◆✦' : (cd.cost>0?cd.cost+'◆':'')}</span>
+          <span class="cc">${isFree ? '0◆✦' : (
+            id==='mother_of_all_yaks'
+              ? (() => { const eff=motherYakCost(S,this.ap); const orig=cd.cost; return eff<orig?`<span style="text-decoration:line-through;opacity:.4">${orig}</span><span style="color:#ff9944">${eff}◆</span>`:eff+'◆'; })()
+              : (cd.cost>0?cd.cost+'◆':'')
+          )}</span>
         </div>
         <div class="cb" style="color:${cd.color?{blue:'#3a8acc',green:'#4a9e40',red:'#cc4444',yellow:'#d4982a',neutral:'#8a9ab0'}[cd.color]||'#4a5a72':'#4a5a72'}">
           ${cd.color||cd.type==='LAND'?'':cd.type}
