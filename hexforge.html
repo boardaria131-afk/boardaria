@@ -6595,10 +6595,8 @@ class Engine {
       const id = window._devPlaceCardId;
       if (!id || !CARDS[id]) return;
       window._devPlaceMode = true;
-      hint.textContent = '👆 Jetzt ein Land-Feld auf dem Board anklicken.';
-      hint.style.color = '#55ffaa';
-      // Visually indicate mode
-      btnBoard.textContent = '⌛ Warte auf Klick…';
+      // Hide modal so the board is fully clickable
+      overlay.style.display = 'none';
     };
 
     // ── Cancel ───────────────────────────────────────────────────────────────
@@ -6624,14 +6622,20 @@ class Engine {
     const k    = cK(q, r);
     const cell = S.cells[k];
 
+    const modal = document.getElementById('dev-place-modal');
     if (!cell || cell.type !== 'LAND') {
+      // Re-show modal with error
+      if (modal) modal.style.display = '';
       const hint = document.getElementById('dev-place-hint');
       if (hint) { hint.textContent = '⚠ Bitte ein Land-Feld anklicken!'; hint.style.color='#ffaa44'; }
+      window._devPlaceMode = false;
       return;
     }
     if (unitAt(S, q, r, s)) {
+      if (modal) modal.style.display = '';
       const hint = document.getElementById('dev-place-hint');
       if (hint) { hint.textContent = '⚠ Feld bereits belegt!'; hint.style.color='#ffaa44'; }
+      window._devPlaceMode = false;
       return;
     }
 
@@ -6640,13 +6644,16 @@ class Engine {
     unit.summonSick = false;
     S.units[unit.id] = unit;
     const cd = CARDS[id];
-    lg(S, own, `🧬 DEV: ${cd.name} platziert für ${own} @ [${q},${r}]`);
+    lg(S, own, `DEV: ${cd.name} platziert fuer ${own} @ [${q},${r}]`);
     window._devPlaceMode = false;
 
-    const hint  = document.getElementById('dev-place-hint');
-    const btnB  = document.getElementById('dev-place-board');
-    if (hint) { hint.textContent = `✓ ${cd.name} platziert! Weitere Karte wählen oder Abbrechen.`; hint.style.color='#88ffaa'; }
-    if (btnB) btnB.textContent = '🗺 Aufs Board';
+    // Close modal and show brief toast confirmation
+    if (modal) modal.remove();
+    const toast = document.createElement('div');
+    toast.textContent = `${cd.name} platziert (${own})`;
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;background:#0d2a1a;border:1px solid #1a6a3a;color:#88ffaa;padding:7px 18px;border-radius:6px;font-size:.7rem;font-family:sans-serif;pointer-events:none;box-shadow:0 2px 12px #000a;';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2200);
     this._render();
   }
 
