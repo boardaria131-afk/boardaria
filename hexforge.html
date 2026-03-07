@@ -1213,6 +1213,7 @@ const CARDS = (function() {
     name:'Airbot', color:'neutral', type:'creature', subtype:'Mecha',
     cost:2, req:{mountain:1}, kw:kw('flying','dash:2'), atk:2, hp:2, rarity:'epic',
     text:'Flying. Dash 2.',
+    colors:['red','yellow'],  // split-color indicator for rendering
   });
   add({ id:'celeste', set:'gagana',
     name:'Celeste, Crystal Dragon', color:'neutral', type:'creature',
@@ -1846,6 +1847,7 @@ const CARDS = (function() {
     cost:4, req:{forest:1}, kw:kw('taunt'), atk:2, hp:4,
     rarity:'common', treasure:false,
     text:'Taunt. Gift: Create a forest.',
+    onGift:(S,p,unit) => { unit.pendingGift={type:'create_forest'}; lg(S,p,'Wood Elemental Gift: Wähle ein leeres Feld für einen Wald'); },
   });
   add({ id:'everbloom_wisp', set:'dlc', name:'Everbloom Wisp', color:'green', type:'creature', subtype:null,
     cost:4, req:{forest:2}, kw:kw(), atk:1, hp:2,
@@ -2113,6 +2115,7 @@ const CARDS = (function() {
     cost:4, req:{lake:1}, kw:kw(), atk:5, hp:2,
     rarity:'common', treasure:false,
     text:'Gift: Create a mountain.',
+    onGift:(S,p,unit) => { unit.pendingGift={type:'create_mountain'}; lg(S,p,'Fire Elemental Gift: Wähle ein leeres Feld für einen Berg'); },
   });
   add({ id:'blood_singer', set:'dlc', name:'Blood Singer', color:'red', type:'creature', subtype:null,
     cost:3, req:{lake:2}, kw:kw(), atk:2, hp:4,
@@ -2391,6 +2394,22 @@ const CARDS = (function() {
     cost:2, req:{desert:3}, kw:kw(), atk:null, hp:3,
     rarity:'epic', treasure:false,
     text:'Activate: Deal 2 damage to yourself and add a Slaughtering Shadow to hand (costs 2).',
+    noSummonSick: true,   // ready immediately (no summon sickness)
+    onGift:(S,p,unit) => {
+      // Deal 2 damage to own god
+      S.players[p].hp -= 2;
+      if (S.players[p].hp <= 0) S.winner = p==='A'?'B':'A';
+      // Add Slaughtering Shadow to hand at cost 2
+      const pl = S.players[p];
+      if (pl.hand.length < HAND_MAX) {
+        pl.hand.push({ id:'slaughtering_shadow', buff:{atk:0,hp:0} });
+        if (!S._cardDiscount) S._cardDiscount = {};
+        // Slaughtering Shadow base cost might be >2; force effective cost to 2
+        const baseCost = cardData('slaughtering_shadow')?.cost || 3;
+        S._cardDiscount['slaughtering_shadow'] = Math.max(0, (S._cardDiscount['slaughtering_shadow']||0), baseCost - 2);
+      }
+      lg(S, p, `☀ Altar of Souls: -2 HP, Slaughtering Shadow added (cost 2)`);
+    },
   });
   add({ id:'khalims_skyguard', set:'dlc', name:'Khalim\'s Skyguard', color:'yellow', type:'creature', subtype:null,
     cost:4, req:{desert:2}, kw:kw('flying'), atk:4, hp:3,
@@ -2431,6 +2450,7 @@ const CARDS = (function() {
     cost:4, req:{desert:1}, kw:kw('flying'), atk:4, hp:2,
     rarity:'common', treasure:false,
     text:'Flying. Gift: Create a desert.',
+    onGift:(S,p,unit) => { unit.pendingGift={type:'create_desert'}; lg(S,p,'Air Elemental Gift: Wähle ein leeres Feld für eine Wüste'); },
   });
   add({ id:'sunsilk_faerie', set:'dlc', name:'Sunsilk Faerie', color:'yellow', type:'creature', subtype:null,
     cost:2, req:{desert:2}, kw:kw('flying'), atk:1, hp:1,
@@ -3515,7 +3535,7 @@ function mkUnit(S, p, cardId, q, r, s) {
     rei: 1,           // melee attack range always 1; charge = movement only
     kw,
     moved: false, atked: false,
-    summonSick: !kw.has('haste'),
+    summonSick: !kw.has('haste') && !cd.noSummonSick,
     noHarvest: !!cd.noHarvest,
     atkBuff: 0, hpBuff: 0,
     protHit: false,
@@ -3779,6 +3799,19 @@ function doTransform(S, uid, targetCardId) {
 
   lg(S, u.own, `🔀 ${oldName} transformed into ${newName} (${u.atk}/${u.hp})`);
   return true;
+}
+
+// Ancient Beastmaster: buff newly summoned creatures with 5+ HP
+function _checkBeastmaster(S, p, newUnit) {
+  if (!newUnit || newUnit.cid === 'ancient_beastmaster') return;
+  const bmCount = Object.values(S.units).filter(u =>
+    u.own === p && u.cid === 'ancient_beastmaster' && u.id !== newUnit.id && u.q !== null
+  ).length;
+  if (bmCount === 0) return;
+  if (newUnit.hp >= 5) {
+    buffUnit(newUnit, bmCount, bmCount);
+    lg(S, p, 'Beastmaster x' + bmCount + ': ' + (cardData(newUnit.cid) && cardData(newUnit.cid).name || '') + ' gets +' + bmCount + '/+' + bmCount);
+  }
 }
 
 // Helper: count Yak deaths per player
@@ -4434,6 +4467,24 @@ function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
     if(c&&c.type==='EMPTY'){S.cells[k]={type:'LAND',owner:p,landType:'W'};lg(S,p,'✦ See erschaffen');return true;}
     return false;
   }
+  if (gift.type==='create_desert') {
+    const k=cK(targetQ,targetR), c=S.cells[k];
+    if(c&&c.type==='EMPTY'){S.cells[k]={type:'LAND',owner:p,landType:'D'};lg(S,p,'✦ Wüste erschaffen');return true;}
+    return false;
+  }
+  if (gift.type==='create_forest') {
+    const k=cK(targetQ,targetR), c=S.cells[k];
+    if(c&&c.type==='EMPTY'){S.cells[k]={type:'LAND',owner:p,landType:'F'};
+      // Everbloom Wisp: gains +1/+1 whenever a forest is created
+      Object.values(S.units).filter(u=>u.own===p&&u.cid==='everbloom_wisp').forEach(u=>{buffUnit(u,1,1);lg(S,p,'Everbloom Wisp: +1/+1');});
+      lg(S,p,'✦ Wald erschaffen');return true;}
+    return false;
+  }
+  if (gift.type==='create_mountain') {
+    const k=cK(targetQ,targetR), c=S.cells[k];
+    if(c&&c.type==='EMPTY'){S.cells[k]={type:'LAND',owner:p,landType:'M'};lg(S,p,'✦ Berg erschaffen');return true;}
+    return false;
+  }
 
   if (gift.type==='set_6_6') {
     const tu=unitAt(S,targetQ,targetR,targetS);
@@ -4531,6 +4582,7 @@ function doPlay(S, p, id, q, r, s, p_choice) {
     S.units[u.id] = u;
     lg(S, p, `✦ ${cd.name} beschworen`);
     harvestMana(S, p); // harvest if spawned adjacent to well
+    _checkBeastmaster(S, p, u); // Ancient Beastmaster buff
 
     // Bloated Toad: enters with an enemy 2/2 Frog (Jump) swallowed
     if (id === 'bloated_toad') {
@@ -4765,9 +4817,9 @@ function doPlay(S, p, id, q, r, s, p_choice) {
       break;
     }
     case 'seek_shelter': {
-      const pool=Object.values(CARDS).filter(c=>c.type==='creature'&&c.kw.has('taunt')&&c.set==='core').sort(()=>Math.random()-.5).slice(0,3);
-      if(pool.length>0)S._discoverQueue.push({p,pool:pool.map(c=>c.id),onPick:'add_to_hand',label:'Seek Shelter: Creature with Taunt'});
-      else lg(S,p,'Seek Shelter: No Taunt creatures found');
+      const pool=Object.values(CARDS).filter(c=>c.type==='creature'&&c.kw.has('taunt')&&!c.treasure).sort(()=>Math.random()-.5).slice(0,3);
+      if(pool.length>0)S._discoverQueue.push({p,pool:pool.map(c=>c.id),onPick:'add_to_hand',label:'Seek Shelter: Kreatur mit Taunt'});
+      else lg(S,p,'Seek Shelter: Keine Taunt-Kreaturen gefunden');
       break;
     }
     case 'thyrian_expedition': {
@@ -5694,7 +5746,7 @@ class Engine {
       } else if (u.pendingGift.type === 'give_taunt') {
         // Own units — Divine units can't be targeted even by own abilities
         this.vt = Object.values(S.units).filter(t=>t.own===this.ap && !isDivine(t)).map(t=>[t.q,t.r,t.s]);
-      } else if (u.pendingGift.type === 'create_lake') {
+      } else if (u.pendingGift.type === 'create_lake' || u.pendingGift.type === 'create_desert' || u.pendingGift.type === 'create_forest' || u.pendingGift.type === 'create_mountain') {
         // Adjacent to own territory (like normal land placement)
         this.vt = adjPlace(S, this.ap)
           .filter(([aq,ar]) => { const c=S.cells[cK(aq,ar)]; return c && c.type==='EMPTY'; });
@@ -5713,6 +5765,22 @@ class Engine {
         this.vt = Object.values(S.units)
           .filter(t => t.id!==u.id && t.q!==null && !isDivine(t))
           .map(t=>[t.q,t.r,t.s]);
+      } else if (u.pendingGift.type === 'discover') {
+        // Discover: immediately build pool + push to discoverQueue, no board click needed
+        const pg = u.pendingGift;
+        u.pendingGift = null;
+        this._clr();
+        const filter = pg.filter || 'any';
+        let pool = Object.values(CARDS).filter(c => !c.treasure && c.id !== 'frog_token' && c.id !== 'mecha_token' && c.id !== 'yak_guard' && c.id !== 'angry_yak_token');
+        if (filter === 'beast')      pool = pool.filter(c => c.type==='creature' && c.subtype==='Beast');
+        else if (filter === 'cost5plus') pool = pool.filter(c => c.cost >= 5);
+        else if (filter === 'green') pool = pool.filter(c => c.color==='green');
+        pool = pool.sort(() => Math.random() - .5).slice(0, 3);
+        if (pool.length > 0) {
+          S._discoverQueue.push({ p:this.ap, pool:pool.map(c=>c.id), onPick:'add_to_hand', giveOthers:!!pg.giveOthers, label: cardData(u.cid)?.name || 'Discover' });
+          this._checkDiscover();
+        }
+        return;
       }
       this._showUD(u);
       this._render();
@@ -6595,8 +6663,10 @@ class Engine {
       const id = window._devPlaceCardId;
       if (!id || !CARDS[id]) return;
       window._devPlaceMode = true;
-      // Hide modal so the board is fully clickable
-      overlay.style.display = 'none';
+      hint.textContent = '👆 Jetzt ein Land-Feld auf dem Board anklicken.';
+      hint.style.color = '#55ffaa';
+      // Visually indicate mode
+      btnBoard.textContent = '⌛ Warte auf Klick…';
     };
 
     // ── Cancel ───────────────────────────────────────────────────────────────
@@ -6622,20 +6692,14 @@ class Engine {
     const k    = cK(q, r);
     const cell = S.cells[k];
 
-    const modal = document.getElementById('dev-place-modal');
     if (!cell || cell.type !== 'LAND') {
-      // Re-show modal with error
-      if (modal) modal.style.display = '';
       const hint = document.getElementById('dev-place-hint');
       if (hint) { hint.textContent = '⚠ Bitte ein Land-Feld anklicken!'; hint.style.color='#ffaa44'; }
-      window._devPlaceMode = false;
       return;
     }
     if (unitAt(S, q, r, s)) {
-      if (modal) modal.style.display = '';
       const hint = document.getElementById('dev-place-hint');
       if (hint) { hint.textContent = '⚠ Feld bereits belegt!'; hint.style.color='#ffaa44'; }
-      window._devPlaceMode = false;
       return;
     }
 
@@ -6644,16 +6708,13 @@ class Engine {
     unit.summonSick = false;
     S.units[unit.id] = unit;
     const cd = CARDS[id];
-    lg(S, own, `DEV: ${cd.name} platziert fuer ${own} @ [${q},${r}]`);
+    lg(S, own, `🧬 DEV: ${cd.name} platziert für ${own} @ [${q},${r}]`);
     window._devPlaceMode = false;
 
-    // Close modal and show brief toast confirmation
-    if (modal) modal.remove();
-    const toast = document.createElement('div');
-    toast.textContent = `${cd.name} platziert (${own})`;
-    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;background:#0d2a1a;border:1px solid #1a6a3a;color:#88ffaa;padding:7px 18px;border-radius:6px;font-size:.7rem;font-family:sans-serif;pointer-events:none;box-shadow:0 2px 12px #000a;';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2200);
+    const hint  = document.getElementById('dev-place-hint');
+    const btnB  = document.getElementById('dev-place-board');
+    if (hint) { hint.textContent = `✓ ${cd.name} platziert! Weitere Karte wählen oder Abbrechen.`; hint.style.color='#88ffaa'; }
+    if (btnB) btnB.textContent = '🗺 Aufs Board';
     this._render();
   }
 
@@ -6986,7 +7047,19 @@ class Engine {
 
       // Color accent based on card color (Faeria) or type (legacy)
       const colorMap = { blue:'#1a3a5a', green:'#1a3a1a', red:'#3a1a1a', yellow:'#3a2a0a', neutral:'#1a2030' };
-      const accent = colorMap[cd.color] || (isUnitCard(cd)?'#1a2030':'#0d1018');
+      const colorBorder = { blue:'#3a8acc', green:'#4aaa44', red:'#cc4444', yellow:'#d4982a', neutral:'#555a70' };
+      let accent, borderStyle = '';
+      if (cd.colors && cd.colors.length >= 2) {
+        // Split-color gradient background and border
+        const bg1 = colorMap[cd.colors[0]] || '#1a2030';
+        const bg2 = colorMap[cd.colors[1]] || '#1a2030';
+        const b1  = colorBorder[cd.colors[0]] || '#555';
+        const b2  = colorBorder[cd.colors[1]] || '#555';
+        accent = `linear-gradient(135deg, ${bg1} 50%, ${bg2} 50%)`;
+        borderStyle = `border-image: linear-gradient(135deg, ${b1} 50%, ${b2} 50%) 1;`;
+      } else {
+        accent = colorMap[cd.color] || (isUnitCard(cd)?'#1a2030':'#0d1018');
+      }
 
       // Stats row
       const atk = cd.atk;
@@ -7000,7 +7073,12 @@ class Engine {
 
       const d = document.createElement('div');
       d.className = `hc ${ok?'':'np'} ${isSel?'sel':''}`;
-      d.style.cssText = `background:${accent};border-color:${isSel?'#c8a84b':'#252d40'}`;
+      if (cd.colors) {
+        d.style.background = accent;
+        d.style.cssText = `background:${accent};${borderStyle}border-color:${isSel?'#c8a84b':'transparent'}`;
+      } else {
+        d.style.cssText = `background:${accent};border-color:${isSel?'#c8a84b':'#252d40'}`;
+      }
 
       d.innerHTML = `
         <div class="ch">
