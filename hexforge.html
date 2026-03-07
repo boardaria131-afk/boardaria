@@ -784,8 +784,8 @@ function allCells() {
 }
 
 // ── Land visuals ──────────────────────────────────────────
-const LF = { N:'#1c2820', F:'#0d3a10', D:'#3d2200', M:'#2a0808', W:'#061a38' };
-const LS = { N:'#4a7a50', F:'#28a030', D:'#d08010', M:'#cc2828', W:'#1a6acc' };
+const LF = { N:'#252525', F:'#0d3a10', D:'#3d2200', M:'#2a0808', W:'#061a38' };
+const LS = { N:'#777777', F:'#28a030', D:'#d08010', M:'#cc2828', W:'#1a6acc' };
 
 // ── Phase list ────────────────────────────────────────────
 const PHASES = ['DRAW','MANA','FREE','CLEANUP'];
@@ -1898,6 +1898,20 @@ const CARDS = (function() {
     cost:5, req:{forest:1}, kw:kw('jump'), atk:3, hp:5,
     rarity:'epic', treasure:false,
     text:'Jump. Whenever this attacks a god, add a random green creature to hand (costs 2 less).',
+    onAttackGod:(S,u) => {
+      const pool=Object.values(CARDS).filter(c=>c.type==='creature'&&c.color==='green'&&!c.treasure);
+      if(!pool.length)return;
+      const pick=pool[Math.floor(Math.random()*pool.length)];
+      const pl=S.players[u.own];
+      if(pl.hand.length<HAND_MAX){
+        pl.hand.push({id:pick.id,buff:{atk:0,hp:0}});
+        if(!S._permZeroCost)S._permZeroCost=new Set();
+        // Mark for cost -2 (we use _handDiscount extended)
+        if(!S._cardDiscount)S._cardDiscount={};
+        S._cardDiscount[pick.id]=(S._cardDiscount[pick.id]||0)+2;
+        lg(S,u.own,`🌿 Ruunin's Messenger: ${pick.name} added (cost -2)`);
+      }
+    },
   });
   add({ id:'wild_avenger', set:'dlc', name:'Wild Avenger', color:'green', type:'creature', subtype:null,
     cost:6, req:{forest:2}, kw:kw('taunt', 'dash:2'), atk:5, hp:5,
@@ -1913,6 +1927,10 @@ const CARDS = (function() {
     cost:5, req:{forest:2, wild:1}, kw:kw('jump'), atk:5, hp:6,
     rarity:'epic', treasure:false,
     text:'Jump. Can\'t harvest. Whenever this attacks a god, gain 5 Life.',
+    onAttackGod:(S,u) => {
+      S.players[u.own].hp=Math.min(BASE_HP,S.players[u.own].hp+5);
+      lg(S,u.own,`🌿 Feral Kodama: +5 Life → ${S.players[u.own].hp}`);
+    },
   });
   add({ id:'god_hunter', set:'dlc', name:'God Hunter', color:'green', type:'creature', subtype:null,
     cost:3, req:{forest:2}, kw:kw('jump'), atk:5, hp:4,
@@ -2112,6 +2130,12 @@ const CARDS = (function() {
     cost:3, req:{lake:3}, kw:kw('ranged'), atk:3, hp:2,
     rarity:'epic', treasure:false,
     text:'Ranged. Whenever this attacks a god, deal 1 damage to all enemy creatures.',
+    onAttackGod:(S,u) => {
+      const opp=u.own==='A'?'B':'A';
+      const snap=Object.values(S.units).filter(t=>t.own===opp&&t.q!==null).map(t=>t.id);
+      snap.forEach(uid=>{const t=S.units[uid];if(!t)return;applyDmg(S,t,1,null,true);if(t.hp<=0)resolveDeath(S,uid);});
+      lg(S,u.own,'🔥 Flame Thrower: 1 damage to all enemies');
+    },
   });
   add({ id:'volcanic_colossus', set:'dlc', name:'Volcanic Colossus', color:'red', type:'creature', subtype:null,
     cost:11, req:{lake:2}, kw:kw('ranged'), atk:7, hp:7,
@@ -2312,6 +2336,7 @@ const CARDS = (function() {
     cost:3, req:{desert:2}, kw:kw('haste'), atk:2, hp:1,
     rarity:'rare', treasure:false,
     text:'Haste. Whenever this attacks a god, draw a card.',
+    onAttackGod:(S,u) => { deal(S,u.own,1); lg(S,u.own,'☀ Oradrim Monk: drew 1 card'); },
   });
   add({ id:'oradrim_fanatic', set:'dlc', name:'Oradrim Fanatic', color:'yellow', type:'creature', subtype:null,
     cost:3, req:{desert:2}, kw:kw('jump'), atk:3, hp:2,
@@ -2462,11 +2487,19 @@ const CARDS = (function() {
     cost:3, req:{desert:2}, kw:kw('ranged'), atk:1, hp:3,
     rarity:'epic', treasure:false,
     text:'Ranged. Whenever a friendly creature attacks a god, gain 1 Faeria.',
+    onFriendlyAttacksGod:(S,u,attacker) => {
+      S.players[u.own].mana+=1;
+      lg(S,u.own,`☀ Sagittarius: +1 Faeria (${cardData(attacker?.cid)?.name||'?'} attacked god)`);
+    },
   });
   add({ id:'wind_wisp', set:'dlc', name:'Wind Wisp', color:'yellow', type:'creature', subtype:null,
     cost:4, req:{desert:1}, kw:kw('flying', 'charge:3'), atk:1, hp:2,
     rarity:'rare', treasure:false,
     text:'Flying. Charge 3. Whenever a friendly creature attacks a god, gains +3/+0.',
+    onFriendlyAttacksGod:(S,u,attacker) => {
+      buffUnit(u,3,0);
+      lg(S,u.own,`🌪 Wind Wisp: +3/+0 → ${u.atk}/${u.hp}`);
+    },
   });
   add({ id:'khalims_prayer', set:'dlc', name:'Khalim\'s Prayer', color:'yellow', type:'event', subtype:null,
     cost:0, req:{desert:3}, kw:kw(), atk:null, hp:null,
@@ -2577,6 +2610,7 @@ const CARDS = (function() {
     cost:2, req:{desert:2}, kw:kw('haste', 'flying', 'charge:2'), atk:1, hp:1,
     rarity:'common', treasure:false,
     text:'Haste. Flying. Charge 2. Can\'t harvest. Whenever this attacks a god, gains +1/+1.',
+    onAttackGod:(S,u) => { buffUnit(u,1,1); lg(S,u.own,`🐟 Demonic Salmon: +1/+1 → ${u.atk}/${u.hp}`); },
   });
   add({ id:'fortune_hunter', set:'dlc', name:'Fortune Hunter', color:'neutral', type:'creature', subtype:null,
     cost:3, req:{}, kw:kw(), atk:1, hp:1,
@@ -2712,6 +2746,19 @@ const CARDS = (function() {
     cost:5, req:{}, kw:kw(), atk:4, hp:5,
     rarity:'rare', treasure:false,
     text:'Has +2/+0 while opponent has 10 Life or less.',
+    onTurnStart:(S,u) => {
+      const opp = u.own==='A'?'B':'A';
+      const oppHp = S.players[opp].hp;
+      // +2 ATK if opponent ≤10 HP, remove the bonus otherwise
+      const bonusActive = oppHp <= 10;
+      if (bonusActive && !u._warYakBonus) {
+        u.atk += 2; u._warYakBonus = true;
+        lg(S, u.own, '🐃 War Yak: Opponent ≤10 HP — +2/+0 activated');
+      } else if (!bonusActive && u._warYakBonus) {
+        u.atk -= 2; u._warYakBonus = false;
+        lg(S, u.own, '🐃 War Yak: Opponent >10 HP — bonus removed');
+      }
+    },
   });
   add({ id:'defender_homeland', set:'dlc', name:'Defender of the Homeland', color:'neutral', type:'creature', subtype:null,
     cost:2, req:{}, kw:kw('taunt'), atk:1, hp:2,
@@ -2977,6 +3024,25 @@ const CARDS = (function() {
     cost:4, req:{wild:6}, kw:kw('ranged'), atk:2, hp:5,
     rarity:'epic', treasure:false,
     text:'Ranged. Whenever this attacks, summon a 2/2 Angry Yak adjacent to target.',
+    onAttack:(S,u,targetType,targetId) => {
+      // Find target position
+      let tq,tr,ts;
+      if(targetType==='unit'&&S.units[targetId]){tq=S.units[targetId].q;tr=S.units[targetId].r;ts=S.units[targetId].s;}
+      else if(targetType==='base'){const bp=u.own==='A'?BASE_B:BASE_A;[tq,tr,ts]=bp;}
+      else return;
+      // Place 2/2 Angry Yak on adjacent own land cell near target
+      const DIRS=[[1,-1,0],[-1,1,0],[1,0,-1],[-1,0,1],[0,1,-1],[0,-1,1]];
+      for(const [dq,dr,ds] of DIRS){
+        const nq=tq+dq,nr=tr+dr,ns=ts+ds;
+        if(!inB(nq,nr,ns))continue;
+        const k=cK(nq,nr),c=S.cells[k];
+        if(!c||c.type!=='LAND'||c.owner!==u.own)continue;
+        if(unitAt(S,nq,nr,ns))continue;
+        const tok=mkUnit(S,u.own,'angry_yak_token',nq,nr,ns);
+        if(tok){S.units[tok.id]=tok;tok.summonSick=false;lg(S,u.own,'🐂 Yakkapult: 2/2 Angry Yak summoned');}
+        break;
+      }
+    },
   });
   add({ id:'victory_celebration', set:'dlc', name:'Victory Celebration', color:'neutral', type:'event', subtype:null,
     cost:0, req:{lake:1, forest:1, wild:2}, kw:kw(), atk:null, hp:null,
@@ -3286,6 +3352,13 @@ const CARDS = (function() {
     cost:3, req:{}, kw:kw('flying', 'haste'), atk:1, hp:5,
     rarity:'rare', treasure:true,
     text:'Flying. Haste. Whenever this attacks a god, add a random Treasure to hand.',
+    onAttackGod:(S,u) => {
+      const pool=Object.values(CARDS).filter(c=>c.treasure&&c.id!=='mecha_token'&&c.id!=='guardian_token');
+      if(!pool.length)return;
+      const pick=pool[Math.floor(Math.random()*pool.length)];
+      const pl=S.players[u.own];
+      if(pl.hand.length<HAND_MAX){pl.hand.push({id:pick.id,buff:{atk:0,hp:0}});lg(S,u.own,`💎 Magpie: ${pick.name} added`);}
+    },
   });
   add({ id:'wheel_of_chaos', set:'dlc', name:'Wheel of Chaos', color:'neutral', type:'event', subtype:null,
     cost:2, req:{}, kw:kw(), atk:null, hp:null,
@@ -3402,10 +3475,13 @@ function mkUnit(S, p, cardId, q, r, s) {
     swallowedUnit: null,   // id of unit this creature has swallowed
     swallowedBy:   null,   // id of unit that swallowed this creature
     // Ability hooks — copied directly from card definition
-    onGift:      cd.onGift      || null,
-    onCombat:    cd.onCombat    || null,
-    onDeath:     cd.onDeath     || null,
-    onTurnStart: cd.onTurnStart || null,
+    onGift:               cd.onGift               || null,
+    onCombat:             cd.onCombat             || null,
+    onDeath:              cd.onDeath              || null,
+    onTurnStart:          cd.onTurnStart          || null,
+    onAttack:             cd.onAttack             || null,  // "Whenever this attacks"
+    onAttackGod:          cd.onAttackGod          || null,  // "Whenever this attacks a god"
+    onFriendlyAttacksGod: cd.onFriendlyAttacksGod || null,  // "Whenever a friendly creature attacks a god" 
   };
 
   // Apply Ruunin return buff (stat carry from previous death)
@@ -3456,6 +3532,11 @@ function effAtk(unit, targetIsGod, S) {
       u.id!==unit.id && u.own===unit.own && u.kw?.has('flying')
     );
     if (hasOtherFlyer) base += 2;
+  }
+  // War Yak: +2 ATK if opponent has ≤10 HP (live check for display before first turn)
+  if (unit.cid==='war_yak' && S) {
+    const opp = unit.own==='A'?'B':'A';
+    if (S.players[opp]?.hp <= 10 && !unit._warYakBonus) base += 2;
   }
   return base;
 }
@@ -3618,10 +3699,13 @@ function doTransform(S, uid, targetCardId) {
   u.swallowedBy = null;
 
   // Reset ability hooks to new card's
-  u.onGift      = newCd.onGift      || null;
-  u.onCombat    = newCd.onCombat    || null;
-  u.onDeath     = newCd.onDeath     || null;
-  u.onTurnStart = newCd.onTurnStart || null;
+  u.onGift               = newCd.onGift               || null;
+  u.onCombat             = newCd.onCombat             || null;
+  u.onDeath              = newCd.onDeath              || null;
+  u.onTurnStart          = newCd.onTurnStart          || null;
+  u.onAttack             = newCd.onAttack             || null;
+  u.onAttackGod          = newCd.onAttackGod          || null;
+  u.onFriendlyAttacksGod = newCd.onFriendlyAttacksGod || null;
 
   // Do NOT reset moved/atked/summonSick — existing turn state is preserved
   // (A creature that already moved cannot attack after transforming)
@@ -4177,12 +4261,27 @@ function doAtk(S, attackerId, targetType, targetId) {
     if (S.players[targetId].hp<=0) S.winner=a.own;
     if (S.units[attackerId] && typeof a.onCombat==='function')
       try { a.onCombat(S, a, null); } catch(e) {}
+    // ── "Whenever this attacks a god" triggers ──────────────
+    if (S.units[attackerId] && typeof a.onAttackGod==='function')
+      try { a.onAttackGod(S, a); } catch(e) { console.warn('onAttackGod',e); }
+    // ── "Whenever ANY friendly creature attacks a god" (watching units) ──
+    const attOwn = a.own;
+    Object.values(S.units).forEach(watcher => {
+      if (watcher.own === attOwn && typeof watcher.onFriendlyAttacksGod === 'function')
+        try { watcher.onFriendlyAttacksGod(S, watcher, a); } catch(e) {}
+    });
+    // ── Track "attacked a god this turn" for Khalim's Prayer ──
+    S._attackedGod = S._attackedGod || {};
+    S._attackedGod[attOwn] = true;
   }
 
   if (S.units[attackerId]) {
     S.units[attackerId].atked = true;
     if (S.units[attackerId].kw?.has('ranged')) S.units[attackerId].moved = true;
   }
+  // ── "Whenever this attacks" (any target) ──────────────────
+  if (S.units[attackerId] && typeof S.units[attackerId].onAttack==='function')
+    try { S.units[attackerId].onAttack(S, S.units[attackerId], targetType, targetId); } catch(e) { console.warn('onAttack',e); }
 }
 
 // ══════════════════════════════════════════════════════════
@@ -4638,6 +4737,8 @@ function runProduction(S, p) {
 //  CLEANUP
 // ══════════════════════════════════════════════════════════
 function doCleanup(S) {
+  // Reset 'attacked god' flag for current player
+  if (S._attackedGod) S._attackedGod[S.ap] = false;
   // Drowning
   const toKill=[];
   Object.values(S.units).forEach(u => {
@@ -4729,7 +4830,7 @@ const MENU_OPTS = [
   { id:'land_D',  label:'Desert',    sub:'🏜',  fill:'#3d2200', stroke:'#d08010', textCol:'#f0b84a' },
   { id:'land_M',  label:'Mountain',  sub:'🌋',  fill:'#2a0808', stroke:'#cc2828', textCol:'#ff9090' },
   { id:'land_W',  label:'Lake',      sub:'🌊',  fill:'#061a38', stroke:'#1a6acc', textCol:'#60aaee' },
-  { id:'land_N',  label:'2×Prairie', sub:'🌿',  fill:'#1c2820', stroke:'#4a7a50', textCol:'#90ba90' },
+  { id:'land_N',  label:'2×Prairie', sub:'',     fill:'#222222', stroke:'#666666', textCol:'#aaaaaa' },
   { id:'_draw',   label:'Karte +1',   sub:'🃏',  fill:'#2a1c08', stroke:'#c8a84b', textCol:'#e8c870' },
   { id:'_boost',  label:'+1 Mana',    sub:'◆',   fill:'#081828', stroke:'#4488cc', textCol:'#68aaee' },
 ];
@@ -6276,7 +6377,7 @@ class Engine {
         <div style="font-size:.75rem;color:#44cccc;margin-bottom:10px;font-weight:bold;">🏔 DEV — Place Special Land</div>
         <div style="font-size:.65rem;color:#aaa;margin-bottom:8px;">Choose land type &amp; owner, then click any empty cell.</div>
         <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-          ${[['F','🌲 Forest','#4aaa44'],['D','⛰ Desert','#cc9933'],['M','🌋 Mountain','#cc4422'],['W','🌊 Lake','#3a8acc'],['N','🌿 Prairie','#8aaa55']].map(([t,label,col])=>
+          ${[['F','🌲 Forest','#4aaa44'],['D','⛰ Desert','#cc9933'],['M','🌋 Mountain','#cc4422'],['W','🌊 Lake','#3a8acc'],['N','⬜ Prairie','#888888']].map(([t,label,col])=>
             `<button data-lt="${t}" onclick="document.querySelectorAll('[data-lt]').forEach(b=>b.style.outline=''); this.style.outline='2px solid ${col}'; window._devLandType='${t}';"
               style="padding:4px 10px;background:#0d0a15;border:1px solid ${col};color:${col};border-radius:4px;cursor:pointer;font-size:.65rem;">${label}</button>`
           ).join('')}
@@ -6418,7 +6519,8 @@ class Engine {
         });
       }
     } else {
-      // Straight-line dash
+      const hasFlying = u.kw.has('flying');
+      // Straight-line dash — flying creatures can dash over/onto ocean tiles
       HEX_DIRS.forEach(([dq,dr,ds]) => {
         let cq=u.q, cr=u.r, cs=u.s;
         for (let step=1; step<=n; step++) {
@@ -6426,9 +6528,19 @@ class Engine {
           if (!inB(cq,cr,cs)) break;
           const k = cK(cq,cr);
           const c = S.cells[k];
-          if (!c || c.type==='EMPTY' || c.type==='WELL' || c.type==='BASE') break;
-          if (unitAt(S,cq,cr,cs)) break;
-          result.set(k,[cq,cr,cs]);
+          // Flying: can cross empty ocean cells (continue past them)
+          if (hasFlying) {
+            if (!c) break;
+            if (c.type==='BASE') break;
+            if (unitAt(S,cq,cr,cs)) break;
+            // Empty ocean = passable for flying, but NOT a valid destination (unless last step)
+            if (c.type==='EMPTY') continue; // fly over
+            result.set(k,[cq,cr,cs]);
+          } else {
+            if (!c || c.type==='EMPTY' || c.type==='WELL' || c.type==='BASE') break;
+            if (unitAt(S,cq,cr,cs)) break;
+            result.set(k,[cq,cr,cs]);
+          }
         }
       });
     }
@@ -6543,8 +6655,8 @@ class Engine {
 
   _rStats() {
     const S = this.S;
-    const LAND_COLOR = { F:'#2eaa30', D:'#d08818', M:'#cc3030', W:'#2288dd', N:'#6a9a6a' };
-    const LAND_EMOJI = { F:'🌲', D:'🏜', M:'🌋', W:'🌊', N:'🌿' };
+    const LAND_COLOR = { F:'#2eaa30', D:'#d08818', M:'#cc3030', W:'#2288dd', N:'#999999' };
+    const LAND_EMOJI = { F:'🌲', D:'🏜', M:'🌋', W:'🌊', N:'' };
     ['A','B'].forEach(p => {
       document.getElementById(`hp-${p}`).textContent    = S.players[p].hp;
       document.getElementById(`mana-${p}`).textContent  = S.players[p].mana;
