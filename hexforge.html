@@ -835,8 +835,32 @@ const CARDS = (function() {
   add({ id:'triton_warrior', set:'core',  name:'Triton Warrior',  color:'blue', type:'creature', subtype:'Triton', cost:4, req:{lake:2}, kw:kw('jump'),                   atk:4,hp:4, rarity:'common', text:'Jump.' });
   add({ id:'triton_diver', set:'core',    name:'Triton Diver',    color:'blue', type:'creature', subtype:'Triton', cost:3, req:{lake:1}, kw:kw('aquatic','jump'),          atk:2,hp:2, rarity:'common', text:'Aquatic, Jump.' });
   add({ id:'ruby_fish', set:'core',       name:'Ruby Fish',       color:'blue', type:'creature', cost:1, req:{lake:1}, kw:kw('aquatic'),                                  atk:1,hp:1, rarity:'common', text:'Aquatic.' });
-  add({ id:'gabrian_archon', set:'core',  name:'Gabrian Archon',  color:'blue', type:'creature', cost:4, req:{lake:2}, kw:kw('charge:2'),                                 atk:4,hp:4, rarity:'common', text:'Charge 2.' });
-  add({ id:'snowstorm_lancer', set:'core',name:'Snowstorm Lancer',color:'blue', type:'creature', subtype:'Triton', cost:5, req:{lake:2}, kw:kw('jump'),                   atk:3,hp:5, rarity:'common', text:'Jump.' });
+  add({ id:'gabrian_archon', set:'core', name:'Gabrian Archon', color:'blue', type:'creature',
+    cost:4, req:{lake:2}, kw:kw('charge:2'), atk:4, hp:4, rarity:'common',
+    text:'Charge 2. Gains +2/+2 if you have played two cards with base cost 7+ this game.',
+    onDraw:(S,u,cardId,cd) => {
+      if(u.q===null) return;
+      const drawn=cardData(cardId);
+      if(drawn&&(drawn.cost||0)>=7){
+        if(!S._archonBuffed)S._archonBuffed={};
+        if(!S._archonBuffed[u.id]){
+          S._archonBuffed[u.id]=true;
+          buffUnit(u,2,2); u.kw.add('flying');
+          lg(S,u.own,`🦅 Gabrian Archon: 7+-Karte gezogen → +2/+2 Flying`);
+        }
+      }
+    },
+  });
+  add({ id:'snowstorm_lancer', set:'dlc', name:'Snowstorm Lancer', color:'blue', type:'creature', subtype:null,
+    cost:3, req:{lake:2}, kw:kw('jump'), atk:2, hp:3, rarity:'rare', treasure:false,
+    text:'Jump. Whenever you play an event, gains +2/+0 this turn (limit +6/+0).',
+    onEventPlayed:(S,u) => {
+      if(u.q===null)return;
+      if(!u._snowBuff)u._snowBuff=0;
+      if(u._snowBuff<6){ u.atk+=2; u._snowBuff+=2; lg(S,u.own,`❄ Snowstorm Lancer: +2/+0 → ${u.atk}/${u.hp}`); }
+    },
+    onTurnStart:(S,u) => { if(u._snowBuff){u.atk=Math.max(0,u.atk-u._snowBuff);u._snowBuff=0;} },
+  });
   add({ id:'aurora_myth_maker', set:'core',name:'Aurora, Myth Maker',color:'blue',type:'creature',cost:4,req:{lake:3},kw:kw(), atk:1,hp:1,
     rarity:'legendary', text:'Gift - Change another friendly creature to 6/6.',
     onGift:(S,p,unit) => { unit.pendingGift={type:'set_6_6'}; lg(S,p,'✦ Aurora Gift: Choose your creature'); }
@@ -893,17 +917,13 @@ const CARDS = (function() {
       lg(S,u.own,`🌊 Aurora Disciple: Freund gestorben → +1/+1 → ${u.atk}/${u.hp}`);
     },
   });
-  add({ id:'spirit_of_rebirth', set:'core', name:'Spirit of Rebirth', color:'green', type:'creature', subtype:null,
-    cost:3, req:{forest:2}, kw:kw(), atk:3, hp:3, rarity:'exceptional', treasure:false,
+  add({ id:'spirit_of_rebirth', set:'dlc', name:'Spirit of Rebirth', color:'neutral', type:'creature', subtype:null,
+    cost:4, req:{}, kw:kw(), atk:2, hp:4, rarity:'epic', treasure:false,
     text:'Whenever another friendly creature dies, give a random creature in your hand +1/+1.',
     onFriendlyDies:(S,u,dead) => {
       if(dead.id===u.id)return;
-      const pl=S.players[u.own];
-      const crts=pl.hand.filter(e=>cardData(e.id)?.type==='creature');
-      if(!crts.length)return;
-      const e=crts[Math.floor(Math.random()*crts.length)];
-      e.buff.atk=(e.buff.atk||0)+1; e.buff.hp=(e.buff.hp||0)+1;
-      lg(S,u.own,`🌿 Spirit of Rebirth: ${cardData(dead.cid)?.name} gestorben → ${cardData(e.id)?.name} +1/+1`);
+      const hand=S.players[u.own].hand.filter(e=>cardData(e.id)?.type==='creature');
+      if(hand.length){const e=hand[Math.floor(Math.random()*hand.length)];e.buff.atk=(e.buff.atk||0)+1;e.buff.hp=(e.buff.hp||0)+1;lg(S,u.own,`👻 Spirit of Rebirth: Hand-Kreatur +1/+1`);}
     },
   });
   add({ id:'ruunin', set:'core', name:'Ruunin, the Relentless', color:'green', type:'creature', subtype:'Beast', cost:5, req:{forest:3}, kw:kw('dash:2'), atk:4,hp:4,
@@ -1105,9 +1125,19 @@ const CARDS = (function() {
     rarity:'common', text:'Production - Gain 1 Faeria.',
     onTurnStart:(S,u) => { S.players[u.own].mana+=1; lg(S,u.own,`🌾 Farm Boy: +1 Mana → ${S.players[u.own].mana}`); }
   });
-  add({ id:'animated_banquet', set:'core', name:'Animated Banquet', color:'neutral', type:'creature', cost:3, req:{}, kw:kw(), atk:1,hp:4,
-    rarity:'common', text:'Production - Gains +1/+0.',
-    onTurnStart:(S,u) => { buffUnit(u,1,0); lg(S,u.own,`🍖 Animated Banquet: +1 ATK → ${u.atk}`); }
+  add({ id:'animated_banquet', set:'dlc', name:'Animated Banquet', color:'green', type:'creature', subtype:null,
+    cost:3, req:{forest:1}, kw:kw('dash:1'), atk:1, hp:3, rarity:'rare', treasure:false,
+    text:'Dash 1. At end of your turn, a random adjacent friendly creature swallows this and gains +1/+1.',
+    onTurnStart:(S,u) => {
+      if(u.own!==S.ap&&u.q!==null){
+        const adj=cNbr(u.q,u.r,u.s).map(([nq,nr,ns])=>unitAt(S,nq,nr,ns)).filter(v=>v&&v.own===u.own);
+        if(adj.length){
+          const host=adj[Math.floor(Math.random()*adj.length)];
+          buffUnit(host,1,1); resolveDeath(S,u.id);
+          lg(S,u.own,`🍱 Animated Banquet: von ${cardData(host.cid)?.name} verschluckt → +1/+1`);
+        }
+      }
+    },
   });
   add({ id:'triton_adventurer', set:'core', name:'Triton Adventurer', color:'blue', type:'creature', subtype:'Triton', cost:2, req:{lake:1}, kw:kw('aquatic'), atk:1,hp:3,
     rarity:'common', text:'Aquatic. Production - Draw a card.',
@@ -1117,9 +1147,18 @@ const CARDS = (function() {
     rarity:'common', text:'Production - Gain 1 Faeria.',
     onTurnStart:(S,u) => { S.players[u.own].mana+=1; lg(S,u.own,`🗿 Tiki Adventurer: +1 Mana → ${S.players[u.own].mana}`); }
   });
-  add({ id:'keldran_adventurer', set:'core', name:'Keldran Adventurer', color:'yellow', type:'creature', cost:3, req:{desert:1}, kw:kw(), atk:2,hp:3,
-    rarity:'common', text:'Production - Gains +1/+1.',
-    onTurnStart:(S,u) => { buffUnit(u,1,1); lg(S,u.own,'⚔ Keldran Adventurer: +1/+1'); }
+  add({ id:'keldran_adventurer', set:'gagana', name:'Keldran Adventurer', color:'neutral', type:'creature', subtype:null,
+    cost:3, req:{}, kw:kw('dash:1'), atk:2, hp:3, rarity:'common', treasure:false,
+    text:'Dash 1. At end of your turn, shuffle 2 Treasure Maps into deck if on enemy land.',
+    onTurnStart:(S,u) => {
+      if(u.own!==S.ap&&u.q!==null){
+        const k=cK(u.q,u.r); const c=S.cells[k];
+        if(c&&c.type==='LAND'&&c.owner!==u.own){
+          for(let i=0;i<2;i++){const pos=Math.floor(Math.random()*(S.players[u.own].deck.length+1));S.players[u.own].deck.splice(pos,0,'treasure_map');}
+          lg(S,u.own,'🗺 Keldran Adventurer: 2 Treasure Maps gemischt');
+        }
+      }
+    },
   });
 
   // ── SPECIAL ───────────────────────────────────────────
@@ -1230,6 +1269,21 @@ const CARDS = (function() {
     cost:0, req:{}, kw:kw(), atk:null, hp:null, rarity:'common',
     text:'Draw a card. After playing 3 Treasure Maps this game, Discover a Treasure.',
   });
+
+  add({ id:'pandora_awakens', set:'gagana', name:'Pandora Awakens!', color:'neutral', type:'event', subtype:null,
+    cost:3, req:{}, kw:kw(), atk:null, hp:null, rarity:'epic', treasure:false,
+    text:'Both players receive a Treasure! Draw a card.',
+  });
+
+  add({ id:'treasure_found', set:'gagana', name:'Treasure Found!', color:'neutral', type:'event', subtype:null,
+    cost:0, req:{}, kw:kw(), atk:null, hp:null, rarity:'rare', treasure:true,
+    text:'Both players receive a Treasure! Draw a card.',
+  });
+
+  add({ id:'shard_of_pandora', set:'gagana', name:'Shard of Pandora', color:'neutral', type:'event', subtype:null,
+    cost:0, req:{}, kw:kw(), atk:null, hp:null, rarity:'epic', treasure:true,
+    text:'Add a random Treasure to your hand.',
+  });
   add({ id:'glidehopper', set:'gagana',
     name:'Glidehopper', color:'neutral', type:'creature',
     cost:5, req:{lake:1,desert:1}, kw:kw('flying','jump'), atk:5, hp:4, rarity:'epic',
@@ -1255,16 +1309,14 @@ const CARDS = (function() {
     cost:2, req:{mountain:1}, kw:kw('flying','dash:2'), atk:2, hp:2, rarity:'epic',
     text:'Flying. Dash 2.',
   });
-  add({ id:'celeste', set:'gagana',
-    name:'Celeste, Crystal Dragon', color:'neutral', type:'creature',
-    cost:10, req:{}, kw:kw('flying','charge:2'), atk:6, hp:6, rarity:'legendary',
-    text:'Flying. Charge 2. Gift: Gain +1/+1 for each card in hand. Last Words: Draw 3 cards.',
-    onGift:(S,p,unit)=>{
-      const n=S.players[p].hand.length;
-      buffUnit(unit,n,n);
-      lg(S,p,`Celeste Gift: +${n}/+${n} (${n} Karten in Hand)`);
+  add({ id:'celeste', set:'dlc', name:'Celeste, Crystal Dragon', color:'neutral', type:'creature', subtype:null,
+    cost:8, req:{}, kw:kw('flying','charge:2'), atk:5, hp:5, rarity:'legendary', treasure:false,
+    text:'Flying. Charge 2. Gift: If your deck has exactly 1 of each card, gain Haste and Protection. Last Words - Shuffle Celeste back into your deck.',
+    onGift:(S,p,unit) => {
+      const ids=S.players[p].deck; const unique=new Set(ids);
+      if(ids.length===unique.size){unit.kw.add('haste');unit.kw.add('protection');lg(S,p,'✨ Celeste: Haste+Protection');}
     },
-    onDeath:(S,u)=>{deal(S,u.own,3);lg(S,u.own,'Celeste Last Words: 3 cards drawn');},
+    onDeath:(S,u) => { S.players[u.own].deck.push('celeste'); lg(S,u.own,'✨ Celeste: zurück ins Deck'); },
   });
   add({ id:'sorocco', set:'dlc', name:'Sorocco', color:'neutral', type:'creature', subtype:null,
     cost:4, req:{}, kw:kw('jump'), atk:2, hp:4, rarity:'epic', treasure:false,
@@ -1319,10 +1371,10 @@ const CARDS = (function() {
       lg(S,p,'Starshell Keeper Gift: Treasure Map eingemischt + 1 Karte');
     },
   });
-  add({ id:'fugoro', set:'gagana', name:'Fugoro, Captain of the Gagana', color:'blue', type:'creature', subtype:null,
+  add({ id:'fugoro', set:'dlc', name:'Fugoro, Captain of the Gagana', color:'blue', type:'creature', subtype:null,
     cost:5, req:{lake:2}, kw:kw('jump'), atk:3, hp:5, rarity:'legendary', treasure:false,
-    text:'Jump. Whenever you Discover, gains +1/+1.',
-    onTurnStart:(S,u) => { /* discover hook handled in _pickDiscover directly */ },
+    text:'Jump. Whenever you Discover a Treasure, Fugoro gains +3/+3.',
+    onTurnStart:(S,u) => {},
   });
 
   // Red
@@ -1337,33 +1389,23 @@ const CARDS = (function() {
       lg(S,u.own,'Unstable Forgeling: Alle Mecha +3 ATK diesen Zug');
     },
   });
-  add({ id:'fragmenter', set:'gagana',
-    name:'Fragmenter', color:'red', type:'creature', subtype:'Mecha',
-    cost:6, req:{mountain:2,wild:1}, kw:kw(), atk:6, hp:3, rarity:'epic',
-    text:'Combat: Summon a 2/1 Mecha adjacent to this.',
-    onCombat:(S,unit)=>{
-      const DIRS=[[1,-1,0],[-1,1,0],[1,0,-1],[-1,0,1],[0,1,-1],[0,-1,1]];
-      for(const [dq,dr,ds] of DIRS){
-        const nq=unit.q+dq,nr=unit.r+dr,ns=unit.s+ds;
-        if(!inB(nq,nr,ns))continue;
-        const k=cK(nq,nr),c=S.cells[k];
-        if(!c||c.type!=='LAND'||c.owner!==unit.own)continue;
-        if(unitAt(S,nq,nr,ns))continue;
-        const tok=mkUnit(S,unit.own,'mecha_token',nq,nr,ns);
-        if(tok){tok.summonSick=false;S.units[tok.id]=tok;lg(S,unit.own,'Fragmenter: 2/1 Mecha beschworen');}
-        break;
-      }
+  add({ id:'fragmenter', set:'dlc', name:'Fragmenter', color:'red', type:'creature', subtype:'Mecha',
+    cost:4, req:{mountain:2}, kw:kw(), atk:3, hp:3, rarity:'rare', treasure:false,
+    text:'Combat - Summon a 4/2 Mecha in a random adjacent space.',
+    onCombat:(S,u,target) => {
+      const adj=cNbr(u.q,u.r,u.s).filter(([nq,nr,ns])=>{const c=S.cells[cK(nq,nr)];return c&&c.type==='LAND'&&!unitAt(S,nq,nr,ns);});
+      if(adj.length){const [sq,sr,ss]=adj[Math.floor(Math.random()*adj.length)];const m=mkUnit(S,u.own,'mecha_token',sq,sr,ss);if(m)S.units[m.id]=m;}
     },
   });
-  add({ id:'junkfeet', set:'gagana',
-    name:'Junkfeet, the Scrapheap', color:'red', type:'creature', subtype:'Mecha',
-    cost:4, req:{mountain:3}, kw:kw(), atk:4, hp:4, rarity:'legendary',
-    text:'At the end of your turn, other Mecha gain +1/+1.',
-    onTurnStart:(S,u)=>{
-      Object.values(S.units)
-        .filter(x=>x.own===u.own&&x.id!==u.id&&cardData(x.cid)?.subtype==='Mecha')
-        .forEach(m=>{buffUnit(m,1,1);});
-      lg(S,u.own,'Junkfeet: Andere Mecha +1/+1');
+  add({ id:'junkfeet', set:'dlc', name:'Junkfeet, the Scrapheap', color:'neutral', type:'creature', subtype:'Mecha',
+    cost:4, req:{}, kw:kw(), atk:2, hp:5, rarity:'epic', treasure:false,
+    text:'At end of your turn, give all other friendly Mecha +1/+1 and this takes 1 damage.',
+    onTurnStart:(S,u) => {
+      if(u.own!==S.ap&&u.q!==null){
+        Object.values(S.units).filter(v=>v.own===u.own&&v.id!==u.id&&cardData(v.cid)?.subtype==='Mecha'&&v.q!==null).forEach(v=>buffUnit(v,1,1));
+        applyDmg(S,u,1,null,true); if(u.hp<=0)resolveDeath(S,u.id);
+        lg(S,u.own,'⚙ Junkfeet: Alle Mecha +1/+1, selbst 1 Schaden');
+      }
     },
   });
   add({ id:'ogre_adventurer', set:'gagana',
@@ -1410,7 +1452,12 @@ const CARDS = (function() {
   add({ id:'exotic_pet', set:'dlc', name:'Exotic Pet', color:'green', type:'creature', subtype:'Beast',
     cost:2, req:{}, kw:kw(), atk:2, hp:3, rarity:'common', treasure:false,
     text:'Can be summoned adjacent to non-green land.',
-    onTurnStart:(S,u) => {},
+    _canSummonAt:(S,p,q,r,s) => {
+      return cNbr(q,r,s).some(([nq,nr,ns])=>{
+        const c=S.cells[cK(nq,nr)];
+        return c&&c.type==='LAND'&&c.owner===p&&c.landType!=='F';
+      });
+    },
   });
 
   // Yellow
@@ -1572,11 +1619,13 @@ const CARDS = (function() {
   add({ id:'lore_thief', set:'dlc', name:'Lore Thief', color:'blue', type:'creature', subtype:null,
     cost:3, req:{lake:2}, kw:kw(), atk:1, hp:1,
     rarity:'common', treasure:false,
-    text:'Choose one: Gain +2/+2. Or draw 2 cards.',
+    text:'Gift: Choose one — Gain +2/+2. — Draw 2 cards.',
     onGift:(S,p,unit,choice) => {
-      if (choice==='buff') { buffUnit(unit,2,2); lg(S,p,'🕵 Lore Thief: +2/+2'); }
-      else if (choice==='draw') { deal(S,p,2); lg(S,p,'🕵 Lore Thief: Draw 2'); }
-    }
+      if(choice==='buff'||choice==='option_0'){ buffUnit(unit,2,2); lg(S,p,'🕵 Lore Thief: +2/+2'); }
+      else { deal(S,p,2); lg(S,p,'🕵 Lore Thief: 2 Karten gezogen'); }
+    },
+    _giftChoices:['buff','draw'],
+    _giftLabels:['Gain +2/+2','Draw 2 cards'],
   });
   add({ id:'gabrian_enchantress', set:'dlc', name:'Gabrian Enchantress', color:'blue', type:'creature', subtype:null,
     cost:3, req:{lake:1}, kw:kw('aquatic'), atk:1, hp:4, rarity:'rare', treasure:false,
@@ -1700,19 +1749,17 @@ const CARDS = (function() {
     text:'Draw until you have 9 cards. Reduce cost of all hand cards to 0.',
   });
   add({ id:'luduan', set:'dlc', name:'Luduan', color:'blue', type:'creature', subtype:null,
-    cost:3, req:{lake:1}, kw:kw(), atk:1, hp:3, rarity:'epic', treasure:false,
-    text:"Whenever this harvests from opponent's well, add a random blue card to hand (costs 2 less).",
+    cost:4, req:{lake:2}, kw:kw('aquatic'), atk:2, hp:4, rarity:'legendary', treasure:false,
+    text:'Aquatic. Whenever this harvests from an enemy well, add a random blue card to hand (costs 2 less).',
     onHarvestOppWell:(S,u) => {
-      const blues=Object.values(CARDS).filter(c=>c.color==='blue'&&!c.treasure&&c.id!==u.cid);
+      const blues=Object.values(CARDS).filter(c=>c.color==='blue'&&!c.treasure);
       if(!blues.length)return;
       const pick=blues[Math.floor(Math.random()*blues.length)];
       if(S.players[u.own].hand.length<HAND_MAX){
-        const entry={id:pick.id,buff:{atk:0,hp:0}};
-        S.players[u.own].hand.push(entry);
-        if(!S._handDiscount)S._handDiscount={};
-        if(!S._handDiscount[u.own])S._handDiscount[u.own]={};
+        S.players[u.own].hand.push({id:pick.id,buff:{atk:0,hp:0}});
+        if(!S._handDiscount)S._handDiscount={};if(!S._handDiscount[u.own])S._handDiscount[u.own]={};
         S._handDiscount[u.own][pick.id]=(S._handDiscount[u.own][pick.id]||0)+2;
-        lg(S,u.own,`🌊 Luduan: ${pick.name} zur Hand (2 weniger)`);
+        lg(S,u.own,`🐉 Luduan: ${pick.name} zur Hand (−2)`);
       }
     },
   });
@@ -1748,7 +1795,13 @@ const CARDS = (function() {
   add({ id:'wavecrafter', set:'dlc', name:'Wavecrafter', color:'blue', type:'creature', subtype:null,
     cost:6, req:{lake:3}, kw:kw(), atk:6, hp:6,
     rarity:'epic', treasure:false,
-    text:'At end of opponent\'s turn, set ALL players\' Faeria to 3.',
+    text:"At end of opponent's turn, set ALL players' Faeria to 3.",
+    onEnemyCleanup:(S,u) => {
+      if(u.q!==null){
+        S.players['A'].mana=3; S.players['B'].mana=3;
+        lg(S,u.own,'🌊 Wavecrafter: Alle Faeria auf 3 gesetzt');
+      }
+    },
   });
   add({ id:'unbound_evolution', set:'dlc', name:'Unbound Evolution', color:'blue', type:'event', subtype:null,
     cost:2, req:{lake:2}, kw:kw(), atk:null, hp:null,
@@ -1803,11 +1856,24 @@ const CARDS = (function() {
   });
   add({ id:'bloated_toad', set:'dlc', name:'Bloated Toad', color:'blue', type:'creature', subtype:null,
     cost:5, req:{lake:2}, kw:kw('jump'), atk:4, hp:5, rarity:'epic', treasure:false,
-    text:'Jump. Enters play with an enemy 2/2 Frog (Jump) swallowed.',
-    onGift:(S,p,unit) => {
-      // Swallows an enemy frog on Gift activation (after placement the frog is already inside)
-      lg(S,p,'🐸 Bloated Toad: Gift ausgelöst');
+    text:'Jump. Enters play with an enemy 2/2 Frog (Jump) swallowed inside it.',
+    onSummon:(S,u,summoned,summonOwner) => {
+      if(summoned.id!==u.id)return;
+      const opp=u.own==='A'?'B':'A';
+      const adj=cNbr(u.q,u.r,u.s).filter(([nq,nr,ns])=>{
+        const c=S.cells[cK(nq,nr)]; return c&&c.type!=='EMPTY'&&!unitAt(S,nq,nr,ns);
+      });
+      if(adj.length){
+        const frog={id:`u${S.uid++}`,own:opp,cid:'frog_token',q:null,r:null,s:null,
+          atk:2,hp:2,maxHp:2,kw:new Set(['jump']),moved:false,atked:false,
+          summonSick:false,noHarvest:false,bew:1,rei:1,pendingGift:null};
+        S.units[frog.id]=frog;
+        if(!u._swallowed)u._swallowed=[];
+        u._swallowed.push(frog.id);
+        lg(S,u.own,'🐸 Bloated Toad: Feind-Frosch verschluckt');
+      }
     },
+    onGift:(S,p,unit) => { lg(S,p,'🐸 Bloated Toad: Gift — nichts'); },
   });
   add({ id:'triton_tactician', set:'dlc', name:'Triton Tactician', color:'blue', type:'creature', subtype:'Triton',
     cost:4, req:{lake:2}, kw:kw('jump'), atk:2, hp:4, rarity:'rare', treasure:false,
@@ -1824,9 +1890,13 @@ const CARDS = (function() {
   add({ id:'tide_lord', set:'dlc', name:'Tide Lord', color:'blue', type:'creature', subtype:'Triton',
     cost:7, req:{lake:4}, kw:kw('jump'), atk:6, hp:6, rarity:'legendary', treasure:false,
     text:'Jump. Can be summoned adjacent to friendly Tritons. If it is, gains +1/+1.',
-    onGift:(S,p,unit) => {
-      // auto buff when summoned adj triton (checked in doPlay via summon bonus)
-      lg(S,p,'🌊 Tide Lord Gift');
+    onSummon:(S,u,summoned,summonOwner) => {
+      if(summoned.id!==u.id)return;
+      const adjTriton=cNbr(u.q,u.r,u.s).some(([nq,nr,ns])=>{
+        const v=unitAt(S,nq,nr,ns);
+        return v&&v.own===u.own&&cardData(v.cid)?.subtype==='Triton';
+      });
+      if(adjTriton){ buffUnit(u,1,1); lg(S,u.own,`🌊 Tide Lord: adj Triton → +1/+1 → ${u.atk}/${u.hp}`); }
     },
   });
   add({ id:'coral_polliwog', set:'dlc', name:'Coral Polliwog', color:'blue', type:'creature', subtype:'Triton',
@@ -1860,11 +1930,15 @@ const CARDS = (function() {
             kw:new Set(['haste']),moved:false,atked:false,summonSick:false,noHarvest:false,
             bew:1,rei:1,atkBuff:0,hpBuff:0,protHit:false,pendingDash:0};
             S.units[h2.id]=h2;
+            if(!S._dieAtTurnEnd)S._dieAtTurnEnd=[]; S._dieAtTurnEnd.push(h2.id);
           } else { S.units[h.id]=h; }
+          // Die at end of turn
+          const headId = h ? h.id : Object.keys(S.units).at(-1);
+          if(!S._dieAtTurnEnd)S._dieAtTurnEnd=[]; S._dieAtTurnEnd.push(headId);
           cnt++;
         }
       });
-      if(cnt)lg(S,p,`🐍 Monstrous Hydra: ${cnt} Hydra-Köpfe beschworen`);
+      if(cnt)lg(S,p,`🐍 Monstrous Hydra: ${cnt} Hydra-Köpfe (sterben am Zugend)`);
     },
   });
   add({ id:'flying_piranha', set:'dlc', name:'Flying Piranha', color:'blue', type:'creature', subtype:'Beast',
@@ -1968,13 +2042,10 @@ const CARDS = (function() {
       lg(S,p,'🌿 Overgrown Tower: Wähle Kreatur für +1/+1');
     },
   });
-  add({ id:'bone_collector', set:'dlc', name:'Bone Collector', color:'green', type:'creature', subtype:null,
-    cost:2, req:{forest:1}, kw:kw(), atk:0, hp:3, rarity:'common', treasure:false,
+  add({ id:'bone_collector', set:'dlc', name:'Bone Collector', color:'yellow', type:'creature', subtype:null,
+    cost:4, req:{desert:2}, kw:kw(), atk:2, hp:4, rarity:'rare', treasure:false,
     text:'Whenever an adjacent creature dies, gains +1/+1.',
-    onAdjDies:(S,u,dead) => {
-      buffUnit(u,1,1);
-      lg(S,u.own,`🦴 Bone Collector: adj. Kreatur gestorben → +1/+1 → ${u.atk}/${u.hp}`);
-    },
+    onAdjDies:(S,u,dead) => { buffUnit(u,1,1); lg(S,u.own,`💀 Bone Collector: +1/+1 → ${u.atk}/${u.hp}`); },
   });
   add({ id:'soulbound_sagami', set:'dlc', name:'Soulbound Sagami', color:'green', type:'creature', subtype:null,
     cost:6, req:{forest:2}, kw:kw(), atk:3, hp:5,
@@ -2063,6 +2134,20 @@ const CARDS = (function() {
       }
     },
   });
+
+  add({ id:'tree_of_everlife', set:'dlc', name:'The Tree of Everlife', color:'green', type:'structure', subtype:null,
+    cost:7, req:{forest:4}, kw:kw(), atk:null, hp:6, rarity:'legendary', treasure:false,
+    text:'Production - Gain 7 Life. Give a random creature in your hand +7/+7.',
+    onTurnStart:(S,u) => {
+      if(u.own===S.ap){
+        S.players[u.own].hp=Math.min(BASE_HP, S.players[u.own].hp+7);
+        const hand=S.players[u.own].hand;
+        if(hand.length){hand[Math.floor(Math.random()*hand.length)].buff.hp=(hand[0].buff.hp||0)+7;
+          hand[Math.floor(Math.random()*hand.length)].buff.atk=(hand[0].buff.atk||0)+7;}
+        lg(S,u.own,'🌳 Tree of Everlife: +7 LP, Hand-Kreatur +7/+7');
+      }
+    },
+  });
   add({ id:'possessed_ursus', set:'dlc', name:'Possessed Ursus', color:'green', type:'creature', subtype:'Beast',
     cost:5, req:{forest:3}, kw:kw(), atk:3, hp:6, rarity:'epic', treasure:false,
     text:'After this is dealt damage, double its Attack.',
@@ -2121,14 +2206,15 @@ const CARDS = (function() {
   });
   add({ id:'faeria_tree', set:'dlc', name:'Faeria Tree', color:'green', type:'structure', subtype:null,
     cost:2, req:{forest:1}, kw:kw(), atk:null, hp:1, rarity:'epic', treasure:false,
-    text:'Production: Gains +0/+1. When it reaches 5+ Life, destroy it and gain 10 Faeria.',
+    text:'Production: If < 5 Life, gains +0/+1. When reaching 5+ Life, destroy and gain 10 Faeria.',
     onTurnStart:(S,u) => {
-      buffUnit(u,0,1);
-      lg(S,u.own,`🌳 Faeria Tree: +0/+1 → ${u.hp} HP`);
-      if(u.hp>=5){
-        S.players[u.own].mana+=10;
-        lg(S,u.own,`🌳 Faeria Tree: 5+ HP — zerstört, +10 Mana → ${S.players[u.own].mana}`);
+      if(u.own!==S.ap||u.q===null)return;
+      if((u.hp||0)<5){
+        buffUnit(u,0,1); lg(S,u.own,`🌳 Faeria Tree: +0/+1 → ${u.hp} HP`);
+      } else {
         resolveDeath(S,u.id);
+        S.players[u.own].mana+=10;
+        lg(S,u.own,'🌳 Faeria Tree: 5+ HP → zerstört, +10 Faeria');
       }
     },
   });
@@ -2151,11 +2237,10 @@ const CARDS = (function() {
     },
   });
   add({ id:'everbloom_wisp', set:'dlc', name:'Everbloom Wisp', color:'green', type:'creature', subtype:null,
-    cost:4, req:{forest:2}, kw:kw(), atk:1, hp:2, rarity:'rare', treasure:false,
+    cost:2, req:{forest:1}, kw:kw(), atk:1, hp:3, rarity:'common', treasure:false,
     text:'Whenever you create a forest, gains +1/+1.',
     onForestCreated:(S,u) => {
-      buffUnit(u,1,1);
-      lg(S,u.own,`🌿 Everbloom Wisp: Wald erschaffen → +1/+1 → ${u.atk}/${u.hp}`);
+      if(u.q!==null){ buffUnit(u,1,1); lg(S,u.own,`🌸 Everbloom Wisp: +1/+1 → ${u.atk}/${u.hp}`); }
     },
   });
   add({ id:'verduran_force', set:'dlc', name:'Verduran Force', color:'green', type:'creature', subtype:null,
@@ -2219,11 +2304,11 @@ const CARDS = (function() {
       if(totalHp){buffUnit(unit,totalHp,totalHp);lg(S,p,`👄 Voice of Hunger: +${totalHp}/+${totalHp} → ${unit.atk}/${unit.hp}`);}
     },
   });
-  add({ id:'seedling', set:'dlc', name:'Seedling', color:'green', type:'creature', subtype:null,
-    cost:2, req:{forest:1}, kw:kw(), atk:0, hp:1, rarity:'common', treasure:false,
-    text:'Production: If this has less than 5 Life, gains +1/+1.',
+  add({ id:'seedling', set:'dlc', name:'Seedling', color:'green', type:'structure', subtype:null,
+    cost:2, req:{forest:1}, kw:kw(), atk:null, hp:3, rarity:'common', treasure:false,
+    text:'Production - If this has less than 5 Life, it gains +1/+1.',
     onTurnStart:(S,u) => {
-      if(u.hp<5){buffUnit(u,1,1);lg(S,u.own,`🌱 Seedling: +1/+1 → ${u.atk}/${u.hp}`);}
+      if(u.own===S.ap&&(u.hp||0)<5){ buffUnit(u,1,1); lg(S,u.own,`🌱 Seedling: +1/+1 → ${u.hp}`); }
     },
   });
   add({ id:'eredon', set:'dlc', name:'Eredon, Voice of All', color:'green', type:'creature', subtype:null,
@@ -2251,29 +2336,22 @@ const CARDS = (function() {
     text:'Add a random green creature to hand. Give it +6/+6.',
   });
   // Ruunin's Presence handled in doPlay (TARGET_NO_TARGET)
-  add({ id:'ruunins_messenger', set:'dlc', name:'Ruunin\'s Messenger', color:'green', type:'creature', subtype:null,
-    cost:5, req:{forest:1}, kw:kw('jump'), atk:3, hp:5,
-    rarity:'epic', treasure:false,
-    text:'Jump. Whenever this attacks a god, add a random green creature to hand (costs 2 less).',
+  add({ id:'ruunins_messenger', set:'dlc', name:"Ruunin's Messenger", color:'green', type:'creature', subtype:null,
+    cost:3, req:{forest:1}, kw:kw('jump'), atk:2, hp:3, rarity:'common', treasure:false,
+    text:"Jump. Whenever this attacks a god, add a random green creature to hand (costs 2 less).",
     onAttackGod:(S,u) => {
-      const pool=Object.values(CARDS).filter(c=>{
-        const req=c.req||{};
-        const hasNonForest=Object.keys(req).some(k=>k!=='forest'&&k!=='wild'&&(req[k]>0));
-        return c.type==='creature'&&c.color==='green'&&!c.treasure&&!hasNonForest;
-      });
-      if(!pool.length)return;
-      const pick=pool[Math.floor(Math.random()*pool.length)];
-      const pl=S.players[u.own];
-      if(pl.hand.length<HAND_MAX){
-        pl.hand.push({id:pick.id,buff:{atk:0,hp:0}});
-        if(!S._permZeroCost)S._permZeroCost=new Set();
-        // Mark for cost -2 (we use _handDiscount extended)
-        if(!S._cardDiscount)S._cardDiscount={};
-        S._cardDiscount[pick.id]=(S._cardDiscount[pick.id]||0)+2;
-        lg(S,u.own,`🌿 Ruunin's Messenger: ${pick.name} added (cost -2)`);
+      const greens=Object.values(CARDS).filter(c=>c.color==='green'&&c.type==='creature'&&!c.treasure);
+      if(!greens.length)return;
+      const pick=greens[Math.floor(Math.random()*greens.length)];
+      if(S.players[u.own].hand.length<HAND_MAX){
+        S.players[u.own].hand.push({id:pick.id,buff:{atk:0,hp:0}});
+        if(!S._handDiscount)S._handDiscount={};if(!S._handDiscount[u.own])S._handDiscount[u.own]={};
+        S._handDiscount[u.own][pick.id]=(S._handDiscount[u.own][pick.id]||0)+2;
+        lg(S,u.own,`🌿 Ruunin's Messenger: ${pick.name} −2`);
       }
     },
   });
+
   add({ id:'wild_avenger', set:'dlc', name:'Wild Avenger', color:'green', type:'creature', subtype:'Beast',
     cost:5, req:{forest:3}, kw:kw('taunt','dash:2'), atk:3, hp:6, rarity:'rare', treasure:false,
     text:'Taunt. Dash 2. Gains +0/+1 each time you place a land.',
@@ -2568,6 +2646,11 @@ const CARDS = (function() {
     rarity:'common', treasure:false,
     text:'Give a creature +3/+0. If it\'s a Combat creature, give it +3/+3 instead.',
   });
+
+  add({ id:'grappling_hook', set:'dlc', name:'Grappling Hook', color:'neutral', type:'event', subtype:null,
+    cost:2, req:{}, kw:kw(), atk:null, hp:null, rarity:'common', treasure:false,
+    text:'Give a creature Ranged this turn. After it attacks, move it to a land adjacent to the target.',
+  });
   add({ id:'bold_bargainer', set:'dlc', name:'Bold Bargainer', color:'red', type:'creature', subtype:null,
     cost:7, req:{lake:2}, kw:kw(), atk:3, hp:4,
     rarity:'common', treasure:false,
@@ -2623,14 +2706,15 @@ const CARDS = (function() {
     text:'',
   });
   add({ id:'blood_obelisk', set:'dlc', name:'Blood Obelisk', color:'red', type:'structure', subtype:null,
-    cost:2, req:{lake:1, wild:1}, kw:kw(), atk:null, hp:2, rarity:'rare', treasure:false,
-    text:'Whenever an enemy creature dies, deal 1 damage to opponent and gain 1 Faeria.',
+    cost:5, req:{mountain:2}, kw:kw(), atk:null, hp:4, rarity:'epic', treasure:false,
+    text:'Whenever an enemy creature dies in combat, deal 1 damage to your opponent and gain 1 Faeria.',
     onEnemyDies:(S,u,dead) => {
-      const o=u.own==='A'?'B':'A';
-      S.players[o].hp-=1;
-      S.players[u.own].mana+=1;
-      lg(S,u.own,`🏛 Blood Obelisk: Feind gestorben → 1 Schaden, +1 Mana → ${S.players[u.own].mana}`);
-      runGodDamageTriggers(S,o,1);
+      if(dead._diedInCombat){
+        const o=u.own==='A'?'B':'A';
+        S.players[o].hp-=1; runGodDamageTriggers(S,o,1);
+        S.players[u.own].mana+=1;
+        lg(S,u.own,`🗿 Blood Obelisk: 1 Schaden + 1 Mana`);
+      }
     },
   });
   add({ id:'grim_guard', set:'dlc', name:'Grim Guard', color:'red', type:'creature', subtype:null,
@@ -2642,12 +2726,11 @@ const CARDS = (function() {
       lg(S,u.own,`⚔ Grim Guard: 2 Schaden an Gegner → ${S.players[o].hp} HP`);
     },
   });
-  add({ id:'lord_of_terror', set:'dlc', name:'Lord of Terror', color:'red', type:'creature', subtype:null,
-    cost:6, req:{lake:2, wild:1}, kw:kw(), atk:1, hp:6, rarity:'epic', treasure:false,
-    text:'Whenever a god is dealt damage, gains that much Attack.',
+  add({ id:'lord_of_terror', set:'dlc', name:'Lord of Terror', color:'yellow', type:'creature', subtype:null,
+    cost:7, req:{desert:3}, kw:kw(), atk:3, hp:7, rarity:'legendary', treasure:false,
+    text:'Whenever a god is dealt damage, this gains that much Attack.',
     onGodDamaged:(S,u,damagedPlayer,amount) => {
-      buffUnit(u,amount,0);
-      lg(S,u.own,`👹 Lord of Terror: Gott ${damagedPlayer} nimmt ${amount} Schaden → +${amount} ATK → ${u.atk}`);
+      buffUnit(u,amount,0); lg(S,u.own,`👿 Lord of Terror: +${amount}/+0 → ${u.atk}/${u.hp}`);
     },
   });
   add({ id:'cannon_carrier', set:'dlc', name:'Cannon Carrier', color:'red', type:'creature', subtype:'Mecha',
@@ -2730,14 +2813,14 @@ const CARDS = (function() {
     },
   });
   add({ id:'firebringer', set:'dlc', name:'Firebringer', color:'red', type:'creature', subtype:null,
-    cost:4, req:{lake:2}, kw:kw(), atk:1, hp:2, rarity:'rare', treasure:false,
-    text:'Whenever you summon a creature whose Attack is higher than its Life, gains +1/+1.',
+    cost:4, req:{mountain:2}, kw:kw(), atk:3, hp:3, rarity:'epic', treasure:false,
+    text:'Gains +1/+1 whenever you summon a creature with higher Attack than Life (while in deck/hand).',
     onSummon:(S,u,summoned,summonOwner) => {
-      if(summonOwner===u.own && summoned.id!==u.id) {
-        if((summoned.atk||0) > (summoned.hp||0)) {
-          buffUnit(u,1,1);
-          lg(S,u.own,`🔥 Firebringer: ${cardData(summoned.cid)?.name} (ATK>HP) → +1/+1 → ${u.atk}/${u.hp}`);
-        }
+      if(summonOwner!==u.own||u.q!==null)return; // only triggers while in hand/deck
+      if((summoned.atk||0)>(summoned.hp||0)){
+        if(!u._handBuff)u._handBuff={atk:0,hp:0};
+        u._handBuff.atk+=1; u._handBuff.hp+=1;
+        lg(S,u.own,`🔥 Firebringer (in Hand): +1/+1 angesammelt`);
       }
     },
   });
@@ -2767,6 +2850,11 @@ const CARDS = (function() {
     cost:5, req:{lake:3}, kw:kw(), atk:null, hp:null,
     rarity:'epic', treasure:false,
     text:'Choose a space. Deal 3 damage to all enemy creatures on or adjacent to it.',
+  });
+
+  add({ id:'wrath_of_ignus', set:'dlc', name:'Wrath of Ignus', color:'red', type:'event', subtype:null,
+    cost:3, req:{mountain:2}, kw:kw(), atk:null, hp:null, rarity:'legendary', treasure:false,
+    text:'Deal X damage randomly split among enemies, where X = times you selected +1 from power wheel this game.',
   });
   add({ id:'battle_rager', set:'dlc', name:'Battle Rager', color:'red', type:'creature', subtype:null,
     cost:7, req:{lake:1}, kw:kw(), atk:7, hp:3, rarity:'rare', treasure:false,
@@ -2911,17 +2999,15 @@ const CARDS = (function() {
       lg(S,u.own,`💠 Sapphire Yak: drew a card (${cardData(deadYak?.cid)?.name||'Yak'} died)`);
     },
   });
-  add({ id:'bursting_hippo', set:'dlc', name:'Bursting Hippo', color:'red', type:'creature', subtype:'Beast',
-    cost:6, req:{lake:3}, kw:kw(), atk:5, hp:5, rarity:'rare', treasure:false,
-    text:'Combat: Deal 2 damage to all adjacent enemies.',
-    onCombat:(S,u,other) => {
+  add({ id:'bursting_hippo', set:'dlc', name:'Bursting Hippo', color:'green', type:'creature', subtype:'Beast',
+    cost:4, req:{forest:2}, kw:kw(), atk:4, hp:3, rarity:'epic', treasure:false,
+    text:'Combat - Deal 2 damage to all adjacent enemies.',
+    onCombat:(S,u,target) => {
       const o=u.own==='A'?'B':'A';
-      const snap=[];
-      cNbr(u.q,u.r,u.s).forEach(([nq,nr,ns])=>{const v=unitAt(S,nq,nr,ns);if(v&&v.own===o)snap.push(v.id);});
-      snap.forEach(vid=>{const v=S.units[vid];if(!v)return;applyDmg(S,v,2,null,true);if(v.hp<=0)resolveDeath(S,vid);});
-      if(snap.length)lg(S,u.own,`🦛 Bursting Hippo: 2 Schaden an ${snap.length} Nachbarn`);
+      cNbr(u.q,u.r,u.s).forEach(([nq,nr,ns])=>{const v=unitAt(S,nq,nr,ns);if(v&&v.own===o){applyDmg(S,v,2,null,true);if(v.hp<=0)resolveDeath(S,v.id);}});
     },
   });
+
   add({ id:'kobold_smuggler', set:'dlc', name:'Kobold Smuggler', color:'red', type:'creature', subtype:null,
     cost:3, req:{lake:1}, kw:kw(), atk:2, hp:3, rarity:'common', treasure:false,
     text:'Gift: Summon a 4/3 Seifer\'s Fodder adjacent.',
@@ -3032,10 +3118,9 @@ const CARDS = (function() {
     text:'Teleport a creature to a desert you control.',
   });
   add({ id:'oradrim_monk', set:'dlc', name:'Oradrim Monk', color:'yellow', type:'creature', subtype:null,
-    cost:3, req:{desert:2}, kw:kw('haste'), atk:2, hp:1,
-    rarity:'rare', treasure:false,
+    cost:3, req:{desert:1}, kw:kw('haste'), atk:2, hp:3, rarity:'common', treasure:false,
     text:'Haste. Whenever this attacks a god, draw a card.',
-    onAttackGod:(S,u) => { deal(S,u.own,1); lg(S,u.own,'☀ Oradrim Monk: drew 1 card'); },
+    onAttackGod:(S,u) => { deal(S,u.own,1); lg(S,u.own,'🧘 Oradrim Monk: +1 Karte'); },
   });
   add({ id:'oradrim_fanatic', set:'dlc', name:'Oradrim Fanatic', color:'yellow', type:'creature', subtype:null,
     cost:2, req:{desert:1}, kw:kw('jump'), atk:1, hp:2, rarity:'common', treasure:false,
@@ -3077,6 +3162,19 @@ const CARDS = (function() {
     text:'Flying. Can be summoned adjacent to friendly creatures.',
     onTurnStart:(S,u) => {},
   });
+
+  add({ id:'khalim_sky_prodigy', set:'dlc', name:'Khalim, Sky Prodigy', color:'yellow', type:'creature', subtype:null,
+    cost:6, req:{desert:3}, kw:kw('flying','charge:2'), atk:4, hp:5, rarity:'legendary', treasure:false,
+    text:'Flying. Charge 2. When Khalim attacks a god, add a Khalim\'s Follower to your hand (costs 0).',
+    onAttackGod:(S,u) => {
+      if(S.players[u.own].hand.length<HAND_MAX){
+        S.players[u.own].hand.push({id:'khalims_follower',buff:{atk:0,hp:0}});
+        if(!S._zeroCostOnce)S._zeroCostOnce={};
+        S._zeroCostOnce['khalims_follower']=(S._zeroCostOnce['khalims_follower']||0)+1;
+        lg(S,u.own,"⚔ Khalim: Khalim's Follower zur Hand (gratis)");
+      }
+    },
+  });
   add({ id:'khalims_training', set:'dlc', name:'Khalim\'s Training', color:'yellow', type:'event', subtype:null,
     cost:1, req:{desert:2}, kw:kw(), atk:null, hp:null,
     rarity:'rare', treasure:false,
@@ -3090,17 +3188,16 @@ const CARDS = (function() {
     },
   });
   add({ id:'drakkar_skycaptain', set:'dlc', name:'Drakkar Skycaptain', color:'yellow', type:'creature', subtype:null,
-    cost:4, req:{desert:1}, kw:kw('flying'), atk:2, hp:4, rarity:'rare', treasure:false,
+    cost:5, req:{desert:2}, kw:kw('flying'), atk:3, hp:4, rarity:'epic', treasure:false,
     text:'Flying. Whenever you draw a Flying creature, give it +1/+1.',
     onDraw:(S,u,cardId,cd) => {
-      if(cd?.kw?.includes?.('flying') || (typeof cd?.kw?.has==='function' && cd.kw.has('flying'))) {
-        const entry=S.players[u.own].hand.find(e=>e.id===cardId);
-        if(entry){entry.buff.atk=(entry.buff.atk||0)+1;entry.buff.hp=(entry.buff.hp||0)+1;}
-        lg(S,u.own,`🚢 Drakkar Skycaptain: ${cd.name} (Flying) gezogen → +1/+1`);
-      } else if(cd?.kw && Array.isArray([...cd.kw]) && [...cd.kw].some(k=>k==='flying')) {
-        const entry=S.players[u.own].hand.find(e=>e.id===cardId);
-        if(entry){entry.buff.atk=(entry.buff.atk||0)+1;entry.buff.hp=(entry.buff.hp||0)+1;}
-        lg(S,u.own,`🚢 Drakkar Skycaptain: ${cd.name} (Flying) gezogen → +1/+1`);
+      if(u.own===S.ap&&cd?.type==='creature'&&cd?.kw){
+        const kwArr=Array.isArray(cd.kw)?cd.kw:[...cd.kw];
+        if(kwArr.some(k=>String(k).includes('flying'))){
+          const entry=S.players[u.own].hand[S.players[u.own].hand.length-1];
+          if(entry){entry.buff.atk=(entry.buff.atk||0)+1;entry.buff.hp=(entry.buff.hp||0)+1;}
+          lg(S,u.own,`⛵ Drakkar Skycaptain: ${cd.name} +1/+1`);
+        }
       }
     },
   });
@@ -3187,12 +3284,11 @@ const CARDS = (function() {
     text:'Sacrifice a creature. Summon a 6/3 Oblivion Rider with Charge 3 in its place.',
   });
   add({ id:'shaytan_monstrosity', set:'dlc', name:'Shaytan Monstrosity', color:'yellow', type:'creature', subtype:null,
-    cost:5, req:{desert:2}, kw:kw('charge:2'), atk:0, hp:5, rarity:'epic', treasure:false,
-    text:'Charge 2. Whenever a friendly creature dies, gains its Attack.',
+    cost:6, req:{desert:3}, kw:kw('charge:2'), atk:3, hp:6, rarity:'epic', treasure:false,
+    text:'Charge 2. Whenever a friendly creature dies, drains its Attack.',
     onFriendlyDies:(S,u,dead) => {
-      if(dead.id===u.id||(dead.atk||0)<=0)return;
-      buffUnit(u,dead.atk,0);
-      lg(S,u.own,`😈 Shaytan Monstrosity: ${cardData(dead.cid)?.name} gestorben → +${dead.atk} ATK → ${u.atk}`);
+      if(dead.id===u.id)return;
+      const gain=dead.atk||0; if(gain>0){buffUnit(u,gain,0);lg(S,u.own,`😈 Shaytan Monstrosity: +${gain}/+0 → ${u.atk}/${u.hp}`);}
     },
   });
   add({ id:'iona', set:'dlc', name:'Iona, Beloved by All', color:'yellow', type:'creature', subtype:null,
@@ -3215,66 +3311,43 @@ const CARDS = (function() {
     rarity:'epic', treasure:false,
     text:'Destroy a creature with 3 Attack or less.',
   });
-  add({ id:'doomgate', set:'dlc', name:'Doomgate', color:'yellow', type:'structure', subtype:null,
-    cost:5, req:{desert:3}, kw:kw(), atk:null, hp:5, rarity:'legendary', treasure:false,
-    text:'When at 13+ Life, destroy it and summon Ostregoth. Activate: Sacrifice a creature, draw a card, gain +0/+2.',
+  add({ id:'doomgate', set:'dlc', name:'Doomgate, Door to Oblivion', color:'neutral', type:'structure', subtype:null,
+    cost:6, req:{wild:6}, kw:kw(), atk:null, hp:3, rarity:'legendary', treasure:false,
+    text:'When Doomgate has 13+ Life, destroy it and summon Ostregoth. Activate: Sacrifice a creature, draw a card, Doomgate +0/+2.',
+    onGift:(S,p,unit) => {
+      unit.pendingGift={type:'sacrifice_draw_buff0_2'};
+      lg(S,p,'🚪 Doomgate: Aktiviere — Opfer wählen');
+    },
     onTurnStart:(S,u) => {
-      if(S.players[u.own].hp>=13){
-        lg(S,u.own,'🚪 Doomgate: 13+ LP erreicht — Ostregoth beschworen!');
+      if(u.own===S.ap&&u.q!==null&&(u.hp||0)>=13){
+        const {q,r,s}=u;
         resolveDeath(S,u.id);
-        // Summon Ostregoth adjacent to base
-        const basePos=u.own==='A'?BASE_A:BASE_B;
-        const DIRS=[[1,-1,0],[-1,1,0],[1,0,-1],[-1,0,1],[0,1,-1],[0,-1,1]];
-        for(const [dq,dr,ds] of DIRS){
-          const nq=basePos[0]+dq,nr=basePos[1]+dr,ns=basePos[2]+ds;
-          if(!inB(nq,nr,ns))continue;
-          if(unitAt(S,nq,nr,ns))continue;
-          const o=mkUnit(S,u.own,'ostregoth',nq,nr,ns);
-          if(o){S.units[o.id]=o;break;}
-        }
+        const ost=mkUnit(S,u.own,'ostregoth',q,r,s);
+        if(ost){ost.summonSick=false;S.units[ost.id]=ost;lg(S,u.own,'🚪 Doomgate: Ostregoth beschworen!');}
       }
     },
-    onGift:(S,p,unit) => { unit.pendingGift={type:'sacrifice_draw_buff0_2'}; lg(S,p,'🚪 Doomgate: Wähle Kreatur zum Opfern'); },
   });
   add({ id:'windstorm_archer', set:'dlc', name:'Windstorm Archer', color:'yellow', type:'creature', subtype:null,
-    cost:2, req:{desert:2}, kw:kw('ranged'), atk:1, hp:2, rarity:'rare', treasure:false,
+    cost:3, req:{desert:2}, kw:kw('ranged'), atk:2, hp:3, rarity:'rare', treasure:false,
     text:'Ranged. Whenever you play an event, gains +1/+0 this turn.',
-    onEventPlayed:(S,u,id,cd) => {
-      buffUnit(u,1,0);
-      if(!u._eventBuffs)u._eventBuffs=0;
-      u._eventBuffs++;
-      lg(S,u.own,`🏹 Windstorm Archer: Event gespielt → +1/+0 → ${u.atk}/${u.hp}`);
-    },
+    onEventPlayed:(S,u) => { if(u.q!==null){buffUnit(u,1,0);if(!u._waBuff)u._waBuff=0;u._waBuff+=1;lg(S,u.own,`🏹 Windstorm Archer: +1/+0 → ${u.atk}/${u.hp}`);} },
+    onTurnStart:(S,u) => { if(u._waBuff){u.atk=Math.max(0,u.atk-u._waBuff);u._waBuff=0;} },
   });
   add({ id:'windstorm_charger', set:'dlc', name:'Windstorm Charger', color:'yellow', type:'creature', subtype:null,
-    cost:3, req:{desert:2}, kw:kw('charge:2'), atk:2, hp:3, rarity:'common', treasure:false,
-    text:'Charge 2. Whenever you play an event, gains +2/+0 this turn (limit +6).',
-    onEventPlayed:(S,u,id,cd) => {
-      if(!u._eventAtk)u._eventAtk=0;
-      if(u._eventAtk>=6)return;
-      const gain=Math.min(2,6-u._eventAtk);
-      buffUnit(u,gain,0);
-      u._eventAtk+=gain;
-      lg(S,u.own,`⚡ Windstorm Charger: Event → +${gain}/+0 → ${u.atk}/${u.hp} (${u._eventAtk}/6)`);
-    },
+    cost:4, req:{desert:2}, kw:kw('charge:2'), atk:2, hp:4, rarity:'rare', treasure:false,
+    text:'Charge 2. Whenever you play an event, gains +2/+0 this turn (limit +6/+0).',
+    onEventPlayed:(S,u) => { if(u.q!==null&&(!u._wcBuff||u._wcBuff<6)){buffUnit(u,2,0);if(!u._wcBuff)u._wcBuff=0;u._wcBuff+=2;lg(S,u.own,`⚡ Windstorm Charger: +2/+0 → ${u.atk}/${u.hp}`);} },
+    onTurnStart:(S,u) => { if(u._wcBuff){u.atk=Math.max(0,u.atk-u._wcBuff);u._wcBuff=0;} },
   });
   add({ id:'oradrim_sagittarius', set:'dlc', name:'Oradrim Sagittarius', color:'yellow', type:'creature', subtype:null,
-    cost:3, req:{desert:2}, kw:kw('ranged'), atk:1, hp:3,
-    rarity:'epic', treasure:false,
+    cost:4, req:{desert:2}, kw:kw('ranged'), atk:3, hp:3, rarity:'rare', treasure:false,
     text:'Ranged. Whenever a friendly creature attacks a god, gain 1 Faeria.',
-    onFriendlyAttacksGod:(S,u,attacker) => {
-      S.players[u.own].mana+=1;
-      lg(S,u.own,`☀ Sagittarius: +1 Faeria (${cardData(attacker?.cid)?.name||'?'} attacked god)`);
-    },
+    onFriendlyAttacksGod:(S,u,attacker) => { S.players[u.own].mana+=1; lg(S,u.own,`🏹 Sagittarius: +1 Mana → ${S.players[u.own].mana}`); },
   });
   add({ id:'wind_wisp', set:'dlc', name:'Wind Wisp', color:'yellow', type:'creature', subtype:null,
-    cost:4, req:{desert:1}, kw:kw('flying', 'charge:3'), atk:1, hp:2,
-    rarity:'rare', treasure:false,
+    cost:3, req:{desert:1}, kw:kw('flying','charge:3'), atk:1, hp:3, rarity:'rare', treasure:false,
     text:'Flying. Charge 3. Whenever a friendly creature attacks a god, gains +3/+0.',
-    onFriendlyAttacksGod:(S,u,attacker) => {
-      buffUnit(u,3,0);
-      lg(S,u.own,`🌪 Wind Wisp: +3/+0 → ${u.atk}/${u.hp}`);
-    },
+    onFriendlyAttacksGod:(S,u,attacker) => { if(u.q!==null){buffUnit(u,3,0);lg(S,u.own,`💨 Wind Wisp: +3/+0 → ${u.atk}/${u.hp}`);} },
   });
   add({ id:'khalims_prayer', set:'dlc', name:'Khalim\'s Prayer', color:'yellow', type:'event', subtype:null,
     cost:0, req:{desert:3}, kw:kw(), atk:null, hp:null,
@@ -3299,7 +3372,14 @@ const CARDS = (function() {
   add({ id:'topaz_yak', set:'dlc', name:'Topaz Yak', color:'yellow', type:'creature', subtype:'Yak',
     cost:4, req:{desert:2}, kw:kw(), atk:3, hp:4, rarity:'rare', treasure:false,
     text:'Can be summoned next to friendly Yaks. If it is, gains Haste.',
-    onTurnStart:(S,u) => { /* Placement bonus handled at summon time */ },
+    onSummon:(S,u,summoned,summonOwner) => {
+      if(summoned.id!==u.id)return;
+      const adjYak=cNbr(u.q,u.r,u.s).some(([nq,nr,ns])=>{
+        const v=unitAt(S,nq,nr,ns);
+        return v&&v.own===u.own&&cardData(v.cid)?.subtype==='Yak'&&v.id!==u.id;
+      });
+      if(adjYak){ u.kw.add('haste'); u.summonSick=false; lg(S,u.own,'🦬 Topaz Yak: Haste'); }
+    },
   });
   add({ id:'barrensky_vermin', set:'dlc', name:'Barrensky Vermin', color:'yellow', type:'creature', subtype:null,
     cost:2, req:{desert:1}, kw:kw(), atk:2, hp:2, rarity:'common', treasure:false,
@@ -3355,10 +3435,20 @@ const CARDS = (function() {
       }
     },
   });
-  add({ id:'annoying_gnat', set:'dlc', name:'Annoying Gnat', color:'yellow', type:'creature', subtype:null,
-    cost:2, req:{desert:2}, kw:kw('flying'), atk:1, hp:1,
-    rarity:'epic', treasure:false,
-    text:'Flying. Can\'t harvest. Last Words: Deal 2 damage to yourself. Summon in random space.',
+  add({ id:'annoying_gnat', set:'dlc', name:'Annoying Gnat', color:'neutral', type:'creature', subtype:null,
+    cost:1, req:{}, kw:kw('flying'), atk:1, hp:1, rarity:'common', treasure:false,
+    text:'Flying. Can\'t harvest faeria. Last Words - Deal 2 damage to yourself. Summon this in a random space.',
+    noHarvest:true,
+    onDeath:(S,u) => {
+      S.players[u.own].hp-=2; runGodDamageTriggers(S,u.own,2);
+      const spots=Object.entries(S.cells).filter(([k,c])=>c.type==='LAND'&&c.owner===u.own&&!Object.values(S.units).some(v=>cK(v.q,v.r)===k));
+      if(spots.length){
+        const [sk]=spots[Math.floor(Math.random()*spots.length)];
+        const [sq,sr]=sk.split(',').map(Number);
+        const ng=mkUnit(S,u.own,'annoying_gnat',sq,sr,-sq-sr);
+        if(ng){ng.noHarvest=true;S.units[ng.id]=ng;lg(S,u.own,'🦟 Annoying Gnat: neu beschworen');}
+      }
+    },
   });
   add({ id:'ioanas_smile', set:'dlc', name:'Iona\'s Smile', color:'yellow', type:'event', subtype:null,
     cost:2, req:{desert:2}, kw:kw(), atk:null, hp:null,
@@ -3391,9 +3481,13 @@ const CARDS = (function() {
   });
   add({ id:'flash_salmon', set:'dlc', name:'Flash Salmon', color:'yellow', type:'creature', subtype:null,
     cost:4, req:{desert:2}, kw:kw('divine','flying','haste','charge:2'), atk:3, hp:3, rarity:'epic', treasure:false,
-    text:'Divine. Flying. Haste. Charge 2. Cannot harvest Faeria.',
+    text:'Divine. Flying. Haste. Charge 2. Can\'t harvest faeria. At end of your turn, destroy this and draw a card.',
     noHarvest:true,
-    onTurnStart:(S,u) => {},
+    onTurnStart:(S,u) => {
+      if(u.own!==S.ap&&u.q!==null){ // triggers at START of OWN NEXT turn = end of last turn
+        resolveDeath(S,u.id); deal(S,u.own,1); lg(S,u.own,'🐟 Flash Salmon: zerstört, +1 Karte');
+      }
+    },
   });
   add({ id:'spirit_theft', set:'dlc', name:'Spirit Theft', color:'yellow', type:'event', subtype:null,
     cost:1, req:{desert:2, wild:2}, kw:kw(), atk:null, hp:null,
@@ -3436,20 +3530,17 @@ const CARDS = (function() {
     },
   });
   add({ id:'demonic_salmon', set:'dlc', name:'Demonic Salmon', color:'yellow', type:'creature', subtype:null,
-    cost:2, req:{desert:2}, kw:kw('haste', 'flying', 'charge:2'), atk:1, hp:1,
-    rarity:'common', treasure:false,
-    text:'Haste. Flying. Charge 2. Can\'t harvest. Whenever this attacks a god, gains +1/+1.',
-    onAttackGod:(S,u) => { buffUnit(u,1,1); lg(S,u.own,`🐟 Demonic Salmon: +1/+1 → ${u.atk}/${u.hp}`); },
+    cost:4, req:{desert:2}, kw:kw('haste','flying','charge:2'), atk:3, hp:3, rarity:'epic', treasure:false,
+    text:'Haste. Flying. Charge 2. Can\'t harvest faeria. Whenever this attacks a god, gains +1/+1.',
+    noHarvest:true,
+    onAttackGod:(S,u) => { buffUnit(u,1,1); lg(S,u.own,`😈 Demonic Salmon: +1/+1 → ${u.atk}/${u.hp}`); },
   });
   add({ id:'fortune_hunter', set:'dlc', name:'Fortune Hunter', color:'neutral', type:'creature', subtype:null,
-    cost:3, req:{}, kw:kw(), atk:1, hp:1, rarity:'epic', treasure:false,
-    text:'Whenever this harvests Faeria, give a random friendly creature +1/+1.',
-    onSelfHarvest:(S,u) => {
-      const crts=Object.values(S.units).filter(v=>v.own===u.own&&v.q!==null&&v.id!==u.id&&cardData(v.cid)?.type==='creature');
-      if(!crts.length)return;
-      const t=crts[Math.floor(Math.random()*crts.length)];
-      buffUnit(t,1,1);
-      lg(S,u.own,`💰 Fortune Hunter: ${cardData(t.cid)?.name} +1/+1 → ${t.atk}/${t.hp}`);
+    cost:3, req:{}, kw:kw(), atk:2, hp:3, rarity:'common', treasure:false,
+    text:'Whenever this harvests faeria, give a random friendly creature +1/+1.',
+    onSelfHarvest:(S,u,isOpp) => {
+      const allies=Object.values(S.units).filter(v=>v.own===u.own&&v.q!==null&&v.id!==u.id);
+      if(allies.length){const t=allies[Math.floor(Math.random()*allies.length)];buffUnit(t,1,1);lg(S,u.own,`🤠 Fortune Hunter: ${cardData(t.cid)?.name} +1/+1`);}
     },
   });
   add({ id:'steam_forge', set:'dlc', name:'Steam Forge', color:'neutral', type:'structure', subtype:null,
@@ -3486,6 +3577,20 @@ const CARDS = (function() {
       else u.atk=(cardData(u.cid)?.atk||0);
     },
   });
+
+  add({ id:'magnus_king', set:'dlc', name:'Magnus, King of Meroval', color:'neutral', type:'creature', subtype:null,
+    cost:7, req:{}, kw:kw('charge:3'), atk:5, hp:6, rarity:'legendary', treasure:false,
+    text:'Charge 3. Combat - Draw a card. It costs 0.',
+    onCombat:(S,u,target) => {
+      const pl=S.players[u.own];
+      if(pl.deck.length){
+        const id=pl.deck.shift(); handPush(S,u.own,id);
+        if(!S._zeroCostOnce)S._zeroCostOnce={};
+        S._zeroCostOnce[id]=(S._zeroCostOnce[id]||0)+1;
+        lg(S,u.own,`👑 Magnus: ${cardData(id)?.name} gezogen (gratis)`);
+      }
+    },
+  });
   add({ id:'yak_attack', set:'dlc', name:'Yak Attack', color:'neutral', type:'event', subtype:null,
     cost:9, req:{}, kw:kw(), atk:null, hp:null,
     rarity:'epic', treasure:false,
@@ -3501,16 +3606,17 @@ const CARDS = (function() {
     rarity:'common', treasure:false,
     text:'Protection.',
   });
-  add({ id:'magda', set:'dlc', name:'Magda, Queen of Meroval', color:'neutral', type:'creature', subtype:null,
-    cost:4, req:{wild:4}, kw:kw(), atk:0, hp:3, rarity:'legendary', treasure:false,
-    text:'Your Legends cost 1 less. Production: Add a random Legend to hand.',
+  add({ id:'magda', set:'dlc', name:'Magda, Queen of Meroval', color:'blue', type:'creature', subtype:null,
+    cost:5, req:{lake:3}, kw:kw(), atk:3, hp:5, rarity:'legendary', treasure:false,
+    text:'Your Legends cost 1 less. Production: Add a random Legend to your hand. It becomes wild.',
     onTurnStart:(S,u) => {
-      const legends=Object.values(CARDS).filter(c=>c.rarity==='legendary'&&!c.treasure&&c.id!==u.cid);
-      if(!legends.length)return;
-      const pick=legends[Math.floor(Math.random()*legends.length)];
-      if(S.players[u.own].hand.length<HAND_MAX){
-        S.players[u.own].hand.push({id:pick.id,buff:{atk:0,hp:0}});
-        lg(S,u.own,`👸 Magda: ${pick.name} zur Hand`);
+      if(u.own===S.ap&&u.q!==null){
+        const legends=Object.values(CARDS).filter(c=>c.rarity==='legendary'&&!c.treasure&&c.id!==u.cid);
+        if(legends.length&&S.players[u.own].hand.length<HAND_MAX){
+          const pick=legends[Math.floor(Math.random()*legends.length)];
+          S.players[u.own].hand.push({id:pick.id,buff:{atk:0,hp:0},wild:true});
+          lg(S,u.own,`👑 Magda Production: ${pick.name} (wild)`);
+        }
       }
     },
   });
@@ -3532,6 +3638,19 @@ const CARDS = (function() {
       if(!u._heroTriggered&&u.hp>0){u._heroTriggered=true;buffUnit(u,3,3);u.kw.add('charge:2');lg(S,u.own,`🦸 Unlikely Hero: +3/+3 + Charge 2 → ${u.atk}/${u.hp}`);}
     },
   });
+
+  add({ id:'illusion_of_grandeur', set:'dlc', name:'Illusion of Grandeur', color:'neutral', type:'creature', subtype:null,
+    cost:3, req:{}, kw:kw('charge:2'), atk:1, hp:3, rarity:'epic', treasure:false,
+    text:'Charge 2. Whenever you summon a creature costing 1 or less, gains its ATK and Life.',
+    onSummon:(S,u,summoned,summonOwner) => {
+      if(summonOwner!==u.own||summoned.id===u.id)return;
+      const cd=cardData(summoned.cid);
+      if(cd&&(cd.cost||0)<=1&&cd.type==='creature'){
+        buffUnit(u,cd.atk||0,cd.hp||0);
+        lg(S,u.own,`✨ Illusion of Grandeur: +${cd.atk||0}/+${cd.hp||0} → ${u.atk}/${u.hp}`);
+      }
+    },
+  });
   add({ id:'plague_bearer', set:'dlc', name:'Plague Bearer', color:'neutral', type:'creature', subtype:null,
     cost:3, req:{}, kw:kw(), atk:2, hp:1,
     rarity:'rare', treasure:false,
@@ -3546,6 +3665,15 @@ const CARDS = (function() {
     cost:5, req:{mountain:1}, kw:kw('ranged'), atk:3, hp:5, rarity:'rare', treasure:false,
     text:'Ranged. After this attacks, gains +1/+0.',
     onCombat:(S,u,target) => { buffUnit(u,1,0); lg(S,u.own,`⚙ Siege Engine: +1/+0 → ${u.atk}/${u.hp}`); },
+  });
+
+  add({ id:'seifer_blood_tyrant', set:'dlc', name:'Seifer, Blood Tyrant', color:'red', type:'creature', subtype:null,
+    cost:8, req:{mountain:3}, kw:kw(), atk:6, hp:6, rarity:'legendary', treasure:false,
+    text:'When Seifer destroys a creature, gains ATK and Life equal to that creature\'s base stats.',
+    onEnemyDies:(S,u,dead) => {
+      const base=cardData(dead.cid);
+      if(base&&base.atk){buffUnit(u,base.atk,base.hp||0);lg(S,u.own,`🗡 Seifer: +${base.atk}/+${base.hp||0} → ${u.atk}/${u.hp}`);}
+    },
   });
   add({ id:'famine', set:'dlc', name:'Famine', color:'neutral', type:'event', subtype:null,
     cost:2, req:{}, kw:kw(), atk:null, hp:null,
@@ -3579,12 +3707,9 @@ const CARDS = (function() {
     onGift:(S,p,unit)=>{ ['A','B'].forEach(pl=>{ deal(S,pl,2); S.players[pl].hp=Math.min(S.players[pl].hp+2,BASE_HP); }); lg(S,p,'📖 Storyteller: Beide Spieler ziehen 2 Karten, +2 LP'); },
   });
   add({ id:'wandering_monk', set:'dlc', name:'Wandering Monk', color:'neutral', type:'creature', subtype:null,
-    cost:4, req:{}, kw:kw(), atk:1, hp:5, rarity:'rare', treasure:false,
-    text:'Whenever you draw a card, gains +1/+0.',
-    onDraw:(S,u,cardId,cd) => {
-      buffUnit(u,1,0);
-      lg(S,u.own,`🧘 Wandering Monk: Karte gezogen → +1/+0 → ${u.atk}/${u.hp}`);
-    },
+    cost:3, req:{}, kw:kw(), atk:1, hp:4, rarity:'rare', treasure:false,
+    text:'Whenever you draw a card, this gains +1/+0.',
+    onDraw:(S,u,cardId,cd) => { if(u.q!==null){buffUnit(u,1,0);lg(S,u.own,`🧘 Wandering Monk: +1/+0 → ${u.atk}/${u.hp}`);} },
   });
   add({ id:'steamforge_enforcer', set:'dlc', name:'Steamforge Enforcer', color:'neutral', type:'creature', subtype:null,
     cost:6, req:{}, kw:kw(), atk:6, hp:5,
@@ -3789,19 +3914,15 @@ const CARDS = (function() {
   });
   add({ id:'imperial_drain', set:'dlc', name:'Imperial Drain', color:'neutral', type:'structure', subtype:null,
     cost:4, req:{}, kw:kw(), atk:null, hp:6, rarity:'epic', treasure:false,
-    text:'Faeria wells are empty. Production: Deal 1 damage to this. Last Words: Refill each well.',
+    text:'Faeria wells are empty. Production - Deal 1 damage to this. Last Words - Refill each well.',
     onTurnStart:(S,u) => {
-      // Empty all wells each turn
+      if(u.q===null)return;
       WELLS.forEach(([wq,wr])=>{const k=cK(wq,wr);if(S.cells[k])S.cells[k].mana=0;});
-      // Take 1 damage
-      applyDmg(S,u,1,null,true);
-      if(u.hp<=0)resolveDeath(S,u.id);
+      if(u.own===S.ap){applyDmg(S,u,1,null,true);if(u.hp<=0)resolveDeath(S,u.id);else lg(S,u.own,`🏛 Imperial Drain: -1→${u.hp}HP`);}
     },
-    onDeath:(S,u) => {
-      WELLS.forEach(([wq,wr])=>{const k=cK(wq,wr);if(S.cells[k])S.cells[k].mana=1;});
-      lg(S,u.own,'💧 Imperial Drain: Brunnen wieder aufgefüllt');
-    },
+    onDeath:(S,u) => { WELLS.forEach(([wq,wr])=>{const k=cK(wq,wr);if(S.cells[k])S.cells[k].mana=1;}); lg(S,u.own,'🏛 Imperial Drain: Brunnen aufgefüllt'); },
   });
+
   add({ id:'three_wishes', set:'dlc', name:'Three Wishes', color:'neutral', type:'event', subtype:null,
     cost:3, req:{lake:2, mountain:2, forest:2, desert:2}, kw:kw(), atk:null, hp:null,
     rarity:'epic', treasure:false,
@@ -3863,10 +3984,15 @@ const CARDS = (function() {
     cost:6, req:{}, kw:kw('divine'), atk:4, hp:6, rarity:'epic', treasure:false,
     text:'Divine. When you would take lethal damage, prevent it and destroy this instead.',
     onGodDamaged:(S,u,damagedPlayer,amount) => {
-      if(damagedPlayer===u.own&&S.players[u.own].hp<=0){
-        S.players[u.own].hp=1; resolveDeath(S,u.id);
-        lg(S,u.own,'🛡 Divine Guardian: Tödlichen Schaden verhindert! Selbst zerstört.');
+      if(u.q!==null && damagedPlayer===u.own && S.players[u.own].hp<=0 && !S.winner){
+        S.players[u.own].hp=1;
+        resolveDeath(S,u.id);
+        lg(S,u.own,'🛡 Divine Guardian: Tödlichen Schaden verhindert — geopfert');
       }
+    },
+    onDamageReceived:(S,u,amount,source) => {
+      // Creatures can't kill Divine Guardian in combat either
+      // (covered by divine keyword — can't be targeted — but belt+suspenders)
     },
   });
   add({ id:'emperors_command', set:'dlc', name:'The Emperor\'s Command', color:'neutral', type:'event', subtype:null,
@@ -4036,8 +4162,7 @@ const CARDS = (function() {
     },
   });
   add({ id:'flight_of_mantas', set:'dlc', name:'Flight of the Mantas', color:'neutral', type:'event', subtype:null,
-    cost:2, req:{lake:2, desert:2}, kw:kw(), atk:null, hp:null,
-    rarity:'epic', treasure:false,
+    cost:2, req:{lake:2,desert:2}, kw:kw(), atk:null, hp:null, rarity:'epic', treasure:false,
     text:'When drawn, copy it. Summon a 2/2 Manta with Flying and Charge 2.',
   });
   add({ id:'frog_tosser', set:'dlc', name:'Frog Tosser', color:'neutral', type:'creature', subtype:null,
@@ -4137,6 +4262,12 @@ const CARDS = (function() {
     text:'Flying. Taunt. Dash 1.',
     onTurnStart:(S,u) => {},
   });
+
+  add({ id:'sky_swallower', set:'dlc', name:'Sky Swallower', color:'neutral', type:'creature', subtype:null,
+    cost:9, req:{}, kw:kw('flying'), atk:6, hp:6, rarity:'legendary', treasure:false,
+    text:'Flying.',
+    onTurnStart:(S,u) => {},
+  });
   add({ id:'ulani_shaman', set:'dlc', name:"Ulani's Shaman", color:'neutral', type:'creature', subtype:null,
     cost:5, req:{}, kw:kw(), atk:3, hp:4, rarity:'epic', treasure:false,
     text:'Gift: Draw a green, blue, red and yellow card from your deck.',
@@ -4149,28 +4280,13 @@ const CARDS = (function() {
       lg(S,p,'🔮 Ulani Shaman: Je 1 Karte pro Farbe gezogen');
     },
   });
-  add({ id:'yakkapult', set:'dlc', name:'Yakkapult', color:'neutral', type:'creature', subtype:null,
-    cost:4, req:{wild:6}, kw:kw('ranged'), atk:2, hp:5,
-    rarity:'epic', treasure:false,
-    text:'Ranged. Whenever this attacks, summon a 2/2 Angry Yak adjacent to target.',
-    onAttack:(S,u,targetType,targetId) => {
-      // Find target position
-      let tq,tr,ts;
-      if(targetType==='unit'&&S.units[targetId]){tq=S.units[targetId].q;tr=S.units[targetId].r;ts=S.units[targetId].s;}
-      else if(targetType==='base'){const bp=u.own==='A'?BASE_B:BASE_A;[tq,tr,ts]=bp;}
-      else return;
-      // Place 2/2 Angry Yak on adjacent own land cell near target
-      const DIRS=[[1,-1,0],[-1,1,0],[1,0,-1],[-1,0,1],[0,1,-1],[0,-1,1]];
-      for(const [dq,dr,ds] of DIRS){
-        const nq=tq+dq,nr=tr+dr,ns=ts+ds;
-        if(!inB(nq,nr,ns))continue;
-        const k=cK(nq,nr),c=S.cells[k];
-        if(!c||c.type!=='LAND'||c.owner!==u.own)continue;
-        if(unitAt(S,nq,nr,ns))continue;
-        const tok=mkUnit(S,u.own,'angry_yak_token',nq,nr,ns);
-        if(tok){S.units[tok.id]=tok;tok.summonSick=false;lg(S,u.own,'🐂 Yakkapult: 2/2 Angry Yak summoned');}
-        break;
-      }
+  add({ id:'yakkapult', set:'dlc', name:'Yakkapult', color:'neutral', type:'creature', subtype:'Yak',
+    cost:5, req:{}, kw:kw('ranged'), atk:3, hp:5, rarity:'epic', treasure:false,
+    text:'Ranged. Whenever this attacks, summon a 2/2 Angry Yak in a random space adjacent to the target.',
+    onAttack:(S,u,target) => {
+      if(!target)return;
+      const adj=cNbr(target.q,target.r,target.s).filter(([nq,nr,ns])=>{const c=S.cells[cK(nq,nr)];return c&&c.type==='LAND'&&!unitAt(S,nq,nr,ns);});
+      if(adj.length){const [sq,sr,ss]=adj[Math.floor(Math.random()*adj.length)];const y=mkUnit(S,u.own,'angry_yak_token',sq,sr,ss);if(y){y.summonSick=false;S.units[y.id]=y;lg(S,u.own,'🐃 Yakkapult: Angry Yak beschworen');}}
     },
   });
   add({ id:'victory_celebration', set:'dlc', name:'Victory Celebration', color:'neutral', type:'event', subtype:null,
@@ -4246,6 +4362,26 @@ const CARDS = (function() {
       Object.values(S.units).filter(v=>v.own===u.own&&v._outpostBuff).forEach(v=>{v.atk=Math.max(0,v.atk-1);delete v._outpostBuff;});
     },
   });
+  add({ id:'paradisiacal_palace', set:'dlc', name:'Paradisiacal Palace', color:'neutral', type:'structure', subtype:null,
+    cost:4, req:{}, kw:kw(), atk:null, hp:4, rarity:'epic', treasure:false,
+    text:'Choose one - Create a special land. Give the first creature summoned on it this turn +2/+0.',
+    onGift:(S,p,unit) => {
+      unit.pendingGift={type:'create_special_land'};
+      // Also flag: first creature summoned on the palace land this turn gets +2/+0
+      if(unit.q!==null){
+        if(!S._palaceBuff)S._palaceBuff={};
+        S._palaceBuff[p]={key:cK(unit.q,unit.r),used:false};
+      }
+      lg(S,p,'🏰 Paradisiacal Palace: Spezielles Land wählen');
+    },
+    onTurnStart:(S,u) => {
+      // Reset palace buff flag each turn
+      if(u.own===S.ap&&u.q!==null){
+        if(!S._palaceBuff)S._palaceBuff={};
+        S._palaceBuff[u.own]={key:cK(u.q,u.r),used:false};
+      }
+    },
+  });
   add({ id:'destructive_volley', set:'dlc', name:'Destructive Volley', color:'neutral', type:'event', subtype:null,
     cost:3, req:{}, kw:kw(), atk:null, hp:null,
     rarity:'rare', treasure:false,
@@ -4265,6 +4401,19 @@ const CARDS = (function() {
         S._zeroCostOnce[pick.id]=(S._zeroCostOnce[pick.id]||0)+1;
         lg(S,p,`🐦 Gagana Birdship: ${pick.name} zur Hand (gratis)`);
       }
+    },
+  });
+
+  add({ id:'gagana_treasure_seeker', set:'gagana', name:'Gagana, Treasure Seeker', color:'neutral', type:'creature', subtype:null,
+    cost:7, req:{}, kw:kw('flying'), atk:4, hp:5, rarity:'legendary', treasure:false,
+    text:'Flying. Gift: For each card in hand, add a Treasure Map to your deck, shuffle hand back and redraw.',
+    onGift:(S,p,unit) => {
+      const pl=S.players[p]; const count=pl.hand.length;
+      for(let i=0;i<count;i++){const pos=Math.floor(Math.random()*(pl.deck.length+1));pl.deck.splice(pos,0,'treasure_map');}
+      const handIds=pl.hand.map(e=>e.id); pl.hand=[];
+      handIds.forEach(id=>{const pos=Math.floor(Math.random()*(pl.deck.length+1));pl.deck.splice(pos,0,id);});
+      deal(S,p,count);
+      lg(S,p,`🐦 Gagana Treasure Seeker: ${count} Maps ins Deck, Hand neu gezogen`);
     },
   });
   add({ id:'radiance_scourge', set:'dlc', name:'Radiance Scourge', color:'neutral', type:'creature', subtype:null,
@@ -4365,9 +4514,19 @@ const CARDS = (function() {
     },
   });
   add({ id:'kaios', set:'dlc', name:'Kaios, Demented Overmind', color:'neutral', type:'creature', subtype:null,
-    cost:6, req:{wild:6}, kw:kw('divine'), atk:6, hp:6,
-    rarity:'legendary', treasure:false,
+    cost:6, req:{wild:6}, kw:kw('divine'), atk:6, hp:6, rarity:'legendary', treasure:false,
     text:'Divine. Kaios\' Attack always equals his Life. Gift: Drain 1 Life from EVERYTHING.',
+    onTurnStart:(S,u) => { if(u.q!==null) u.atk=Math.max(0,u.hp); },
+    onGift:(S,p,unit) => {
+      Object.values(S.units).filter(v=>v.q!==null).forEach(v=>{
+        applyDmg(S,v,1,null,true); if(v.hp<=0)resolveDeath(S,v.id);
+      });
+      S.players['A'].hp-=1; S.players['B'].hp-=1;
+      runGodDamageTriggers(S,'A',1); runGodDamageTriggers(S,'B',1);
+      if(S.players['A'].hp<=0)S.winner='B'; if(S.players['B'].hp<=0)S.winner='A';
+      unit.atk=Math.max(0,unit.hp);
+      lg(S,p,'👁 Kaios: 1 Schaden an ALLES');
+    },
   });
   add({ id:'sky_yak', set:'dlc', name:'Sky Yak', color:'neutral', type:'creature', subtype:'Yak',
     cost:4, req:{}, kw:kw('flying'), atk:2, hp:4, rarity:'epic', treasure:false,
@@ -4580,6 +4739,24 @@ const CARDS = (function() {
       Object.values(S.units).filter(v=>v.own===u.own&&v.q!==null&&v.id!==u.id).forEach(v=>{
         if(!v._cloudBuff){v._cloudBuff=true;v.atk+=1;v.kw.add('flying');v.kw.add('jump');}
       });
+
+  add({ id:'compass_gagana', set:'gagana', name:'Compass of Gagana', color:'neutral', type:'structure', subtype:null,
+    cost:3, req:{}, kw:kw(), atk:null, hp:3, rarity:'epic', treasure:false,
+    text:'At end of your turn: find a Treasure Map in your deck and place it on top. If none, shuffle one in.',
+    onTurnStart:(S,u) => {
+      if(u.own===S.ap){
+        const pl=S.players[u.own];
+        const idx=pl.deck.findIndex(id=>id==='treasure_map');
+        if(idx>=0){
+          const id=pl.deck.splice(idx,1)[0]; pl.deck.unshift(id);
+          lg(S,u.own,'🧭 Compass of Gagana: Treasure Map nach oben');
+        } else {
+          pl.deck.unshift('treasure_map');
+          lg(S,u.own,'🧭 Compass of Gagana: Treasure Map eingemischt');
+        }
+      }
+    },
+  });
     },
     onDeath:(S,u)=>{
       Object.values(S.units).filter(v=>v.own===u.own&&v._cloudBuff).forEach(v=>{
@@ -4663,16 +4840,21 @@ const CARDS = (function() {
     rarity:'rare', treasure:true,
     text:'Destroy a creature. Summon a 6/1 Slaughtering Shadow in its place.',
   });
+
+  add({ id:'detonate', set:'dlc', name:'Detonate', color:'red', type:'event', subtype:null,
+    cost:3, req:{mountain:1}, kw:kw(), atk:null, hp:null, rarity:'rare', treasure:false,
+    text:'All friendly Mecha deal 2 damage to adjacent enemies.',
+  });
   add({ id:'jeweled_magpie', set:'dlc', name:'Jeweled Magpie', color:'neutral', type:'creature', subtype:null,
-    cost:3, req:{}, kw:kw('flying', 'haste'), atk:1, hp:5,
-    rarity:'rare', treasure:true,
-    text:'Flying. Haste. Whenever this attacks a god, add a random Treasure to hand.',
+    cost:4, req:{}, kw:kw('flying','haste'), atk:3, hp:3, rarity:'epic', treasure:false,
+    text:'Flying. Haste. Whenever this attacks a god, add a random Treasure to your hand.',
     onAttackGod:(S,u) => {
-      const pool=Object.values(CARDS).filter(c=>c.treasure&&c.id!=='mecha_token'&&c.id!=='guardian_token');
-      if(!pool.length)return;
-      const pick=pool[Math.floor(Math.random()*pool.length)];
-      const pl=S.players[u.own];
-      if(pl.hand.length<HAND_MAX){pl.hand.push({id:pick.id,buff:{atk:0,hp:0}});lg(S,u.own,`💎 Magpie: ${pick.name} added`);}
+      const trs=Object.values(CARDS).filter(c=>c.treasure);
+      if(trs.length&&S.players[u.own].hand.length<HAND_MAX){
+        const tr=trs[Math.floor(Math.random()*trs.length)];
+        S.players[u.own].hand.push({id:tr.id,buff:{atk:0,hp:0}});
+        lg(S,u.own,`💎 Jeweled Magpie: ${tr.name} zur Hand`);
+      }
     },
   });
   add({ id:'wheel_of_chaos', set:'dlc', name:'Wheel of Chaos', color:'neutral', type:'event', subtype:null,
@@ -4760,6 +4942,11 @@ const CARDS = (function() {
     rarity:'rare', treasure:true,
     text:'Deal 5 damage. Shuffle the Hammer into your deck.',
   });
+
+  add({ id:'hammer_of_aoros', set:'dlc', name:'Hammer of Aoros', color:'neutral', type:'event', subtype:null,
+    cost:5, req:{}, kw:kw(), atk:null, hp:null, rarity:'legendary', treasure:false,
+    text:'Deal 5 damage. Shuffle the Hammer of Aoros into your deck.',
+  });
   add({ id:'dark_crystal', set:'dlc', name:'Dark Crystal', color:'neutral', type:'event', subtype:null,
     cost:8, req:{}, kw:kw(), atk:null, hp:null,
     rarity:'rare', treasure:true,
@@ -4770,6 +4957,12 @@ const CARDS = (function() {
     cost:0, req:{}, kw:kw('haste'), atk:2, hp:2, rarity:'common', treasure:false,
     text:'Haste.',
   });
+  add({ id:'angry_yak', set:'core', name:'Angry Yak', color:'neutral', type:'creature', subtype:'Yak',
+    cost:0, req:{}, kw:kw('haste'), atk:2, hp:2, rarity:'token', treasure:false,
+    text:'Haste.',
+    onTurnStart:(S,u) => {},
+  });
+
   add({ id:'angry_prairie_yak', set:'dlc', name:'Angry Prairie Yak', color:'neutral', type:'creature', subtype:'Yak',
     cost:0, req:{}, kw:kw('haste'), atk:2, hp:4, rarity:'common', treasure:false,
     text:'Haste.',
@@ -4793,12 +4986,9 @@ const CARDS = (function() {
     },
   });
   add({ id:'thorn_wisp', set:'dlc', name:'Thorn Wisp', color:'green', type:'creature', subtype:null,
-    cost:2, req:{forest:2}, kw:kw(), atk:1, hp:3, rarity:'common', treasure:false,
-    text:'Whenever you create a Forest, gains +1/+0.',
-    onForestCreated:(S,u) => {
-      buffUnit(u,1,0);
-      lg(S,u.own,`🌿 Thorn Wisp: Wald erschaffen → +1/+0 → ${u.atk}/${u.hp}`);
-    },
+    cost:2, req:{forest:1}, kw:kw(), atk:1, hp:3, rarity:'common', treasure:false,
+    text:'Whenever you create a forest, gains +1/+0.',
+    onForestCreated:(S,u) => { if(u.q!==null){buffUnit(u,1,0);lg(S,u.own,`🌿 Thorn Wisp: +1/+0 → ${u.atk}/${u.hp}`);} },
   });
   add({ id:'warstorm_champion', set:'dlc', name:'Warstorm Champion', color:'neutral', type:'creature', subtype:null,
     cost:9, req:{wild:6}, kw:kw('dash:2'), atk:5, hp:6, rarity:'epic', treasure:false,
@@ -5304,6 +5494,11 @@ function deal(S, p, n) {
     Object.values(S.units).filter(u=>u.own===p&&u.q!==null).forEach(w=>{
       if(typeof w.onDraw==='function') try{w.onDraw(S,w,cardId,cd);}catch(e){}
     });
+    // ── Flight of the Mantas: when drawn, copy to hand ──
+    if (cardId === 'flight_of_mantas' && S.players[p].hand.length < HAND_MAX) {
+      S.players[p].hand.push({id:'flight_of_mantas', buff:{atk:0,hp:0}});
+      lg(S, p, '🐟 Flight of the Mantas: Kopie zur Hand');
+    }
     // ── Spring Mochi: next 7+ cost card costs 3 less ──
     if (S._springMochi?.[p] > 0 && cd && (cd.cost||0) >= 7) {
       S._springMochi[p]--;
@@ -5458,7 +5653,11 @@ function canPlay(S, p, id) {
   const handDisc = (S._handDiscount?.[p]?.[id]) || 0;
   // Mother of All Yaks: cost reduced by number of friendly Yaks that died
   const effectiveCost = (id === 'mother_of_all_yaks') ? motherYakCost(S, p)
-                      : isFree ? 0 : Math.max(0, cd.cost - handDisc);
+                      : isFree ? 0
+                      : (S._zeroCostTurn?.[p]) ? 0
+                      : (S._failedExperiment?.[p] && cd?.type==='creature') ? 0
+                      : Math.max(0, cd.cost - handDisc
+                          - (cd.rarity==='legendary' && Object.values(S.units).some(u=>u.own===p&&u.q!==null&&u.cid==='magda') ? 1 : 0));
   if (!isFree && S.players[p].mana < effectiveCost) return false;
   const reqMap = { lake:'W', forest:'F', mountain:'M', desert:'D' };
   for (const [lt,n] of Object.entries(cd.req||{})) {
@@ -5837,9 +6036,20 @@ function doAtk(S, attackerId, targetType, targetId) {
     if (S.units[targetId] && defRetaliates && typeof d.onCombat==='function')
       try { d.onCombat(S, d, a); } catch(e) { console.warn('onCombat def',e); }
 
-    // ── Resolve deaths after onCombat (abilities may have modified hp) ──
-    if (d.hp <= 0 && S.units[targetId])   resolveDeath(S, targetId);
-    if (a.hp <= 0 && S.units[attackerId]) { resolveDeath(S, attackerId); return; }
+    // ── Resolve deaths after onCombat ──
+    if (d.hp <= 0 && S.units[targetId])   { S.units[targetId]._diedInCombat=true;  resolveDeath(S, targetId); }
+    if (S._grapplingHook?.[attackerId] && S.units[attackerId]) {
+      delete S._grapplingHook[attackerId];
+      const adj2=cNbr(d.q,d.r,d.s).filter(([nq,nr,ns])=>{const c=S.cells[cK(nq,nr)];return c&&c.type==='LAND'&&!unitAt(S,nq,nr,ns);});
+      if(adj2.length&&S.units[attackerId]){const [gq,gr,gs]=adj2[0];S.units[attackerId].q=gq;S.units[attackerId].r=gr;S.units[attackerId].s=gs;lg(S,a.own,'🪝 Grappling Hook: Kreatur bewegt');}
+    }
+    // Grappling Hook: move attacker to adj land after attacking
+    if (S._grapplingHook?.[attackerId] && S.units[attackerId]) {
+      delete S._grapplingHook[attackerId];
+      const ghAdj=cNbr(d.q||q,d.r||r,d.s||s).filter(([nq,nr,ns])=>{const c=S.cells[cK(nq,nr)];return c&&c.type==='LAND'&&!unitAt(S,nq,nr,ns);});
+      if(ghAdj.length&&S.units[attackerId]){const[gq,gr,gs]=ghAdj[0];const ga=S.units[attackerId];ga.q=gq;ga.r=gr;ga.s=gs;lg(S,ga.own,'🪝 Grappling Hook: bewegt');}
+    }
+    if (a.hp <= 0 && S.units[attackerId]) { S.units[attackerId]._diedInCombat=true; resolveDeath(S, attackerId); return; }
 
   } else {
     // Attack enemy base
@@ -5848,6 +6058,9 @@ function doAtk(S, attackerId, targetType, targetId) {
     const bonusNote = effAtk(a,true,S)>effAtk(a,false,S) ? ' (inkl. Götterbonus)' : '';
     lg(S, a.own, `⚔ Basis ${targetId}: -${dmg}HP${bonusNote} → ${S.players[targetId].hp}`);
     if (S.players[targetId].hp<=0) S.winner=a.own;
+    // Fire god-damage triggers (Divine Guardian may reset hp and clear winner)
+    runGodDamageTriggers(S, targetId, dmg);
+    if (S.players[targetId].hp > 0) S.winner = undefined; // Divine Guardian saved them
     if (S.units[attackerId] && typeof a.onCombat==='function')
       try { a.onCombat(S, a, null); } catch(e) {}
     // ── "Whenever this attacks a god" triggers ──────────────
@@ -6026,6 +6239,11 @@ function resolvePendingGift(S, p, unit, targetQ, targetR, targetS) {
     S.cells[gift.srcKey] = {type:'EMPTY'};
     S.cells[k] = {type:'LAND', owner:p, landType:gift.landType};
     lg(S, p, `🌊 Sunken Tower: Land verschoben nach (${targetQ},${targetR})`);
+    // Fire onMove for any unit that was standing on the moved land (e.g. Sorocco)
+    const _movedKey = gift.srcKey;
+    Object.values(S.units).filter(u=>u.q!==null&&cK(u.q,u.r)===_movedKey).forEach(u=>{
+      if(typeof u.onMove==='function') try{u.onMove(S,u,targetQ,targetR,-targetQ-targetR);}catch(e){}
+    });
     return true;
   }
 
@@ -6345,6 +6563,31 @@ function doPlay(S, p, id, q, r, s, p_choice) {
     S.units[u.id] = u;
     lg(S, p, `✦ ${cd.name} beschworen`);
     harvestMana(S, p); // harvest if spawned adjacent to well
+    // ── Paradisiacal Palace: first creature summoned on palace land gets +2/+0 ──
+    if (cd?.type==='creature' && S._palaceBuff?.[p]?.used===false) {
+      const placedUnit = Object.values(S.units).find(v=>v.own===p&&v.q===q&&v.r===r&&v.q!==null);
+      if (placedUnit && cK(q,r) === S._palaceBuff[p].key) {
+        buffUnit(placedUnit, 2, 0);
+        S._palaceBuff[p].used = true;
+        lg(S, p, `🏰 Paradisiacal Palace: +2/+0 → ${placedUnit.atk}/${placedUnit.hp}`);
+      }
+    }
+    // ── Failed Experiment: creature costs 0 but dies at end of turn ──
+    if (S._failedExperiment?.[p] && cd?.type==='creature') {
+      delete S._failedExperiment[p];
+      if(!S._dieAtTurnEnd)S._dieAtTurnEnd=[];
+      // find the unit we just summoned
+      const failUnit=Object.values(S.units).find(v=>v.q===q&&v.r===r&&v.own===p);
+      if(failUnit)S._dieAtTurnEnd.push(failUnit.id);
+      lg(S,p,'⚗ Failed Experiment: Kreatur stirbt am Zugend');
+    }
+    // ── Failed Experiment: creature costs 0 but dies at end of turn ──
+    if (S._failedExperiment?.[p] && cd?.type==='creature') {
+      delete S._failedExperiment[p];
+      if(!S._dieAtTurnEnd)S._dieAtTurnEnd=[];
+      if(u)S._dieAtTurnEnd.push(u.id);
+      lg(S,p,'⚗ Failed Experiment: Kreatur stirbt am Ende des Zugs');
+    }
     // ── Triton Trainer: next Jump creature gets +1/+1 ──
     if (u && S._tritonTrainer?.[p] > 0 && u.kw?.has('jump')) {
       S._tritonTrainer[p]--;
@@ -7133,6 +7376,235 @@ function doPlay(S, p, id, q, r, s, p_choice) {
       }
       break;
     }
+    case 'detonate': {
+      Object.values(S.units).filter(v=>v.own===p&&v.q!==null&&cardData(v.cid)?.subtype==='Mecha').forEach(mecha=>{
+        const o2=p==='A'?'B':'A';
+        cNbr(mecha.q,mecha.r,mecha.s).forEach(([nq,nr,ns])=>{
+          const v2=unitAt(S,nq,nr,ns); if(v2&&v2.own===o2){applyDmg(S,v2,2,null,true);if(v2.hp<=0)resolveDeath(S,v2.id);}
+        });
+      });
+      lg(S,p,'Detonate: Alle Mecha explodieren');
+      break;
+    }
+    case 'grappling_hook': {
+      const tuGH=unitAt(S,q,r,s);
+      if(tuGH&&tuGH.own===p){
+        tuGH.kw.add('ranged');
+        if(!S._grapplingHook)S._grapplingHook={};
+        S._grapplingHook[tuGH.id]=true;
+        lg(S,p,'Grappling Hook: Ranged erhalten diese Runde');
+      }
+      break;
+    }
+    case 'hammer_of_aoros': {
+      const tuHA=unitAt(S,q,r,s);
+      if(tuHA){applyDmg(S,tuHA,5,null);if(tuHA.hp<=0)resolveDeath(S,tuHA.id);}
+      else{const oHA=p==='A'?'B':'A';S.players[oHA].hp-=5;runGodDamageTriggers(S,oHA,5);}
+      S.players[p].deck.splice(Math.floor(Math.random()*(S.players[p].deck.length+1)),0,'hammer_of_aoros');
+      lg(S,p,'Hammer of Aoros: 5 Schaden, ins Deck');
+      break;
+    }
+    case 'pandora_awakens':
+    case 'treasure_found': {
+      // Both players get a random Treasure
+      const trs2=Object.values(CARDS).filter(c=>c.treasure);
+      ['A','B'].forEach(pl2=>{
+        if(trs2.length&&S.players[pl2].hand.length<HAND_MAX){
+          const tr2=trs2[Math.floor(Math.random()*trs2.length)];
+          S.players[pl2].hand.push({id:tr2.id,buff:{atk:0,hp:0}});
+        }
+      });
+      deal(S,p,1);
+      lg(S,p,'Pandora/Treasure Found: Beide Spieler erhalten einen Schatz');
+      break;
+    }
+    case 'shard_of_pandora': {
+      const trs3=Object.values(CARDS).filter(c=>c.treasure);
+      if(trs3.length&&S.players[p].hand.length<HAND_MAX){
+        const tr3=trs3[Math.floor(Math.random()*trs3.length)];
+        S.players[p].hand.push({id:tr3.id,buff:{atk:0,hp:0}});
+        lg(S,p,'Shard of Pandora: '+cardData(tr3.id)?.name+' erhalten');
+      }
+      break;
+    }
+    case 'wrath_of_ignus': {
+      const oWI=p==='A'?'B':'A'; const boosts=S._powerWheelBoosts?.[p]||0;
+      const enWI=Object.values(S.units).filter(v=>v.own===oWI&&v.q!==null);
+      let remWI=Math.max(1,boosts);
+      for(let iWI=0;iWI<remWI;iWI++){
+        if(!enWI.length){S.players[oWI].hp-=(remWI-iWI);runGodDamageTriggers(S,oWI,remWI-iWI);break;}
+        const tWI=enWI[Math.floor(Math.random()*enWI.length)];
+        applyDmg(S,tWI,1,null,true); if(tWI.hp<=0){resolveDeath(S,tWI.id);enWI.splice(enWI.indexOf(tWI),1);}
+      }
+      lg(S,p,'Wrath of Ignus: '+remWI+' Schaden verteilt');
+      break;
+    }
+    case 'aurora\'s_creation':
+    case 'auroras_creation': {
+      const tu=unitAt(S,q,r,s);
+      if(tu&&S.players[p].hand.length<HAND_MAX){
+        S.players[p].hand.push({id:tu.cid,buff:{atk:-5,hp:-5}});
+        lg(S,p,`✨ Aurora's Creation: ${cardData(tu.cid)?.name||tu.cid} kopiert (-5 Kosten)`);
+      }
+      break;
+    }
+    case 'auroras_dream': {
+      const plD=S.players[p];
+      while(plD.hand.length<9&&plD.deck.length) deal(S,p,1);
+      if(!S._zeroCostTurn)S._zeroCostTurn={};
+      S._zeroCostTurn[p]=true;
+      lg(S,p,"✨ Aurora's Dream: Bis 9 Karten, alle kosten 0");
+      break;
+    }
+    case 'auroras_trick': {
+      const tu=unitAt(S,q,r,s);
+      if(tu&&tu.own!==p&&!isDivine(tu)&&(tu.atk||0)<=2){
+        tu.own=p;
+        lg(S,p,`✨ Aurora's Trick: Kontrolle über ${cardData(tu.cid)?.name||tu.cid}`);
+      }
+      break;
+    }
+    case 'battle_toads': {
+      let spawned=0;
+      const free=Object.entries(S.cells).filter(([k,c])=>c.type==='LAND'&&c.owner===p&&!Object.values(S.units).some(u=>cK(u.q,u.r)===k&&u.q!==null));
+      for(const [lk] of free.sort(()=>Math.random()-.5).slice(0,2)){
+        const [lq,lr]=lk.split(',').map(Number);
+        const fr={id:`u${S.uid++}`,own:p,cid:'frog_token',q:lq,r:lr,s:-lq-lr,
+          atk:2,hp:2,maxHp:2,kw:new Set(['jump']),moved:false,atked:false,
+          summonSick:false,noHarvest:false,bew:1,rei:1,pendingGift:null};
+        S.units[fr.id]=fr; spawned++;
+      }
+      lg(S,p,`🐸 Battle Toads: ${spawned} Frösche`);
+      break;
+    }
+    case 'failed_experiment': {
+      if(!S._failedExperiment)S._failedExperiment={};
+      S._failedExperiment[p]=true;
+      lg(S,p,'⚗ Failed Experiment: Nächste Kreatur kostet 0 und stirbt am Ende');
+      break;
+    }
+    case 'firestorm': {
+      const oppF=p==='A'?'B':'A';
+      const hits=new Set();
+      const v0=unitAt(S,q,r,s); if(v0&&v0.own===oppF)hits.add(v0.id);
+      cNbr(q,r,s).forEach(([nq,nr,ns])=>{const v=unitAt(S,nq,nr,ns);if(v&&v.own===oppF)hits.add(v.id);});
+      hits.forEach(vid=>{const v=S.units[vid];if(!v)return;applyDmg(S,v,3,null,true);if(v.hp<=0)resolveDeath(S,vid);});
+      lg(S,p,`🔥 Firestorm: 3 Schaden (${hits.size} Kreaturen)`);
+      break;
+    }
+    case 'flash_wind': {
+      const tu=unitAt(S,q,r,s);
+      if(tu&&tu.own===p){
+        // Move friendly — UI handles target selection; here just log
+        lg(S,p,`💨 Flash Wind: ${cardData(tu.cid)?.name} bewegt`);
+      }
+      break;
+    }
+    case 'frogify': {
+      const tu=unitAt(S,q,r,s);
+      if(tu&&!isDivine(tu)){
+        tu.cid='frog_token'; tu.atk=2; tu.hp=Math.min(tu.hp,2); tu.maxHp=2; tu.kw=new Set(['jump']);
+        tu.onGift=null; tu.onCombat=null; tu.onDeath=null; tu.onTurnStart=null;
+        lg(S,p,`🐸 Frogify: → 2/2 Frosch`);
+      }
+      break;
+    }
+    case 'humbling_vision': {
+      const tu=unitAt(S,q,r,s);
+      if(tu){
+        tu.atk=Math.floor(tu.atk/2); tu.hp=Math.floor(tu.hp/2);
+        if(tu.hp<=0)resolveDeath(S,tu.id);
+        else lg(S,p,`👁 Humbling Vision: → ${tu.atk}/${tu.hp}`);
+      }
+      break;
+    }
+    case 'meteor': {
+      [[q,r,s],...cNbr(q,r,s)].forEach(([mq,mr,ms])=>{
+        const vu=unitAt(S,mq,mr,ms); if(vu)resolveDeath(S,vu.id);
+        const mk=cK(mq,mr); if(S.cells[mk]&&S.cells[mk].type!=='EMPTY')S.cells[mk]={type:'EMPTY'};
+      });
+      lg(S,p,'☄ Meteor: Alles auf/neben Ziel zerstört');
+      break;
+    }
+    case 'rain_of_fish': {
+      const oppR=p==='A'?'B':'A';
+      let cnt=0;
+      const spaces=Object.entries(S.cells).sort(()=>Math.random()-.5);
+      for(const [sk,sc] of spaces){
+        if(cnt>=6)break;
+        const [sq2,sr2]=sk.split(',').map(Number);
+        if(!unitAt(S,sq2,sr2,-sq2-sr2)){
+          const fish={id:`u${S.uid++}`,own:p,cid:'ruby_fish',q:sq2,r:sr2,s:-sq2-sr2,
+            atk:1,hp:1,maxHp:1,kw:new Set(['aquatic']),moved:false,atked:false,
+            summonSick:false,noHarvest:false,bew:1,rei:1,pendingGift:null};
+          S.units[fish.id]=fish; cnt++;
+          if(sc.type==='LAND'){
+            cNbr(sq2,sr2,-sq2-sr2).forEach(([nq,nr,ns])=>{
+              const v=unitAt(S,nq,nr,ns);
+              if(v&&v.own===oppR){applyDmg(S,v,1,null,true);if(v.hp<=0)resolveDeath(S,v.id);}
+            });
+          }
+        }
+      }
+      lg(S,p,`🐟 Rain of Fish: ${cnt} Ruby Fish`);
+      break;
+    }
+    case 'rushing_wind': {
+      const tu=unitAt(S,q,r,s);
+      if(tu&&tu.own===p) lg(S,p,`💨 Rushing Wind: ${cardData(tu.cid)?.name} bewegt`);
+      break;
+    }
+    case 'spellwhirl': {
+      const blues=Object.values(CARDS).filter(c=>c.color==='blue'&&!c.treasure&&c.type!=='creature');
+      for(let i=0;i<2;i++){
+        if(blues.length&&S.players[p].hand.length<HAND_MAX){
+          const pick=blues[Math.floor(Math.random()*blues.length)];
+          S.players[p].hand.push({id:pick.id,buff:{atk:0,hp:0}});
+        }
+      }
+      lg(S,p,'🌀 Spellwhirl: 2 zufällige blaue Karten');
+      break;
+    }
+    case 'tale_old_turtle': {
+      for(let i=0;i<3;i++){
+        if(!S.players[p].deck.length)break;
+        const deckCard=S.players[p].deck[0];
+        const deckCd=cardData(deckCard);
+        deal(S,p,1);
+        if(deckCd?.type==='creature'){
+          if(!S._handDiscount)S._handDiscount={};
+          if(!S._handDiscount[p])S._handDiscount[p]={};
+          S._handDiscount[p][deckCard]=(S._handDiscount[p][deckCard]||0)+2;
+        }
+      }
+      lg(S,p,'🐢 Tale of the Old Turtle: 3 Karten, Kreaturen -2');
+      break;
+    }
+    case 'unbound_evolution': {
+      const tu=unitAt(S,q,r,s);
+      if(tu&&tu.own===p){
+        const base=cardData(tu.cid); const tgt=(base?.cost||0)+2;
+        const pool=Object.values(CARDS).filter(c=>c.type==='creature'&&c.cost===tgt&&c.id!=='ostregoth');
+        if(pool.length){
+          const pick=pool[Math.floor(Math.random()*pool.length)];
+          tu.cid=pick.id; tu.atk=pick.atk||0; tu.hp=pick.hp||1; tu.maxHp=pick.hp||1;
+          tu.kw=new Set(pick.kw?.keys?.()||[]);
+          lg(S,p,`🧬 Unbound Evolution: → ${pick.name}`);
+        }
+      }
+      break;
+    }
+    case 'windfall': {
+      S.players[p].mana+=12;
+      lg(S,p,`💨 Windfall: +12 Faeria → ${S.players[p].mana}`);
+      break;
+    }
+        case 'the_emperors_command': {
+      if(p_choice==='creature'){const tu_ec=unitAt(S,q,r,s);if(tu_ec){buffUnit(tu_ec,-2,-1);if(tu_ec.hp<=0)resolveDeath(S,tu_ec.id);lg(S,p,'👑 Emperor: -2/-1');}}
+      else if(p_choice==='structure'){const tu_ec=unitAt(S,q,r,s);if(tu_ec){applyDmg(S,tu_ec,3,null,true);if(tu_ec.hp<=0)resolveDeath(S,tu_ec.id);lg(S,p,'👑 Emperor: 3 Schaden');}}
+      else{S.players[p==='A'?'B':'A'].hp+=4;lg(S,p,'👑 Emperor: +4 Leben');}
+      break;
+    }
     default:
       lg(S,p,`${cd.name} gespielt`);
   }
@@ -7186,6 +7658,10 @@ function doCleanup(S) {
   // Reset 'attacked god' flag for current player
   if (S._attackedGod) S._attackedGod[S.ap] = false;
   if (S._wasAttacked) S._wasAttacked[S.ap] = false;
+  if (S._zeroCostTurn) S._zeroCostTurn[S.ap] = false;
+  if (S._dieAtTurnEnd?.length) { S._dieAtTurnEnd.forEach(uid=>{ if(S.units[uid])resolveDeath(S,uid); }); S._dieAtTurnEnd=[]; }
+  if (S._zeroCostTurn) S._zeroCostTurn[S.ap] = false;
+  if (S._failedExperiment) delete S._failedExperiment[S.ap];
   // Drowning
   const toKill=[];
   Object.values(S.units).forEach(u => {
@@ -7211,6 +7687,15 @@ function doCleanup(S) {
   });
   // Reset per-turn discounts
   if(S._handDiscount)S._handDiscount[S.ap]=0;
+  // Failed Experiment: kill scheduled units
+  if (S._dieAtTurnEnd?.length) {
+    [...S._dieAtTurnEnd].forEach(uid=>{ if(S.units[uid])resolveDeath(S,uid); });
+    S._dieAtTurnEnd=[];
+  }
+  // ── onEnemyCleanup: fires for units owned by the NON-active player ──
+  const _opp=S.ap==='A'?'B':'A';
+  Object.values(S.units).filter(u=>u.own===_opp&&u.q!==null&&typeof u.onEnemyCleanup==='function')
+    .forEach(u=>{ try{u.onEnemyCleanup(S,u);}catch(e){} });
   // Reset Tiki Totem summon flag
   if(S._tikiTotemUsed)S._tikiTotemUsed[S.ap]=false;
 
@@ -7670,6 +8155,11 @@ class Engine {
       const _apMs = this.ap;
       Object.values(S.units).filter(u=>u.own===_apMs&&u.q!==null).forEach(w=>{
         if(typeof w.onManaSelect==='function') try{w.onManaSelect(S,w);}catch(e){}
+      if(!S._powerWheelBoosts)S._powerWheelBoosts={};
+      S._powerWheelBoosts[S.ap]=(S._powerWheelBoosts[S.ap]||0)+1;
+      // track power wheel boosts for Wrath of Ignus
+      if(!S._powerWheelBoosts)S._powerWheelBoosts={};
+      S._powerWheelBoosts[S.ap]=(S._powerWheelBoosts[S.ap]||0)+1;
       });
       this._render(); // brief flash of log update
     }
@@ -9903,8 +10393,23 @@ class Engine {
         lg(S,p,'Amai Merchant: Gegner erhält die anderen Karten');
       }
       lg(S, p, `Discover: "${cardData(chosenId)?.name}" zur Hand hinzugefügt`);
-      // Buff Fugoro whenever you Discover
-      Object.values(S.units).filter(u=>u.own===p&&u.cid==='fugoro').forEach(u=>buffUnit(u,1,1));
+      // Buff Fugoro: +3/+3 when discovering a Treasure, +1/+1 for any other Discover
+      const _fuguCd=cardData(chosenId);
+      const _fuguBuff=_fuguCd?.treasure?3:1;
+      Object.values(S.units).filter(u=>u.own===p&&u.cid==='fugoro'&&u.q!==null)
+        .forEach(u=>{buffUnit(u,_fuguBuff,_fuguBuff);lg(S,p,`🦜 Fugoro: +${_fuguBuff}/+${_fuguBuff}`);});
+    }
+
+    if (item.onPick === 'add_to_hand_wild_free') {
+      S.players[p].hand.push({id:chosenId,buff:{atk:0,hp:0},wild:true,freeCost:true});
+      lg(S, p, `Barter: "${cardData(chosenId)?.name}" (wild, gratis) zur Hand`);
+    }
+
+    if (item.onPick === 'add_to_hand_wild_free') {
+      handPush(S, p, chosenId);
+      if(!S._zeroCostOnce)S._zeroCostOnce={};
+      S._zeroCostOnce[chosenId]=(S._zeroCostOnce[chosenId]||0)+1;
+      lg(S,p,`Barter: "${cardData(chosenId)?.name}" zur Hand (wild, gratis)`);
     }
 
     if (item.onPick === 'add_two_to_hand') {
