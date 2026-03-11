@@ -2709,7 +2709,7 @@ const CARDS = (function() {
     onEnemyDies:(S,u,dead) => {
       if(dead._diedInCombat){
         const o=u.own==='A'?'B':'A';
-        S.players[o].hp-=1; runGodDamageTriggers(S,o,1);
+        hurtGod(S,o,1);
         S.players[u.own].mana+=1;
         lg(S,u.own,`🗿 Blood Obelisk: 1 Schaden + 1 Mana`);
       }
@@ -4519,9 +4519,7 @@ const CARDS = (function() {
       Object.values(S.units).filter(v=>v.q!==null).forEach(v=>{
         applyDmg(S,v,1,null,true); if(v.hp<=0)resolveDeath(S,v.id);
       });
-      S.players['A'].hp-=1; S.players['B'].hp-=1;
-      runGodDamageTriggers(S,'A',1); runGodDamageTriggers(S,'B',1);
-      if(S.players['A'].hp<=0)S.winner='B'; if(S.players['B'].hp<=0)S.winner='A';
+      hurtGod(S,'A',1); hurtGod(S,'B',1); // Kaios Gift: both gods take 1 dmg
       unit.atk=Math.max(0,unit.hp);
       lg(S,p,'👁 Kaios: 1 Schaden an ALLES');
     },
@@ -5404,9 +5402,9 @@ function resolveDeath(S, uid) {
   Object.values(S.units).forEach(watcher => {
     if (!watcher || watcher.id === uid) return;
     try {
-      if (watcher.own===_diedOpp && typeof watcher.onEnemyDies==='function')
+      if (watcher.q!==null && watcher.own===_diedOpp && typeof watcher.onEnemyDies==='function')
         watcher.onEnemyDies(S, watcher, u);
-      if (watcher.own===_diedOwn && typeof watcher.onFriendlyDies==='function')
+      if (watcher.q!==null && watcher.own===_diedOwn && typeof watcher.onFriendlyDies==='function')
         watcher.onFriendlyDies(S, watcher, u);
       if (typeof watcher.onAdjDies==='function' && watcher.q!==null && u.q!==null
           && cDist([watcher.q,watcher.r,watcher.s],[u.q,u.r,u.s])===1)
@@ -6055,10 +6053,10 @@ function doAtk(S, attackerId, targetType, targetId) {
   } else {
     // Attack enemy base
     const dmg = effAtk(a, true, S);
-    S.players[targetId].hp -= dmg;
     const bonusNote = effAtk(a,true,S)>effAtk(a,false,S) ? ' (inkl. Götterbonus)' : '';
-    lg(S, a.own, `⚔ Basis ${targetId}: -${dmg}HP${bonusNote} → ${S.players[targetId].hp}`);
     hurtGod(S, targetId, dmg); // includes Divine Guardian check + runGodDamageTriggers
+    lg(S, a.own, `⚔ Basis ${targetId}: -${dmg}HP${bonusNote} → ${S.players[targetId].hp}`);
+    // hurtGod(ardian check + runGodDamageTriggers
     if (S.units[attackerId] && typeof a.onCombat==='function')
       try { a.onCombat(S, a, null); } catch(e) {}
     // ── "Whenever this attacks a god" triggers ──────────────
@@ -6604,7 +6602,7 @@ function doPlay(S, p, id, q, r, s, p_choice) {
     }
     // ── onSummon trigger (Crumbling Golem, Illusion of Grandeur) ──
     Object.values(S.units).forEach(w=>{
-      if(w.id!==u.id && typeof w.onSummon==='function')
+      if(w.id!==u.id && w.q!==null && typeof w.onSummon==='function')
         try{w.onSummon(S,w,u,p);}catch(e){}
     });
 
