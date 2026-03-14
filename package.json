@@ -1,0 +1,22 @@
+{
+  "name": "hexforge-mp",
+  "version": "2.0.0",
+  "description": "HexForge Online Multiplayer Server",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "dev:db": "USE_DB=true node --watch server/index.js",
+    "test": "node server/engine/engine-test.js",
+    "migrate": "psql $DATABASE_URL -f database/schema.sql"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {}
+}
