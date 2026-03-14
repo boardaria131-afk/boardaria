@@ -917,7 +917,7 @@ svg#board { display: block; overflow: visible; }
 
 // ── Dev flag ──────────────────────────────────────────────
 // ⚠ set to false before release
-const DEV_MODE_DEFAULT = true;
+const DEV_MODE_DEFAULT = false;
 let   _devEnabled = DEV_MODE_DEFAULT;
 // Proxy so existing `if(!DEV_MODE)` checks still work
 const DEV_MODE_PROXY = new Proxy({}, { get:() => _devEnabled });
@@ -8041,7 +8041,7 @@ class Engine {
     this.mulliganSel = new Set(); // cards selected for replacement
 
     this._render();
-    this._devInit();
+    // _devInit() is only called externally for admin users
     // Skip pass&play mulligan in MP mode
     if (!window._mpConstructing) {
       this._showMulligan('A');
@@ -10957,6 +10957,11 @@ window.addEventListener('DOMContentLoaded', () => {
     window.G = G;
     G._render();
     updateWaitingBanner();
+    // Admin: activate dev tools only for the 'admin' account
+    if (mySession && mySession.username === 'admin') {
+      _devEnabled = true;
+      G._devInit();
+    }
   }
 
   function updateWaitingBanner() {
