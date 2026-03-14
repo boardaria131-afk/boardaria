@@ -155,6 +155,60 @@ app.delete('/api/decks/:id', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── Async auth helpers (work with both in-memory and DB) ──
+
+async function registerUser(username, password, store, useDB) {
+  if (!username || username.length < 3 || username.length > 24)
+    return { ok: false, reason: 'Username must be 3–24 characters' };
+  if (!/^[a-zA-Z0-9_-]+$/.test(username))
+    return { ok: false, reason: 'Username may only contain letters, digits, _ and -' };
+  if (!password || password.length < 6)
+    return { ok: false, reason: 'Password must be at least 6 characters' };
+
+  const existing = await Promise.resolve(store.findByName(username));
+  if (existing) return { ok: false, reason: 'Username already taken' };
+
+  const { hashPassword, signJWT, publicUser } = require('./auth/auth');
+  const user = await Promise.resolve(store.create({ username, passwordHash: hashPassword(password) }));
+  const token = signJWT({ userId: user.id, username: user.username });
+  return { ok: true, user: publicUser(user), token };
+}
+
+async function loginUser(username, password, store, useDB) {
+  const user = await Promise.resolve(store.findByName(username));
+  if (!user)          return { ok: false, reason: 'User not found' };
+  if (user.isGuest)   return { ok: false, reason: 'Cannot login to guest account' };
+  const { verifyPassword, signJWT, publicUser } = require('./auth/auth');
+  if (!verifyPassword(password, user.passwordHash)) return { ok: false, reason: 'Wrong password' };
+  const token = signJWT({ userId: user.id, username: user.username });
+  return { ok: true, user: publicUser(user), token };
+}
+
+async function guestLoginUser(store, useDB) {
+  const { signJWT, publicUser } = require('./auth/auth');
+  let username;
+  do { username = `Guest${Math.floor(1000 + Math.random() * 9000)}`; }
+  while (await Promise.resolve(store.findByName(username)));
+  const user = await Promise.resolve(store.create({ username, isGuest: true }));
+  const token = signJWT({ userId: user.id, username: user.username, guest: true });
+  return { ok: true, user: publicUser(user), token };
+}
+
+// ── Ensure admin account exists ───────────────────────────
+(async () => {
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+  try {
+    const existing = await Promise.resolve(userStore.findByName('admin'));
+    if (!existing) {
+      const { hashPassword } = require('./auth/auth');
+      await Promise.resolve(userStore.create({ username: 'admin', passwordHash: hashPassword(ADMIN_PASSWORD) }));
+      console.log('[Auth] Admin account created');
+    }
+  } catch(e) {
+    console.warn('[Auth] Could not ensure admin account:', e.message);
+  }
+})();
+
 // ── Socket.IO ─────────────────────────────────────────────
 const io = new Server(server, {
   cors: { origin: '*' },
@@ -216,11 +270,11 @@ io.on('connection', (socket) => {
 
   // ── Auth ────────────────────────────────────────────────
 
-  socket.on(C2S.REGISTER, ({ username, password } = {}) => {
+  socket.on(C2S.REGISTER, async ({ username, password } = {}) => {
     if (!rateLimiter(rlKey(socket, 'register'), 5, 60_000)) {
       return socket.emit(S2C.AUTH_ERR, { reason: 'Too many attempts. Try again in a minute.' });
     }
-    const result = register(username, password);
+    const result = await registerUser(username, password, userStore, isUsingDB);
     if (result.ok) {
       sessions.set(socket.id, { ...result.user, socketId: socket.id });
       socket.emit(S2C.AUTH_OK, { user: result.user, token: result.token });
@@ -229,11 +283,11 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on(C2S.LOGIN, ({ username, password } = {}) => {
+  socket.on(C2S.LOGIN, async ({ username, password } = {}) => {
     if (!rateLimiter(rlKey(socket, 'login'), 10, 60_000)) {
       return socket.emit(S2C.AUTH_ERR, { reason: 'Too many attempts. Try again in a minute.' });
     }
-    const result = login(username, password);
+    const result = await loginUser(username, password, userStore, isUsingDB);
     if (result.ok) {
       sessions.set(socket.id, { ...result.user, socketId: socket.id });
       socket.emit(S2C.AUTH_OK, { user: result.user, token: result.token });
@@ -242,8 +296,8 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on(C2S.GUEST_LOGIN, () => {
-    const result = guestLogin();
+  socket.on(C2S.GUEST_LOGIN, async () => {
+    const result = await guestLoginUser(userStore, isUsingDB);
     sessions.set(socket.id, { ...result.user, socketId: socket.id });
     socket.emit(S2C.AUTH_OK, { user: result.user, token: result.token });
   });
