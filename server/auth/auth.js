@@ -104,6 +104,10 @@ class UserStore {
 
 const store = new UserStore();
 
+// ── Pre-create admin account ──────────────────────────────
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+store.create({ username: 'admin', passwordHash: hashPassword(ADMIN_PASSWORD) });
+
 // ── Public sanitized user object ──────────────────────────
 function publicUser(u) {
   return { id: u.id, username: u.username, rating: u.rating, wins: u.wins, losses: u.losses, isGuest: u.isGuest };
