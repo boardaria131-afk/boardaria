@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HexForge — Deck Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0d1117;
+  --bg2:       #161b24;
+  --bg3:       #1e2533;
+  --border:    #2a3447;
+  --accent:    #c8902a;
+  --accent2:   #e8b050;
+  --text:      #d4c8b0;
+  --text-dim:  #7a8090;
+  --green:     #2a8a30;
+  --blue:      #2274aa;
+  --red:       #b83030;
+  --yellow:    #b89020;
+  --neutral:   #607080;
+  --land-F:    #1a4a20;
+  --land-D:    #4a3010;
+  --land-M:    #4a1515;
+  --land-W:    #102840;
+  --land-N:    #303030;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Top bar ─────────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+header h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  color: var(--accent2);
+  letter-spacing: .08em;
+}
+.header-sep { flex: 1; }
+.deck-name-input {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: 'Crimson Pro', serif;
+  font-size: .95rem;
+  width: 200px;
+}
+.deck-name-input:focus { outline: none; border-color: var(--accent); }
+.btn {
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: .75rem;
+  letter-spacing: .05em;
+  transition: all .15s;
+}
+.btn:hover { background: var(--border); color: var(--accent2); }
+.btn-accent { background: var(--accent); color: #1a1000; border-color: var(--accent2); }
+.btn-accent:hover { background: var(--accent2); }
+.btn-danger { border-color: #8b2020; color: #cc6666; }
+.btn-danger:hover { background: #3a1010; }
+
+/* ── Main layout ─────────────────────────────────── */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Filter sidebar ──────────────────────────────── */
+.sidebar {
+  width: 200px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.sidebar h3 {
+  font-family: 'Cinzel', serif;
+  font-size: .7rem;
+  letter-spacing: .12em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+.search-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-family: 'Crimson Pro', serif;
+  font-size: .9rem;
+  width: 100%;
+}
+.search-box:focus { outline: none; border-color: var(--accent); }
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-btn {
+  padding: 5px 8px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: .85rem;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .12s;
+}
+.filter-btn:hover { color: var(--text); background: var(--bg3); }
+.filter-btn.active { background: var(--bg3); border-color: var(--border); }
+.filter-btn.active.c-green { color: #4ac850; border-color: #2a6830; }
+.filter-btn.active.c-blue  { color: #5aacee; border-color: #1a5888; }
+.filter-btn.active.c-red   { color: #ee6060; border-color: #882020; }
+.filter-btn.active.c-yellow{ color: #eecc50; border-color: #887020; }
+.filter-btn.active.c-neutral{ color: #aabbcc; border-color: #505a60; }
+.dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.dot.green { background: var(--green); }
+.dot.blue  { background: var(--blue); }
+.dot.red   { background: var(--red); }
+.dot.yellow{ background: var(--yellow); }
+.dot.neutral{ background: var(--neutral); }
+.cost-filter { display: flex; flex-wrap: wrap; gap: 4px; }
+.cost-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: .8rem;
+  font-family: 'Cinzel', serif;
+  text-align: center; line-height: 26px;
+  transition: all .12s;
+}
+.cost-btn:hover { color: var(--text); border-color: var(--accent); }
+.cost-btn.active { background: var(--accent); color: #1a1000; border-color: var(--accent2); }
+
+/* ── Card grid ───────────────────────────────────── */
+.card-grid-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  background: var(--bg);
+}
+.card-count-bar {
+  font-size: .8rem;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  padding: 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sort-select {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: .8rem;
+  cursor: pointer;
+  margin-left: auto;
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 6px;
+}
+
+/* ── Card tile ───────────────────────────────────── */
+.card-tile {
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 7px;
+  cursor: pointer;
+  transition: all .12s;
+  position: relative;
+  user-select: none;
+}
+.card-tile:hover { border-color: var(--accent); background: var(--bg3); transform: translateY(-1px); }
+.card-tile.in-deck { border-color: var(--accent); }
+.card-tile.maxed { opacity: .5; cursor: not-allowed; }
+.card-tile.maxed:hover { transform: none; border-color: var(--border); }
+
+.card-cost-badge {
+  position: absolute; top: 5px; right: 5px;
+  background: #1a1000;
+  border: 1px solid var(--accent);
+  color: var(--accent2);
+  font-family: 'Cinzel', serif;
+  font-size: .7rem;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  text-align: center; line-height: 18px;
+}
+.card-color-bar {
+  height: 3px;
+  border-radius: 2px;
+  margin-bottom: 5px;
+}
+.card-name {
+  font-size: .75rem;
+  line-height: 1.3;
+  margin-bottom: 3px;
+  padding-right: 22px;
+  color: var(--text);
+}
+.card-type-row {
+  font-size: .65rem;
+  color: var(--text-dim);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.card-stats {
+  font-family: 'Cinzel', serif;
+  font-size: .65rem;
+  color: var(--accent2);
+}
+.deck-count-badge {
+  position: absolute; bottom: 4px; right: 4px;
+  background: var(--accent);
+  color: #1a1000;
+  font-family: 'Cinzel', serif;
+  font-size: .65rem;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  text-align: center; line-height: 16px;
+  font-weight: 700;
+}
+
+/* ── Deck panel ──────────────────────────────────── */
+.deck-panel {
+  width: 230px;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.deck-header {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.deck-header h3 {
+  font-family: 'Cinzel', serif;
+  font-size: .8rem;
+  letter-spacing: .08em;
+  color: var(--accent2);
+}
+.deck-stats {
+  margin-left: auto;
+  font-size: .75rem;
+  color: var(--text-dim);
+}
+.deck-stat-ok { color: #4ac850; }
+.deck-stat-over { color: #ee6060; }
+
+.deck-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 8px;
+}
+.deck-section-header {
+  font-size: .65rem;
+  color: var(--text-dim);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-family: 'Cinzel', serif;
+  padding: 8px 4px 3px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 3px;
+}
+.deck-entry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background .1s;
+  font-size: .82rem;
+}
+.deck-entry:hover { background: var(--bg3); }
+.deck-entry:hover .deck-entry-remove { opacity: 1; }
+.deck-entry-count {
+  font-family: 'Cinzel', serif;
+  font-size: .7rem;
+  color: var(--accent2);
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.deck-entry-cost {
+  font-family: 'Cinzel', serif;
+  font-size: .7rem;
+  color: var(--text-dim);
+  width: 16px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.deck-entry-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.deck-entry-remove {
+  opacity: 0;
+  color: #ee6060;
+  font-size: .7rem;
+  flex-shrink: 0;
+  transition: opacity .1s;
+  padding: 0 2px;
+}
+.deck-entry-bar {
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Color classes for bars */
+.bar-green { background: var(--green); }
+.bar-blue  { background: var(--blue); }
+.bar-red   { background: var(--red); }
+.bar-yellow{ background: var(--yellow); }
+.bar-neutral{ background: var(--neutral); }
+
+/* ── Mana curve ──────────────────────────────────── */
+.curve-section {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.curve-section h4 {
+  font-family: 'Cinzel', serif;
+  font-size: .65rem;
+  color: var(--text-dim);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.curve-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 48px;
+}
+.curve-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.curve-bar {
+  width: 100%;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+  min-height: 0;
+  transition: height .2s;
+}
+.curve-label {
+  font-family: 'Cinzel', serif;
+  font-size: .55rem;
+  color: var(--text-dim);
+}
+
+/* ── Deck actions ────────────────────────────────── */
+.deck-actions {
+  padding: 8px 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.deck-actions .btn { flex: 1; min-width: 60px; font-size: .65rem; padding: 5px 6px; }
+
+/* ── Tooltip ─────────────────────────────────────── */
+.tooltip {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1000;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  width: 200px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.6);
+  display: none;
+}
+.tooltip-name {
+  font-family: 'Cinzel', serif;
+  font-size: .85rem;
+  color: var(--accent2);
+  margin-bottom: 4px;
+}
+.tooltip-type { font-size: .7rem; color: var(--text-dim); margin-bottom: 6px; }
+.tooltip-stats { font-family: 'Cinzel', serif; font-size: .8rem; color: var(--accent2); margin-bottom: 6px; }
+.tooltip-text { font-size: .82rem; line-height: 1.4; color: var(--text); }
+.tooltip-req { font-size: .72rem; color: var(--text-dim); margin-top: 6px; }
+.tooltip-kw { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+.kw-chip {
+  background: #1a2830;
+  border: 1px solid #2a4050;
+  color: #80c0e0;
+  font-size: .6rem;
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-family: 'Cinzel', serif;
+  letter-spacing: .05em;
+}
+
+/* ── Modal ───────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  width: 360px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  color: var(--accent2);
+  margin-bottom: 12px;
+}
+.modal-list { list-style: none; display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+.modal-list li {
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background .1s;
+}
+.modal-list li:hover { background: var(--border); }
+.modal-list .deck-date { font-size: .75rem; color: var(--text-dim); margin-left: auto; }
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ── Toast ───────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--bg2); border: 1px solid var(--accent);
+  color: var(--text); padding: 8px 20px; border-radius: 20px;
+  font-size: .85rem; z-index: 999; opacity: 0;
+  transition: opacity .3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .deck-panel { width: 180px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⬡ HEXFORGE</h1>
+  <span style="font-size:.75rem;color:var(--text-dim);font-family:'Cinzel',serif;letter-spacing:.1em">DECK BUILDER</span>
+  <div class="header-sep"></div>
+  <input id="deckName" class="deck-name-input" placeholder="Deck Name…" value="My Deck">
+  <button class="btn" onclick="openLoadModal()">Load</button>
+  <button class="btn btn-accent" onclick="saveDeck()">Save</button>
+  <button class="btn" onclick="exportDeck()">Export</button>
+  <button class="btn" onclick="importDeck()">Import</button>
+  <a href="/" class="btn">← Lobby</a>
+</header>
+
+<div class="main">
+  <!-- Filters sidebar -->
+  <aside class="sidebar">
+    <div>
+      <h3>Search</h3>
+      <input id="searchInput" class="search-box" placeholder="Name or text…" oninput="renderGrid()">
+    </div>
+
+    <div class="filter-group">
+      <h3>Color</h3>
+      <button class="filter-btn active c-green" onclick="toggleColor('green')" id="f-green">
+        <span class="dot green"></span> Forest
+      </button>
+      <button class="filter-btn active c-blue" onclick="toggleColor('blue')" id="f-blue">
+        <span class="dot blue"></span> Ocean
+      </button>
+      <button class="filter-btn active c-red" onclick="toggleColor('red')" id="f-red">
+        <span class="dot red"></span> Mountain
+      </button>
+      <button class="filter-btn active c-yellow" onclick="toggleColor('yellow')" id="f-yellow">
+        <span class="dot yellow"></span> Desert
+      </button>
+      <button class="filter-btn active c-neutral" onclick="toggleColor('neutral')" id="f-neutral">
+        <span class="dot neutral"></span> Neutral
+      </button>
+    </div>
+
+    <div class="filter-group">
+      <h3>Type</h3>
+      <button class="filter-btn active" onclick="toggleType('creature')" id="f-creature">⚔ Creature</button>
+      <button class="filter-btn active" onclick="toggleType('event')" id="f-event">✦ Event</button>
+      <button class="filter-btn active" onclick="toggleType('structure')" id="f-structure">⬡ Structure</button>
+      <button class="filter-btn active" onclick="toggleType('LAND')" id="f-LAND">◈ Land</button>
+    </div>
+
+    <div>
+      <h3>Cost</h3>
+      <div class="cost-filter" id="costFilter"></div>
+    </div>
+
+    <div class="filter-group">
+      <h3>Set</h3>
+      <button class="filter-btn active" onclick="toggleSet('core')" id="f-core">Core</button>
+      <button class="filter-btn active" onclick="toggleSet('dlc')" id="f-dlc">DLC</button>
+      <button class="filter-btn active" onclick="toggleSet('gagana')" id="f-gagana">Gagana</button>
+    </div>
+
+    <div class="filter-group">
+      <h3>Keyword</h3>
+      <select id="kwFilter" class="search-box" onchange="renderGrid()" style="font-size:.8rem">
+        <option value="">Any</option>
+        <option value="flying">Flying</option>
+        <option value="jump">Jump</option>
+        <option value="charge">Charge</option>
+        <option value="dash">Dash</option>
+        <option value="taunt">Taunt</option>
+        <option value="haste">Haste</option>
+        <option value="ranged">Ranged</option>
+        <option value="aquatic">Aquatic</option>
+        <option value="deathtouch">Deathtouch</option>
+        <option value="divine">Divine</option>
+        <option value="protection">Protection</option>
+      </select>
+    </div>
+
+    <button class="btn btn-danger" onclick="clearFilters()" style="margin-top:auto">Clear Filters</button>
+  </aside>
+
+  <!-- Card grid -->
+  <div class="card-grid-wrap">
+    <div class="card-count-bar">
+      <span id="gridCount">… cards</span>
+      <select class="sort-select" id="sortSelect" onchange="renderGrid()">
+        <option value="cost">Sort: Cost</option>
+        <option value="name">Sort: Name</option>
+        <option value="color">Sort: Color</option>
+        <option value="atk">Sort: Attack</option>
+        <option value="hp">Sort: Life</option>
+      </select>
+    </div>
+    <div class="card-grid" id="cardGrid"></div>
+  </div>
+
+  <!-- Deck panel -->
+  <aside class="deck-panel">
+    <div class="deck-header">
+      <h3>Deck</h3>
+      <span class="deck-stats" id="deckStats">0/30</span>
+    </div>
+
+    <div class="deck-list" id="deckList"></div>
+
+    <div class="curve-section">
+      <h4>Mana Curve</h4>
+      <div class="curve-chart" id="curveChart"></div>
+    </div>
+
+    <div class="deck-actions">
+      <button class="btn" onclick="clearDeck()">Clear</button>
+      <button class="btn btn-danger" onclick="sortDeck()">Sort</button>
+    </div>
+  </aside>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<!-- Load modal -->
+<div class="modal-overlay" id="loadModal">
+  <div class="modal">
+    <h2>Saved Decks</h2>
+    <ul class="modal-list" id="savedDecksList"></ul>
+    <div class="modal-btns">
+      <button class="btn" onclick="closeLoadModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Card data ─────────────────────────────────────
+const CARD_DB = [{"id":"land_F","n":"Forest Clearing","s":"core","c":"green","t":"LAND","o":0,"a":null,"h":null,"x":"Places a Forest tile.","r":{},"k":[]},{"id":"land_D","n":"Desert Oasis","s":"core","c":"yellow","t":"LAND","o":0,"a":null,"h":null,"x":"Places a Desert tile.","r":{},"k":[]},{"id":"land_M","n":"Mountain Pass","s":"core","c":"red","t":"LAND","o":0,"a":null,"h":null,"x":"Places a Mountain tile.","r":{},"k":[]},{"id":"land_W","n":"Lakeshore","s":"core","c":"blue","t":"LAND","o":0,"a":null,"h":null,"x":"Places a Lake tile.","r":{},"k":[]},{"id":"land_N","n":"Prairie","s":"core","c":"neutral","t":"LAND","o":0,"a":null,"h":null,"x":"Places 2 Prairie tiles.","r":{},"k":[]},{"id":"triton_warrior","n":"Triton Warrior","s":"core","c":"blue","t":"creature","o":4,"a":4,"h":4,"x":"Jump.","r":{},"k":["jump"]},{"id":"triton_diver","n":"Triton Diver","s":"core","c":"blue","t":"creature","o":3,"a":2,"h":2,"x":"Aquatic, Jump.","r":{},"k":["aquatic","jump"]},{"id":"ruby_fish","n":"Ruby Fish","s":"core","c":"blue","t":"creature","o":1,"a":1,"h":1,"x":"Aquatic.","r":{},"k":["aquatic"]},{"id":"gabrian_archon","n":"Gabrian Archon","s":"core","c":"blue","t":"creature","o":4,"a":4,"h":4,"x":"Charge 2. Gains +2/+2 if you have played two cards with base cost 7+ this game.","r":{},"k":["charge:2"]},{"id":"snowstorm_lancer","n":"Snowstorm Lancer","s":"dlc","c":"blue","t":"creature","o":5,"a":3,"h":5,"x":"Jump. Whenever you play an event, gains +2/+0 this turn (limit +6/+0).","r":{},"k":["jump"]},{"id":"aurora_myth_maker","n":"Aurora, Myth Maker","s":"core","c":"blue","t":"creature","o":4,"a":1,"h":1,"x":"Gift - Change another friendly creature to 6/6.","r":{},"k":[]},{"id":"orosei","n":"Orosei, Dream of the Deep","s":"core","c":"blue","t":"creature","o":10,"a":6,"h":6,"x":"Flying, Charge 2. Gift - Transform all your other creatures into creatures that cost 2 more.","r":{},"k":["flying","charge:2"]},{"id":"water_elemental","n":"Water Elemental","s":"core","c":"blue","t":"creature","o":4,"a":3,"h":3,"x":"Jump. Gift - Create a Lake.","r":{},"k":["jump"]},{"id":"shifting_tide","n":"Shifting Tide","s":"core","c":"blue","t":"event","o":1,"a":null,"h":null,"x":"Choose one - Move a land. - Draw a card.","r":{},"k":[]},{"id":"gabrian_enchantment","n":"Gabrian Enchantment","s":"core","c":"blue","t":"event","o":2,"a":null,"h":null,"x":"","r":{},"k":[]},{"id":"tiki_chieftain","n":"Tiki Chieftain","s":"core","c":"green","t":"creature","o":2,"a":2,"h":2,"x":"Gift - Give a creature Taunt.","r":{},"k":[]},{"id":"living_willow","n":"Living Willow","s":"core","c":"green","t":"creature","o":3,"a":1,"h":7,"x":"Taunt.","r":{},"k":["taunt"]},{"id":"sagami_warrior","n":"Sagami Warrior","s":"core","c":"green","t":"creature","o":3,"a":3,"h":4,"x":"Dash 2.","r":{},"k":["dash:2"]},{"id":"deepwood_grizzly","n":"Deepwood Grizzly","s":"core","c":"green","t":"creature","o":5,"a":3,"h":8,"x":"","r":{},"k":[]},{"id":"tiki_healer","n":"Tiki Healer","s":"core","c":"green","t":"creature","o":4,"a":2,"h":5,"x":"Gift - Gain 5 Life.","r":{},"k":[]},{"id":"elderwood_embrace","n":"Elderwood Embrace","s":"core","c":"green","t":"event","o":3,"a":null,"h":null,"x":"Give a creature +2/+4.","r":{},"k":[]},{"id":"wild_growth","n":"Wild Growth","s":"core","c":"green","t":"event","o":1,"a":null,"h":null,"x":"Create Forest at random.","r":{},"k":[]},{"id":"aurora_disciple","n":"Aurora Disciple","s":"dlc","c":"blue","t":"creature","o":3,"a":2,"h":3,"x":"Whenever a friendly creature dies, gains +1/+1.","r":{},"k":[]},{"id":"spirit_of_rebirth","n":"Spirit of Rebirth","s":"dlc","c":"green","t":"creature","o":3,"a":3,"h":3,"x":"Whenever another friendly creature dies, give a random creature in your hand +1/+1.","r":{},"k":[]},{"id":"ruunin","n":"Ruunin, the Relentless","s":"core","c":"green","t":"creature","o":5,"a":4,"h":4,"x":"Dash 2. Last Words - Return Ruunin to your hand at end of turn. She gains +2/+2.","r":{},"k":["dash:2"]},{"id":"tethra","n":"Tethra, Soul of the Wild","s":"core","c":"green","t":"creature","o":10,"a":6,"h":6,"x":"Flying, Charge 2. Gift - Give a creature +5/+5.","r":{},"k":["flying","charge:2"]},{"id":"flame_spitter","n":"Flame Spitter","s":"core","c":"red","t":"creature","o":3,"a":2,"h":2,"x":"Gift - Deal 1 damage to an enemy.","r":{},"k":[]},{"id":"underground_brigand","n":"Underground Brigand","s":"core","c":"red","t":"creature","o":3,"a":2,"h":3,"x":"Combat - Gain 2 Faeria.","r":{},"k":[]},{"id":"shedim_brute","n":"Shedim Brute","s":"core","c":"red","t":"creature","o":5,"a":3,"h":6,"x":"Combat - Deal 2 damage to your opponent.","r":{},"k":[]},{"id":"firebomb","n":"Firebomb","s":"core","c":"red","t":"event","o":4,"a":null,"h":null,"x":"Deal 4 damage to a creature or structure.","r":{},"k":[]},{"id":"flame_burst","n":"Flame Burst","s":"core","c":"red","t":"event","o":3,"a":null,"h":null,"x":"Deal 3 damage.","r":{},"k":[]},{"id":"axe_grinder","n":"Axe Grinder","s":"core","c":"red","t":"creature","o":3,"a":4,"h":3,"x":"","r":{},"k":[]},{"id":"barbarian_ogre","n":"Barbarian Ogre","s":"core","c":"red","t":"creature","o":7,"a":7,"h":7,"x":"","r":{},"k":[]},{"id":"blazing_salamander","n":"Blazing Salamander","s":"core","c":"red","t":"creature","o":5,"a":2,"h":5,"x":"Gift - Deal 2 damage to all adjacent enemies.","r":{},"k":[]},{"id":"seifer_blood_tyrant","n":"Seifer, Blood Tyrant","s":"core","c":"red","t":"creature","o":5,"a":5,"h":6,"x":"","r":{},"k":[]},{"id":"garudan","n":"Garudan, Heart of the Mountain","s":"core","c":"red","t":"creature","o":10,"a":6,"h":6,"x":"Flying, Charge 2. Gift - Deal 3 damage to all enemy creatures.","r":{},"k":["flying","charge:2"]},{"id":"keldran_soldier","n":"Keldran Soldier","s":"core","c":"yellow","t":"creature","o":2,"a":3,"h":2,"x":"","r":{},"k":[]},{"id":"oradrim_templar","n":"Oradrim Templar","s":"dlc","c":"yellow","t":"creature","o":3,"a":3,"h":3,"x":"Dash 1. Has +3/+0 against gods.","r":{},"k":["dash:1"]},{"id":"windborne_emissary","n":"Windborne Emissary","s":"dlc","c":"yellow","t":"creature","o":3,"a":3,"h":3,"x":"Flying. Has +2/+0 while you control another Flying creature.","r":{},"k":["flying"]},{"id":"shaytan_demon","n":"Shaytan Demon","s":"core","c":"yellow","t":"creature","o":3,"a":5,"h":4,"x":"Production - Deal 2 damage to yourself.","r":{},"k":[]},{"id":"dune_drake","n":"Dune Drake","s":"core","c":"yellow","t":"creature","o":4,"a":4,"h":4,"x":"","r":{},"k":["flying","charge:2"]},{"id":"rebel_glider","n":"Rebel Glider","s":"core","c":"neutral","t":"creature","o":3,"a":2,"h":3,"x":"","r":{},"k":["flying"]},{"id":"soul_drain","n":"Soul Drain","s":"core","c":"yellow","t":"event","o":2,"a":null,"h":null,"x":"Drain 2 Life from a creature.","r":{},"k":[]},{"id":"wind_gate","n":"Wind Gate","s":"core","c":"yellow","t":"structure","o":1,"a":null,"h":4,"x":"You can summon creatures on spaces adjacent to this. Activate: Move Wind Gate.","r":{},"k":[]},{"id":"last_nightmare","n":"Last Nightmare","s":"core","c":"yellow","t":"event","o":6,"a":null,"h":null,"x":"Destroy a creature.","r":{},"k":[]},{"id":"khalim_sky_prodigy","n":"Khalim, Sky Prodigy","s":"core","c":"yellow","t":"creature","o":5,"a":3,"h":6,"x":"","r":{},"k":["flying","charge:2"]},{"id":"azarai","n":"Azarai, Wrath of the Desert","s":"core","c":"yellow","t":"creature","o":10,"a":6,"h":6,"x":"Flying, Charge 2. Gift - Azarai drains 2 Attack from each enemy creature.","r":{},"k":["flying","charge:2"]},{"id":"campfire","n":"Campfire","s":"core","c":"neutral","t":"event","o":1,"a":null,"h":null,"x":"Give a creature +1/+1.","r":{},"k":[]},{"id":"imperial_guard","n":"Imperial Guard","s":"core","c":"neutral","t":"creature","o":3,"a":2,"h":3,"x":"Taunt. Last Words - Gain 2 Life.","r":{},"k":["taunt"]},{"id":"hilltop_archer","n":"Hilltop Archer","s":"core","c":"neutral","t":"creature","o":4,"a":2,"h":2,"x":"Ranged.","r":{},"k":["ranged"]},{"id":"healing_song","n":"Healing Song","s":"core","c":"neutral","t":"event","o":3,"a":null,"h":null,"x":"Draw a card and gain 5 Life.","r":{},"k":[]},{"id":"wisdom","n":"Wisdom","s":"core","c":"neutral","t":"event","o":3,"a":null,"h":null,"x":"Draw 2 cards.","r":{},"k":[]},{"id":"outland_ranger","n":"Outland Ranger","s":"core","c":"neutral","t":"creature","o":3,"a":3,"h":2,"x":"Gift - Add a Campfire to your hand.","r":{},"k":[]},{"id":"walking_fortress","n":"Walking Fortress","s":"core","c":"neutral","t":"creature","o":9,"a":7,"h":10,"x":"","r":{},"k":[]},{"id":"sharra_dragonslayer","n":"Sharra, Dragonslayer","s":"dlc","c":"neutral","t":"creature","o":7,"a":6,"h":3,"x":"Sharra ignores all damage equal to 4 or more.","r":{},"k":[]},{"id":"magnus_king","n":"Magnus, King of Meroval","s":"core","c":"neutral","t":"creature","o":10,"a":4,"h":8,"x":"Charge 3. Combat - Draw a card. It costs 0.","r":{},"k":["charge:3"]},{"id":"tax_collector","n":"Tax Collector","s":"core","c":"neutral","t":"creature","o":3,"a":1,"h":4,"x":"Combat - Gain 1 Faeria.","r":{},"k":[]},{"id":"llamacorn","n":"Llamacorn","s":"core","c":"neutral","t":"creature","o":5,"a":5,"h":5,"x":"Combat - Both players draw a card and gain 2 Life.","r":{},"k":[]},{"id":"underground_boss","n":"Underground Boss","s":"core","c":"red","t":"creature","o":5,"a":3,"h":5,"x":"Combat - Gain 2 Faeria.","r":{},"k":[]},{"id":"crystal_flower","n":"Crystal Flower","s":"core","c":"neutral","t":"creature","o":4,"a":0,"h":5,"x":"Production - Gain 1 Faeria.","r":{},"k":[]},{"id":"farm_boy","n":"Farm Boy","s":"core","c":"neutral","t":"creature","o":1,"a":1,"h":1,"x":"Production - Gain 1 Faeria.","r":{},"k":[]},{"id":"animated_banquet","n":"Animated Banquet","s":"dlc","c":"blue","t":"creature","o":2,"a":1,"h":1,"x":"Dash 1. At end of your turn, a random adjacent friendly creature swallows this and gains +1/+1.","r":{},"k":["dash:1"]},{"id":"triton_adventurer","n":"Triton Adventurer","s":"core","c":"blue","t":"creature","o":2,"a":1,"h":3,"x":"Aquatic. Production - Draw a card.","r":{},"k":["aquatic"]},{"id":"tiki_adventurer","n":"Tiki Adventurer","s":"core","c":"green","t":"creature","o":2,"a":2,"h":2,"x":"Production - Gain 1 Faeria.","r":{},"k":[]},{"id":"keldran_adventurer","n":"Keldran Adventurer","s":"gagana","c":"neutral","t":"creature","o":3,"a":2,"h":3,"x":"Dash 1. At end of your turn, shuffle 2 Treasure Maps into deck if on enemy land.","r":{},"k":["dash:1"]},{"id":"explore","n":"Explore","s":"core","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"Place a Prairie on any adjacent empty space. Gain 2 Faeria.","r":{},"k":[]},{"id":"tidal_force","n":"Tidal Force","s":"core","c":"blue","t":"event","o":1,"a":null,"h":null,"x":"Draw 2 cards.","r":{},"k":[]},{"id":"falcon_dive","n":"Falcon Dive","s":"core","c":"yellow","t":"event","o":1,"a":null,"h":null,"x":"Deal 1 damage to a target.","r":{},"k":[]},{"id":"simulacrum","n":"Simulacrum","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":8,"x":"Your cards cost 1 Faeria less.","r":{},"k":[]},{"id":"spear_guardians","n":"Spear Guardians","s":"dlc","c":"neutral","t":"creature","o":2,"a":9,"h":1,"x":"Divine. Flying. Dash 5.","r":{},"k":["divine","flying","dash:5"]},{"id":"key_elements","n":"Key of the Elements","s":"gagana","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"Discover a creature of a chosen color.","r":{},"k":[]},{"id":"key_giants","n":"Key of the Giants","s":"gagana","c":"neutral","t":"event","o":3,"a":null,"h":null,"x":"Discover a creature. It gains +2/+2.","r":{},"k":[]},{"id":"key_guardians","n":"Key of the Guardians","s":"gagana","c":"neutral","t":"event","o":7,"a":null,"h":null,"x":"Summon two 5/5 Guardians with Taunt.","r":{},"k":[]},{"id":"ancient_gargoyle","n":"Ancient Gargoyle","s":"gagana","c":"neutral","t":"creature","o":3,"a":3,"h":3,"x":"Destroy all Treasure Maps in your deck. Gain +1/+1 for each destroyed.","r":{},"k":[]},{"id":"compass_gagana","n":"Compass of Gagana","s":"gagana","c":"neutral","t":"structure","o":1,"a":null,"h":3,"x":"End of turn: if no Treasure Maps in deck, shuffle one in. Otherwise put one on top.","r":{},"k":[]},{"id":"gagana_seeker","n":"Gagana, Treasure Seeker","s":"gagana","c":"neutral","t":"creature","o":6,"a":3,"h":7,"x":"Flying. Gift: For each other card in your hand, shuffle a Treasure Map into your deck.","r":{},"k":["flying"]},{"id":"treasure_map","n":"Treasure Map","s":"gagana","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"Draw a card. After playing 3 Treasure Maps this game, Discover a Treasure.","r":{},"k":[]},{"id":"pandora_awakens","n":"Pandora Awakens!","s":"gagana","c":"neutral","t":"event","o":3,"a":null,"h":null,"x":"Both players receive a Treasure! Draw a card.","r":{},"k":[]},{"id":"treasure_found","n":"Treasure Found!","s":"gagana","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"Both players receive a Treasure! Draw a card.","r":{},"k":[]},{"id":"shard_of_pandora","n":"Shard of Pandora","s":"gagana","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"Add a random Treasure to your hand.","r":{},"k":[]},{"id":"glidehopper","n":"Glidehopper","s":"gagana","c":"neutral","t":"creature","o":5,"a":5,"h":4,"x":"Flying. Jump.","r":{},"k":["flying","jump"]},{"id":"thyrian_expedition","n":"Thyrian Expedition","s":"gagana","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"Discover a card that costs 4 or more land.","r":{},"k":[]},{"id":"crystal_spice","n":"Crystal Spice","s":"gagana","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"Discover 2 non-legendary cards that cost 7 or more Faeria.","r":{},"k":[]},{"id":"spirit_spice","n":"Spirit Spice","s":"gagana","c":"neutral","t":"event","o":9,"a":null,"h":null,"x":"Give a creature +4/+4, Charge 2 and Flying.","r":{},"k":[]},{"id":"airbot","n":"Airbot","s":"gagana","c":"neutral","t":"creature","o":2,"a":2,"h":2,"x":"Flying. Dash 2.","r":{},"k":["flying","dash:2"]},{"id":"celeste","n":"Celeste, Crystal Dragon","s":"dlc","c":"neutral","t":"creature","o":10,"a":6,"h":6,"x":"Flying. Charge 2. Gift: If your deck has exactly 1 of each card, gain Haste and Protection. Last Words - Shuffle Celeste back into your deck.","r":{},"k":["flying","charge:2"]},{"id":"sorocco","n":"Sorocco","s":"dlc","c":"neutral","t":"creature","o":7,"a":7,"h":7,"x":"Jump. When this moves, deal 1 damage to adjacent enemies.","r":{},"k":["jump"]},{"id":"message_bottle","n":"Message in a Bottle","s":"gagana","c":"blue","t":"event","o":1,"a":null,"h":null,"x":"Shuffle 2 Treasure Maps into your deck. Draw a card.","r":{},"k":[]},{"id":"triton_adventurer_g","n":"Triton Adventurer","s":"gagana","c":"blue","t":"creature","o":4,"a":4,"h":3,"x":"Jump. End of turn: if on enemy land, draw a card.","r":{},"k":["jump"]},{"id":"triton_stargazer","n":"Triton Stargazer","s":"gagana","c":"blue","t":"creature","o":5,"a":2,"h":1,"x":"Jump. Gift: Draw 3 cards. If you drew a Treasure Map, gain +2/+2.","r":{},"k":["jump"]},{"id":"starshell_keeper","n":"Starshell Keeper","s":"gagana","c":"blue","t":"creature","o":5,"a":4,"h":5,"x":"Gift: Shuffle a Treasure Map into your deck. Draw a card.","r":{},"k":[]},{"id":"fugoro","n":"Fugoro, Captain of the Gagana","s":"dlc","c":"blue","t":"creature","o":5,"a":3,"h":5,"x":"Jump. Whenever you Discover a Treasure, Fugoro gains +3/+3.","r":{},"k":["jump"]},{"id":"unstable_forgeling","n":"Unstable Forgeling","s":"gagana","c":"red","t":"creature","o":5,"a":2,"h":5,"x":"Production: Mecha you control gain +3 attack this turn.","r":{},"k":[]},{"id":"fragmenter","n":"Fragmenter","s":"dlc","c":"red","t":"creature","o":6,"a":3,"h":6,"x":"Combat - Summon a 4/2 Mecha in a random adjacent space.","r":{},"k":[]},{"id":"junkfeet","n":"Junkfeet, the Scrapheap","s":"dlc","c":"red","t":"creature","o":4,"a":4,"h":4,"x":"At end of your turn, give all other friendly Mecha +1/+1 and this takes 1 damage.","r":{},"k":[]},{"id":"ogre_adventurer","n":"Ogre Adventurer","s":"gagana","c":"red","t":"creature","o":5,"a":5,"h":5,"x":"Dash 1. End of turn: if on enemy land, your hand costs 1 less next turn.","r":{},"k":["dash:1"]},{"id":"tiki_adventurer_g","n":"Tiki Adventurer","s":"gagana","c":"green","t":"creature","o":4,"a":2,"h":2,"x":"Dash 1. End of turn: if on enemy land, adjacent friendly creatures gain +1/+1.","r":{},"k":["dash:1"]},{"id":"tiki_zoologist","n":"Tiki Zoologist","s":"gagana","c":"green","t":"creature","o":2,"a":1,"h":1,"x":"Gift: Discover a Beast. It becomes Wild.","r":{},"k":[]},{"id":"seek_shelter","n":"Seek Shelter","s":"gagana","c":"green","t":"event","o":1,"a":null,"h":null,"x":"Discover a creature with Taunt.","r":{},"k":[]},{"id":"exotic_pet","n":"Exotic Pet","s":"dlc","c":"green","t":"creature","o":2,"a":3,"h":2,"x":"Can be summoned adjacent to non-green land.","r":{},"k":[]},{"id":"keldran_adventurer_g","n":"Keldran Adventurer","s":"gagana","c":"yellow","t":"creature","o":4,"a":4,"h":3,"x":"Dash 1. End of turn: if on enemy land, shuffle a Treasure Map into your deck.","r":{},"k":["dash:1"]},{"id":"amai_mapdealer","n":"Amai Mapdealer","s":"gagana","c":"yellow","t":"creature","o":0,"a":0,"h":1,"x":"Gift: Shuffle a Treasure Map into your deck.","r":{},"k":[]},{"id":"amai_merchant","n":"Amai Merchant","s":"gagana","c":"yellow","t":"creature","o":3,"a":3,"h":3,"x":"Flying. Gift: Discover a card costing 5 or more. Your opponent receives the others.","r":{},"k":["flying"]},{"id":"aryana","n":"Aryana, Soul of Gagana","s":"gagana","c":"yellow","t":"creature","o":4,"a":4,"h":2,"x":"Flying. Gift: Put a Treasure Map on top of your deck. Last Words: Return this to your hand.","r":{},"k":["flying"]},{"id":"barter","n":"Barter","s":"gagana","c":"yellow","t":"event","o":2,"a":null,"h":null,"x":"","r":{},"k":[]},{"id":"gabrian_cistern","n":"Gabrian Cistern","s":"dlc","c":"blue","t":"structure","o":4,"a":null,"h":3,"x":"Production: Gain 3 Faeria. Deal 1 damage to this.","r":{},"k":[]},{"id":"gabrian_warden","n":"Gabrian Warden","s":"dlc","c":"blue","t":"creature","o":7,"a":4,"h":6,"x":"Aquatic. Gift: Give a friendly creature Protection.","r":{},"k":["aquatic"]},{"id":"spring_mochi","n":"Spring Mochi","s":"dlc","c":"blue","t":"creature","o":3,"a":2,"h":2,"x":"Gift: The next card you draw costing 7 or more Faeria costs 3 less.","r":{},"k":[]},{"id":"sturdy_shell","n":"Sturdy Shell","s":"dlc","c":"blue","t":"creature","o":2,"a":0,"h":5,"x":"Aquatic.","r":{},"k":["aquatic"]},{"id":"sunken_tower","n":"Sunken Tower","s":"dlc","c":"blue","t":"structure","o":2,"a":null,"h":3,"x":"Activate: Move a friendly land. Deal 1 damage to this.","r":{},"k":[]},{"id":"tale_old_turtle","n":"Tale of the Old Turtle","s":"dlc","c":"blue","t":"event","o":6,"a":null,"h":null,"x":"Draw 3 cards. All creatures drawn this way cost 2 less.","r":{},"k":[]},{"id":"baeru","n":"Baeru, the First Wave","s":"dlc","c":"blue","t":"creature","o":8,"a":8,"h":10,"x":"Aquatic. Production: Transform all adjacent lands into Lakes.","r":{},"k":["aquatic"]},{"id":"triton_banquet","n":"Triton Banquet","s":"dlc","c":"blue","t":"event","o":3,"a":null,"h":null,"x":"Give a creature +1/+1 and Jump.","r":{},"k":[]},{"id":"triton_chef","n":"Triton Chef","s":"dlc","c":"blue","t":"creature","o":2,"a":2,"h":2,"x":"Jump. Gift: Add a Triton Banquet to your hand.","r":{},"k":["jump"]},{"id":"tyranax","n":"Tyranax","s":"dlc","c":"blue","t":"creature","o":5,"a":4,"h":6,"x":"","r":{},"k":[]},{"id":"gemsilk_faerie","n":"Gemsilk Faerie","s":"dlc","c":"blue","t":"creature","o":2,"a":1,"h":1,"x":"Flying. First time you draw an event: gains +2/+2 and Charge 2.","r":{},"k":["flying"]},{"id":"stormspawn","n":"Stormspawn","s":"dlc","c":"blue","t":"creature","o":10,"a":3,"h":3,"x":"Last Words: Gain 10 Faeria.","r":{},"k":[]},{"id":"lore_thief","n":"Lore Thief","s":"dlc","c":"blue","t":"creature","o":3,"a":1,"h":1,"x":"Gift: Choose one \u2014 Gain +2/+2. \u2014 Draw 2 cards.","r":{},"k":[]},{"id":"gabrian_enchantress","n":"Gabrian Enchantress","s":"dlc","c":"blue","t":"creature","o":4,"a":2,"h":5,"x":"Aquatic. Gift: Another creature\\'s Attack becomes its Life.","r":{},"k":["aquatic"]},{"id":"gabrian_commander","n":"Gabrian Commander","s":"dlc","c":"blue","t":"creature","o":3,"a":4,"h":2,"x":"Aquatic. Charge 2. First time you draw a 7+ cost card: gains +1/+1 and Flying.","r":{},"k":["aquatic","charge:2"]},{"id":"mystic_beast","n":"Mystic Beast","s":"dlc","c":"blue","t":"creature","o":3,"a":2,"h":5,"x":"Gift: Gains +2/+0 and Jump if summoned adjacent to an enemy well.","r":{},"k":[]},{"id":"mirror_phantasm","n":"Mirror Phantasm","s":"dlc","c":"blue","t":"creature","o":7,"a":5,"h":5,"x":"Gift: Transform another creature into a 5/5 Mirror Phantasm.","r":{},"k":[]},{"id":"ninja_toad","n":"Ninja Toad","s":"dlc","c":"blue","t":"creature","o":4,"a":3,"h":2,"x":"Jump. Haste.","r":{},"k":["jump","haste"]},{"id":"frogify","n":"Frogify","s":"dlc","c":"blue","t":"event","o":4,"a":null,"h":null,"x":"Transform a creature into a 2/2 Frog with Jump.","r":{},"k":[]},{"id":"auroras_creation","n":"Aurora\\'s Creation","s":"dlc","c":"blue","t":"event","o":5,"a":null,"h":null,"x":"Add a copy of a creature to your hand. It costs 5 less.","r":{},"k":[]},{"id":"dark_stalker","n":"Dark Stalker","s":"dlc","c":"blue","t":"creature","o":3,"a":3,"h":2,"x":"If you\\'ve played an event this turn, costs 2 less.","r":{},"k":[]},{"id":"spellwhirl","n":"Spellwhirl","s":"dlc","c":"blue","t":"event","o":0,"a":null,"h":null,"x":"Add 2 random blue cards to your hand.","r":{},"k":[]},{"id":"gabrian_noble","n":"Gabrian Noble","s":"dlc","c":"blue","t":"creature","o":6,"a":5,"h":5,"x":"Aquatic. Gift: Summon a 1/1 Ruby Fish.","r":{},"k":["aquatic"]},{"id":"wavecrash_colossus","n":"Wavecrash Colossus","s":"dlc","c":"blue","t":"creature","o":8,"a":7,"h":7,"x":"Costs 1 less for each enemy well harvested this game (min 4).","r":{},"k":[]},{"id":"azure_wisp","n":"Azure Wisp","s":"dlc","c":"blue","t":"creature","o":4,"a":3,"h":3,"x":"","r":{},"k":[]},{"id":"triton_sanctuary","n":"Triton Sanctuary","s":"dlc","c":"blue","t":"structure","o":2,"a":null,"h":1,"x":"Whenever you harvest Faeria, this gains +0/+1. Activate: Destroy this, gain Faeria equal to its Life.","r":{},"k":[]},{"id":"auroras_dream","n":"Aurora\\'s Dream","s":"dlc","c":"blue","t":"event","o":24,"a":null,"h":null,"x":"Draw until you have 9 cards. Reduce cost of all hand cards to 0.","r":{},"k":[]},{"id":"luduan","n":"Luduan","s":"dlc","c":"blue","t":"creature","o":3,"a":1,"h":3,"x":"Aquatic. Whenever this harvests from an enemy well, add a random blue card to hand (costs 2 less).","r":{},"k":["aquatic"]},{"id":"egg_of_wonders","n":"Egg of Wonders","s":"dlc","c":"blue","t":"structure","o":5,"a":null,"h":3,"x":"First time you draw a non-legendary creature, becomes a copy of it.","r":{},"k":[]},{"id":"prophet_of_tides","n":"Prophet of Tides","s":"dlc","c":"blue","t":"creature","o":3,"a":4,"h":2,"x":"Jump. Gift: Move this creature to any empty friendly land.","r":{},"k":["jump"]},{"id":"humbling_vision","n":"Humbling Vision","s":"dlc","c":"blue","t":"event","o":3,"a":null,"h":null,"x":"Halve a creature\\'s Attack and Life (rounded down).","r":{},"k":[]},{"id":"ancient_herald","n":"Ancient Herald","s":"dlc","c":"blue","t":"creature","o":6,"a":5,"h":6,"x":"Gift: The next creature you draw with 5+ Life costs 2 less.","r":{},"k":[]},{"id":"wavecrafter","n":"Wavecrafter","s":"dlc","c":"blue","t":"creature","o":6,"a":6,"h":6,"x":"","r":{},"k":[]},{"id":"unbound_evolution","n":"Unbound Evolution","s":"dlc","c":"blue","t":"event","o":2,"a":null,"h":null,"x":"Transform a creature into a random creature costing 2 more.","r":{},"k":[]},{"id":"auroras_trick","n":"Aurora\\'s Trick","s":"dlc","c":"blue","t":"event","o":4,"a":null,"h":null,"x":"Gain control of a creature with 2 Attack or less.","r":{},"k":[]},{"id":"battle_toads","n":"Battle Toads","s":"dlc","c":"blue","t":"event","o":4,"a":null,"h":null,"x":"Summon two 2/2 Frogs with Jump.","r":{},"k":[]},{"id":"windfall","n":"Windfall","s":"dlc","c":"blue","t":"event","o":10,"a":null,"h":null,"x":"Gain 12 Faeria.","r":{},"k":[]},{"id":"failed_experiment","n":"Failed Experiment","s":"dlc","c":"blue","t":"event","o":1,"a":null,"h":null,"x":"The next creature you play this turn costs 4 less. It dies instantly.","r":{},"k":[]},{"id":"forbidden_library","n":"Forbidden Library","s":"dlc","c":"blue","t":"structure","o":1,"a":null,"h":2,"x":"Production: Draw a card, gain 1 Faeria, deal 2 damage to yourself.","r":{},"k":[]},{"id":"dream_reaver","n":"Dream Reaver","s":"dlc","c":"blue","t":"creature","o":7,"a":7,"h":10,"x":"Dash 3. Gift: Set a god\\'s Life to 10 (if above 10).","r":{},"k":["dash:3"]},{"id":"looking_glass_phantasm","n":"Looking Glass Phantasm","s":"dlc","c":"blue","t":"creature","o":5,"a":3,"h":5,"x":"Gift: Transform an enemy creature into a 5/3 Mirror Phantasm.","r":{},"k":[]},{"id":"bloated_toad","n":"Bloated Toad","s":"dlc","c":"blue","t":"creature","o":1,"a":3,"h":3,"x":"Jump. Enters play with an enemy 2/2 Frog (Jump) swallowed inside it.","r":{},"k":["jump"]},{"id":"triton_tactician","n":"Triton Tactician","s":"dlc","c":"blue","t":"creature","o":3,"a":2,"h":4,"x":"Jump. Gift: Gains +1/+0 for each adjacent friendly Triton.","r":{},"k":["jump"]},{"id":"tide_lord","n":"Tide Lord","s":"dlc","c":"blue","t":"creature","o":5,"a":5,"h":5,"x":"Jump. Can be summoned adjacent to friendly Tritons. If it is, gains +1/+1.","r":{},"k":["jump"]},{"id":"coral_polliwog","n":"Coral Polliwog","s":"dlc","c":"blue","t":"creature","o":7,"a":5,"h":7,"x":"Jump. Can harvest faeria turn played. Gift: Move this creature.","r":{},"k":["jump"]},{"id":"triton_trainer","n":"Triton Trainer","s":"dlc","c":"blue","t":"creature","o":3,"a":3,"h":2,"x":"Jump. Gift: Give the next Jump creature you summon +1/+1.","r":{},"k":["jump"]},{"id":"monstrous_hydra","n":"Monstrous Hydra","s":"dlc","c":"blue","t":"creature","o":6,"a":5,"h":6,"x":"Gift: Summon a 2/1 Hydra Head with Haste in each adjacent land.","r":{},"k":[]},{"id":"flying_piranha","n":"Flying Piranha","s":"dlc","c":"blue","t":"creature","o":3,"a":1,"h":3,"x":"Flying. When an adjacent creature dies, gains Deathtouch and Jump.","r":{},"k":["flying"]},{"id":"rain_of_fish","n":"Rain of Fish","s":"dlc","c":"blue","t":"event","o":6,"a":null,"h":null,"x":"Summon 6 Ruby Fish in random spaces. Each on a land deals 1 damage to adjacent enemies.","r":{},"k":[]},{"id":"curious_biomancer","n":"Curious Biomancer","s":"dlc","c":"blue","t":"creature","o":3,"a":1,"h":3,"x":"Gift: For each enemy creature, draw a non-blue creature from your deck.","r":{},"k":[]},{"id":"leaping_fugu","n":"Leaping Fugu","s":"dlc","c":"blue","t":"creature","o":3,"a":2,"h":3,"x":"Jump. Gift: If you control 8+ special lands, gains +3/+3.","r":{},"k":["jump"]},{"id":"orphan_fugu","n":"Orphan Fugu","s":"dlc","c":"blue","t":"creature","o":4,"a":3,"h":5,"x":"Jump. Has +2/+0 while you control another Beast.","r":{},"k":["jump"]},{"id":"rapala","n":"Rapala","s":"dlc","c":"blue","t":"creature","o":1,"a":1,"h":1,"x":"Aquatic. Gift: Fill opponent\\'s hand with frogs.","r":{},"k":["aquatic"]},{"id":"fugoro_merchant","n":"Fugoro Merchant","s":"gagana","c":"blue","t":"creature","o":5,"a":3,"h":5,"x":"Jump. Gift: Choose \u2014 Draw Urn of Gabria, Crystal Dragon, or Ulani\\'s Medallion.","r":{},"k":["jump"]},{"id":"gabrian_soldier","n":"Gabrian Soldier","s":"dlc","c":"blue","t":"creature","o":3,"a":4,"h":2,"x":"Aquatic. Charge 3.","r":{},"k":["aquatic","charge:3"]},{"id":"flowersilk_faerie","n":"Flowersilk Faerie","s":"dlc","c":"green","t":"creature","o":2,"a":1,"h":1,"x":"Flying. First time you draw an event: gains +1/+4, Taunt and Charge 2.","r":{},"k":["flying"]},{"id":"oakling","n":"Oakling","s":"dlc","c":"green","t":"creature","o":5,"a":1,"h":5,"x":"Last Words: Give a random green creature in hand +5/+5.","r":{},"k":[]},{"id":"overgrown_tower","n":"Overgrown Tower","s":"dlc","c":"green","t":"structure","o":2,"a":1,"h":3,"x":"Activate: Give a friendly creature +1/+1. Deal 1 damage to this.","r":{},"k":[]},{"id":"bone_collector","n":"Bone Collector","s":"dlc","c":"green","t":"creature","o":2,"a":0,"h":3,"x":"Whenever an adjacent creature dies, gains +1/+1.","r":{},"k":[]},{"id":"soulbound_sagami","n":"Soulbound Sagami","s":"dlc","c":"green","t":"creature","o":6,"a":3,"h":5,"x":"Last Words: Give a random friendly creature +3/+5.","r":{},"k":[]},{"id":"ancient_beastmaster","n":"Ancient Beastmaster","s":"dlc","c":"green","t":"creature","o":4,"a":3,"h":4,"x":"When you summon a creature with 5 or more Life, give it +1/+1.","r":{},"k":[]},{"id":"gaeas_grace","n":"Gaea\\'s Grace","s":"dlc","c":"green","t":"event","o":2,"a":null,"h":null,"x":"A creature gains +0/+3. Gain 3 Life.","r":{},"k":[]},{"id":"bloomsprite","n":"Bloomsprite","s":"dlc","c":"green","t":"creature","o":2,"a":1,"h":1,"x":"Last Words: Add a random green card to hand (costs 3 less).","r":{},"k":[]},{"id":"elderwood_hermit","n":"Elderwood Hermit","s":"dlc","c":"green","t":"creature","o":3,"a":1,"h":1,"x":"Last Words: Give a random friendly creature +2/+4.","r":{},"k":[]},{"id":"tiki_caretaker","n":"Tiki Caretaker","s":"dlc","c":"green","t":"creature","o":3,"a":1,"h":1,"x":"Gift: Give a creature +2/+2.","r":{},"k":[]},{"id":"tiki_piper","n":"Tiki Piper","s":"dlc","c":"green","t":"creature","o":3,"a":1,"h":1,"x":"Gift: Give a creature +0/+4.","r":{},"k":[]},{"id":"shamanic_dance","n":"Shamanic Dance","s":"dlc","c":"green","t":"event","o":2,"a":null,"h":null,"x":"Give a creature +0/+4 and Taunt.","r":{},"k":[]},{"id":"tiki_totem","n":"Tiki Totem","s":"dlc","c":"green","t":"structure","o":3,"a":null,"h":3,"x":"Give the first creature you summon each turn +1/+1.","r":{},"k":[]},{"id":"tree_of_everlife","n":"The Tree of Everlife","s":"dlc","c":"green","t":"structure","o":7,"a":null,"h":7,"x":"Production - Gain 7 Life. Give a random creature in your hand +7/+7.","r":{},"k":[]},{"id":"possessed_ursus","n":"Possessed Ursus","s":"dlc","c":"green","t":"creature","o":4,"a":1,"h":6,"x":"After this is dealt damage, double its Attack.","r":{},"k":[]},{"id":"thyrian_golem","n":"Thyrian Golem","s":"dlc","c":"green","t":"creature","o":5,"a":5,"h":10,"x":"","r":{},"k":[]},{"id":"seed_sower","n":"Seed Sower","s":"dlc","c":"green","t":"creature","o":6,"a":4,"h":6,"x":"Gift: Create an adjacent forest at random.","r":{},"k":[]},{"id":"vine_wall","n":"Vine Wall","s":"dlc","c":"green","t":"structure","o":1,"a":null,"h":4,"x":"Taunt. Last Words: Create a forest at random.","r":{},"k":["taunt"]},{"id":"ruunins_shrine","n":"Ruunin\\'s Shrine","s":"dlc","c":"green","t":"structure","o":0,"a":null,"h":2,"x":"Gift: Gain 2 Faeria. Last Words: Opponent gains 2 Faeria.","r":{},"k":[]},{"id":"oak_father","n":"Oak Father","s":"dlc","c":"green","t":"creature","o":7,"a":6,"h":6,"x":"Gift: Gains +0/+1 for each forest you control.","r":{},"k":[]},{"id":"faeria_tree","n":"Faeria Tree","s":"dlc","c":"green","t":"structure","o":2,"a":null,"h":1,"x":"Production: If < 5 Life, gains +0/+1. When reaching 5+ Life, destroy and gain 10 Faeria.","r":{},"k":[]},{"id":"primeval_colossus","n":"Primeval Colossus","s":"dlc","c":"green","t":"creature","o":16,"a":7,"h":14,"x":"Costs 1 less per special land you have (min 6).","r":{},"k":[]},{"id":"wood_elemental","n":"Wood Elemental","s":"dlc","c":"green","t":"creature","o":4,"a":2,"h":4,"x":"Taunt. Gift: Create a forest.","r":{},"k":["taunt"]},{"id":"everbloom_wisp","n":"Everbloom Wisp","s":"dlc","c":"green","t":"creature","o":4,"a":1,"h":2,"x":"Whenever you create a forest, gains +1/+1.","r":{},"k":[]},{"id":"verduran_force","n":"Verduran Force","s":"dlc","c":"green","t":"creature","o":6,"a":7,"h":7,"x":"","r":{},"k":[]},{"id":"grove_guardian","n":"Grove Guardian","s":"dlc","c":"green","t":"creature","o":5,"a":5,"h":6,"x":"Taunt.","r":{},"k":["taunt"]},{"id":"tarum","n":"Tarum, the Forest World","s":"dlc","c":"green","t":"creature","o":15,"a":7,"h":15,"x":"Taunt. Last Words: Fill the world with forests.","r":{},"k":["taunt"]},{"id":"weeping_idol","n":"Weeping Idol","s":"dlc","c":"green","t":"structure","o":0,"a":null,"h":3,"x":"Whenever you are dealt damage, gain 1 Faeria.","r":{},"k":[]},{"id":"ancient_boar","n":"Ancient Boar","s":"dlc","c":"green","t":"creature","o":5,"a":4,"h":5,"x":"Dash 2. Costs 2 less if you control a creature with 5 or more Life.","r":{},"k":["dash:2"]},{"id":"ruunins_guidance","n":"Ruunin\\'s Guidance","s":"dlc","c":"green","t":"event","o":2,"a":null,"h":null,"x":"Give a creature +2/+2. Or gain 5 Life.","r":{},"k":[]},{"id":"voice_of_hunger","n":"Voice of Hunger","s":"dlc","c":"green","t":"creature","o":5,"a":3,"h":5,"x":"Gift: Destroy all adjacent friendly creatures. Gains their combined Life as Attack and Life.","r":{},"k":[]},{"id":"seedling","n":"Seedling","s":"dlc","c":"green","t":"structure","o":2,"a":0,"h":1,"x":"Production - If this has less than 5 Life, it gains +1/+1.","r":{},"k":[]},{"id":"eredon","n":"Eredon, Voice of All","s":"dlc","c":"green","t":"creature","o":5,"a":3,"h":3,"x":"Last Words: Give all creatures in your deck and hand +1/+1.","r":{},"k":[]},{"id":"feed_the_forest","n":"Feed the Forest","s":"dlc","c":"green","t":"event","o":1,"a":null,"h":null,"x":"Destroy a friendly creature to gain Faeria equal to its Life and draw a card.","r":{},"k":[]},{"id":"ruunins_presence","n":"Ruunin\\'s Presence","s":"dlc","c":"green","t":"event","o":4,"a":null,"h":null,"x":"Add a random green creature to hand. Give it +6/+6.","r":{},"k":[]},{"id":"wild_avenger","n":"Wild Avenger","s":"dlc","c":"green","t":"creature","o":6,"a":5,"h":5,"x":"Taunt. Dash 2. Gains +0/+1 each time you place a land.","r":{},"k":["taunt","dash:2"]},{"id":"sagami_grovecaller","n":"Sagami Grovecaller","s":"dlc","c":"green","t":"creature","o":4,"a":2,"h":4,"x":"Gift: Teleport another friendly creature to a forest you control.","r":{},"k":[]},{"id":"feral_kodama","n":"Feral Kodama","s":"dlc","c":"green","t":"creature","o":5,"a":5,"h":6,"x":"Jump. Can\\'t harvest. Whenever this attacks a god, gain 5 Life.","r":{},"k":["jump"]},{"id":"god_hunter","n":"God Hunter","s":"dlc","c":"green","t":"creature","o":3,"a":5,"h":4,"x":"Jump. Can only attack gods. Can\\'t be blocked by creatures.","r":{},"k":["jump"]},{"id":"deepwood_stalker","n":"Deepwood Stalker","s":"dlc","c":"green","t":"creature","o":3,"a":2,"h":4,"x":"Charge 2. Gift: This may fight an enemy creature.","r":{},"k":["charge:2"]},{"id":"haunted_willow","n":"Haunted Willow","s":"dlc","c":"green","t":"creature","o":2,"a":7,"h":1,"x":"Taunt.","r":{},"k":["taunt"]},{"id":"rotting_boar","n":"Rotting Boar","s":"dlc","c":"green","t":"creature","o":5,"a":5,"h":4,"x":"Dash 1. Gift: Draw the top creature with 5+ Life from your deck. Give it +2/+2.","r":{},"k":["dash:1"]},{"id":"nekomata","n":"Nekomata","s":"dlc","c":"green","t":"creature","o":4,"a":3,"h":5,"x":"Taunt. Gift: Double this creature\\'s Attack.","r":{},"k":["taunt"]},{"id":"zephyr_vulpine","n":"Zephyr Vulpine","s":"dlc","c":"green","t":"creature","o":3,"a":3,"h":4,"x":"Whenever this moves into a forest, may teleport to a friendly forest.","r":{},"k":[]},{"id":"dwordia","n":"Dwordia, Chief of the Bright Fox Tribe","s":"dlc","c":"green","t":"creature","o":6,"a":6,"h":6,"x":"Whenever Dwordia moves into a forest, may teleport to any friendly forest and gains +1/+1.","r":{},"k":[]},{"id":"blossoming_kodama","n":"Blossoming Kodama","s":"dlc","c":"green","t":"creature","o":6,"a":5,"h":7,"x":"Gift: Create 3 forests at random.","r":{},"k":[]},{"id":"priest_of_everlife","n":"Priest of Everlife","s":"dlc","c":"green","t":"creature","o":3,"a":1,"h":1,"x":"Gift: Give the next creature you draw +2/+4.","r":{},"k":[]},{"id":"kodama_beast_tender","n":"Kodama Beast Tender","s":"dlc","c":"green","t":"creature","o":6,"a":5,"h":5,"x":"Jump. Adjacent friendly Beasts gain +2/+0.","r":{},"k":["jump"]},{"id":"voice_of_truth","n":"Voice of Truth","s":"dlc","c":"green","t":"creature","o":4,"a":1,"h":5,"x":"Gift: Return a creature to its original Attack and Life.","r":{},"k":[]},{"id":"hunt_down","n":"Hunt Down","s":"dlc","c":"green","t":"event","o":3,"a":null,"h":null,"x":"Give a friendly beast +2/+0. Then it fights an enemy creature.","r":{},"k":[]},{"id":"emerald_yak","n":"Emerald Yak","s":"dlc","c":"green","t":"creature","o":3,"a":3,"h":3,"x":"Gift: Summon a 1/1 Baby Yak with Taunt on a prairie you control.","r":{},"k":[]},{"id":"majinata","n":"Majinata","s":"dlc","c":"green","t":"creature","o":10,"a":5,"h":5,"x":"Protection. Divine. Gift: A friendly creature swallows Majinata. Give it +5/+5, Flying and Charge 2.","r":{},"k":["protection","divine"]},{"id":"gift_of_rakoa","n":"Gift of the Rakoa","s":"dlc","c":"green","t":"event","o":4,"a":null,"h":null,"x":"Give a creature +1/+1 for each friendly creature.","r":{},"k":[]},{"id":"chrysalis","n":"Chrysalis","s":"dlc","c":"green","t":"structure","o":0,"a":null,"h":2,"x":"Gift: Swallow a friendly creature. Production: Swallowed creature gains +1/+1. Activate: Destroy this (releasing the creature).","r":{},"k":[]},{"id":"verduran_emissary","n":"Verduran Emissary","s":"dlc","c":"green","t":"creature","o":5,"a":4,"h":5,"x":"Last Words: Give +1/+1 to all creatures in hand.","r":{},"k":[]},{"id":"seed_of_paradise","n":"Seed of Paradise","s":"dlc","c":"green","t":"creature","o":1,"a":0,"h":1,"x":"Flying. Dash 1. Gift: Choose a color. When this harvests over ocean, creates a land of that color.","r":{},"k":["flying","dash:1"]},{"id":"earthcraft","n":"Earthcraft","s":"dlc","c":"green","t":"event","o":2,"a":null,"h":null,"x":"Choose a color. Transform a land you control into that color then draw a card.","r":{},"k":[]},{"id":"kobold_barracks","n":"Kobold Barracks","s":"dlc","c":"red","t":"structure","o":2,"a":null,"h":4,"x":"Adjacent friendly creatures have +2/+0.","r":{},"k":[]},{"id":"ogre_battler","n":"Ogre Battler","s":"dlc","c":"red","t":"creature","o":8,"a":6,"h":9,"x":"Taunt.","r":{},"k":["taunt"]},{"id":"boulder_thrower","n":"Boulder Thrower","s":"dlc","c":"red","t":"creature","o":7,"a":3,"h":5,"x":"Ranged. When this attacks, also damages each enemy adjacent to the target.","r":{},"k":["ranged"]},{"id":"shedim_pest","n":"Shedim Pest","s":"dlc","c":"red","t":"creature","o":4,"a":4,"h":2,"x":"Gift: Gains +2/+2 if you have another creature with higher Attack than Life.","r":{},"k":[]},{"id":"architect","n":"Architect","s":"dlc","c":"red","t":"creature","o":2,"a":2,"h":2,"x":"Gift: Give a structure +0/+2.","r":{},"k":[]},{"id":"kobold_warlord","n":"Kobold Warlord","s":"dlc","c":"red","t":"creature","o":7,"a":5,"h":7,"x":"Combat: Give a random friendly creature +3/+0.","r":{},"k":[]},{"id":"gift_of_steel","n":"Gift of Steel","s":"dlc","c":"red","t":"event","o":4,"a":null,"h":null,"x":"Give a creature +3/+0. If it\\'s a Combat creature, give it +3/+3 instead.","r":{},"k":[]},{"id":"grappling_hook","n":"Grappling Hook","s":"dlc","c":"red","t":"event","o":3,"a":null,"h":null,"x":"Give a creature Ranged this turn. After it attacks, move it to a land adjacent to the target.","r":{},"k":[]},{"id":"bold_bargainer","n":"Bold Bargainer","s":"dlc","c":"red","t":"creature","o":7,"a":3,"h":4,"x":"Gift: A random card in hand costs 7 less.","r":{},"k":[]},{"id":"krog","n":"Krog, the Ogre King","s":"dlc","c":"red","t":"creature","o":12,"a":2,"h":12,"x":"Combat: A random card in hand costs 7 less.","r":{},"k":[]},{"id":"fire_elemental","n":"Fire Elemental","s":"dlc","c":"red","t":"creature","o":4,"a":5,"h":2,"x":"Gift: Create a mountain.","r":{},"k":[]},{"id":"blood_singer","n":"Blood Singer","s":"dlc","c":"red","t":"creature","o":3,"a":2,"h":4,"x":"Whenever an enemy creature dies, deal 1 damage to opponent.","r":{},"k":[]},{"id":"kobold_warbeast","n":"Kobold Warbeast","s":"dlc","c":"red","t":"creature","o":4,"a":5,"h":4,"x":"","r":{},"k":[]},{"id":"blood_obelisk","n":"Blood Obelisk","s":"dlc","c":"red","t":"structure","o":2,"a":null,"h":2,"x":"Whenever an enemy creature dies in combat, deal 1 damage to your opponent and gain 1 Faeria.","r":{},"k":[]},{"id":"grim_guard","n":"Grim Guard","s":"dlc","c":"red","t":"creature","o":4,"a":2,"h":5,"x":"Taunt. Combat: Deal 2 damage to your opponent.","r":{},"k":["taunt"]},{"id":"lord_of_terror","n":"Lord of Terror","s":"dlc","c":"red","t":"creature","o":6,"a":1,"h":6,"x":"Whenever a god is dealt damage, this gains that much Attack.","r":{},"k":[]},{"id":"cannon_carrier","n":"Cannon Carrier","s":"dlc","c":"red","t":"creature","o":5,"a":2,"h":4,"x":"Gift: Launch a 4/2 Mecha in a straight line onto any land.","r":{},"k":[]},{"id":"flame_thrower","n":"Flame Thrower","s":"dlc","c":"red","t":"creature","o":3,"a":3,"h":2,"x":"Ranged. Whenever this attacks a god, deal 1 damage to all enemy creatures.","r":{},"k":["ranged"]},{"id":"volcanic_colossus","n":"Volcanic Colossus","s":"dlc","c":"red","t":"creature","o":11,"a":7,"h":7,"x":"Ranged. Costs 1 less per turn you dealt damage to opponent (min 5).","r":{},"k":["ranged"]},{"id":"flamesilk_faerie","n":"Flamesilk Faerie","s":"dlc","c":"red","t":"creature","o":2,"a":1,"h":1,"x":"Flying. First time you draw an event: gains +3/+1 and Ranged.","r":{},"k":["flying"]},{"id":"derelict_tower","n":"Derelict Tower","s":"dlc","c":"red","t":"structure","o":3,"a":null,"h":3,"x":"Activate: Deal 1 damage to a target. Deal 1 damage to this.","r":{},"k":[]},{"id":"bloodfire_wisp","n":"Bloodfire Wisp","s":"dlc","c":"red","t":"creature","o":4,"a":1,"h":2,"x":"Whenever an enemy creature dies, gains +2/+1.","r":{},"k":[]},{"id":"groundshaker","n":"Groundshaker","s":"dlc","c":"red","t":"creature","o":6,"a":5,"h":6,"x":"Gift: Deal 1 damage to ALL enemies.","r":{},"k":[]},{"id":"firebringer","n":"Firebringer","s":"dlc","c":"red","t":"creature","o":4,"a":2,"h":0,"x":"Gains +1/+1 whenever you summon a creature with higher Attack than Life (while in deck/hand).","r":{},"k":[]},{"id":"seifers_wrath","n":"Seifer\\'s Wrath","s":"dlc","c":"red","t":"event","o":2,"a":null,"h":null,"x":"Deal 2 damage to a creature. If it dies, deal 2 damage to its controller.","r":{},"k":[]},{"id":"devouring_plant","n":"Devouring Plant","s":"dlc","c":"red","t":"structure","o":2,"a":null,"h":5,"x":"Taunt. Production: Deal 2 damage to all adjacent enemy creatures.","r":{},"k":["taunt"]},{"id":"seifers_fodder","n":"Seifer\\'s Fodder","s":"dlc","c":"red","t":"creature","o":4,"a":4,"h":3,"x":"Last Words: Deal 2 damage to your opponent.","r":{},"k":[]},{"id":"firestorm","n":"Firestorm","s":"dlc","c":"red","t":"event","o":5,"a":null,"h":null,"x":"Choose a space. Deal 3 damage to all enemy creatures on or adjacent to it.","r":{},"k":[]},{"id":"wrath_of_ignus","n":"Wrath of Ignus","s":"dlc","c":"red","t":"event","o":3,"a":null,"h":null,"x":"Deal X damage randomly split among enemies, where X = times you selected +1 from power wheel this game.","r":{},"k":[]},{"id":"battle_rager","n":"Battle Rager","s":"dlc","c":"red","t":"creature","o":7,"a":7,"h":3,"x":"Whenever this is dealt damage, deal that much damage back to opponent.","r":{},"k":[]},{"id":"crumbling_golem","n":"Crumbling Golem","s":"dlc","c":"red","t":"creature","o":5,"a":7,"h":6,"x":"Whenever opponent summons a creature, deal 1 damage to this.","r":{},"k":[]},{"id":"ogre_dance","n":"Ogre Dance","s":"dlc","c":"red","t":"event","o":4,"a":null,"h":null,"x":"A random card in hand costs 7 less.","r":{},"k":[]},{"id":"meteor","n":"Meteor","s":"dlc","c":"red","t":"event","o":12,"a":null,"h":null,"x":"Choose a space. Destroy all creatures, structures, and lands on or adjacent to it.","r":{},"k":[]},{"id":"ignus","n":"Ignus, the First Flame","s":"dlc","c":"red","t":"creature","o":8,"a":4,"h":4,"x":"Whenever you select +1 Faeria, deal 4 damage randomly split among enemies.","r":{},"k":[]},{"id":"exalted_ogre","n":"Exalted Ogre","s":"dlc","c":"red","t":"creature","o":5,"a":5,"h":5,"x":"Gift: If opponent has 10 Life or less, gains +2/+2.","r":{},"k":[]},{"id":"bloodstone_sprite","n":"Bloodstone Sprite","s":"dlc","c":"red","t":"creature","o":4,"a":4,"h":4,"x":"","r":{},"k":[]},{"id":"bomb_slinger","n":"Bomb Slinger","s":"dlc","c":"red","t":"creature","o":5,"a":4,"h":1,"x":"Gift: Deal 4 damage to an adjacent enemy creature or structure.","r":{},"k":[]},{"id":"hate_seed","n":"Hate Seed","s":"dlc","c":"red","t":"creature","o":7,"a":4,"h":4,"x":"Costs 1 less for each creature summoned with higher Attack than Life this game (min 1).","r":{},"k":[]},{"id":"red_devil","n":"Red Devil","s":"dlc","c":"red","t":"creature","o":9,"a":6,"h":4,"x":"Gift: Gain 5 Faeria.","r":{},"k":[]},{"id":"blood_song","n":"Blood Song","s":"dlc","c":"red","t":"event","o":4,"a":null,"h":null,"x":"Reduce cost of a random hand card by 2, four times. Deal 4 damage to yourself.","r":{},"k":[]},{"id":"hellfire","n":"Hellfire","s":"dlc","c":"red","t":"event","o":7,"a":null,"h":null,"x":"Deal 9 damage randomly split among enemies.","r":{},"k":[]},{"id":"spite_sprite","n":"Spite Sprite","s":"dlc","c":"red","t":"creature","o":1,"a":2,"h":1,"x":"Last Words: Deal 2 damage to yourself.","r":{},"k":[]},{"id":"havoc","n":"Havoc","s":"dlc","c":"red","t":"event","o":6,"a":null,"h":null,"x":"Deal 9 damage to an enemy creature or structure.","r":{},"k":[]},{"id":"baldurion","n":"Baldurion","s":"dlc","c":"red","t":"creature","o":5,"a":5,"h":5,"x":"Protection. Gift: Add a Hammer of Destruction to hand.","r":{},"k":["protection"]},{"id":"lavasurge_axolotl","n":"Lavasurge Axolotl","s":"dlc","c":"red","t":"creature","o":4,"a":12,"h":3,"x":"","r":{},"k":[]},{"id":"rakoakopter","n":"Rakoakopter","s":"dlc","c":"red","t":"creature","o":5,"a":3,"h":3,"x":"Flying. Dash 1. Gift: Deal 2 damage to adjacent enemy creatures.","r":{},"k":["flying","dash:1"]},{"id":"ruby_yak","n":"Ruby Yak","s":"dlc","c":"red","t":"creature","o":5,"a":4,"h":5,"x":"Whenever a friendly Yak is dealt damage, deal 1 damage to opponent.","r":{},"k":[]},{"id":"sapphire_yak","n":"Sapphire Yak","s":"dlc","c":"blue","t":"creature","o":4,"a":2,"h":4,"x":"Aquatic. Whenever a friendly Yak dies, draw a card.","r":{},"k":["aquatic"]},{"id":"bursting_hippo","n":"Bursting Hippo","s":"dlc","c":"red","t":"creature","o":6,"a":5,"h":5,"x":"Combat - Deal 2 damage to all adjacent enemies.","r":{},"k":[]},{"id":"kobold_smuggler","n":"Kobold Smuggler","s":"dlc","c":"red","t":"creature","o":5,"a":5,"h":3,"x":"Gift: Summon a 4/3 Seifer\\'s Fodder adjacent.","r":{},"k":[]},{"id":"flamestoker","n":"Flamestoker","s":"dlc","c":"red","t":"creature","o":5,"a":4,"h":4,"x":"Whenever you select +1 Faeria, gains +1/+1.","r":{},"k":[]},{"id":"cap10","n":"CAP-10, Sky Pirate","s":"dlc","c":"red","t":"creature","o":4,"a":3,"h":8,"x":"Combat: Draw a Gift of Steel from your deck. If none, shuffle one in.","r":{},"k":[]},{"id":"beast_trainer","n":"Beast Trainer","s":"dlc","c":"red","t":"creature","o":5,"a":3,"h":3,"x":"Gift: Reduce cost of a random Beast in hand by 5.","r":{},"k":[]},{"id":"herald_of_war","n":"Herald of War","s":"dlc","c":"red","t":"creature","o":4,"a":4,"h":4,"x":"Combat: The next creature you summon this turn gets +1/+1.","r":{},"k":[]},{"id":"rakoan_reveller","n":"Rakoan Reveller","s":"dlc","c":"red","t":"creature","o":2,"a":1,"h":2,"x":"Last Words: Gain Faeria equal to this creature\\'s Attack.","r":{},"k":[]},{"id":"celestial_tower","n":"Celestial Tower","s":"dlc","c":"yellow","t":"structure","o":2,"a":null,"h":3,"x":"Activate: Give a friendly creature Charge 3 this turn. Deal 1 damage to this.","r":{},"k":[]},{"id":"desert_twister","n":"Desert Twister","s":"dlc","c":"yellow","t":"event","o":0,"a":null,"h":null,"x":"Teleport a creature to a desert you control.","r":{},"k":[]},{"id":"oradrim_monk","n":"Oradrim Monk","s":"dlc","c":"yellow","t":"creature","o":3,"a":2,"h":1,"x":"Haste. Whenever this attacks a god, draw a card.","r":{},"k":["haste"]},{"id":"oradrim_fanatic","n":"Oradrim Fanatic","s":"dlc","c":"yellow","t":"creature","o":3,"a":3,"h":2,"x":"Jump. Gift: Move a friendly creature.","r":{},"k":["jump"]},{"id":"malevolent_spirit","n":"Malevolent Spirit","s":"dlc","c":"yellow","t":"creature","o":4,"a":3,"h":3,"x":"Gift: Drain 2 Life from opponent.","r":{},"k":[]},{"id":"deathwish_ghoul","n":"Deathwish Ghoul","s":"dlc","c":"yellow","t":"creature","o":3,"a":3,"h":1,"x":"Last Words: Gain 2 Faeria.","r":{},"k":[]},{"id":"soul_pact","n":"Soul Pact","s":"dlc","c":"yellow","t":"event","o":0,"a":null,"h":null,"x":"Deal 2 damage to yourself and gain 2 Faeria.","r":{},"k":[]},{"id":"altar_of_souls","n":"Altar of Souls","s":"dlc","c":"yellow","t":"structure","o":2,"a":0,"h":3,"x":"Activate: Deal 2 damage to yourself and add a Slaughtering Shadow to hand (costs 2).","r":{},"k":[]},{"id":"khalim_sky_prodigy","n":"Khalim, Sky Prodigy","s":"dlc","c":"yellow","t":"creature","o":6,"a":4,"h":5,"x":"Flying. Charge 2. When Khalim attacks a god, add a Khalim\\'s Follower to your hand (costs 0).","r":{},"k":["flying","charge:2"]},{"id":"khalims_training","n":"Khalim\\'s Training","s":"dlc","c":"yellow","t":"event","o":1,"a":null,"h":null,"x":"Give a creature +1/+0, Flying and Charge 2.","r":{},"k":[]},{"id":"wind_soldier","n":"Wind Soldier","s":"dlc","c":"yellow","t":"creature","o":3,"a":3,"h":1,"x":"Haste. Charge 3. Dies at end of turn.","r":{},"k":["haste","charge:3"]},{"id":"drakkar_skycaptain","n":"Drakkar Skycaptain","s":"dlc","c":"yellow","t":"creature","o":4,"a":2,"h":4,"x":"Flying. Whenever you draw a Flying creature, give it +1/+1.","r":{},"k":["flying"]},{"id":"shaytan_scavenger","n":"Shaytan Scavenger","s":"dlc","c":"yellow","t":"creature","o":4,"a":4,"h":3,"x":"Costs 2 less if you attacked a god this turn.","r":{},"k":[]},{"id":"windborne_champion","n":"Windborne Champion","s":"dlc","c":"yellow","t":"creature","o":5,"a":5,"h":5,"x":"Flying. Charge 5. Gift: Move a creature.","r":{},"k":["flying","charge:5"]},{"id":"windstorm_colossus","n":"Windstorm Colossus","s":"dlc","c":"yellow","t":"creature","o":10,"a":7,"h":7,"x":"Dash 3. Costs 1 less per event played this game (min 5).","r":{},"k":["dash:3"]},{"id":"air_elemental","n":"Air Elemental","s":"dlc","c":"yellow","t":"creature","o":4,"a":4,"h":2,"x":"Flying. Gift: Create a desert.","r":{},"k":["flying"]},{"id":"sunsilk_faerie","n":"Sunsilk Faerie","s":"dlc","c":"yellow","t":"creature","o":2,"a":1,"h":1,"x":"Flying. First time you draw an event: gains +3/+1 and Charge 3.","r":{},"k":["flying"]},{"id":"flash_wind","n":"Flash Wind","s":"dlc","c":"yellow","t":"event","o":0,"a":null,"h":null,"x":"Move a friendly creature. Or pay 2 Faeria and move an enemy creature.","r":{},"k":[]},{"id":"golden_aviary","n":"Golden Aviary","s":"dlc","c":"yellow","t":"structure","o":2,"a":null,"h":2,"x":"All your Flying creatures have +1/+0.","r":{},"k":[]},{"id":"zealous_crusader","n":"Zealous Crusader","s":"dlc","c":"yellow","t":"creature","o":4,"a":2,"h":2,"x":"Charge 2. Gains +1/+1 each time a friendly creature attacks a god.","r":{},"k":["charge:2"]},{"id":"lord_of_wastes","n":"Lord of Wastes","s":"dlc","c":"yellow","t":"creature","o":5,"a":6,"h":4,"x":"Gift: Sacrifice another creature to gain 3 Faeria.","r":{},"k":[]},{"id":"demon_wrangler","n":"Demon Wrangler","s":"dlc","c":"yellow","t":"creature","o":2,"a":2,"h":1,"x":"Gift: Sacrifice another creature, summoning a 5/2 Flying Demon Wing in its place.","r":{},"k":[]},{"id":"death_walker","n":"Death Walker","s":"dlc","c":"yellow","t":"creature","o":3,"a":6,"h":4,"x":"Deathtouch. Must sacrifice another creature to summon.","r":{},"k":["deathtouch"]},{"id":"oath_to_oblivion","n":"Oath to Oblivion","s":"dlc","c":"yellow","t":"event","o":0,"a":null,"h":null,"x":"Sacrifice a creature. Summon a 6/3 Oblivion Rider with Charge 3 in its place.","r":{},"k":[]},{"id":"shaytan_monstrosity","n":"Shaytan Monstrosity","s":"dlc","c":"yellow","t":"creature","o":5,"a":0,"h":5,"x":"Charge 2. Whenever a friendly creature dies, drains its Attack.","r":{},"k":["charge:2"]},{"id":"iona","n":"Iona, Beloved by All","s":"dlc","c":"yellow","t":"creature","o":2,"a":2,"h":1,"x":"Flying. Can\\'t be attacked.","r":{},"k":["flying","cant_be_attacked"]},{"id":"demon_wing","n":"Demon Wing","s":"dlc","c":"yellow","t":"creature","o":3,"a":5,"h":2,"x":"Flying.","r":{},"k":["flying"]},{"id":"oblivion_rider","n":"Oblivion Rider","s":"dlc","c":"yellow","t":"creature","o":5,"a":6,"h":3,"x":"Charge 3.","r":{},"k":["charge:3"]},{"id":"choking_sand","n":"Choking Sand","s":"dlc","c":"yellow","t":"event","o":4,"a":null,"h":null,"x":"Destroy a creature with 3 Attack or less.","r":{},"k":[]},{"id":"doomgate","n":"Doomgate, Door to Oblivion","s":"dlc","c":"yellow","t":"structure","o":1,"a":null,"h":3,"x":"When Doomgate has 13+ Life, destroy it and summon Ostregoth. Activate: Sacrifice a creature, draw a card, Doomgate +0/+2.","r":{},"k":[]},{"id":"windstorm_archer","n":"Windstorm Archer","s":"dlc","c":"yellow","t":"creature","o":2,"a":1,"h":2,"x":"Ranged. Whenever you play an event, gains +1/+0 this turn.","r":{},"k":["ranged"]},{"id":"windstorm_charger","n":"Windstorm Charger","s":"dlc","c":"yellow","t":"creature","o":3,"a":2,"h":3,"x":"Charge 2. Whenever you play an event, gains +2/+0 this turn (limit +6/+0).","r":{},"k":["charge:2"]},{"id":"oradrim_sagittarius","n":"Oradrim Sagittarius","s":"dlc","c":"yellow","t":"creature","o":3,"a":1,"h":3,"x":"Ranged. Whenever a friendly creature attacks a god, gain 1 Faeria.","r":{},"k":["ranged"]},{"id":"wind_wisp","n":"Wind Wisp","s":"dlc","c":"yellow","t":"creature","o":4,"a":1,"h":2,"x":"Flying. Charge 3. Whenever a friendly creature attacks a god, gains +3/+0.","r":{},"k":["flying","charge:3"]},{"id":"khalims_prayer","n":"Khalim\\'s Prayer","s":"dlc","c":"yellow","t":"event","o":0,"a":null,"h":null,"x":"Gain 2 Faeria and draw a card. Play only if you attacked a god this turn. Once per turn.","r":{},"k":[]},{"id":"slaughtering_shadow","n":"Slaughtering Shadow","s":"dlc","c":"yellow","t":"creature","o":3,"a":6,"h":1,"x":"","r":{},"k":[]},{"id":"ghost_dragon","n":"Ghost Dragon","s":"dlc","c":"yellow","t":"creature","o":2,"a":6,"h":0,"x":"Flying. Charge 2. Protection.","r":{},"k":["flying","charge:2","protection"]},{"id":"lion_fish","n":"Lion Fish","s":"dlc","c":"yellow","t":"creature","o":3,"a":0,"h":4,"x":"Flying. Deathtouch.","r":{},"k":["flying","deathtouch"]},{"id":"topaz_yak","n":"Topaz Yak","s":"dlc","c":"yellow","t":"creature","o":4,"a":4,"h":2,"x":"Can be summoned next to friendly Yaks. If it is, gains Haste.","r":{},"k":[]},{"id":"barrensky_vermin","n":"Barrensky Vermin","s":"dlc","c":"yellow","t":"creature","o":1,"a":1,"h":1,"x":"Gift: This fights your opponent (attacks the god directly).","r":{},"k":[]},{"id":"vile_bloatfly","n":"Vile Bloatfly","s":"dlc","c":"yellow","t":"creature","o":2,"a":3,"h":3,"x":"Flying. Gift: Add a Vile Bloatfly to your hand.","r":{},"k":["flying"]},{"id":"blightborn_specter","n":"Blightborn Specter","s":"dlc","c":"yellow","t":"creature","o":5,"a":3,"h":6,"x":"Charge 2. Production: If opponent has 4+ cards in hand, gains +1/+1.","r":{},"k":["charge:2"]},{"id":"dustbringer_wraith","n":"Dustbringer Wraith","s":"dlc","c":"yellow","t":"creature","o":4,"a":3,"h":6,"x":"Gift: Increase cost of each card in opponent\\'s hand by 1.","r":{},"k":[]},{"id":"barrensky_vulture","n":"Barrensky Vulture","s":"dlc","c":"yellow","t":"creature","o":4,"a":0,"h":3,"x":"Flying. Gift: Destroy a creature with 1 Life and drain its Attack.","r":{},"k":["flying"]},{"id":"haunted_husk","n":"Haunted Husk","s":"dlc","c":"yellow","t":"structure","o":1,"a":null,"h":2,"x":"End of turn: if opponent has 4+ cards in hand, draw 1 card and drain 1 Life from opponent.","r":{},"k":[]},{"id":"annoying_gnat","n":"Annoying Gnat","s":"dlc","c":"yellow","t":"creature","o":2,"a":1,"h":1,"x":"Flying. Can\\'t harvest faeria. Last Words - Deal 2 damage to yourself. Summon this in a random space.","r":{},"k":["flying"]},{"id":"ioanas_smile","n":"Iona\\'s Smile","s":"dlc","c":"yellow","t":"event","o":2,"a":null,"h":null,"x":"Draw the top 2 Flying creatures in your deck.","r":{},"k":[]},{"id":"doomsday","n":"Doomsday","s":"dlc","c":"yellow","t":"event","o":9,"a":null,"h":null,"x":"Set your Faeria to 0. Halve your Life. Destroy ALL creatures and structures. End the turn.","r":{},"k":[]},{"id":"manta_rider","n":"Manta Rider","s":"dlc","c":"yellow","t":"creature","o":5,"a":5,"h":3,"x":"Flying. Last Words: Summon a 2/2 Manta with Flying and Charge 2 where this died.","r":{},"k":["flying"]},{"id":"flash_salmon","n":"Flash Salmon","s":"dlc","c":"yellow","t":"creature","o":1,"a":1,"h":1,"x":"Divine. Flying. Haste. Charge 2. Can\\'t harvest faeria. At end of your turn, destroy this and draw a card.","r":{},"k":["divine","flying","haste","charge:2"]},{"id":"spirit_theft","n":"Spirit Theft","s":"dlc","c":"yellow","t":"event","o":1,"a":null,"h":null,"x":"Drain 1 Life from enemy creature. If killed, add a copy to hand (becomes wild).","r":{},"k":[]},{"id":"solem","n":"Solem","s":"dlc","c":"yellow","t":"creature","o":7,"a":7,"h":7,"x":"Flying. Divine. Gift: Destroy a faeria well.","r":{},"k":["flying","divine"]},{"id":"rushing_wind","n":"Rushing Wind","s":"dlc","c":"yellow","t":"event","o":0,"a":null,"h":null,"x":"Move a friendly creature.","r":{},"k":[]},{"id":"mistral_guide","n":"Mistral Guide","s":"dlc","c":"yellow","t":"creature","o":4,"a":4,"h":4,"x":"Flying. Give friendly creatures summoned adjacent to this Dash 2 and Flying.","r":{},"k":["flying"]},{"id":"istanu","n":"Istanu, Eternal Light","s":"dlc","c":"yellow","t":"creature","o":6,"a":5,"h":5,"x":"Flying. Charge 3. Last Words: A random friendly creature becomes the new Istanu.","r":{},"k":["flying","charge:3"]},{"id":"demonic_salmon","n":"Demonic Salmon","s":"dlc","c":"yellow","t":"creature","o":2,"a":1,"h":1,"x":"Haste. Flying. Charge 2. Can\\'t harvest faeria. Whenever this attacks a god, gains +1/+1.","r":{},"k":["haste","flying","charge:2"]},{"id":"fortune_hunter","n":"Fortune Hunter","s":"dlc","c":"neutral","t":"creature","o":3,"a":1,"h":1,"x":"Whenever this harvests faeria, give a random friendly creature +1/+1.","r":{},"k":[]},{"id":"steam_forge","n":"Steam Forge","s":"dlc","c":"neutral","t":"structure","o":1,"a":null,"h":3,"x":"Production: Give a random friendly creature +1/+0.","r":{},"k":[]},{"id":"hold_the_line","n":"Hold the Line!","s":"dlc","c":"neutral","t":"event","o":1,"a":null,"h":null,"x":"Add two 2/3 Imperial Guards with Taunt to your hand.","r":{},"k":[]},{"id":"safeguard","n":"Safeguard","s":"dlc","c":"neutral","t":"event","o":3,"a":null,"h":null,"x":"Give a creature Protection.","r":{},"k":[]},{"id":"freedom_fighter","n":"Freedom Fighter","s":"dlc","c":"neutral","t":"creature","o":5,"a":3,"h":3,"x":"Haste.","r":{},"k":["haste"]},{"id":"master_swordsman","n":"Master Swordsman","s":"dlc","c":"neutral","t":"creature","o":3,"a":2,"h":3,"x":"Has +2/+0 during your turn.","r":{},"k":[]},{"id":"magnus_king","n":"Magnus, King of Meroval","s":"dlc","c":"neutral","t":"creature","o":7,"a":5,"h":6,"x":"Charge 3. Combat - Draw a card. It costs 0.","r":{},"k":["charge:3"]},{"id":"yak_attack","n":"Yak Attack","s":"dlc","c":"neutral","t":"event","o":9,"a":null,"h":null,"x":"Summon three 2/2 Angry Yaks with Haste.","r":{},"k":[]},{"id":"punishment","n":"Punishment","s":"dlc","c":"neutral","t":"event","o":3,"a":null,"h":null,"x":"Deal 2 damage to a creature. If it\\'s neutral, deal 5 instead.","r":{},"k":[]},{"id":"queens_favorite","n":"Queen\\'s Favorite","s":"dlc","c":"neutral","t":"creature","o":4,"a":2,"h":3,"x":"Protection.","r":{},"k":["protection"]},{"id":"magda","n":"Magda, Queen of Meroval","s":"dlc","c":"neutral","t":"creature","o":4,"a":0,"h":3,"x":"Your Legends cost 1 less. Production: Add a random Legend to your hand. It becomes wild.","r":{},"k":[]},{"id":"court_jester","n":"Court Jester","s":"dlc","c":"neutral","t":"creature","o":3,"a":0,"h":2,"x":"Taunt. Gift: Give a random creature in hand +2/+2.","r":{},"k":["taunt"]},{"id":"unlikely_hero","n":"Unlikely Hero","s":"dlc","c":"neutral","t":"creature","o":2,"a":1,"h":2,"x":"First time this fights and survives, gains +3/+3 and Charge 2.","r":{},"k":[]},{"id":"illusion_of_grandeur","n":"Illusion of Grandeur","s":"dlc","c":"neutral","t":"creature","o":3,"a":1,"h":3,"x":"Charge 2. Whenever you summon a creature costing 1 or less, gains its ATK and Life.","r":{},"k":["charge:2"]},{"id":"plague_bearer","n":"Plague Bearer","s":"dlc","c":"neutral","t":"creature","o":3,"a":2,"h":1,"x":"Last Words: Deal 2 damage to ALL creatures.","r":{},"k":[]},{"id":"siege_engine","n":"Siege Engine","s":"dlc","c":"neutral","t":"creature","o":7,"a":2,"h":6,"x":"Ranged. After this attacks, gains +1/+0.","r":{},"k":["ranged"]},{"id":"seifer_blood_tyrant","n":"Seifer, Blood Tyrant","s":"dlc","c":"red","t":"creature","o":8,"a":6,"h":6,"x":"When Seifer destroys a creature, gains ATK and Life equal to that creature\\'s base stats.","r":{},"k":[]},{"id":"famine","n":"Famine","s":"dlc","c":"neutral","t":"event","o":2,"a":null,"h":null,"x":"Deal 1 damage to all creatures.","r":{},"k":[]},{"id":"cartographer","n":"Cartographer","s":"dlc","c":"neutral","t":"creature","o":3,"a":1,"h":1,"x":"Last Words: Add an Explore to your hand.","r":{},"k":[]},{"id":"shimmering_statue","n":"Shimmering Statue","s":"dlc","c":"neutral","t":"structure","o":2,"a":null,"h":4,"x":"Taunt. Production: Gain 1 Life.","r":{},"k":["taunt"]},{"id":"village_elder","n":"Village Elder","s":"dlc","c":"neutral","t":"creature","o":2,"a":1,"h":1,"x":"Last Words: Draw a card.","r":{},"k":[]},{"id":"storyteller","n":"Storyteller","s":"dlc","c":"neutral","t":"creature","o":3,"a":2,"h":2,"x":"Gift: Each player draws 2 cards and gains 2 Life.","r":{},"k":[]},{"id":"wandering_monk","n":"Wandering Monk","s":"dlc","c":"neutral","t":"creature","o":4,"a":1,"h":5,"x":"Whenever you draw a card, this gains +1/+0.","r":{},"k":[]},{"id":"steamforge_enforcer","n":"Steamforge Enforcer","s":"dlc","c":"neutral","t":"creature","o":6,"a":6,"h":5,"x":"","r":{},"k":[]},{"id":"kings_faithful","n":"King\\'s Faithful","s":"dlc","c":"neutral","t":"creature","o":5,"a":4,"h":1,"x":"Protection.","r":{},"k":["protection"]},{"id":"day_of_dragons","n":"Day of the Dragons","s":"dlc","c":"neutral","t":"event","o":12,"a":null,"h":null,"x":"Add the four elemental Dragons to hand (costs 3 less, become wild).","r":{},"k":[]},{"id":"daring_adventurer","n":"Daring Adventurer","s":"dlc","c":"neutral","t":"creature","o":4,"a":2,"h":2,"x":"Gift: Gains +2/+2 for each adjacent enemy creature.","r":{},"k":[]},{"id":"maceman","n":"Maceman","s":"dlc","c":"neutral","t":"creature","o":4,"a":4,"h":4,"x":"","r":{},"k":[]},{"id":"baron_thulgar","n":"Baron Thulgar","s":"dlc","c":"neutral","t":"creature","o":6,"a":4,"h":5,"x":"Last Words: Each player draws a card. They cost 0.","r":{},"k":[]},{"id":"war_yak","n":"War Yak","s":"dlc","c":"neutral","t":"creature","o":5,"a":4,"h":5,"x":"Has +2/+0 while opponent has 10 Life or less.","r":{},"k":[]},{"id":"defender_homeland","n":"Defender of the Homeland","s":"dlc","c":"neutral","t":"creature","o":2,"a":1,"h":2,"x":"Taunt. Gift: If you were attacked last turn, summon another Defender adjacent.","r":{},"k":["taunt"]},{"id":"queens_assassin","n":"Queen\\'s Assassin","s":"dlc","c":"neutral","t":"creature","o":3,"a":1,"h":1,"x":"Deathtouch.","r":{},"k":["deathtouch"]},{"id":"hunted_outlaw","n":"Hunted Outlaw","s":"dlc","c":"neutral","t":"creature","o":3,"a":4,"h":5,"x":"Last Words: Opponent draws a card and gains 2 Faeria.","r":{},"k":[]},{"id":"prairie_yak","n":"Prairie Yak","s":"dlc","c":"neutral","t":"creature","o":3,"a":2,"h":4,"x":"","r":{},"k":[]},{"id":"imperial_engineer","n":"Imperial Engineer","s":"dlc","c":"neutral","t":"creature","o":3,"a":2,"h":3,"x":"Gift: Trigger all friendly Production abilities.","r":{},"k":[]},{"id":"rainforest_explorer","n":"Rainforest Explorer","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":3,"x":"Has +1/+1 with 2 lakes, +0/+2 with 2 forests.","r":{},"k":[]},{"id":"caldera_explorer","n":"Caldera Explorer","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":3,"x":"Has +1/+1 with 2 lakes, +2/+0 with 2 mountains.","r":{},"k":[]},{"id":"oasis_explorer","n":"Oasis Explorer","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":3,"x":"Has +1/+1 with 2 lakes, +1/+1 with 2 deserts.","r":{},"k":[]},{"id":"taiga_explorer","n":"Taiga Explorer","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":3,"x":"Has +2/+0 with 2 mountains, +0/+2 with 2 forests.","r":{},"k":[]},{"id":"savannah_explorer","n":"Savannah Explorer","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":3,"x":"Has +1/+1 with 2 deserts, +0/+2 with 2 forests.","r":{},"k":[]},{"id":"sandstone_explorer","n":"Sandstone Explorer","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":3,"x":"Has +2/+0 with 2 mountains, +1/+1 with 2 deserts.","r":{},"k":[]},{"id":"syland_horsemaster","n":"Syland Horsemaster","s":"dlc","c":"neutral","t":"creature","o":3,"a":3,"h":2,"x":"Gift: Give another friendly creature Charge 3 this turn.","r":{},"k":[]},{"id":"royal_judge","n":"Royal Judge","s":"dlc","c":"neutral","t":"creature","o":5,"a":1,"h":1,"x":"Choose one: Add a free Safeguard or free Punishment to hand.","r":{},"k":[]},{"id":"imperial_drain","n":"Imperial Drain","s":"dlc","c":"neutral","t":"structure","o":1,"a":null,"h":2,"x":"Faeria wells are empty. Production - Deal 1 damage to this. Last Words - Refill each well.","r":{},"k":[]},{"id":"three_wishes","n":"Three Wishes","s":"dlc","c":"neutral","t":"event","o":3,"a":null,"h":null,"x":"Gain 3 Life. Copy top 3 cards of opponent\\'s deck (cost 1 less, become wild).","r":{},"k":[]},{"id":"apex_predator","n":"Apex Predator","s":"dlc","c":"neutral","t":"creature","o":7,"a":3,"h":3,"x":"Jump. Gift: Gain Attack and Life equal to a target creature.","r":{},"k":["jump"]},{"id":"icerock_behemoth","n":"Icerock Behemoth","s":"dlc","c":"neutral","t":"creature","o":7,"a":7,"h":7,"x":"Taunt. Protection.","r":{},"k":["taunt","protection"]},{"id":"twinsoul_spirit","n":"Twinsoul Spirit","s":"dlc","c":"neutral","t":"creature","o":5,"a":4,"h":3,"x":"Flying. Gift: Summon another Twinsoul Spirit adjacent.","r":{},"k":["flying"]},{"id":"soul_eater","n":"Soul Eater","s":"dlc","c":"neutral","t":"creature","o":5,"a":1,"h":1,"x":"Flying. Charge 3. Gains +1/+1 per friendly creature that died.","r":{},"k":["flying","charge:3"]},{"id":"scourgeflame_specter","n":"Scourgeflame Specter","s":"dlc","c":"neutral","t":"creature","o":7,"a":2,"h":5,"x":"Flying. Haste. Charge 2. Combat: Deal 3 damage to opponent.","r":{},"k":["flying","haste","charge:2"]},{"id":"cutthroat_bandit","n":"Cutthroat Bandit","s":"dlc","c":"neutral","t":"creature","o":3,"a":4,"h":1,"x":"","r":{},"k":[]},{"id":"rebel_slinger","n":"Rebel Slinger","s":"dlc","c":"neutral","t":"creature","o":3,"a":2,"h":2,"x":"Gift: Deal 2 damage to your opponent.","r":{},"k":[]},{"id":"divine_guardian","n":"Divine Guardian","s":"dlc","c":"neutral","t":"creature","o":6,"a":4,"h":6,"x":"Divine. When you would take lethal damage, prevent it and destroy this instead.","r":{},"k":["divine"]},{"id":"emperors_command","n":"The Emperor\\'s Command","s":"dlc","c":"neutral","t":"event","o":2,"a":null,"h":null,"x":"Give a creature -2/-1, a structure 3 damage, or a god 4 Life.","r":{},"k":[]},{"id":"illusion_grandeur","n":"Illusion of Grandeur","s":"dlc","c":"blue","t":"creature","o":7,"a":1,"h":1,"x":"Charge 2. Whenever you summon a creature costing 1 or less, gains its Attack and Life.","r":{},"k":["charge:2"]},{"id":"laya","n":"Laya, Lady of Sorrows","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":4,"x":"Deathtouch. Last Words: Summon a Shimmering Statue in Laya\\'s place.","r":{},"k":["deathtouch"]},{"id":"imperial_drakerider","n":"Imperial Drakerider","s":"dlc","c":"neutral","t":"creature","o":5,"a":3,"h":4,"x":"Flying. Charge 2. Gift: Gains +2/+2.","r":{},"k":["flying","charge:2"]},{"id":"crackthorn_beast","n":"Crackthorn Beast","s":"dlc","c":"neutral","t":"creature","o":6,"a":3,"h":3,"x":"Dash 2. Gift: Deal 4 damage split among enemies. Give +4/+4 split among allies.","r":{},"k":["dash:2"]},{"id":"long_horned_yak","n":"Long-horned Yak","s":"dlc","c":"neutral","t":"creature","o":3,"a":2,"h":3,"x":"Last Words: The next creature you draw gains Attack equal to this.","r":{},"k":[]},{"id":"time_of_legends","n":"Time of Legends","s":"dlc","c":"neutral","t":"event","o":1,"a":null,"h":null,"x":"Draw the top legend in your deck. If none, add 1 random legend (becomes wild).","r":{},"k":[]},{"id":"banon","n":"Banon","s":"dlc","c":"neutral","t":"creature","o":7,"a":5,"h":5,"x":"Gift: If no creatures in deck, shuffle Radiance + 10 random neutral creatures in (+2/+2).","r":{},"k":[]},{"id":"roaming_yak","n":"Roaming Yak","s":"dlc","c":"neutral","t":"creature","o":2,"a":1,"h":1,"x":"Dash 1. Gift: Create a prairie.","r":{},"k":["dash:1"]},{"id":"yak_shepherd","n":"Yak Shepherd","s":"dlc","c":"neutral","t":"creature","o":3,"a":2,"h":3,"x":"Gift: Give 2 friendly Yaks +2/+0 and Charge 2 until end of turn.","r":{},"k":[]},{"id":"oversky_yak","n":"Oversky Yak","s":"dlc","c":"neutral","t":"creature","o":4,"a":2,"h":4,"x":"Flying. Has +2/+2 while you control 6 prairies.","r":{},"k":["flying"]},{"id":"emperor_kaios","n":"Emperor Kaios","s":"dlc","c":"neutral","t":"creature","o":5,"a":3,"h":5,"x":"Production: Give all enemy creatures -1/-0. Destroy any with 0 Attack.","r":{},"k":[]},{"id":"dream_keeper","n":"Dream Keeper","s":"dlc","c":"neutral","t":"creature","o":4,"a":2,"h":4,"x":"Taunt. Gift: Reduce all hand cards by 1 Faeria, shuffle hand, redraw same amount.","r":{},"k":["taunt"]},{"id":"flight_of_mantas","n":"Flight of the Mantas","s":"dlc","c":"neutral","t":"event","o":2,"a":null,"h":null,"x":"When drawn, copy it. Summon a 2/2 Manta with Flying and Charge 2.","r":{},"k":[]},{"id":"frog_tosser","n":"Frog Tosser","s":"dlc","c":"neutral","t":"creature","o":5,"a":3,"h":4,"x":"Gift: Fights an enemy creature. Summon a 2/2 Frog with Jump adjacent to target.","r":{},"k":[]},{"id":"gemshell_tortoise","n":"Gemshell Tortoise","s":"dlc","c":"neutral","t":"creature","o":8,"a":5,"h":6,"x":"Gift: Draw a card and copy it. Both cost 2 less.","r":{},"k":[]},{"id":"goki","n":"Goki","s":"gagana","c":"neutral","t":"creature","o":2,"a":2,"h":4,"x":"Jump. Gift: Add a random Treasure to your ally\\'s hand (if ally exists).","r":{},"k":["jump"]},{"id":"intrepid_explorer","n":"Intrepid Explorer","s":"dlc","c":"neutral","t":"creature","o":3,"a":3,"h":3,"x":"Gift: Add an Explore card to each player\\'s hand.","r":{},"k":[]},{"id":"monkey_genius","n":"Monkey Genius","s":"dlc","c":"neutral","t":"creature","o":4,"a":0,"h":2,"x":"Taunt. Gift: On opponent\\'s next turn, they must play their first card for free.","r":{},"k":["taunt"]},{"id":"oversky_towship","n":"Oversky Towship","s":"dlc","c":"neutral","t":"creature","o":5,"a":5,"h":5,"x":"Flying. Dash 1. Whenever this would leave land, it brings its land with it.","r":{},"k":["flying","dash:1"]},{"id":"rakoan_chieftain","n":"Rakoan Chieftain","s":"dlc","c":"neutral","t":"creature","o":4,"a":4,"h":5,"x":"Dash 1. Adjacent friendly creatures have +1/+0.","r":{},"k":["dash:1"]},{"id":"shifting_octopus","n":"Shifting Octopus","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":3,"x":"Choose one twice: +2/+0, +0/+2, Jump, or Taunt.","r":{},"k":["aquatic"]},{"id":"sky_anemone","n":"Sky Anemone","s":"dlc","c":"neutral","t":"structure","o":0,"a":null,"h":3,"x":"Flying. Taunt. Can be summoned anywhere.","r":{},"k":["flying","taunt"]},{"id":"skyward_swordfish","n":"Skyward Swordfish","s":"dlc","c":"neutral","t":"creature","o":5,"a":4,"h":7,"x":"Flying. Taunt. Dash 1.","r":{},"k":["flying","taunt","dash:1"]},{"id":"sky_swallower","n":"Sky Swallower","s":"dlc","c":"neutral","t":"creature","o":10,"a":10,"h":10,"x":"Flying.","r":{},"k":["flying"]},{"id":"yakkapult","n":"Yakkapult","s":"dlc","c":"neutral","t":"creature","o":4,"a":2,"h":5,"x":"Ranged. Whenever this attacks, summon a 2/2 Angry Yak in a random space adjacent to the target.","r":{},"k":["ranged"]},{"id":"victory_celebration","n":"Victory Celebration","s":"dlc","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"For the rest of the game, each player gains 1 extra Faeria each turn.","r":{},"k":[]},{"id":"savior_of_meek","n":"Savior of the Meek","s":"dlc","c":"neutral","t":"creature","o":2,"a":1,"h":2,"x":"Gift: Give +2/+2 and Divine to another friendly creature with exactly 1 Attack.","r":{},"k":[]},{"id":"sharras_inspiration","n":"Sharra\\'s Inspiration","s":"dlc","c":"neutral","t":"event","o":4,"a":null,"h":null,"x":"Give a friendly creature +2/+2 for each adjacent enemy.","r":{},"k":[]},{"id":"thunder_eel","n":"Thunder Eel","s":"dlc","c":"neutral","t":"creature","o":6,"a":6,"h":4,"x":"Flying. Gift: Deal 2 damage to a creature. If on ocean, deal 4 instead.","r":{},"k":["flying"]},{"id":"tower_of_curses","n":"Tower of Curses","s":"dlc","c":"neutral","t":"structure","o":4,"a":null,"h":4,"x":"Activate: Give a creature -1/-1. Deal 1 damage to this.","r":{},"k":[]},{"id":"shozen","n":"Shozen, the Sky Eater","s":"dlc","c":"neutral","t":"creature","o":6,"a":6,"h":6,"x":"Flying. Charge 3. First time Shozen would kill in combat, swallow and gain control instead.","r":{},"k":["flying","charge:3"]},{"id":"imperial_outpost","n":"Imperial Outpost","s":"dlc","c":"neutral","t":"structure","o":2,"a":null,"h":2,"x":"All your neutral creatures have +1/+0.","r":{},"k":[]},{"id":"paradisiacal_palace","n":"Paradisiacal Palace","s":"dlc","c":"neutral","t":"structure","o":4,"a":null,"h":4,"x":"Choose one - Create a special land. Give the first creature summoned on it this turn +2/+0.","r":{},"k":[]},{"id":"destructive_volley","n":"Destructive Volley","s":"dlc","c":"neutral","t":"event","o":3,"a":null,"h":null,"x":"Deal 2 damage to a creature. If Flying, deal 5 instead.","r":{},"k":[]},{"id":"gagana_birdship","n":"Gagana Birdship","s":"gagana","c":"neutral","t":"creature","o":6,"a":3,"h":7,"x":"Flying. Cards in hand are wild. Gift: Add a random Gagana crew member to hand (costs 0).","r":{},"k":["flying"]},{"id":"gagana_treasure_seeker","n":"Gagana, Treasure Seeker","s":"gagana","c":"neutral","t":"creature","o":6,"a":3,"h":7,"x":"Flying. Gift: For each card in hand, add a Treasure Map to your deck, shuffle hand back and redraw.","r":{},"k":["flying"]},{"id":"radiance_scourge","n":"Radiance Scourge","s":"dlc","c":"neutral","t":"creature","o":10,"a":10,"h":10,"x":"Flying. Gift: Enemy creatures can\\'t attack this turn.","r":{},"k":["flying"]},{"id":"radiance_airship","n":"Radiance Airship","s":"dlc","c":"neutral","t":"creature","o":20,"a":10,"h":10,"x":"Flying. Dash 3. Cost equals your Life. Gift: Gain 1 Life per card in hand.","r":{},"k":["flying","dash:3"]},{"id":"yak_guard","n":"Yak Guard","s":"dlc","c":"neutral","t":"creature","o":0,"a":4,"h":4,"x":"Taunt. Flying.","r":{},"k":["taunt","flying"]},{"id":"mother_of_all_yaks","n":"Mother of All Yaks","s":"dlc","c":"neutral","t":"creature","o":15,"a":5,"h":8,"x":"Gift: Summon two 4/4 Yak Guards with Taunt and Flying. Costs 1 less per friendly Yak that died.","r":{},"k":[]},{"id":"rakoan_champion","n":"Rakoan Champion","s":"dlc","c":"neutral","t":"creature","o":5,"a":4,"h":4,"x":"Dash 2. Gift: Gains +1/+1 per other friendly Rakoan in play.","r":{},"k":["dash:2"]},{"id":"deranged_monkey","n":"Deranged Monkey","s":"dlc","c":"neutral","t":"creature","o":4,"a":0,"h":1,"x":"Gift: Empty all Faeria wells. Gains +1/+1 per well emptied.","r":{},"k":[]},{"id":"imperial_trooper","n":"Imperial Trooper","s":"dlc","c":"neutral","t":"creature","o":4,"a":4,"h":4,"x":"Gift: Gain control of this creature (becomes yours).","r":{},"k":[]},{"id":"lost_explorer","n":"Lost Explorer","s":"dlc","c":"neutral","t":"creature","o":3,"a":3,"h":3,"x":"Gift: Draw a card and gain 1 Faeria.","r":{},"k":[]},{"id":"blightblade_knight","n":"Blightblade Knight","s":"dlc","c":"neutral","t":"creature","o":4,"a":6,"h":4,"x":"Damage dealt to this creature is also dealt to you.","r":{},"k":[]},{"id":"shadowsilk_faerie","n":"Shadowsilk Faerie","s":"dlc","c":"neutral","t":"creature","o":3,"a":1,"h":1,"x":"Flying. Charge 2. Protection. Gift: Draw 2 events from your deck.","r":{},"k":["flying","charge:2","protection"]},{"id":"kaios","n":"Kaios, Demented Overmind","s":"dlc","c":"neutral","t":"creature","o":6,"a":6,"h":6,"x":"Divine. Kaios\\' Attack always equals his Life. Gift: Drain 1 Life from EVERYTHING.","r":{},"k":["divine"]},{"id":"sky_yak","n":"Sky Yak","s":"dlc","c":"neutral","t":"creature","o":3,"a":3,"h":2,"x":"Flying. Gift: Summon one per friendly Sky Yak that died.","r":{},"k":["flying"]},{"id":"swarming_carassius","n":"Swarming Carassius","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":2,"x":"Flying. Gift: Summon one per Carassius that died.","r":{},"k":["flying"]},{"id":"balloon_fish","n":"Balloon Fish","s":"dlc","c":"neutral","t":"creature","o":1,"a":2,"h":2,"x":"","r":{},"k":["flying","dash:2"]},{"id":"azure_skywhale","n":"Azure Skywhale","s":"dlc","c":"neutral","t":"creature","o":6,"a":6,"h":6,"x":"","r":{},"k":["flying","charge:3"]},{"id":"mobie","n":"Mobie, Azure Skywhale","s":"dlc","c":"neutral","t":"creature","o":6,"a":6,"h":6,"x":"","r":{},"k":["flying","charge:3"]},{"id":"emerald_salamander","n":"Emerald Salamander","s":"dlc","c":"neutral","t":"creature","o":6,"a":2,"h":5,"x":"Gift: Deal 2 damage to adjacent enemies, give adjacent allies +2/+2.","r":{},"k":[]},{"id":"rakoan_war_machine","n":"Rakoan War Machine","s":"dlc","c":"neutral","t":"creature","o":4,"a":4,"h":4,"x":"Charge 2. Gift: Swallow another friendly Rakoan to gain +2/+0.","r":{},"k":["charge:2"]},{"id":"rakoan_cannoneer","n":"Rakoan Cannoneer","s":"dlc","c":"neutral","t":"creature","o":2,"a":2,"h":2,"x":"Gift: Sacrifice another Rakoan to deal 3 damage to an enemy creature.","r":{},"k":[]},{"id":"rakoan_illusionist","n":"Rakoan Illusionist","s":"dlc","c":"neutral","t":"creature","o":1,"a":1,"h":1,"x":"Gift: Transform another friendly Rakoan into a 4/4 Flying Charge 2 Dune Drake until next turn.","r":{},"k":[]},{"id":"rakoan_shield_mates","n":"Rakoan Shield Mates","s":"dlc","c":"neutral","t":"creature","o":2,"a":1,"h":2,"x":"Last Words: Summon a 1/1 Rakoan where this died.","r":{},"k":[]},{"id":"rakoan_warleader","n":"Rakoan Warleader","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":5,"x":"Combat: Give a random Rakoan in hand +1/+1.","r":{},"k":[]},{"id":"rakoan_recruiter","n":"Rakoan Recruiter","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":4,"x":"Gift: Add a 1/1 Rakoan to hand (costs 0).","r":{},"k":[]},{"id":"enslaved_priest","n":"Enslaved Priest","s":"dlc","c":"neutral","t":"creature","o":3,"a":2,"h":3,"x":"Whenever a creature you control triggers an ability, drain 2 Life from opponent.","r":{},"k":[]},{"id":"yakhorn_warhorn","n":"Yakhorn Warhorn","s":"dlc","c":"neutral","t":"event","o":6,"a":null,"h":null,"x":"Summon three 2/4 Angry Prairie Yaks with Haste.","r":{},"k":[]},{"id":"astral_weapon","n":"Astral Weapon","s":"dlc","c":"neutral","t":"creature","o":14,"a":7,"h":7,"x":"Flying. Gift: Destroy all adjacent creatures, structures and lands.","r":{},"k":["flying"]},{"id":"ocarina","n":"Ocarina","s":"dlc","c":"neutral","t":"event","o":10,"a":null,"h":null,"x":"Take an extra turn after this one.","r":{},"k":[]},{"id":"djinns_lamp","n":"Djinn\\'s Lamp","s":"dlc","c":"neutral","t":"event","o":3,"a":null,"h":null,"x":"Choose a color. Add 3 random cards of that color to hand (cost 3 less).","r":{},"k":[]},{"id":"urn_of_gabria","n":"Urn of Gabria","s":"dlc","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"Draw 2 cards and gain 2 Faeria.","r":{},"k":[]},{"id":"ionas_mirror","n":"Iona\\'s Mirror","s":"dlc","c":"neutral","t":"event","o":2,"a":null,"h":null,"x":"Add two copies of the last Treasure your opponent played to your hand.","r":{},"k":[]},{"id":"bloodstone_golem","n":"Bloodstone Golem","s":"dlc","c":"neutral","t":"creature","o":3,"a":5,"h":6,"x":"Production: Refill each Faeria well. Whenever Faeria is harvested, deal 1 damage to opponent.","r":{},"k":[]},{"id":"chalice_palace","n":"Chalice from the Palace","s":"dlc","c":"neutral","t":"event","o":3,"a":null,"h":null,"x":"Give +6/+6 randomly split among friendly creatures.","r":{},"k":[]},{"id":"eredons_drum","n":"Eredon\\'s Drum","s":"dlc","c":"neutral","t":"event","o":8,"a":null,"h":null,"x":"Give all your creatures +2/+2, wherever they are.","r":{},"k":[]},{"id":"cloud_machine","n":"Cloud Machine","s":"dlc","c":"neutral","t":"structure","o":3,"a":null,"h":4,"x":"Friendly creatures have +1/+0, Flying, and Jump.","r":{},"k":[]},{"id":"ring_of_dominion","n":"Ring of Dominion","s":"dlc","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"Transform a land into chosen color. Gain control of it.","r":{},"k":[]},{"id":"worlds_tear","n":"The World\\'s Tear","s":"dlc","c":"neutral","t":"event","o":2,"a":null,"h":null,"x":"Transform a creature that attacked a god this turn into a 10/10 Sky Swallower with Flying.","r":{},"k":[]},{"id":"clockwork_yak","n":"Clockwork Yak","s":"dlc","c":"neutral","t":"creature","o":4,"a":6,"h":9,"x":"Dash 2.","r":{},"k":["dash:2"]},{"id":"equinox_automaton","n":"Equinox Automaton","s":"dlc","c":"neutral","t":"creature","o":6,"a":6,"h":6,"x":"Gift: Gain 6 Life. Last Words: Deal 6 damage to opponent.","r":{},"k":[]},{"id":"magdas_rose","n":"Magda\\'s Rose","s":"dlc","c":"neutral","t":"event","o":9,"a":null,"h":null,"x":"Gain control of an enemy creature.","r":{},"k":[]},{"id":"void_guardian","n":"Void Guardian","s":"dlc","c":"neutral","t":"creature","o":0,"a":9,"h":9,"x":"Gift: Destroy your deck.","r":{},"k":[]},{"id":"crystal_dragon","n":"Crystal Dragon","s":"dlc","c":"neutral","t":"creature","o":3,"a":6,"h":6,"x":"Flying. Charge 3.","r":{},"k":["flying","charge:3"]},{"id":"earthfire_shaker","n":"Earthfire Shaker","s":"dlc","c":"neutral","t":"creature","o":6,"a":2,"h":2,"x":"Gift: Deal 2 damage to all enemies. For each destroyed, gains +2/+2.","r":{},"k":[]},{"id":"deaths_desire","n":"Death\\'s Desire","s":"dlc","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"Destroy a creature. Its controller gains Faeria equal to its cost and draws 2 cards.","r":{},"k":[]},{"id":"bottled_lightning","n":"Bottled Lightning","s":"dlc","c":"neutral","t":"event","o":6,"a":null,"h":null,"x":"Deal 6 damage to a creature and 3 to all adjacent enemies.","r":{},"k":[]},{"id":"dancing_blade","n":"Dancing Blade","s":"dlc","c":"neutral","t":"creature","o":5,"a":0,"h":6,"x":"Flying. Jump. End of turn: deal 3 damage to all adjacent enemies.","r":{},"k":["flying","jump"]},{"id":"doom_scythe","n":"Doom Scythe","s":"dlc","c":"neutral","t":"event","o":5,"a":null,"h":null,"x":"Destroy a creature. Summon a 6/1 Slaughtering Shadow in its place.","r":{},"k":[]},{"id":"detonate","n":"Detonate","s":"dlc","c":"red","t":"event","o":2,"a":null,"h":null,"x":"All friendly Mecha deal 2 damage to adjacent enemies.","r":{},"k":[]},{"id":"jeweled_magpie","n":"Jeweled Magpie","s":"dlc","c":"neutral","t":"creature","o":3,"a":1,"h":5,"x":"Flying. Haste. Whenever this attacks a god, add a random Treasure to your hand.","r":{},"k":["flying","haste"]},{"id":"wheel_of_chaos","n":"Wheel of Chaos","s":"dlc","c":"neutral","t":"event","o":2,"a":null,"h":null,"x":"Choose one: Destroy 2 unoccupied lands. Or destroy a creature \u22645 Attack. Or gain 7 Life.","r":{},"k":[]},{"id":"auroras_teapot","n":"Aurora\\'s Teapot","s":"dlc","c":"neutral","t":"event","o":5,"a":null,"h":null,"x":"Change all friendly creatures to 6/6.","r":{},"k":[]},{"id":"stone_fair_fortune","n":"Stone of Fair Fortune","s":"dlc","c":"neutral","t":"event","o":0,"a":null,"h":null,"x":"Shuffle 3 random Treasures into your deck.","r":{},"k":[]},{"id":"secret_of_strength","n":"Secret of Strength","s":"dlc","c":"neutral","t":"event","o":4,"a":null,"h":null,"x":"Give a creature +4/+4, Flying, and Charge 3.","r":{},"k":[]},{"id":"flame_burst_ruby","n":"Flame Burst Ruby","s":"dlc","c":"neutral","t":"event","o":1,"a":null,"h":null,"x":"Choose one: Deal 3 damage. Or deal 3 damage to everything.","r":{},"k":[]},{"id":"crystalis","n":"Crystalis","s":"dlc","c":"neutral","t":"structure","o":0,"a":null,"h":6,"x":"Gift: Swallow a friendly creature. Production: Swallowed creature gains +4/+4. Activate: Destroy this (releasing the creature).","r":{},"k":[]},{"id":"magic_carpet","n":"Magic Carpet","s":"dlc","c":"neutral","t":"creature","o":4,"a":3,"h":1,"x":"Flying. Dash 5. Gift: Fill hand with Flash Winds (become wild).","r":{},"k":["flying","dash:5"]},{"id":"ulani_medallion","n":"Ulani\\'s Medallion","s":"dlc","c":"neutral","t":"event","o":6,"a":null,"h":null,"x":"Choose a friendly creature. All your other creatures become a copy of it.","r":{},"k":[]},{"id":"thyrian_globe","n":"Thyrian Globe","s":"dlc","c":"neutral","t":"creature","o":3,"a":5,"h":5,"x":"Charge 5. Flying. Last Words: Deal 5 damage to all adjacent enemies.","r":{},"k":["flying","charge:5"]},{"id":"hammer_destruction","n":"Hammer of Destruction","s":"dlc","c":"neutral","t":"event","o":3,"a":null,"h":null,"x":"Deal 5 damage. Shuffle the Hammer into your deck.","r":{},"k":[]},{"id":"hammer_of_aoros","n":"Hammer of Aoros","s":"dlc","c":"neutral","t":"event","o":5,"a":null,"h":null,"x":"Deal 5 damage. Shuffle the Hammer of Aoros into your deck.","r":{},"k":[]},{"id":"dark_crystal","n":"Dark Crystal","s":"dlc","c":"neutral","t":"event","o":8,"a":null,"h":null,"x":"Drain 4 Life from opponent, deal 3 damage to all enemy creatures, and draw 2 cards.","r":{},"k":[]},{"id":"angry_yak","n":"Angry Yak","s":"core","c":"neutral","t":"creature","o":3,"a":2,"h":2,"x":"Haste.","r":{},"k":["haste"]},{"id":"angry_prairie_yak","n":"Angry Prairie Yak","s":"dlc","c":"neutral","t":"creature","o":3,"a":2,"h":4,"x":"Haste.","r":{},"k":["haste"]},{"id":"ostregoth","n":"Ostregoth","s":"dlc","c":"yellow","t":"creature","o":13,"a":13,"h":13,"x":"Flying, Haste, Charge 13. Faeria wells cannot produce Faeria.","r":{},"k":["flying","haste","charge:13"]},{"id":"shaytan_assassin","n":"Shaytan Assassin","s":"dlc","c":"yellow","t":"creature","o":3,"a":1,"h":1,"x":"Deathtouch. Gift: Sacrifice another friendly creature to give this Protection.","r":{},"k":["deathtouch"]},{"id":"thorn_wisp","n":"Thorn Wisp","s":"dlc","c":"neutral","t":"creature","o":4,"a":1,"h":3,"x":"Whenever you create a forest, gains +1/+0.","r":{},"k":[]},{"id":"warstorm_champion","n":"Warstorm Champion","s":"dlc","c":"neutral","t":"creature","o":6,"a":4,"h":4,"x":"Dash 2. Gift: Deal 4 damage randomly split among enemies. Give +4/+4 randomly split among allies.","r":{},"k":["dash:2"]}];
+
+// ── State ─────────────────────────────────────────
+const MAX_DECK_SIZE = 30;
+const MAX_COPIES    = 3;  // max copies of any single card
+const deck = {};          // cardId → count
+
+// Active filters
+const activeColors = new Set(['green','blue','red','yellow','neutral']);
+const activeTypes  = new Set(['creature','event','structure','LAND']);
+const activeSets   = new Set(['core','dlc','gagana']);
+const activeCosts  = new Set();
+
+// ── Color helpers ─────────────────────────────────
+const COLOR_HEX = {
+  green:'#2a8a30', blue:'#2274aa', red:'#b83030',
+  yellow:'#b89020', neutral:'#607080'
+};
+const TYPE_ICON = { creature:'⚔', event:'✦', structure:'⬡', LAND:'◈' };
+const SET_LABEL = { core:'Core', dlc:'DLC', gagana:'Gagana' };
+
+function deckTotal() { return Object.values(deck).reduce((a,b)=>a+b,0); }
+
+// ── Init cost filter buttons ───────────────────────
+(function initCosts() {
+  const costs = [...new Set(CARD_DB.map(c=>c.o))].sort((a,b)=>a-b);
+  const maxCost = 12;
+  const container = document.getElementById('costFilter');
+  for (let i = 0; i <= maxCost; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'cost-btn';
+    btn.textContent = i < maxCost ? i : i+'+'
+    btn.dataset.cost = i;
+    btn.onclick = () => toggleCost(i, btn);
+    container.appendChild(btn);
+  }
+})();
+
+// ── Filter toggles ────────────────────────────────
+function toggleColor(c) {
+  if (activeColors.has(c)) activeColors.delete(c);
+  else activeColors.add(c);
+  document.getElementById('f-'+c).classList.toggle('active', activeColors.has(c));
+  renderGrid();
+}
+function toggleType(t) {
+  if (activeTypes.has(t)) activeTypes.delete(t);
+  else activeTypes.add(t);
+  document.getElementById('f-'+t).classList.toggle('active', activeTypes.has(t));
+  renderGrid();
+}
+function toggleSet(s) {
+  if (activeSets.has(s)) activeSets.delete(s);
+  else activeSets.add(s);
+  document.getElementById('f-'+s).classList.toggle('active', activeSets.has(s));
+  renderGrid();
+}
+function toggleCost(n, btn) {
+  if (activeCosts.has(n)) activeCosts.delete(n);
+  else activeCosts.add(n);
+  btn.classList.toggle('active', activeCosts.has(n));
+  renderGrid();
+}
+function clearFilters() {
+  ['green','blue','red','yellow','neutral'].forEach(c => { activeColors.add(c); document.getElementById('f-'+c).classList.add('active'); });
+  ['creature','event','structure','LAND'].forEach(t => { activeTypes.add(t); document.getElementById('f-'+t).classList.add('active'); });
+  ['core','dlc','gagana'].forEach(s => { activeSets.add(s); document.getElementById('f-'+s).classList.add('active'); });
+  activeCosts.clear();
+  document.querySelectorAll('.cost-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('searchInput').value = '';
+  document.getElementById('kwFilter').value = '';
+  renderGrid();
+}
+
+// ── Filter & sort cards ───────────────────────────
+function getFilteredCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const kw = document.getElementById('kwFilter').value;
+  const sort = document.getElementById('sortSelect').value;
+
+  let cards = CARD_DB.filter(c => {
+    if (!activeColors.has(c.c)) return false;
+    if (!activeTypes.has(c.t)) return false;
+    if (!activeSets.has(c.s)) return false;
+    if (activeCosts.size > 0) {
+      const maxBucket = 12;
+      const bucket = c.o >= maxBucket ? maxBucket : c.o;
+      if (!activeCosts.has(bucket)) return false;
+    }
+    if (q && !c.n.toLowerCase().includes(q) && !c.x.toLowerCase().includes(q)) return false;
+    if (kw && !c.k.some(k => k.startsWith(kw))) return false;
+    return true;
+  });
+
+  cards.sort((a, b) => {
+    switch(sort) {
+      case 'name':  return a.n.localeCompare(b.n);
+      case 'color': return a.c.localeCompare(b.c) || a.o - b.o;
+      case 'atk':   return (b.a||0) - (a.a||0);
+      case 'hp':    return (b.h||0) - (a.h||0);
+      default:      return a.o - b.o || a.n.localeCompare(b.n);
+    }
+  });
+  return cards;
+}
+
+// ── Render card grid ──────────────────────────────
+function renderGrid() {
+  const cards = getFilteredCards();
+  const grid  = document.getElementById('cardGrid');
+  document.getElementById('gridCount').textContent = `${cards.length} cards`;
+
+  grid.innerHTML = '';
+  cards.forEach(card => {
+    const inDeck = deck[card.id] || 0;
+    const maxed  = inDeck >= MAX_COPIES || deckTotal() >= MAX_DECK_SIZE;
+    const tile   = document.createElement('div');
+    tile.className = 'card-tile' + (inDeck > 0 ? ' in-deck' : '') + (inDeck >= MAX_COPIES ? ' maxed' : '');
+    tile.dataset.id = card.id;
+
+    tile.innerHTML = `
+      <div class="card-color-bar" style="background:${COLOR_HEX[card.c]}"></div>
+      <div class="card-name">${card.n}</div>
+      <div class="card-type-row">
+        <span>${TYPE_ICON[card.t]||''} ${card.t}</span>
+        ${card.a!=null ? `<span class="card-stats">${card.a}/${card.h}</span>` : ''}
+      </div>
+      <div class="card-cost-badge">${card.o}</div>
+      ${inDeck > 0 ? `<div class="deck-count-badge">${inDeck}</div>` : ''}
+    `;
+
+    tile.onclick = (e) => {
+      if (e.button === 2 || e.ctrlKey) { removeFromDeck(card.id); return; }
+      addToDeck(card.id);
+    };
+    tile.oncontextmenu = (e) => { e.preventDefault(); removeFromDeck(card.id); };
+    tile.onmouseenter = (e) => showTooltip(e, card);
+    tile.onmouseleave = hideTooltip;
+    tile.onmousemove  = (e) => moveTooltip(e);
+
+    grid.appendChild(tile);
+  });
+}
+
+// ── Deck operations ───────────────────────────────
+function addToDeck(id) {
+  const count = deck[id] || 0;
+  const total = deckTotal();
+  if (count >= MAX_COPIES) { toast(`Max ${MAX_COPIES} copies allowed`); return; }
+  if (total >= MAX_DECK_SIZE) { toast('Deck full (30 cards)'); return; }
+  deck[id] = count + 1;
+  renderGrid();
+  renderDeck();
+}
+function removeFromDeck(id) {
+  if (!deck[id]) return;
+  deck[id]--;
+  if (deck[id] <= 0) delete deck[id];
+  renderGrid();
+  renderDeck();
+}
+function clearDeck() {
+  if (!confirm('Clear the deck?')) return;
+  Object.keys(deck).forEach(k => delete deck[k]);
+  renderGrid();
+  renderDeck();
+}
+function sortDeck() {
+  // No-op: deck list is already sorted in renderDeck
+  renderDeck();
+  toast('Deck sorted');
+}
+
+// ── Render deck list ──────────────────────────────
+function renderDeck() {
+  const total = deckTotal();
+  const ok    = total === MAX_DECK_SIZE;
+  document.getElementById('deckStats').innerHTML =
+    `<span class="${ok ? 'deck-stat-ok' : (total > MAX_DECK_SIZE ? 'deck-stat-over' : '')}">${total}</span>/${MAX_DECK_SIZE}`;
+
+  const list = document.getElementById('deckList');
+  const entries = Object.entries(deck)
+    .map(([id, cnt]) => ({ id, cnt, card: CARD_DB.find(c=>c.id===id) }))
+    .filter(e => e.card)
+    .sort((a,b) => a.card.o - b.card.o || a.card.n.localeCompare(b.card.n));
+
+  // Group by type
+  const groups = {
+    LAND: entries.filter(e=>e.card.t==='LAND'),
+    creature: entries.filter(e=>e.card.t==='creature'),
+    structure: entries.filter(e=>e.card.t==='structure'),
+    event: entries.filter(e=>e.card.t==='event'),
+  };
+
+  list.innerHTML = '';
+  for (const [type, items] of Object.entries(groups)) {
+    if (!items.length) continue;
+    const hdr = document.createElement('div');
+    hdr.className = 'deck-section-header';
+    const typeTotal = items.reduce((a,e)=>a+e.cnt,0);
+    hdr.textContent = `${TYPE_ICON[type]||''} ${type} (${typeTotal})`;
+    list.appendChild(hdr);
+
+    items.forEach(({id, cnt, card}) => {
+      const row = document.createElement('div');
+      row.className = 'deck-entry';
+      row.innerHTML = `
+        <div class="deck-entry-bar bar-${card.c}"></div>
+        <span class="deck-entry-count">${cnt}×</span>
+        <span class="deck-entry-cost">${card.o}</span>
+        <span class="deck-entry-name">${card.n}</span>
+        <span class="deck-entry-remove">✕</span>
+      `;
+      row.onclick = () => removeFromDeck(id);
+      row.onmouseenter = (e) => showTooltip(e, card);
+      row.onmouseleave = hideTooltip;
+      row.onmousemove  = (e) => moveTooltip(e);
+      list.appendChild(row);
+    });
+  }
+
+  renderCurve(entries);
+}
+
+// ── Mana curve ────────────────────────────────────
+function renderCurve(entries) {
+  const buckets = {};
+  entries.forEach(({cnt, card}) => {
+    if (card.t === 'LAND') return;
+    const b = Math.min(card.o, 10);
+    buckets[b] = (buckets[b]||0) + cnt;
+  });
+  const maxVal = Math.max(1, ...Object.values(buckets));
+  const chart = document.getElementById('curveChart');
+  chart.innerHTML = '';
+  for (let i = 0; i <= 10; i++) {
+    const n = buckets[i] || 0;
+    const col = document.createElement('div');
+    col.className = 'curve-col';
+    const pct = (n / maxVal) * 44;
+    col.innerHTML = `
+      <div class="curve-bar" style="height:${pct}px"></div>
+      <div class="curve-label">${i < 10 ? i : '10+'}</div>
+    `;
+    chart.appendChild(col);
+  }
+}
+
+// ── Tooltip ───────────────────────────────────────
+let tooltipCard = null;
+function showTooltip(e, card) {
+  tooltipCard = card;
+  const el = document.getElementById('tooltip');
+  const reqStr = Object.entries(card.r||{}).map(([k,v])=>`${v} ${k}`).join(', ');
+  el.innerHTML = `
+    <div class="tooltip-name" style="color:${COLOR_HEX[card.c]}">${card.n}</div>
+    <div class="tooltip-type">${SET_LABEL[card.s]||card.s} · ${TYPE_ICON[card.t]||''} ${card.t} · Cost ${card.o}</div>
+    ${card.a!=null ? `<div class="tooltip-stats">${card.a} / ${card.h}</div>` : ''}
+    ${card.x ? `<div class="tooltip-text">${card.x}</div>` : ''}
+    ${reqStr ? `<div class="tooltip-req">Requires: ${reqStr}</div>` : ''}
+    ${card.k&&card.k.length ? `<div class="tooltip-kw">${card.k.map(k=>`<span class="kw-chip">${k}</span>`).join('')}</div>` : ''}
+  `;
+  el.style.display = 'block';
+  moveTooltip(e);
+}
+function hideTooltip() {
+  document.getElementById('tooltip').style.display = 'none';
+}
+function moveTooltip(e) {
+  const el = document.getElementById('tooltip');
+  const margin = 12;
+  let x = e.clientX + margin;
+  let y = e.clientY + margin;
+  if (x + 210 > window.innerWidth) x = e.clientX - 210 - margin;
+  if (y + el.offsetHeight + 10 > window.innerHeight) y = e.clientY - el.offsetHeight - margin;
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+}
+
+// ── Save / Load (localStorage + optional API) ─────
+function getDeckList() {
+  return JSON.parse(localStorage.getItem('hf_decks') || '[]');
+}
+function saveDeck() {
+  const name = document.getElementById('deckName').value.trim() || 'Unnamed Deck';
+  const cards = [];
+  for (const [id, cnt] of Object.entries(deck)) {
+    for (let i = 0; i < cnt; i++) cards.push(id);
+  }
+  if (cards.length === 0) { toast('Deck is empty'); return; }
+
+  const decks = getDeckList();
+  const idx   = decks.findIndex(d => d.name === name);
+  const entry = { name, cards, updatedAt: Date.now() };
+  if (idx >= 0) decks[idx] = entry;
+  else decks.push(entry);
+  localStorage.setItem('hf_decks', JSON.stringify(decks));
+
+  // Also try server API if token exists
+  const token = localStorage.getItem('hf_token');
+  if (token) {
+    fetch('/api/decks', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      body: JSON.stringify({ name, cards }),
+    }).catch(() => {}); // fire and forget
+  }
+  toast(`Deck "${name}" saved ✓`);
+}
+
+function openLoadModal() {
+  const decks = getDeckList();
+  const list  = document.getElementById('savedDecksList');
+  list.innerHTML = '';
+  if (!decks.length) {
+    list.innerHTML = '<li style="cursor:default;color:var(--text-dim)">No saved decks</li>';
+  } else {
+    decks.forEach(d => {
+      const li = document.createElement('li');
+      const date = new Date(d.updatedAt).toLocaleDateString();
+      li.innerHTML = `
+        <span class="bar-neutral deck-entry-bar" style="height:14px;width:3px;border-radius:2px;display:inline-block"></span>
+        <strong>${d.name}</strong>
+        <span style="font-size:.75rem;color:var(--text-dim)">${d.cards.length} cards</span>
+        <span class="deck-date">${date}</span>
+      `;
+      li.onclick = () => { loadDeck(d); closeLoadModal(); };
+      list.appendChild(li);
+    });
+  }
+  document.getElementById('loadModal').classList.add('open');
+}
+
+function loadDeck(d) {
+  Object.keys(deck).forEach(k => delete deck[k]);
+  d.cards.forEach(id => { deck[id] = (deck[id]||0)+1; });
+  document.getElementById('deckName').value = d.name;
+  renderGrid();
+  renderDeck();
+  toast(`Deck "${d.name}" loaded`);
+}
+
+function closeLoadModal() {
+  document.getElementById('loadModal').classList.remove('open');
+}
+
+// ── Export / Import ───────────────────────────────
+function exportDeck() {
+  const name  = document.getElementById('deckName').value.trim() || 'deck';
+  const lines = [];
+  const entries = Object.entries(deck)
+    .map(([id, cnt]) => ({ id, cnt, card: CARD_DB.find(c=>c.id===id) }))
+    .filter(e=>e.card)
+    .sort((a,b)=>a.card.o-b.card.o||a.card.n.localeCompare(b.card.n));
+  entries.forEach(({cnt, card}) => lines.push(`${cnt}x ${card.n} [${card.id}]`));
+  const text = lines.join('\n');
+
+  // Copy to clipboard
+  navigator.clipboard.writeText(text).then(() => toast('Deck copied to clipboard ✓'))
+    .catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      toast('Deck copied to clipboard ✓');
+    });
+}
+
+function importDeck() {
+  const text = prompt('Paste deck list:\n(Format: "3x Card Name [card_id]" or just "card_id" per line)');
+  if (!text) return;
+  Object.keys(deck).forEach(k => delete deck[k]);
+
+  text.split('\n').forEach(line => {
+    line = line.trim();
+    if (!line) return;
+
+    // Try [card_id] format
+    const idMatch = line.match(/\[(\w+)\]/);
+    if (idMatch) {
+      const id = idMatch[1];
+      const cnt = parseInt(line.match(/^(\d+)x/)?.[1] || '1');
+      const card = CARD_DB.find(c=>c.id===id);
+      if (card) { deck[id] = Math.min((deck[id]||0)+cnt, MAX_COPIES); }
+      return;
+    }
+    // Try plain card_id
+    const card = CARD_DB.find(c=>c.id===line.toLowerCase());
+    if (card) { deck[card.id] = Math.min((deck[card.id]||0)+1, MAX_COPIES); }
+  });
+
+  renderGrid();
+  renderDeck();
+  toast(`Imported ${deckTotal()} cards`);
+}
+
+// ── Toast ─────────────────────────────────────────
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ── Keyboard shortcuts ────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeLoadModal(); hideTooltip(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveDeck(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); document.getElementById('searchInput').focus(); }
+});
+
+// Close modal on overlay click
+document.getElementById('loadModal').onclick = e => {
+  if (e.target === document.getElementById('loadModal')) closeLoadModal();
+};
+
+// ── Init ──────────────────────────────────────────
+renderGrid();
+renderDeck();
+
+// Load URL params: ?deck=id1,id2,id1...
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('deck')) {
+  urlParams.get('deck').split(',').forEach(id => {
+    const card = CARD_DB.find(c=>c.id===id);
+    if (card) deck[id] = Math.min((deck[id]||0)+1, MAX_COPIES);
+  });
+  renderGrid();
+  renderDeck();
+}
+</script>
+</body>
+</html>
