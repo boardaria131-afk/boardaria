@@ -61,7 +61,7 @@ app.use(express.static(path.join(__dirname, '../client/public')));
 
 // Health
 app.get('/api/health', async (req, res) => {
-  const info = { status: 'ok', version: '5.2.0', uptime: process.uptime(), usingDB: isUsingDB };
+  const info = { status: 'ok', version: '5.3.0', uptime: process.uptime(), usingDB: isUsingDB };
   if (isUsingDB) {
     try { const r = await db.healthCheck(); info.db = r; } catch(e) { info.dbError = e.message; }
   }
@@ -116,7 +116,7 @@ function requireAuth(req, res, next) {
   const token = auth.replace('Bearer ', '');
   const payload = authFromToken(token);
   if (!payload) return res.status(401).json({ error: 'Unauthorized' });
-  req.userId = payload.userId;
+  req.userId = payload.id;  // authFromToken returns publicUser() which has .id, not .userId
   next();
 }
 
@@ -190,6 +190,10 @@ const io = new Server(server, {
   cors: { origin: '*' },
   pingTimeout:  60000,
   pingInterval: 25000,
+  // Render (and most reverse proxies) can drop long-polling connections.
+  // Prefer WebSocket transport for reliability on hosted platforms.
+  transports: ['websocket', 'polling'],
+  allowEIO3: true,
 });
 
 // Session data per socket (set after auth)

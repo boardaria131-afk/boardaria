@@ -11015,6 +11015,9 @@ function connectSocket() {
     reconnectionDelayMax: 8000,
     reconnectionAttempts: 20,
     timeout:              15000,
+    // Prefer WebSocket to avoid issues with Render's reverse proxy
+    // dropping long-polling (XHR) connections mid-handshake.
+    transports: ['websocket', 'polling'],
   });
 
   socket.on('connect', () => {
