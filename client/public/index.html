@@ -704,9 +704,9 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     <div class="mp-form mp-active" id="mp-form-login">
       <input class="mp-input" id="mp-login-user" type="text"     placeholder="Benutzername" autocomplete="username">
       <input class="mp-input" id="mp-login-pass" type="password" placeholder="Passwort"     autocomplete="current-password">
-      <button class="mp-btn mp-btn-primary" id="mp-auth-btn" onclick="mpLogin()" disabled style="opacity:.5">Login</button>
+      <button class="mp-btn mp-btn-primary" id="mp-auth-btn" onclick="mpLogin()">Login</button>
       <div style="color:#3a4a5a;font-size:.65rem;margin:6px 0">— oder —</div>
-      <button class="mp-btn mp-btn-ghost" id="mp-guest-btn" onclick="mpGuest()" disabled style="opacity:.5">Als Gast spielen</button>
+      <button class="mp-btn mp-btn-ghost" id="mp-guest-btn" onclick="mpGuest()">Als Gast spielen</button>
     </div>
     <div class="mp-form" id="mp-form-register">
       <input class="mp-input" id="mp-reg-user"  type="text"     placeholder="Benutzername (3–24 Zeichen)" autocomplete="username">
@@ -10818,7 +10818,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.1.0';
+window.HEXFORGE_VERSION = '5.2.0';
 (function () {
 'use strict';
 
@@ -10933,13 +10933,7 @@ function setQueueStatus(msg) { const el = document.getElementById('mp-queue-stat
 function setConnStatus(msg) {
   const el = document.getElementById('mp-conn-status');
   if (el) el.textContent = msg;
-  // Also update auth buttons when connected
-  if (!msg || msg.startsWith('✓')) {
-    const ab = document.getElementById('mp-auth-btn');
-    const gb = document.getElementById('mp-guest-btn');
-    if (ab && ab.textContent === '…') { ab.disabled = false; ab.textContent = 'Login'; }
-    if (gb && gb.textContent === '…') { gb.disabled = false; gb.textContent = 'Als Gast spielen'; }
-  }
+
 }
 
 // ── Hint ─────────────────────────────────────────────────────
@@ -11027,11 +11021,7 @@ function connectSocket() {
     hideDisconnectBanner();
     setConnStatus('✓ Verbunden');
     setTimeout(() => setConnStatus(''), 2000);
-    // Enable auth buttons now that socket is ready
-    const ab = document.getElementById('mp-auth-btn');
-    const gb = document.getElementById('mp-guest-btn');
-    if (ab) { ab.disabled = false; ab.style.opacity = ''; }
-    if (gb) { gb.disabled = false; gb.style.opacity = ''; }
+
     const token = localStorage.getItem('hf_token');
     if (token) {
       socket.emit(C2S.AUTH_TOKEN, { token });
@@ -11225,7 +11215,17 @@ window.mpLogin = function() {
   btn.disabled = true; btn.textContent = '…';
   setAuthErr('');
   const send = () => socket.emit(C2S.LOGIN, { username, password });
-  socket.connected ? send() : socket.once('connect', send);
+  if (socket.connected) {
+    send();
+  } else {
+    socket.once('connect', send);
+    setTimeout(() => {
+      if (btn.disabled && btn.textContent === '…') {
+        btn.disabled = false; btn.textContent = 'Login';
+        setAuthErr('Verbindung fehlgeschlagen. Bitte Seite neu laden.');
+      }
+    }, 12000);
+  }
 };
 
 window.mpRegister = function() {
@@ -11236,14 +11236,28 @@ window.mpRegister = function() {
   if (username.length < 3)    { setAuthErr('Benutzername mind. 3 Zeichen'); return; }
   if (password.length < 6)    { setAuthErr('Passwort mind. 6 Zeichen'); return; }
   const send = () => socket.emit(C2S.REGISTER, { username, password });
-  socket.connected ? send() : socket.once('connect', send);
+  if (socket.connected) { send(); }
+  else { socket.once('connect', send); }
 };
 
 window.mpGuest = function() {
+  if (!socket) { setAuthErr('Verbindung nicht bereit. Seite neu laden.'); return; }
   const btn = document.getElementById('mp-guest-btn');
   btn.disabled = true; btn.textContent = '…';
-  const send = () => socket.emit(C2S.GUEST_LOGIN);
-  socket.connected ? send() : socket.once('connect', send);
+  const send = () => { socket.emit(C2S.GUEST_LOGIN); };
+  if (socket.connected) {
+    send();
+  } else {
+    setConnStatus('⟳ Verbinde…');
+    socket.once('connect', send);
+    // Timeout: re-enable button if no connection after 12s
+    setTimeout(() => {
+      if (btn.disabled && btn.textContent === '…') {
+        btn.disabled = false; btn.textContent = 'Als Gast spielen';
+        setAuthErr('Verbindung fehlgeschlagen. Bitte Seite neu laden.');
+      }
+    }, 12000);
+  }
 };
 
 window.mpLogout = function() {
