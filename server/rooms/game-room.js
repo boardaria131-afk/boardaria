@@ -95,10 +95,14 @@ class GameRoom {
     const validation = validateAction(this.S, action, player);
     if (!validation.ok) {
       this.seq++;
-      return this.io.to(socketId).emit(S2C.ACTION_INVALID, {
-        reason: validation.reason,
-        seq:    this.seq,
-      });
+      this.io.to(socketId).emit(S2C.ACTION_INVALID, { reason: validation.reason, seq: this.seq });
+      // If the bot sent an invalid action it has no socket listener for ACTION_INVALID
+      // and will stall forever — re-trigger so it can recover and end the turn.
+      if (this._bot && this._bot.socketId === socketId) {
+        console.warn('[Bot] Invalid action "' + action.type + '": ' + validation.reason + ' — retrying');
+        this._bot.onStateUpdate(this.S, null);
+      }
+      return;
     }
 
     // Log the action
