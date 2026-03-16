@@ -230,7 +230,7 @@ body {
   background: radial-gradient(ellipse at center, #0c1822 0%, #060a0e 100%);
 }
 svg#board { display: block; overflow: visible; touch-action: none; }
-#board-touch-wrap { flex: 1; }
+
 
 /* ── Mobile Layout ─────────────────────────────────────── */
 @media (max-width: 700px) {
@@ -239,7 +239,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     grid-template-rows: auto 1fr auto auto;
   }
   .sp { display: none !important; }
-  #board-touch-wrap { min-height: 55vw; }
+  #bw { min-height: 55vw; }
   #hdr h1 { font-size: .7rem; }
   #hdr { padding: 6px 10px; gap: 8px; }
   #mp-clocks { gap: 4px; }
@@ -704,9 +704,9 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     <div class="mp-form mp-active" id="mp-form-login">
       <input class="mp-input" id="mp-login-user" type="text"     placeholder="Benutzername" autocomplete="username">
       <input class="mp-input" id="mp-login-pass" type="password" placeholder="Passwort"     autocomplete="current-password">
-      <button class="mp-btn mp-btn-primary" id="mp-auth-btn" onclick="mpLogin()">Login</button>
+      <button class="mp-btn mp-btn-primary" id="mp-auth-btn" onclick="mpLogin()" disabled style="opacity:.5">Login</button>
       <div style="color:#3a4a5a;font-size:.65rem;margin:6px 0">— oder —</div>
-      <button class="mp-btn mp-btn-ghost" id="mp-guest-btn" onclick="mpGuest()">Als Gast spielen</button>
+      <button class="mp-btn mp-btn-ghost" id="mp-guest-btn" onclick="mpGuest()" disabled style="opacity:.5">Als Gast spielen</button>
     </div>
     <div class="mp-form" id="mp-form-register">
       <input class="mp-input" id="mp-reg-user"  type="text"     placeholder="Benutzername (3–24 Zeichen)" autocomplete="username">
@@ -715,6 +715,10 @@ svg#board { display: block; overflow: visible; touch-action: none; }
       <button class="mp-btn mp-btn-primary" onclick="mpRegister()">Konto erstellen</button>
     </div>
     <div class="mp-err" id="mp-auth-err"></div>
+    <div id="mp-conn-status" style="
+      margin-top:12px;font-family:'Cinzel',serif;font-size:.5rem;
+      letter-spacing:1px;color:#3a4a5a;min-height:1.4em;text-align:center;
+    ">⟳ Verbinde mit Server…</div>
   </div>
 </div>
 
@@ -885,13 +889,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
       <div style="font-size:.5rem;color:var(--dim);letter-spacing:2px;margin-bottom:2px;font-family:'Cinzel',serif">GEGNER</div>
       <div id="opp-hand"></div>
     </div>
-    <div id="board-touch-wrap" style="
-      flex:1; overflow:auto; -webkit-overflow-scrolling:touch;
-      position:relative; touch-action:pan-x pan-y;
-      display:flex; align-items:center; justify-content:center;
-    ">
-      <svg id="board" style="min-width:320px"></svg>
-    </div>
+    <svg id="board" style="min-width:320px;touch-action:none"></svg>
     <div id="abar">
       <button class="ab"    id="btn-land"   onclick="G.openLandMenu()">⬡ Land / Action</button>
       <button class="ab pr" id="btn-next"   onclick="G.endTurn()">End Turn ▶</button>
@@ -10931,6 +10929,18 @@ function hideOverlay(id) { const el = document.getElementById(id); if (el) el.st
 function setAuthErr(msg) { const el = document.getElementById('mp-auth-err'); if (el) el.textContent = msg || ''; }
 function setQueueStatus(msg) { const el = document.getElementById('mp-queue-status'); if (el) el.textContent = msg; }
 
+function setConnStatus(msg) {
+  const el = document.getElementById('mp-conn-status');
+  if (el) el.textContent = msg;
+  // Also update auth buttons when connected
+  if (!msg || msg.startsWith('✓')) {
+    const ab = document.getElementById('mp-auth-btn');
+    const gb = document.getElementById('mp-guest-btn');
+    if (ab && ab.textContent === '…') { ab.disabled = false; ab.textContent = 'Login'; }
+    if (gb && gb.textContent === '…') { gb.disabled = false; gb.textContent = 'Als Gast spielen'; }
+  }
+}
+
 // ── Hint ─────────────────────────────────────────────────────
 let _hintTimer = null;
 function showHint(msg, ms = 3500) {
@@ -11003,16 +11013,34 @@ function hideDisconnectBanner() {
 // ── Socket ───────────────────────────────────────────────────
 function connectSocket() {
   if (socket && socket.connected) return;
-  socket = io({ reconnectionDelay: 500, reconnectionDelayMax: 3000 });
+  setConnStatus('⟳ Verbinde mit Server…');
+
+  socket = io({
+    reconnectionDelay:    1000,
+    reconnectionDelayMax: 8000,
+    reconnectionAttempts: 20,
+    timeout:              15000,
+  });
 
   socket.on('connect', () => {
     hideDisconnectBanner();
+    setConnStatus('✓ Verbunden');
+    setTimeout(() => setConnStatus(''), 2000);
+    // Enable auth buttons now that socket is ready
+    const ab = document.getElementById('mp-auth-btn');
+    const gb = document.getElementById('mp-guest-btn');
+    if (ab) { ab.disabled = false; ab.style.opacity = ''; }
+    if (gb) { gb.disabled = false; gb.style.opacity = ''; }
     const token = localStorage.getItem('hf_token');
     if (token) socket.emit(C2S.AUTH_TOKEN, { token });
   });
 
+  socket.on('connect_error', (err) => {
+    setConnStatus('⟳ Server startet… bitte warten');
+  });
+
   socket.on('disconnect', () => {
-    // Show brief UI feedback
+    setConnStatus('⚠ Verbindung unterbrochen — verbinde neu…');
     const banner = document.getElementById('mp-turn-banner');
     if (banner && window.G) {
       banner.textContent = '⚠ Verbindung getrennt — verbinde neu…';
@@ -12184,65 +12212,55 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function initBoardTouch() {
-  const wrap = document.getElementById('board-touch-wrap');
-  if (!wrap) return;
+  // Pinch-to-zoom via SVG transform (safe — doesn't break board layout)
+  const bw = document.getElementById('bw');
+  if (!bw) return;
 
-  let scale = 1, lastScale = 1;
-  let startDist = 0;
-  let panX = 0, panY = 0, startPanX = 0, startPanY = 0, startTouchX = 0, startTouchY = 0;
-  let isPinching = false;
+  let scale = 1, lastScale = 1, startDist = 0;
+  let panX = 0, panY = 0, startPanX = 0, startPanY = 0;
+  let startTouchX = 0, startTouchY = 0, isPinching = false;
 
   function dist(t) {
     const dx = t[0].clientX - t[1].clientX;
     const dy = t[0].clientY - t[1].clientY;
     return Math.sqrt(dx*dx + dy*dy);
   }
-
   function applyTransform() {
     const board = document.getElementById('board');
-    if (board) board.style.transform = `scale(${scale}) translate(${panX}px, ${panY}px)`;
+    if (board) {
+      board.style.transformOrigin = 'center center';
+      board.style.transform = `scale(${scale}) translate(${panX}px,${panY}px)`;
+    }
   }
 
-  wrap.addEventListener('touchstart', e => {
+  bw.addEventListener('touchstart', e => {
     if (e.touches.length === 2) {
-      isPinching = true;
-      startDist  = dist(e.touches);
-      lastScale  = scale;
-      e.preventDefault();
-    } else if (e.touches.length === 1) {
-      isPinching  = false;
-      startTouchX = e.touches[0].clientX;
-      startTouchY = e.touches[0].clientY;
-      startPanX   = panX;
-      startPanY   = panY;
-    }
-  }, { passive: false });
-
-  wrap.addEventListener('touchmove', e => {
-    if (e.touches.length === 2 && isPinching) {
-      const newDist = dist(e.touches);
-      scale = Math.min(3, Math.max(0.5, lastScale * (newDist / startDist)));
-      applyTransform();
+      isPinching = true; startDist = dist(e.touches); lastScale = scale;
       e.preventDefault();
     } else if (e.touches.length === 1 && scale > 1.05) {
-      // Pan only when zoomed in
-      panX = startPanX + (e.touches[0].clientX - startTouchX) / scale;
-      panY = startPanY + (e.touches[0].clientY - startTouchY) / scale;
-      applyTransform();
-      e.preventDefault();
+      startTouchX = e.touches[0].clientX; startTouchY = e.touches[0].clientY;
+      startPanX = panX; startPanY = panY;
     }
   }, { passive: false });
 
-  wrap.addEventListener('touchend', e => {
-    if (e.touches.length === 0) isPinching = false;
-    // Double-tap to reset zoom
-    if (!wrap._lastTap) { wrap._lastTap = Date.now(); return; }
-    const gap = Date.now() - wrap._lastTap;
-    wrap._lastTap = 0;
-    if (gap < 300) {
-      scale = 1; panX = 0; panY = 0;
-      applyTransform();
+  bw.addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && isPinching) {
+      scale = Math.min(3, Math.max(0.6, lastScale * dist(e.touches) / startDist));
+      applyTransform(); e.preventDefault();
+    } else if (e.touches.length === 1 && scale > 1.05) {
+      panX = startPanX + (e.touches[0].clientX - startTouchX) / scale;
+      panY = startPanY + (e.touches[0].clientY - startTouchY) / scale;
+      applyTransform(); e.preventDefault();
     }
+  }, { passive: false });
+
+  bw.addEventListener('touchend', e => {
+    if (e.touches.length === 0) isPinching = false;
+    if (!bw._lastTap) { bw._lastTap = Date.now(); return; }
+    if (Date.now() - bw._lastTap < 300) {
+      scale = 1; panX = 0; panY = 0; applyTransform();
+    }
+    bw._lastTap = 0;
   });
 }
 
