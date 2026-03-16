@@ -61,7 +61,7 @@ app.use(express.static(path.join(__dirname, '../client/public')));
 
 // Health
 app.get('/api/health', async (req, res) => {
-  const info = { status: 'ok', version: '5.8.0', uptime: process.uptime(), usingDB: isUsingDB };
+  const info = { status: 'ok', version: '5.10.0', uptime: process.uptime(), usingDB: isUsingDB };
   if (isUsingDB) {
     try { const r = await db.healthCheck(); info.db = r; } catch(e) { info.dbError = e.message; }
   }
@@ -413,6 +413,17 @@ io.on('connection', (socket) => {
   // ── Misc ─────────────────────────────────────────────────
 
   socket.on(C2S.PING, () => socket.emit(S2C.PONG));
+
+  socket.on(C2S.RESIGN, () => {
+    const sess = sessions.get(socket.id);
+    if (!sess) return;
+    const room = roomManager.getRoomBySocket(socket.id);
+    if (!room) return;
+    const player = room.socketToPlayer[socket.id];
+    if (!player) return;
+    console.log(`[Resign] ${sess.username} (${player}) gibt auf in Match ${room.id}`);
+    room.handleResign(socket.id, player);
+  });
 
   // ── Disconnect ───────────────────────────────────────────
 

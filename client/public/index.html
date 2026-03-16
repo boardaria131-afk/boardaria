@@ -874,7 +874,28 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   </button>
 </div>
 
-<!-- Unit hover tooltip -->
+<!-- ── Floating Bug Reporter Button ──────────────────────── -->
+<button id="bug-float-btn" onclick="mpOpenBugReport()" title="Bug melden"
+  style="display:none;position:fixed;bottom:58px;right:10px;z-index:8200;
+         padding:5px 9px;background:rgba(10,5,5,.85);border:1px solid #4a2020;
+         border-radius:5px;color:#884444;font-family:'Cinzel',serif;font-size:.52rem;
+         letter-spacing:1px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.5);"
+  onmouseover="this.style.background='rgba(30,8,8,.95)';this.style.borderColor='#cc4444';this.style.color='#ff7777'"
+  onmouseout="this.style.background='rgba(10,5,5,.85)';this.style.borderColor='#4a2020';this.style.color='#884444'">
+  🐛
+</button>
+
+<!-- ── Floating Resign Button ────────────────────────────── -->
+<button id="resign-float-btn" onclick="mpConfirmResign()" title="Aufgeben"
+  style="display:none;position:fixed;bottom:58px;right:46px;z-index:8200;
+         padding:5px 9px;background:rgba(10,5,5,.85);border:1px solid #4a2020;
+         border-radius:5px;color:#884444;font-family:'Cinzel',serif;font-size:.52rem;
+         letter-spacing:1px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.5);"
+  onmouseover="this.style.background='rgba(30,8,8,.95)';this.style.borderColor='#cc4444';this.style.color='#ff7777'"
+  onmouseout="this.style.background='rgba(10,5,5,.85)';this.style.borderColor='#4a2020';this.style.color='#884444'">
+  🏳
+</button>
+
 <div id="unit-tip">
   <div class="tip-name" id="tip-name"></div>
   <div class="tip-stats"><span id="tip-atk" style="color:var(--atk)"></span><span id="tip-hp" style="color:var(--hp)"></span><span id="tip-cost" style="color:var(--mana)"></span></div>
@@ -10836,7 +10857,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.8.0';
+window.HEXFORGE_VERSION = '5.10.0';
 (function () {
 'use strict';
 
@@ -11138,6 +11159,9 @@ function connectSocket() {
     window.G.S.winner = winner;
     window.G._clr();
     window.G._render();
+    // Hide resign button — game is over
+    const rb = document.getElementById('resign-float-btn');
+    if (rb) rb.style.display = 'none';
     // Show win overlay
     const titleEl = document.getElementById('win-title');
     if (titleEl) titleEl.textContent = youWon ? '🏆 Sieg!' : '💀 Niederlage';
@@ -11426,7 +11450,6 @@ window.mpCopyBugReport = function() {
     const el = document.getElementById('bug-copy-confirm');
     if (el) { el.textContent = '✓ In Zwischenablage kopiert!'; setTimeout(() => { if(el) el.textContent=''; }, 3000); }
   }).catch(() => {
-    // Fallback für ältere Browser
     const ta = document.createElement('textarea');
     ta.value = full; ta.style.position='fixed'; ta.style.opacity='0';
     document.body.appendChild(ta); ta.select(); document.execCommand('copy');
@@ -11436,6 +11459,48 @@ window.mpCopyBugReport = function() {
   });
 };
 
+// ── Resign ───────────────────────────────────────────────────
+window.mpConfirmResign = function() {
+  if (!myPlayer || !matchId) return; // not in a game
+  if (window.G?.S?.winner) return;   // already over
+
+  const overlay = document.createElement('div');
+  overlay.id = 'resign-confirm-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML = `
+    <div style="background:#0d1118;border:1px solid #4a2020;border-radius:8px;
+                padding:28px 32px;text-align:center;font-family:'Cinzel',serif;color:#c8d4e0;max-width:320px;">
+      <div style="font-size:1.4rem;margin-bottom:12px">🏳</div>
+      <div style="font-size:.8rem;letter-spacing:3px;color:#cc6666;margin-bottom:8px">AUFGEBEN?</div>
+      <div style="font-size:.6rem;color:#5a6a7a;letter-spacing:1px;margin-bottom:20px">
+        Das Spiel wird als Niederlage gewertet.
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="mpDoResign()" style="
+          flex:1;padding:9px;background:#2a0a0a;border:1px solid #884444;border-radius:4px;
+          color:#cc6666;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;cursor:pointer;">
+          Ja, aufgeben
+        </button>
+        <button onclick="document.getElementById('resign-confirm-overlay').remove()" style="
+          flex:1;padding:9px;background:transparent;border:1px solid #2a3040;border-radius:4px;
+          color:#5a6a7a;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;cursor:pointer;">
+          Abbrechen
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+};
+
+window.mpDoResign = function() {
+  document.getElementById('resign-confirm-overlay')?.remove();
+  if (!socket || !myPlayer) return;
+  socket.emit(C2S.RESIGN);
+  // Immediately hide resign button so it can't be clicked again
+  const rb = document.getElementById('resign-float-btn');
+  if (rb) rb.style.display = 'none';
+};
+
 // ── Lobby ─────────────────────────────────────────────────────
 function showLobby() {
   hideOverlay('mp-auth-overlay');
@@ -11443,6 +11508,8 @@ function showLobby() {
   const header = document.getElementById('hdr');
   const main   = document.getElementById('main');
   if (header) header.style.display = 'none';
+  const _fb = document.getElementById('bug-float-btn'); if (_fb) _fb.style.display = 'none';
+  const _rb = document.getElementById('resign-float-btn'); if (_rb) _rb.style.display = 'none';
   if (main)   main.style.display   = 'none';
   // User info
   const infoEl = document.getElementById('mp-lobby-user');
@@ -11517,6 +11584,8 @@ function startSpectating(state, players) {
   const header = document.getElementById('hdr');
   const main   = document.getElementById('main');
   if (header) header.style.display = '';
+  const _fb2 = document.getElementById('bug-float-btn'); if (_fb2) _fb2.style.display = 'block';
+  const _rb2 = document.getElementById('resign-float-btn'); if (_rb2) _rb2.style.display = 'block';
   if (main)   main.style.display   = '';
 
   // Create Engine in read-only MP mode
@@ -11606,6 +11675,8 @@ window.mpLeaveSpectator = function() {
   const header = document.getElementById('hdr');
   const main   = document.getElementById('main');
   if (header) header.style.display = 'none';
+  const _fb = document.getElementById('bug-float-btn'); if (_fb) _fb.style.display = 'none';
+  const _rb = document.getElementById('resign-float-btn'); if (_rb) _rb.style.display = 'none';
   if (main)   main.style.display   = 'none';
   showLobby();
 };
@@ -11823,7 +11894,11 @@ function startGame(state, player, opponentName) {
   const header = document.getElementById('hdr');
   const main   = document.getElementById('main');
   if (header) header.style.display = '';
+  const _fb2 = document.getElementById('bug-float-btn'); if (_fb2) _fb2.style.display = 'block';
+  const _rb2 = document.getElementById('resign-float-btn'); if (_rb2) _rb2.style.display = 'block';
   if (main)   main.style.display   = '';
+  const bugBtn = document.getElementById('bug-float-btn');
+  if (bugBtn) bugBtn.style.display = 'block';
 
   // Create Engine without local game state
   window._MP_INIT = true;

@@ -232,6 +232,16 @@ class GameRoom {
     });
   }
 
+  // ── Resign ─────────────────────────────────────────────────
+  handleResign(socketId, player) {
+    if (this.S.winner) return; // game already over
+    const winner = player === 'A' ? 'B' : 'A';
+    this.S.winner = winner;
+    this._broadcastState({ type: 'resign', player });
+    this._stopTimer();
+    this._endGame(winner, 'resign');
+  }
+
   // ── Chat ──────────────────────────────────────────────────
   handleChat(socketId, text) {
     const player = this.socketToPlayer[socketId];

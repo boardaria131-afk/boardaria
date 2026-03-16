@@ -26,6 +26,7 @@ const C2S = {
 
   // Misc
   PING:           'ping',
+  RESIGN:         'resign',   // {} — forfeit current match
 };
 
 // ── Server → Client ────────────────────────────────────────
