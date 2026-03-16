@@ -60,9 +60,9 @@ function applyAction(S, action, player) {
 // ── Mulligan ──────────────────────────────────────────────
 
 function doMulliganAction(S, action, player) {
-  const { keep } = action.payload;
-  doMulligan(S, player, keep);
-  delete S._mulliganPhase;
+  const { replaceIds = [] } = action.payload || {};
+  doMulligan(S, player, replaceIds);
+  // Don't delete _mulliganPhase here — game-room handles that when both players confirm
   return {};
 }
 

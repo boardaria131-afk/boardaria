@@ -1,0 +1,34 @@
+version: '3.9'
+services:
+  server:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - DATABASE_URL=postgresql://hexforge:hexforge@db:5432/hexforge
+      - USE_DB=true
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: hexforge
+      POSTGRES_PASSWORD: hexforge
+      POSTGRES_DB: hexforge
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hexforge"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:

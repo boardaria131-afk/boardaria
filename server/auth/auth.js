@@ -160,5 +160,4 @@ module.exports = {
   register, login, guestLogin, authFromToken,
   store,    // exposed for ladder updates
   signJWT, verifyJWT, publicUser,
-  hashPassword, verifyPassword,  // exported for DB auth path
 };

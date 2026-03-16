@@ -1,8 +1,6 @@
 'use strict';
 // ═══════════════════════════════════════════════════════════
-//  HexForge — Game Room
-//  One instance per active match.
-//  Owns the authoritative game state S.
+//  HexForge — Game Room  (Phase 2: timer + chat)
 // ═══════════════════════════════════════════════════════════
 
 const { mkState, mkDefaultDeck } = require('../engine/game-engine');
@@ -11,49 +9,41 @@ const { applyAction }            = require('../engine/action-handler');
 const { S2C, ACTION, PENDING }   = require('../../shared/protocol');
 const uuidv4 = () => require('crypto').randomUUID();
 
+// ── Timer config ──────────────────────────────────────────
+const TURN_SECS      = 90;   // seconds per turn
+const WARN_SECS      = 15;   // flash warning below this
+const TICK_MS        = 1000; // emit every second
+
 class GameRoom {
-  /**
-   * @param {object} opts
-   * @param {object} opts.playerA  { socketId, userId, username, rating, deck }
-   * @param {object} opts.playerB  { socketId, userId, username, rating, deck }
-   * @param {object} opts.io       Socket.IO server instance
-   * @param {function} opts.onGameOver  callback(result)
-   */
   constructor({ playerA, playerB, io, onGameOver }) {
     this.id         = uuidv4();
     this.io         = io;
     this.onGameOver = onGameOver;
 
-    // Map: socket.id → 'A' | 'B'
     this.socketToPlayer = {
       [playerA.socketId]: 'A',
       [playerB.socketId]: 'B',
     };
-    this.playerInfo = {
-      A: playerA,
-      B: playerB,
-    };
-
-    // Spectators: Set of socket IDs
+    this.playerInfo = { A: playerA, B: playerB };
     this.spectators = new Set();
-
-    // Action log for replays
     this.actionLog  = [];
     this.seq        = 0;
 
-    // Initialize game state
     this.S = mkState({
-      deckA:   playerA.deck || mkDefaultDeck('A'),
-      deckB:   playerB.deck || mkDefaultDeck('B'),
-      nameA:   playerA.username,
-      nameB:   playerB.username,
+      deckA: playerA.deck || mkDefaultDeck('A'),
+      deckB: playerB.deck || mkDefaultDeck('B'),
+      nameA: playerA.username,
+      nameB: playerB.username,
     });
 
-    // Mulligan tracking
     this.mulliganDone = { A: false, B: false };
+    this.createdAt    = Date.now();
+    this.finishedAt   = null;
 
-    this.createdAt  = Date.now();
-    this.finishedAt = null;
+    // ── Timer state ──────────────────────────────────────
+    this._timerInterval = null;
+    this._timerSecsLeft = TURN_SECS;
+    this._timerAp       = null;  // whose turn the timer is for
   }
 
   // ── Socket room name ──────────────────────────────────────
@@ -125,11 +115,17 @@ class GameRoom {
     // Check win condition
     if (this.S.winner) {
       this._broadcastState(action);
+      this._stopTimer();
       return this._endGame(this.S.winner);
     }
 
     // Broadcast updated state
     this._broadcastState(action);
+
+    // Restart timer when turn changes
+    if (action.type === ACTION.END_TURN) {
+      this._startTimer(this.S.ap);
+    }
 
     // If there's a pending input requirement, notify the acting player
     if (result.pendingInput) {
@@ -180,14 +176,72 @@ class GameRoom {
         seq: ++this.seq,
       });
     }
+    // Notify bot if it's this player
+    if (this._bot && this._bot.player === player) {
+      this._bot.onStateUpdate(this.S, { type: 'mulligan' });
+    }
   }
 
   _startFreePhase() {
-    // Run initial DRAW and MANA phases for player A
     const { runDrawPhase, runManaPhase } = require('../engine/action-handler');
     runDrawPhase(this.S);
     runManaPhase(this.S);
     this._broadcastState({ type: 'game_started' });
+    this._startTimer(this.S.ap);
+  }
+
+  // ── Timer ─────────────────────────────────────────────────
+  _startTimer(ap) {
+    this._stopTimer();
+    if (this.S.winner || this.finishedAt) return;
+    this._timerAp       = ap;
+    this._timerSecsLeft = TURN_SECS;
+    this._emitTimer();
+    this._timerInterval = setInterval(() => {
+      this._timerSecsLeft--;
+      this._emitTimer();
+      if (this._timerSecsLeft <= 0) {
+        this._stopTimer();
+        // Auto end-turn for the timed-out player
+        if (!this.S.winner && this.S.ap === ap) {
+          const { applyAction } = require('../engine/action-handler');
+          applyAction(this.S, { type: ACTION.END_TURN, payload: {} }, ap);
+          this._broadcastState({ type: ACTION.END_TURN, auto: true });
+          this._startTimer(this.S.ap);
+        }
+      }
+    }, TICK_MS);
+  }
+
+  _stopTimer() {
+    if (this._timerInterval) {
+      clearInterval(this._timerInterval);
+      this._timerInterval = null;
+    }
+  }
+
+  _emitTimer() {
+    this.io.to(this.roomName).emit(S2C.TIMER_UPDATE, {
+      ap:        this._timerAp,
+      secsLeft:  this._timerSecsLeft,
+      totalSecs: TURN_SECS,
+    });
+  }
+
+  // ── Chat ──────────────────────────────────────────────────
+  handleChat(socketId, text) {
+    const player = this.socketToPlayer[socketId];
+    if (!player) return;
+    const username = this.playerInfo[player].username;
+    const msg = String(text || '').trim().slice(0, 200);
+    if (!msg) return;
+    this.io.to(this.roomName).emit(S2C.CHAT_MSG, {
+      from: username,
+      player,
+      text: msg,
+      ts:   Date.now(),
+    });
+    // Also send to spectators (they're already in roomName)
   }
 
   // ── Add/remove spectator ──────────────────────────────────
@@ -224,7 +278,6 @@ class GameRoom {
   // ── State broadcasting ────────────────────────────────────
   _broadcastState(lastAction) {
     this.seq++;
-    // Each player gets a personalised state (opponent hand hidden)
     for (const [sockId, player] of Object.entries(this.socketToPlayer)) {
       this.io.to(sockId).emit(S2C.STATE_UPDATE, {
         state:      this._stateForPlayer(player),
@@ -232,7 +285,11 @@ class GameRoom {
         seq:        this.seq,
       });
     }
-    // Spectators get full state (both hands visible)
+    // Notify bot player (if any)
+    if (this._bot) {
+      this._bot.onStateUpdate(this.S, null);
+    }
+    // Spectators
     if (this.spectators.size > 0) {
       this.io.to(this.roomName).emit(S2C.SPECTATE_UPDATE, {
         state:      this._stateForSpectator(),
@@ -247,6 +304,10 @@ class GameRoom {
       pendingInput: pending,
       seq:          this.seq,
     });
+    // Also notify bot if it's the pending player
+    if (this._bot && this._bot.socketId === socketId) {
+      this._bot.onStateUpdate(this.S, pending);
+    }
   }
 
   // ── State projection (hide opponent's hand) ───────────────
@@ -308,7 +369,8 @@ class GameRoom {
   }
 
   // ── Game over ─────────────────────────────────────────────
-  _endGame(winner) {
+  _endGame(winner, reason = 'hp_depleted') {
+    this._stopTimer();
     this.finishedAt = Date.now();
     const duration  = Math.floor((this.finishedAt - this.createdAt) / 1000);
 

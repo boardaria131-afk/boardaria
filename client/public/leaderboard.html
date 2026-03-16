@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HexForge — Rangliste</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #060810;
+  --bg2:      #0c1018;
+  --border:   #1a2535;
+  --border2:  #2a3a50;
+  --gold:     #c8a84b;
+  --gold2:    #8a6a28;
+  --dim:      #4a5a6a;
+  --text:     #c8d4e0;
+  --text2:    #8a9aaa;
+  --A:        #5a9a5a;
+  --B:        #5a7aaa;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Crimson Pro', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Atmospheric background */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(100,80,20,.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 80% 80%, rgba(20,40,80,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+header {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 24px;
+  padding: 20px 32px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(6,8,16,.9);
+}
+
+.logo {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem; font-weight: 900;
+  letter-spacing: 6px; color: var(--gold);
+  text-decoration: none;
+}
+.logo span { color: var(--dim); }
+
+nav { display: flex; gap: 12px; margin-left: auto; }
+nav a {
+  font-family: 'Cinzel', serif; font-size: .5rem;
+  letter-spacing: 2px; color: var(--dim);
+  text-decoration: none; padding: 5px 10px;
+  border: 1px solid transparent; border-radius: 3px;
+  transition: all .15s;
+}
+nav a:hover, nav a.active {
+  color: var(--gold); border-color: var(--gold2);
+}
+
+/* ── Main layout ─────────────────────────────────────────── */
+main {
+  position: relative; z-index: 1;
+  max-width: 900px; margin: 0 auto;
+  padding: 40px 24px;
+}
+
+/* ── Page title ─────────────────────────────────────────── */
+.page-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.6rem; font-weight: 900;
+  letter-spacing: 8px; color: var(--gold);
+  margin-bottom: 4px;
+}
+.page-sub {
+  font-size: .75rem; color: var(--dim);
+  letter-spacing: 2px; font-family: 'Cinzel', serif;
+  margin-bottom: 32px;
+}
+
+/* ── Live matches strip ──────────────────────────────────── */
+#live-matches {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 24px; min-height: 36px;
+}
+.live-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 12px;
+  background: rgba(10,20,30,.6);
+  border: 1px solid #1a3040;
+  border-radius: 20px; font-size: .62rem;
+  font-family: 'Cinzel', serif; letter-spacing: 1px; color: var(--text2);
+  text-decoration: none; transition: border-color .15s;
+  cursor: pointer;
+}
+.live-pill:hover { border-color: var(--border2); color: var(--text); }
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #44aa44;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.live-empty { font-size: .6rem; color: var(--dim); font-family: 'Cinzel', serif; letter-spacing: 2px; padding: 5px 0; }
+
+/* ── Leaderboard table ───────────────────────────────────── */
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.lb-table thead tr {
+  background: #0a1020;
+  border-bottom: 1px solid var(--border);
+}
+.lb-table th {
+  padding: 10px 16px;
+  font-family: 'Cinzel', serif;
+  font-size: .5rem; letter-spacing: 2px;
+  color: var(--dim); font-weight: 400;
+  text-align: left;
+}
+.lb-table th.right { text-align: right; }
+
+.lb-table tbody tr {
+  border-bottom: 1px solid #0e1520;
+  transition: background .1s;
+}
+.lb-table tbody tr:hover { background: rgba(255,255,255,.02); }
+.lb-table tbody tr:last-child { border-bottom: none; }
+
+.lb-table td {
+  padding: 10px 16px;
+  font-size: .78rem; color: var(--text2);
+  vertical-align: middle;
+}
+.lb-table td.right { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Rank column */
+.rank {
+  font-family: 'Cinzel', serif;
+  font-size: .65rem; font-weight: 600;
+  color: var(--dim); min-width: 40px;
+}
+.rank-1 { color: #d4a520; }
+.rank-2 { color: #a0a8b0; }
+.rank-3 { color: #a0643c; }
+
+/* Name column */
+.player-name {
+  font-family: 'Cinzel', serif;
+  font-size: .72rem; letter-spacing: 1px;
+  color: var(--text); cursor: pointer;
+}
+.player-name:hover { color: var(--gold); }
+.guest-badge {
+  font-size: .45rem; letter-spacing: 1px;
+  color: var(--dim); padding: 1px 5px;
+  border: 1px solid var(--border); border-radius: 2px;
+  margin-left: 6px; vertical-align: middle;
+  font-family: 'Cinzel', serif;
+}
+
+/* Rating column */
+.rating-val {
+  font-family: 'Cinzel', serif;
+  font-size: .8rem; color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* W/L columns */
+.win-count  { color: #5a9a5a; }
+.loss-count { color: #9a5a5a; }
+
+/* Winrate bar */
+.wr-cell { min-width: 120px; }
+.wr-bar-bg {
+  height: 4px; background: #1a2535;
+  border-radius: 2px; overflow: hidden;
+  margin-top: 3px;
+}
+.wr-bar { height: 100%; border-radius: 2px; transition: width .4s; }
+
+/* ── Player profile modal ─────────────────────────────────── */
+#profile-modal {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.85);
+  align-items: center; justify-content: center;
+}
+#profile-modal.open { display: flex; }
+
+.profile-card {
+  background: #0c1018;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 28px 32px;
+  min-width: 340px; max-width: 480px; width: 90%;
+  position: relative;
+}
+.profile-close {
+  position: absolute; top: 12px; right: 14px;
+  background: none; border: none;
+  color: var(--dim); font-size: 1.1rem;
+  cursor: pointer; transition: color .1s;
+}
+.profile-close:hover { color: var(--text); }
+.profile-name {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem; font-weight: 600;
+  letter-spacing: 3px; color: var(--gold);
+  margin-bottom: 4px;
+}
+.profile-rating {
+  font-family: 'Cinzel', serif;
+  font-size: .65rem; color: var(--dim);
+  letter-spacing: 2px; margin-bottom: 18px;
+}
+.profile-stats {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px; margin-bottom: 20px;
+}
+.profile-stat {
+  text-align: center;
+  padding: 10px;
+  background: #080c14;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.profile-stat-val {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem; font-weight: 600;
+  color: var(--text); margin-bottom: 2px;
+}
+.profile-stat-lbl {
+  font-size: .52rem; color: var(--dim);
+  letter-spacing: 2px; font-family: 'Cinzel', serif;
+}
+.profile-matches-title {
+  font-family: 'Cinzel', serif;
+  font-size: .52rem; letter-spacing: 2px; color: var(--dim);
+  margin-bottom: 10px;
+}
+.profile-match {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #0e1520;
+  font-size: .68rem; color: var(--text2);
+}
+.profile-match:last-child { border-bottom: none; }
+.match-result {
+  font-family: 'Cinzel', serif;
+  font-size: .5rem; letter-spacing: 1px;
+  padding: 2px 6px; border-radius: 2px;
+  min-width: 30px; text-align: center;
+}
+.match-result.win  { background: rgba(60,120,60,.3);  color: #88dd88; border: 1px solid #2a5a2a; }
+.match-result.loss { background: rgba(120,40,40,.3);  color: #dd8888; border: 1px solid #5a2a2a; }
+
+/* ── Loading / error states ──────────────────────────────── */
+.loading {
+  text-align: center; padding: 60px 20px;
+  font-family: 'Cinzel', serif; font-size: .6rem;
+  letter-spacing: 3px; color: var(--dim);
+}
+.error-msg {
+  text-align: center; padding: 40px;
+  color: #9a5a5a; font-size: .75rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .wr-cell, .lb-table th:nth-child(5), .lb-table td:nth-child(5) { display: none; }
+  header { padding: 14px 16px; }
+  main   { padding: 24px 12px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">HEX<span>FORGE</span></a>
+  <nav>
+    <a href="/">Spielen</a>
+    <a href="/leaderboard.html" class="active">Rangliste</a>
+    <a href="/deckbuilder.html">Decks</a>
+  </nav>
+</header>
+
+<main>
+  <div class="page-title">RANGLISTE</div>
+  <div class="page-sub">SEASON 1 · TOP 100 SPIELER</div>
+
+  <!-- Live matches -->
+  <div id="live-matches">
+    <span class="loading" style="font-size:.55rem;padding:5px 0">Lade Live-Matches…</span>
+  </div>
+
+  <!-- Leaderboard -->
+  <div id="lb-container">
+    <div class="loading">
+      <div style="margin-bottom:8px">⟳</div>
+      LADE RANGLISTE
+    </div>
+  </div>
+</main>
+
+<!-- Profile modal -->
+<div id="profile-modal">
+  <div class="profile-card">
+    <button class="profile-close" onclick="closeProfile()">✕</button>
+    <div id="profile-name" class="profile-name">—</div>
+    <div id="profile-rating" class="profile-rating">— MMR</div>
+    <div class="profile-stats" id="profile-stats"></div>
+    <div class="profile-matches-title">LETZTE PARTIEN</div>
+    <div id="profile-matches"></div>
+  </div>
+</div>
+
+<script>
+// ── Leaderboard ───────────────────────────────────────────
+async function loadLeaderboard() {
+  try {
+    const r = await fetch('/api/leaderboard');
+    const { leaderboard } = await r.json();
+    renderLeaderboard(leaderboard || []);
+  } catch(e) {
+    document.getElementById('lb-container').innerHTML =
+      '<div class="error-msg">Rangliste nicht verfügbar — Server offline?</div>';
+  }
+}
+
+function renderLeaderboard(players) {
+  if (!players.length) {
+    document.getElementById('lb-container').innerHTML =
+      '<div class="loading">Noch keine Spieler in der Rangliste.</div>';
+    return;
+  }
+
+  const rows = players.map((p, i) => {
+    const rank = i + 1;
+    const rankCls = rank <= 3 ? `rank-${rank}` : '';
+    const wr = p.wins + p.losses > 0
+      ? Math.round(p.wins / (p.wins + p.losses) * 100) : 0;
+    const wrColor = wr >= 60 ? '#5a9a5a' : wr >= 45 ? '#9aaa5a' : '#9a5a5a';
+    return `
+      <tr>
+        <td><span class="rank ${rankCls}">${rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : '#'+rank}</span></td>
+        <td>
+          <span class="player-name" onclick="openProfile(${p.id})">${esc(p.username)}</span>
+          ${p.isGuest ? '<span class="guest-badge">GAST</span>' : ''}
+        </td>
+        <td class="right"><span class="rating-val">${p.rating}</span></td>
+        <td class="right win-count">${p.wins}</td>
+        <td class="right loss-count">${p.losses}</td>
+        <td class="right wr-cell">
+          <span style="font-size:.65rem;color:${wrColor}">${wr}%</span>
+          <div class="wr-bar-bg"><div class="wr-bar" style="width:${wr}%;background:${wrColor}"></div></div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('lb-container').innerHTML = `
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Spieler</th>
+          <th class="right">MMR</th>
+          <th class="right">Siege</th>
+          <th class="right">Niederlagen</th>
+          <th class="right wr-cell">Win%</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ── Live matches ──────────────────────────────────────────
+async function loadLiveMatches() {
+  try {
+    const r = await fetch('/api/matches');
+    const { matches } = await r.json();
+    const el = document.getElementById('live-matches');
+    if (!matches || !matches.length) {
+      el.innerHTML = '<span class="live-empty">KEINE LAUFENDEN PARTIEN</span>';
+      return;
+    }
+    el.innerHTML = matches.map(m => `
+      <div class="live-pill" onclick="alert('Spectator kommt bald!')">
+        <span class="live-dot"></span>
+        <span>${esc(m.playerA)} vs ${esc(m.playerB)}</span>
+        <span style="color:var(--dim);font-size:.5rem">Runde ${m.turn}</span>
+        ${m.spectators > 0 ? `<span style="color:var(--dim)">👁 ${m.spectators}</span>` : ''}
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('live-matches').innerHTML = '';
+  }
+}
+
+// ── Player profile ────────────────────────────────────────
+async function openProfile(userId) {
+  document.getElementById('profile-modal').classList.add('open');
+  document.getElementById('profile-name').textContent = '…';
+  document.getElementById('profile-rating').textContent = '';
+  document.getElementById('profile-stats').innerHTML = '';
+  document.getElementById('profile-matches').innerHTML = '<div class="loading" style="padding:20px">Lade…</div>';
+  try {
+    const r = await fetch('/api/user/' + userId);
+    const { user, recentMatches } = await r.json();
+    document.getElementById('profile-name').textContent = user.username;
+    document.getElementById('profile-rating').textContent = user.rating + ' MMR';
+
+    const wr = user.wins + user.losses > 0
+      ? Math.round(user.wins / (user.wins + user.losses) * 100) : 0;
+    document.getElementById('profile-stats').innerHTML = `
+      <div class="profile-stat">
+        <div class="profile-stat-val" style="color:#c8a84b">${user.rating}</div>
+        <div class="profile-stat-lbl">MMR</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val">${user.wins}W / ${user.losses}L</div>
+        <div class="profile-stat-lbl">BILANZ</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" style="color:${wr>=50?'#5a9a5a':'#9a5a5a'}">${wr}%</div>
+        <div class="profile-stat-lbl">WIN RATE</div>
+      </div>`;
+
+    const matchHtml = (recentMatches || []).slice(0, 8).map(m => {
+      const won = m.winner === (m.playerA?.userId === userId ? 'A' : 'B');
+      const opp  = m.playerA?.userId === userId ? m.playerB?.username : m.playerA?.username;
+      const delta = won ? m.deltaA || m.deltaB || 0 : m.deltaB || m.deltaA || 0;
+      const sign  = delta >= 0 ? '+' : '';
+      return `<div class="profile-match">
+        <span class="match-result ${won?'win':'loss'}">${won?'W':'L'}</span>
+        <span>vs ${esc(opp || '?')}</span>
+        <span style="margin-left:auto;color:${delta>=0?'#5a9a5a':'#9a5a5a'};font-family:'Cinzel',serif;font-size:.55rem">${sign}${delta||'?'}</span>
+      </div>`;
+    }).join('') || '<div style="color:var(--dim);font-size:.65rem;padding:8px 0">Keine Partien gespeichert.</div>';
+
+    document.getElementById('profile-matches').innerHTML = matchHtml;
+  } catch(e) {
+    document.getElementById('profile-matches').innerHTML =
+      '<div class="error-msg">Profil nicht ladbar.</div>';
+  }
+}
+
+function closeProfile() {
+  document.getElementById('profile-modal').classList.remove('open');
+}
+
+// Close modal on backdrop click
+document.getElementById('profile-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeProfile();
+});
+
+// ── Utility ───────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Init ──────────────────────────────────────────────────
+loadLeaderboard();
+loadLiveMatches();
+// Auto-refresh live matches every 15s
+setInterval(loadLiveMatches, 15_000);
+// Refresh leaderboard every 60s
+setInterval(loadLeaderboard, 60_000);
+</script>
+</body>
+</html>

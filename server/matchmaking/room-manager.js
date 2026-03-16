@@ -9,7 +9,7 @@ const { GameRoom }   = require('../rooms/game-room');
 const { S2C }        = require('../../shared/protocol');
 
 // How long (ms) a player can be disconnected before opponent wins
-const RECONNECT_GRACE_MS = 60_000;
+const RECONNECT_GRACE_MS = 30_000;
 
 class RoomManager {
   constructor(io, onMatchOver) {

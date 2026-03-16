@@ -931,34 +931,11 @@ function moveTooltip(e) {
   el.style.top  = y + 'px';
 }
 
-// ── Save / Load (localStorage + server API) ─────────────
-function getToken() { return localStorage.getItem('hf_token'); }
-
+// ── Save / Load (localStorage + optional API) ─────
 function getDeckList() {
   return JSON.parse(localStorage.getItem('hf_decks') || '[]');
 }
-
-async function loadDecksFromServer() {
-  const token = getToken();
-  if (!token) return;
-  try {
-    const res = await fetch('/api/decks', { headers: { 'Authorization': 'Bearer ' + token } });
-    if (!res.ok) return;
-    const { decks } = await res.json();
-    if (!Array.isArray(decks) || decks.length === 0) return;
-    // Merge server decks into localStorage (server wins on name conflict)
-    const local = getDeckList();
-    const merged = [...decks.map(d => ({
-      name: d.name, cards: d.cards, updatedAt: new Date(d.updatedAt || Date.now()).getTime(), serverId: d.id
-    }))];
-    // Add local-only decks not on server
-    local.forEach(ld => { if (!merged.find(m => m.name === ld.name)) merged.push(ld); });
-    localStorage.setItem('hf_decks', JSON.stringify(merged));
-    console.log(`[Deck] Loaded ${decks.length} decks from server`);
-  } catch(e) { console.warn('[Deck] Server load failed:', e.message); }
-}
-
-async function saveDeck() {
+function saveDeck() {
   const name = document.getElementById('deckName').value.trim() || 'Unnamed Deck';
   const cards = [];
   for (const [id, cnt] of Object.entries(deck)) {
@@ -966,39 +943,23 @@ async function saveDeck() {
   }
   if (cards.length === 0) { toast('Deck is empty'); return; }
 
-  // Save to localStorage
   const decks = getDeckList();
   const idx   = decks.findIndex(d => d.name === name);
   const entry = { name, cards, updatedAt: Date.now() };
-  if (idx >= 0) decks[idx] = entry; else decks.push(entry);
+  if (idx >= 0) decks[idx] = entry;
+  else decks.push(entry);
   localStorage.setItem('hf_decks', JSON.stringify(decks));
 
-  // Save to server if logged in
-  const token = getToken();
+  // Also try server API if token exists
+  const token = localStorage.getItem('hf_token');
   if (token) {
-    try {
-      const existing = decks[idx];
-      const method = existing?.serverId ? 'PUT' : 'POST';
-      const url = existing?.serverId ? `/api/decks/${existing.serverId}` : '/api/decks';
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ name, cards }),
-      });
-      if (res.ok) {
-        const { deck: saved } = await res.json();
-        // Store serverId for future updates
-        const fresh = getDeckList();
-        const fi = fresh.findIndex(d => d.name === name);
-        if (fi >= 0) { fresh[fi].serverId = saved.id; localStorage.setItem('hf_decks', JSON.stringify(fresh)); }
-        toast(`Deck "${name}" gespeichert ✓ (Server)`);
-      } else {
-        toast(`Deck "${name}" gespeichert ✓ (lokal)`);
-      }
-    } catch(e) { toast(`Deck "${name}" gespeichert ✓ (lokal)`); }
-  } else {
-    toast(`Deck "${name}" gespeichert ✓`);
+    fetch('/api/decks', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      body: JSON.stringify({ name, cards }),
+    }).catch(() => {}); // fire and forget
   }
+  toast(`Deck "${name}" saved ✓`);
 }
 
 function openLoadModal() {
@@ -1126,9 +1087,6 @@ if (urlParams.has('deck')) {
   renderGrid();
   renderDeck();
 }
-
-// Load decks from server if logged in (runs in background)
-loadDecksFromServer().catch(() => {});
 </script>
 </body>
 </html>

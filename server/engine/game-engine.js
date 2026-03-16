@@ -4908,12 +4908,19 @@ function mkState(serverOpts) {
 // ══════════════════════════════════════════════════════════
 function doMulligan(S, p, replaceIds) {
   const pl = S.players[p];
+  // Remove replaced cards from hand (one instance each)
   replaceIds.forEach(id => {
     const idx = handIdxOf(pl.hand, id);
     if (idx !== -1) pl.hand.splice(idx, 1);
   });
-  const toRemove = new Set(replaceIds);
-  pl.deck = pl.deck.filter(id => !toRemove.has(id));
+  // Put replaced cards back into deck (one copy each, not all copies)
+  // Then shuffle so they can be redrawn from a fair position
+  replaceIds.forEach(id => pl.deck.push(id));
+  // Fisher-Yates shuffle
+  for (let i = pl.deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pl.deck[i], pl.deck[j]] = [pl.deck[j], pl.deck[i]];
+  }
   deal(S, p, replaceIds.length);
   lg(S, p, `Mulligan: ${replaceIds.length} card${replaceIds.length!==1?"s":""} replaced`);
 }
@@ -5363,7 +5370,7 @@ function doAtk(S, attackerId, targetType, targetId) {
     S._attackedGod = S._attackedGod || {};
     S._attackedGod[attOwn] = true;
     if (!S._wasAttacked) S._wasAttacked = {};
-    S._wasAttacked[opp] = true;
+    S._wasAttacked[targetId] = true;
     // Track for World's Tear
     if (S.units[attackerId]) S.units[attackerId]._attackedGodThisTurn = true;
   }

@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>HexForge</title>
   
 
@@ -229,7 +229,37 @@ body {
   overflow: hidden;
   background: radial-gradient(ellipse at center, #0c1822 0%, #060a0e 100%);
 }
-svg#board { display: block; overflow: visible; }
+svg#board { display: block; overflow: visible; touch-action: none; }
+#board-touch-wrap { flex: 1; }
+
+/* ── Mobile Layout ─────────────────────────────────────── */
+@media (max-width: 700px) {
+  #main {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto 1fr auto auto;
+  }
+  .sp { display: none !important; }
+  #board-touch-wrap { min-height: 55vw; }
+  #hdr h1 { font-size: .7rem; }
+  #hdr { padding: 6px 10px; gap: 8px; }
+  #mp-clocks { gap: 4px; }
+  .mp-clock { min-width: 40px; padding: 2px 6px; }
+  .mp-clock-time { font-size: .7rem; }
+  #mp-chat-panel { display: none !important; }
+  .mp-box { min-width: unset !important; width: 92vw; padding: 20px 16px; }
+  #abar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg2);
+          border-top: 1px solid var(--border); padding: 6px 10px; z-index: 100; }
+  .ab { padding: 8px 14px; font-size: .55rem; }
+  #hand-area { padding: 4px 6px; gap: 4px; }
+  #mp-mulligan-overlay .mp-box { max-width: 94vw; }
+  .mp-mull-card { min-width: 64px !important; max-width: 80px !important; }
+}
+
+/* Bigger touch targets for hex cells */
+@media (pointer: coarse) {
+  #board polygon { stroke-width: 2px; }
+  .ab { min-height: 40px; }
+}
 
 /* ── Action Bar ────────────────────────────────────────── */
 #abar {
@@ -531,207 +561,275 @@ svg#board { display: block; overflow: visible; }
 .discover-card .dc-cost { font-size:.6rem; color:#6a8aaa; margin-bottom:6px; }
 .discover-card .dc-text { font-size:.55rem; color:#4a5a72; line-height:1.4; }
 
+</style>
+<script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
 
-
-/* ── Auth/Lobby Overlay ──────────────────────────────────── */
-#mp-auth-overlay {
+<style>
+/* ── MP Overlay System ──────────────────────────────────── */
+.mp-overlay {
+  display:none;
   position:fixed;inset:0;z-index:9000;
-  background:#0a0c0f;
-  display:flex;align-items:center;justify-content:center;
+  background:rgba(8,10,14,.97);
+  align-items:center;justify-content:center;
+  flex-direction:column;
 }
-#mp-auth-overlay.hidden { display:none; }
-.auth-box {
-  background:#111418;border:1px solid #2a3040;border-radius:8px;
+.mp-box {
+  background:#111418;border:1px solid #2a3040;border-radius:10px;
   padding:32px 40px;min-width:320px;text-align:center;
 }
-.auth-box h2 {
+.mp-box h2 {
   font-family:'Cinzel',serif;font-size:1.1rem;color:#c8a84b;
   letter-spacing:4px;margin-bottom:24px;
 }
-.auth-tabs { display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid #2a3040; }
-.auth-tab  { flex:1;padding:8px;cursor:pointer;font-family:'Cinzel',serif;
-  font-size:.6rem;letter-spacing:2px;color:#5a6a7a;transition:all .15s; }
-.auth-tab.active { color:#c8a84b;border-bottom:2px solid #c8a84b; }
-.auth-form { display:none; }
-.auth-form.active { display:block; }
-.auth-form input {
+.mp-tabs { display:flex;margin-bottom:20px;border-bottom:1px solid #2a3040; }
+.mp-tab  {
+  flex:1;padding:8px;cursor:pointer;font-family:'Cinzel',serif;
+  font-size:.6rem;letter-spacing:2px;color:#5a6a7a;transition:all .15s;
+}
+.mp-tab-active { color:#c8a84b;border-bottom:2px solid #c8a84b; }
+.mp-form { display:none; }
+.mp-form.mp-active { display:block; }
+.mp-input {
   width:100%;padding:8px 12px;margin-bottom:10px;
   background:#0e1320;border:1px solid #2a3040;border-radius:4px;
   color:#c8d4e0;font-family:'Crimson Pro',serif;font-size:.85rem;
 }
-.auth-form input:focus { outline:none;border-color:#4a5a7a; }
-.auth-btn {
+.mp-input:focus { outline:none;border-color:#4a5a7a; }
+.mp-btn {
   width:100%;padding:9px;margin-bottom:8px;cursor:pointer;
   border-radius:4px;font-family:'Cinzel',serif;font-size:.6rem;
   letter-spacing:2px;transition:all .15s;
 }
-.auth-btn.primary {
-  background:#1a2a40;border:1px solid #3a5a7a;color:#68aaee;
-}
-.auth-btn.primary:hover { background:#1e3248;border-color:#5a7aaa; }
-.auth-btn.ghost {
-  background:transparent;border:1px solid #2a3040;color:#5a6a7a;
-}
-.auth-btn.ghost:hover { border-color:#4a5a7a;color:#8a9ab0; }
-.auth-err { color:#cc5050;font-size:.65rem;min-height:1.2em;margin-top:4px; }
-.auth-sep { color:#3a4a5a;font-size:.65rem;margin:8px 0; }
-
-/* Lobby screen */
-#mp-lobby-overlay {
-  position:fixed;inset:0;z-index:9000;
-  background:#0a0c0f;
-  display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;
-}
-#mp-lobby-overlay.active { display:flex; }
-.lobby-box {
-  background:#111418;border:1px solid #2a3040;border-radius:8px;
-  padding:32px 40px;min-width:380px;text-align:center;
-}
-.lobby-box h2 {
-  font-family:'Cinzel',serif;font-size:1rem;color:#c8a84b;letter-spacing:4px;margin-bottom:20px;
-}
-.lobby-info {
-  font-family:'Cinzel',serif;font-size:.6rem;color:#5a6a7a;letter-spacing:2px;margin-bottom:16px;
-}
-#lobby-queue-status {
-  font-family:'Cinzel',serif;font-size:.65rem;color:#68aaee;
-  min-height:1.5em;margin-bottom:12px;letter-spacing:1px;
-}
-#lobby-deck-select { 
-  width:100%;padding:8px;margin-bottom:12px;
-  background:#0e1320;border:1px solid #2a3040;border-radius:4px;
-  color:#c8d4e0;font-family:'Cinzel',serif;font-size:.6rem;
-}
-#lobby-deck-btn {
-  display:inline-block;margin-bottom:12px;padding:6px 14px;
-  background:transparent;border:1px solid #2a3040;border-radius:4px;
-  color:#5a6a7a;font-family:'Cinzel',serif;font-size:.55rem;
-  letter-spacing:1px;cursor:pointer;text-decoration:none;
-}
-#lobby-deck-btn:hover { border-color:#4a5a7a;color:#8a9ab0; }
-
-/* Waiting overlay during opponent's turn */
-#mp-waiting-banner {
-  position:fixed;top:0;left:0;right:0;z-index:8000;
-  background:rgba(10,12,15,.9);
-  padding:8px;text-align:center;
+.mp-btn-primary { background:#1a2a40;border:1px solid #3a5a7a;color:#68aaee; }
+.mp-btn-primary:hover { background:#1e3248;border-color:#5a7aaa; }
+.mp-btn-primary:disabled { opacity:.4;cursor:not-allowed; }
+.mp-btn-ghost  { background:transparent;border:1px solid #2a3040;color:#5a6a7a; }
+.mp-btn-ghost:hover { border-color:#4a5a7a;color:#8a9ab0; }
+.mp-err { color:#cc5050;font-size:.65rem;min-height:1.2em;margin-top:4px; }
+/* Turn banner */
+#mp-turn-banner {
+  display:none;
+  position:fixed;top:42px;left:0;right:0;z-index:8000;
+  padding:7px;text-align:center;
   font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;
-  color:#5a6a7a;display:none;
+  border-bottom:1px solid #2a3040;transition:background .3s,color .3s;
 }
-#mp-waiting-banner.active { display:block; }
+#mp-turn-banner.mp-turn-banner-mine {
+  background:rgba(10,20,10,.92);color:#44aa44;
+  border-bottom-color:#224422;
+}
+#mp-turn-banner.mp-turn-banner-opp {
+  background:rgba(10,10,20,.92);color:#4466aa;
+  border-bottom-color:#223355;
+}
+#mp-turn-banner.mp-turn-banner-waiting {
+  background:rgba(15,12,8,.92);color:#888844;
+  border-bottom-color:#44440a;
+}
+/* Timer clocks */
+#mp-clocks { display:none; }
+.mp-clock {
+  display:flex;flex-direction:column;align-items:center;
+  padding:3px 10px;border:1px solid #1a2535;border-radius:4px;
+  background:#080c12;min-width:52px;transition:border-color .3s,background .3s;
+}
+.mp-clock.active  { border-color:#224422;background:#0a120a; }
+.mp-clock.warning { border-color:#883322;background:#120808;animation:mp-clock-pulse .6s ease-in-out infinite; }
+.mp-clock-label { font-family:'Cinzel',serif;font-size:.45rem;letter-spacing:1px;color:#3a4a5a; }
+.mp-clock-time  { font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:2px;color:#5a6a7a;font-variant-numeric:tabular-nums; }
+.mp-clock.active  .mp-clock-time  { color:#66aa66; }
+.mp-clock.warning .mp-clock-time  { color:#cc5533; }
+@keyframes mp-clock-pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
 
-/* Mulligan overlay for MP (simultaneous) */
+/* Chat log messages */
+.mp-chat-msg { font-size:.62rem;color:#7a8a9a;font-family:'Crimson Pro',serif;line-height:1.4; }
+.mp-chat-msg .mp-chat-who { font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:1px; }
+.mp-chat-msg .mp-chat-who.A { color:#5a9a5a; }
+.mp-chat-msg .mp-chat-who.B { color:#5a7aaa; }
+.mp-chat-msg .mp-chat-sys  { color:#4a5a6a;font-style:italic; }
+
+/* Live match pills in lobby */
+.mp-live-pill {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 10px;background:#080c14;border:1px solid #1a2535;
+  border-radius:4px;font-family:'Cinzel',serif;font-size:.52rem;
+  letter-spacing:1px;transition:border-color .15s;
+}
+.mp-live-pill:hover { border-color:#2a4060; }
+.mp-live-dot {
+  width:5px;height:5px;border-radius:50%;background:#44aa44;
+  animation:mp-clock-pulse .6s ease-in-out infinite;flex-shrink:0;
+}
+.mp-live-names { color:#8a9ab0;flex:1;margin:0 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis; }
+.mp-live-names strong { color:#c8d4e0; }
+.mp-live-meta { color:#3a4a5a;font-size:.45rem;white-space:nowrap; }
+.mp-live-watch {
+  padding:2px 8px;background:transparent;border:1px solid #2a3a50;
+  border-radius:2px;color:#4a6a8a;font-family:'Cinzel',serif;
+  font-size:.45rem;letter-spacing:1px;cursor:pointer;flex-shrink:0;
+  transition:all .12s;
+}
+.mp-live-watch:hover { border-color:#4a7aaa;color:#7aaadd; }
+
+/* Spectator overlay bar */
+#mp-spectator-overlay { display:none; }
+#mp-spectator-overlay.active { display:flex; }
+
+/* Mulligan overlay */
 #mp-mulligan-overlay {
+  display:none;
   position:fixed;inset:0;z-index:8500;
   background:rgba(0,0,0,.88);
-  display:none;align-items:center;justify-content:center;
+  align-items:center;justify-content:center;
 }
-#mp-mulligan-overlay.active { display:flex; }
-.mp-mulligan-box {
-  background:#111418;border:1px solid #2a3040;border-radius:8px;
-  padding:28px 32px;min-width:380px;text-align:center;
+.mp-mull-cards {
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:16px;
 }
-.mp-mulligan-box h3 {
-  font-family:'Cinzel',serif;color:#c8a84b;font-size:.85rem;letter-spacing:3px;margin-bottom:6px;
+#mp-mull-waiting {
+  display:none;font-family:'Cinzel',serif;font-size:.6rem;
+  color:#5a6a7a;letter-spacing:2px;margin-top:10px;
 }
-.mp-mulligan-box p {
-  font-size:.65rem;color:#5a6a7a;margin-bottom:16px;font-family:'Cinzel',serif;letter-spacing:1px;
-}
-#mp-mulligan-cards { display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:16px; }
-.mp-mull-card {
-  cursor:pointer;border:2px solid #252d40;border-radius:6px;
-  padding:8px;min-width:80px;max-width:100px;text-align:center;
-  transition:all .15s;background:#0e1320;
-}
-.mp-mull-card.selected { border-color:#cc3333;box-shadow:0 0 8px #cc3333;opacity:.6; }
-.mp-mull-card .mc-name { font-family:'Cinzel',serif;font-size:.5rem;color:#8899aa;margin-bottom:4px; }
-.mp-mull-card .mc-cost { font-size:.65rem;color:#4488cc; }
-#mp-mulligan-waiting {
-  font-family:'Cinzel',serif;font-size:.65rem;color:#5a6a7a;
-  letter-spacing:2px;margin-top:12px;display:none;
-}
-
 </style>
-</head>
 
-<!-- Socket.IO client -->
-<script src="/socket.io/socket.io.js"></script>
-
-<body>
-
-<!-- ══════════════════════════════════════════════════════════
-     MP AUTH OVERLAY
-     ═══════════════════════════════════════════════════════════ -->
-<div id="mp-auth-overlay">
-  <div class="auth-box">
+<!-- ═══ MP AUTH OVERLAY ═══════════════════════════════════ -->
+<div id="mp-auth-overlay" class="mp-overlay">
+  <div class="mp-box" style="min-width:340px">
     <h2>HEXFORGE</h2>
-    <div class="auth-tabs">
-      <div class="auth-tab active" id="tab-btn-login"    onclick="authSwitchTab('login')">Login</div>
-      <div class="auth-tab"        id="tab-btn-register" onclick="authSwitchTab('register')">Register</div>
+    <div class="mp-tabs">
+      <div class="mp-tab mp-tab-active" id="mp-tab-login"    onclick="mpAuthSwitchTab('login')">Login</div>
+      <div class="mp-tab"               id="mp-tab-register" onclick="mpAuthSwitchTab('register')">Registrieren</div>
     </div>
-    <div class="auth-form active" id="auth-form-login">
-      <input id="login-user" type="text"     placeholder="Username" autocomplete="username">
-      <input id="login-pass" type="password" placeholder="Password" autocomplete="current-password">
-      <button class="auth-btn primary" onclick="doLogin()">Login</button>
-      <div class="auth-sep">— or —</div>
-      <button class="auth-btn ghost" onclick="doGuest()">Play as Guest</button>
+    <div class="mp-form mp-active" id="mp-form-login">
+      <input class="mp-input" id="mp-login-user" type="text"     placeholder="Benutzername" autocomplete="username">
+      <input class="mp-input" id="mp-login-pass" type="password" placeholder="Passwort"     autocomplete="current-password">
+      <button class="mp-btn mp-btn-primary" id="mp-auth-btn" onclick="mpLogin()">Login</button>
+      <div style="color:#3a4a5a;font-size:.65rem;margin:6px 0">— oder —</div>
+      <button class="mp-btn mp-btn-ghost" id="mp-guest-btn" onclick="mpGuest()">Als Gast spielen</button>
     </div>
-    <div class="auth-form" id="auth-form-register">
-      <input id="reg-user"  type="text"     placeholder="Username (3–24 chars)" autocomplete="username">
-      <input id="reg-pass"  type="password" placeholder="Password (min 6 chars)" autocomplete="new-password">
-      <input id="reg-pass2" type="password" placeholder="Confirm Password" autocomplete="new-password">
-      <button class="auth-btn primary" onclick="doRegister()">Create Account</button>
+    <div class="mp-form" id="mp-form-register">
+      <input class="mp-input" id="mp-reg-user"  type="text"     placeholder="Benutzername (3–24 Zeichen)" autocomplete="username">
+      <input class="mp-input" id="mp-reg-pass"  type="password" placeholder="Passwort (min. 6 Zeichen)"   autocomplete="new-password">
+      <input class="mp-input" id="mp-reg-pass2" type="password" placeholder="Passwort bestätigen"          autocomplete="new-password">
+      <button class="mp-btn mp-btn-primary" onclick="mpRegister()">Konto erstellen</button>
     </div>
-    <div class="auth-err" id="auth-err"></div>
+    <div class="mp-err" id="mp-auth-err"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     MP LOBBY OVERLAY
-     ═══════════════════════════════════════════════════════════ -->
-<div id="mp-lobby-overlay">
-  <div class="lobby-box">
+<!-- ═══ MP LOBBY OVERLAY ════════════════════════════════════ -->
+<div id="mp-lobby-overlay" class="mp-overlay">
+  <div class="mp-box" style="min-width:380px;max-width:440px">
     <h2>LOBBY</h2>
-    <div class="lobby-info" id="lobby-user-info">—</div>
-    <select id="lobby-deck-select"><option value="">Default Deck</option></select>
-    <a id="lobby-deck-btn" href="/deckbuilder.html" target="_blank">⚙ Deck Builder</a>
-    <div id="lobby-queue-status">Ready to find a match</div>
-    <button class="auth-btn primary" id="btn-find-match" onclick="findMatch()">⚔ Find Match</button>
-    <button class="auth-btn ghost"   id="btn-cancel-q"   onclick="cancelQueue()" style="display:none">✕ Cancel Search</button>
-    <div style="margin-top:16px">
-      <button class="auth-btn ghost" onclick="doLogout()">Logout</button>
+    <div id="mp-lobby-user" style="font-family:'Cinzel',serif;font-size:.6rem;color:#5a6a7a;letter-spacing:2px;margin-bottom:16px">—</div>
+
+    <!-- Deck select -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <select id="mp-deck-select" style="flex:1;padding:8px;background:#0e1320;border:1px solid #2a3040;border-radius:4px;color:#c8d4e0;font-family:'Cinzel',serif;font-size:.6rem">
+        <option value="">Standard-Deck</option>
+      </select>
+      <a href="/deckbuilder.html" target="_blank" style="padding:7px 10px;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#5a6a7a;font-family:'Cinzel',serif;font-size:.55rem;text-decoration:none;white-space:nowrap">⚙ Decks</a>
+      <button id="mp-sync-decks-btn" onclick="mpSyncDecks()" title="Decks mit Server synchronisieren" style="padding:7px 10px;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#3a5a7a;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:1px;cursor:pointer">☁ Sync</button>
+    </div>
+
+    <!-- Queue status -->
+    <div id="mp-queue-status" style="font-family:'Cinzel',serif;font-size:.62rem;color:#68aaee;min-height:1.4em;margin-bottom:12px;letter-spacing:1px;text-align:center">Bereit</div>
+
+    <!-- Main queue buttons -->
+    <button class="mp-btn mp-btn-primary" id="mp-find-btn"   onclick="mpFindMatch()">⚔ Ranked Match suchen</button>
+    <button class="mp-btn mp-btn-ghost"   id="mp-cancel-btn" onclick="mpCancelQueue()" style="display:none">✕ Suche abbrechen</button>
+
+    <button class="mp-btn mp-btn-ghost" onclick="mpPlayVsBot()" style="margin-bottom:4px">🤖 Gegen KI spielen</button>
+    <!-- Live matches -->
+    <div id="mp-live-matches-section" style="margin-bottom:10px">
+      <div style="font-family:'Cinzel',serif;font-size:.5rem;color:#3a4a5a;letter-spacing:2px;margin-bottom:6px">
+        LAUFENDE PARTIEN
+        <span id="mp-live-refresh" onclick="mpRefreshMatches()" style="cursor:pointer;margin-left:8px;color:#2a3a50;font-size:.45rem" title="Aktualisieren">⟳</span>
+      </div>
+      <div id="mp-live-list" style="display:flex;flex-direction:column;gap:4px;min-height:24px">
+        <span style="font-size:.58rem;color:#2a3040;font-family:'Cinzel',serif;letter-spacing:1px">Keine laufenden Partien</span>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div style="display:flex;align-items:center;gap:8px;margin:14px 0 10px">
+      <div style="flex:1;height:1px;background:#2a3040"></div>
+      <span style="font-family:'Cinzel',serif;font-size:.5rem;color:#3a4a5a;letter-spacing:2px">ODER</span>
+      <div style="flex:1;height:1px;background:#2a3040"></div>
+    </div>
+
+    <!-- Private room -->
+    <div style="display:flex;gap:6px;margin-bottom:6px">
+      <button class="mp-btn mp-btn-ghost" style="flex:1;padding:7px" onclick="mpCreateRoom()">🔗 Privates Match</button>
+      <input id="mp-room-code-input" class="mp-input" style="width:100px;margin:0;text-align:center;font-family:'Cinzel',serif;letter-spacing:3px;text-transform:uppercase" placeholder="CODE" maxlength="6">
+      <button class="mp-btn mp-btn-ghost" style="padding:7px 10px" onclick="mpJoinRoom()">→</button>
+    </div>
+    <div id="mp-room-code-display" style="display:none;text-align:center;margin-bottom:8px;font-family:'Cinzel',serif;font-size:.75rem;color:#68aaee;letter-spacing:4px;border:1px solid #2a4060;border-radius:4px;padding:8px;background:#0a1420">
+      Dein Code: <span id="mp-room-code-text">——————</span>
+      <div style="font-size:.5rem;color:#3a4a5a;letter-spacing:1px;margin-top:3px">Teile diesen Code mit deinem Freund</div>
+    </div>
+    <div id="mp-room-err" style="color:#cc5050;font-size:.6rem;min-height:1em;text-align:center;margin-bottom:6px"></div>
+
+    <button class="mp-btn mp-btn-ghost" onclick="mpLogout()" style="margin-top:6px;opacity:.6">Abmelden</button>
+    <a href="/leaderboard.html" target="_blank" style="display:block;text-align:center;margin-top:8px;font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:2px;color:#3a4a5a;text-decoration:none" onmouseover="this.style.color='#c8a84b'" onmouseout="this.style.color='#3a4a5a'">📊 Rangliste anzeigen</a>
+
+    <div style="margin-top:16px;border-top:1px solid #1a2535;padding-top:14px">
+      <div style="font-family:'Cinzel',serif;font-size:.55rem;color:#3a4a5a;letter-spacing:2px;margin-bottom:8px">PRIVATES SPIEL</div>
+      <button class="mp-btn mp-btn-ghost" onclick="mpCreateRoom()" id="mp-create-room-btn" style="margin-bottom:6px">🔑 Raum erstellen</button>
+      <div style="display:flex;gap:6px;margin-bottom:4px">
+        <input id="mp-room-code-input" type="text" maxlength="6" placeholder="Code eingeben"
+          style="flex:1;padding:6px 8px;background:#0e1320;border:1px solid #1a2535;border-radius:3px;
+                 color:#c8d4e0;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:3px;text-transform:uppercase"
+          oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter')mpJoinRoom()">
+        <button class="mp-btn mp-btn-ghost" onclick="mpJoinRoom()" style="width:auto;padding:6px 10px">▶ Join</button>
+      </div>
+      <div id="mp-room-status" style="font-family:'Cinzel',serif;font-size:.58rem;color:#5a8aaa;letter-spacing:1px;min-height:1.4em"></div>
     </div>
   </div>
 </div>
 
-<!-- Waiting banner (opponent's turn) -->
-<div id="mp-waiting-banner">Waiting for opponent…</div>
+<!-- ═══ TURN BANNER ═════════════════════════════════════════ -->
+<div id="mp-turn-banner">Warte auf Gegner…</div>
 
-<!-- ══════════════════════════════════════════════════════════
-     SIMULTANEOUS MULLIGAN OVERLAY
-     ═══════════════════════════════════════════════════════════ -->
+<!-- ═══ SPECTATOR OVERLAY ═══════════════════════════════════ -->
+<div id="mp-spectator-overlay" style="
+  display:none;position:fixed;top:0;left:0;right:0;z-index:8500;
+  background:rgba(8,10,15,.92);padding:8px 16px;
+  display:none;align-items:center;justify-content:space-between;
+  font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:2px;
+  border-bottom:1px solid #2a3040;
+">
+  <div style="display:flex;align-items:center;gap:12px">
+    <span style="color:#5a6a7a">👁 ZUSCHAUER</span>
+    <span id="spec-match-info" style="color:#c8d4e0"></span>
+    <span id="spec-turn-info" style="color:#4a5a6a"></span>
+  </div>
+  <button onclick="mpLeaveSpectator()" style="
+    background:transparent;border:1px solid #2a3040;border-radius:3px;
+    color:#4a5a6a;font-family:'Cinzel',serif;font-size:.5rem;
+    letter-spacing:1px;padding:3px 10px;cursor:pointer;
+  ">✕ Verlassen</button>
+</div>
+
+<!-- ═══ SIMULTANEOUS MULLIGAN ═══════════════════════════════ -->
 <div id="mp-mulligan-overlay">
-  <div class="mp-mulligan-box">
-    <h3>MULLIGAN</h3>
-    <p>Select cards to replace, then confirm.</p>
-    <div id="mp-mulligan-cards"></div>
-    <button class="auth-btn primary" onclick="mpConfirmMulligan()">Confirm ▶</button>
-    <div id="mp-mulligan-waiting">Waiting for opponent…</div>
+  <div class="mp-box" style="min-width:380px;max-width:580px">
+    <h2 style="font-size:.9rem;margin-bottom:6px">MULLIGAN</h2>
+    <p style="font-size:.65rem;color:#5a6a7a;font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:16px">
+      Karten zum Ersetzen anklicken, dann bestätigen.
+    </p>
+    <div class="mp-mull-cards" id="mp-mull-cards"></div>
+    <button class="mp-btn mp-btn-primary" id="mp-mull-confirm" onclick="mpConfirmMulligan()" style="max-width:200px;margin:0 auto">Bestätigen ▶</button>
+    <div id="mp-mull-waiting">Warte auf Gegner…</div>
   </div>
 </div>
+
 
 <!-- ── Header ──────────────────────────────────────────── -->
 <div id="hdr">
   <h1>HEX<span style="color:#5a6a7a">FORGE</span></h1>
-  <button onclick="location.href='hexforge-start.html'" style="
-    font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:2px;
-    padding:4px 12px;border:1px solid #252d40;background:transparent;
-    color:#4a5a72;cursor:pointer;border-radius:3px;transition:all .12s;
-    margin-right:8px;
-  " onmouseover="this.style.color='#c8a84b';this.style.borderColor='#7a6230'"
-     onmouseout="this.style.color='#4a5a72';this.style.borderColor='#252d40'">
-    ← START
-  </button>
   <div id="phdis">
     <div class="ap" id="ph-name">DRAW</div>
     <div id="ph-dots"></div>
@@ -739,6 +837,18 @@ svg#board { display: block; overflow: visible; }
   <div id="turdis">
     Round <span id="rnd">1</span> &nbsp;
     <span class="pn A" id="apn">SPIELER A</span>
+  </div>
+  <!-- MP Timer Clocks -->
+  <div id="mp-clocks" style="display:none;gap:8px;align-items:center;margin-left:auto">
+    <div class="mp-clock" id="mp-clock-mine"  title="Deine Zeit">
+      <span class="mp-clock-label" id="mp-clock-mine-name">Du</span>
+      <span class="mp-clock-time"  id="mp-clock-mine-secs">1:30</span>
+    </div>
+    <div style="color:#2a3040;font-size:.7rem">vs</div>
+    <div class="mp-clock" id="mp-clock-opp" title="Zeit des Gegners">
+      <span class="mp-clock-label" id="mp-clock-opp-name">Gegner</span>
+      <span class="mp-clock-time"  id="mp-clock-opp-secs">1:30</span>
+    </div>
   </div>
 </div>
 
@@ -775,7 +885,13 @@ svg#board { display: block; overflow: visible; }
       <div style="font-size:.5rem;color:var(--dim);letter-spacing:2px;margin-bottom:2px;font-family:'Cinzel',serif">GEGNER</div>
       <div id="opp-hand"></div>
     </div>
-    <svg id="board"></svg>
+    <div id="board-touch-wrap" style="
+      flex:1; overflow:auto; -webkit-overflow-scrolling:touch;
+      position:relative; touch-action:pan-x pan-y;
+      display:flex; align-items:center; justify-content:center;
+    ">
+      <svg id="board" style="min-width:320px"></svg>
+    </div>
     <div id="abar">
       <button class="ab"    id="btn-land"   onclick="G.openLandMenu()">⬡ Land / Action</button>
       <button class="ab pr" id="btn-next"   onclick="G.endTurn()">End Turn ▶</button>
@@ -802,6 +918,27 @@ svg#board { display: block; overflow: visible; }
     <div id="ud"><span style="color:var(--dim);font-size:.68rem">Select a unit…</span></div>
     <div class="pt">Log</div>
     <div id="lp"></div>
+  </div>
+
+  <!-- Chat panel (only visible in MP mode) -->
+  <div id="mp-chat-panel" style="display:none;flex-direction:column;min-width:200px;max-width:220px">
+    <div class="pt">Chat</div>
+    <div id="mp-chat-log" style="
+      flex:1;overflow-y:auto;max-height:220px;
+      display:flex;flex-direction:column;gap:3px;
+      padding:6px;background:#080c12;border:1px solid #1a2535;
+      border-radius:4px;margin-bottom:6px;
+    "></div>
+    <div style="display:flex;gap:4px">
+      <input id="mp-chat-input" type="text" maxlength="150" placeholder="Nachricht…"
+        style="flex:1;padding:5px 8px;background:#0e1320;border:1px solid #1a2535;
+               border-radius:3px;color:#c8d4e0;font-size:.65rem;font-family:'Crimson Pro',serif;"
+        onkeydown="if(event.key==='Enter')mpSendChat()">
+      <button onclick="mpSendChat()" style="
+        padding:5px 8px;background:#1a2530;border:1px solid #2a3545;
+        border-radius:3px;color:#5a7a9a;cursor:pointer;font-size:.7rem;
+      ">▶</button>
+    </div>
   </div>
 
 </div><!-- /#main -->
@@ -854,9 +991,9 @@ svg#board { display: block; overflow: visible; }
 <!-- ── Victory Screen ──────────────────────────────────── -->
 <div id="win-ov">
   <div id="win-card">
-    <h2 id="win-title">Player A wins!<//h2>
-    <p>The enemy base has been destroyed.</p>
-    <button onclick="location.href='hexforge-start.html'">New Game</button>
+    <h2 id="win-title">Sieg!</h2>
+    <p id="win-elo" style="font-family:'Cinzel',serif;font-size:.65rem;color:#68aaee;letter-spacing:2px;margin:6px 0 12px"></p>
+    <button onclick="location.href='hexforge-start.html'">Neues Spiel</button>
   </div>
 </div>
 
@@ -917,7 +1054,7 @@ svg#board { display: block; overflow: visible; }
 
 // ── Dev flag ──────────────────────────────────────────────
 // ⚠ set to false before release
-const DEV_MODE_DEFAULT = false;
+const DEV_MODE_DEFAULT = true;
 let   _devEnabled = DEV_MODE_DEFAULT;
 // Proxy so existing `if(!DEV_MODE)` checks still work
 const DEV_MODE_PROXY = new Proxy({}, { get:() => _devEnabled });
@@ -8031,6 +8168,20 @@ const TARGET_LAND  = new Set(['explore']);
 // ── Engine ─────────────────────────────────────────────────
 class Engine {
   constructor() {
+    // MP-Modus: State kommt vom Server, kein lokales Spiel starten
+    if (window._MP_INIT) {
+      this.S           = { players:{ A:{hp:20,mana:3,hand:[],deck:[],grave:[]}, B:{hp:20,mana:3,hand:[],deck:[],grave:[]} }, cells:{}, units:{}, log:[], turn:1, ap:'A', phase:'FREE', lobDone:false, winner:null, playerNames:{A:'A',B:'B'}, _discoverQueue:[] };
+      this.selCard     = null;
+      this.selUnit     = null;
+      this.pact        = null;
+      this.vt          = [];
+      this.landN_left  = 0;
+      this.handVisible = true;
+      this.mulliganSel = new Set();
+      this._devInit();
+      return;
+    }
+    // Single-Player-Modus
     this.S           = mkState();
     this.selCard     = null;
     this.selUnit     = null;
@@ -8041,11 +8192,9 @@ class Engine {
     this.mulliganSel = new Set(); // cards selected for replacement
 
     this._render();
-    // _devInit() is only called externally for admin users
-    // Skip pass&play mulligan in MP mode
-    if (!window._mpConstructing) {
-      this._showMulligan('A');
-    }
+    this._devInit();
+    // Start with Mulligan for Player A
+    this._showMulligan('A');
   }
 
   get ap() { return this.S.ap; }
@@ -10655,744 +10804,1449 @@ class Engine {
 
 
 // ── Boot ───────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  const kwStyle = document.createElement('style');
-  kwStyle.textContent = `.kw-badge {
-  display:inline-block; font-size:.48rem; padding:1px 5px;
-  border:1px solid; border-radius:2px;
-  font-family:'Cinzel',serif; letter-spacing:1px;
-  white-space:nowrap;
-}`;
-  document.head.appendChild(kwStyle);
+// Boot handled by MP adapter (Script 3)
 
-  // ══════════════════════════════════════════════════════════
-  //  MULTIPLAYER SOCKET INTEGRATION
-  // ══════════════════════════════════════════════════════════
 
-  // Protocol constants (must match server/shared/protocol.js)
-  const C2S = {
-    REGISTER:'register', LOGIN:'login', GUEST_LOGIN:'guest_login', AUTH_TOKEN:'auth_token',
-    QUEUE_JOIN:'queue_join', QUEUE_LEAVE:'queue_leave',
-    PLAYER_ACTION:'player_action',
+</script>
+
+
+
+<script></script>
+
+
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  HexForge MP Adapter  v2  —  Phase 1
+//  Vollständige Spielbarkeit: Rendering, Actions, Disconnect
+// ═══════════════════════════════════════════════════════════
+(function () {
+'use strict';
+
+// ── Protokoll ──────────────────────────────────────────────
+const C2S = {
+  REGISTER:     'register',
+  LOGIN:        'login',
+  GUEST_LOGIN:  'guest_login',
+  AUTH_TOKEN:   'auth_token',
+  QUEUE_JOIN:   'queue_join',
+  QUEUE_LEAVE:  'queue_leave',
+  ROOM_CREATE:  'room_create',
+  ROOM_JOIN:    'room_join',
+  CHAT_MSG:     'chat_msg',
+  PLAY_VS_BOT:  'play_vs_bot',
+  SPECTATE:     'spectate',
+};
+const S2C = {
+  AUTH_OK:       'auth_ok',
+  AUTH_ERR:      'auth_err',
+  QUEUE_STATUS:  'queue_status',
+  MATCH_FOUND:   'match_found',
+  GAME_START:    'game_start',
+  STATE_UPDATE:  'state_update',
+  ACTION_INVALID:'action_invalid',
+  GAME_OVER:     'game_over',
+  TIMER_UPDATE:  'timer_update',
+  CHAT_MSG:      'chat_msg',
+  ROOM_CREATED:  'room_created',
+  ROOM_JOINED:   'room_joined',
+  ROOM_ERROR:    'room_error',
+  OPPONENT_DISCONNECTED: 'opponent_disconnected',
+  OPPONENT_RECONNECTED:  'opponent_reconnected',
+  MATCH_REJOINED: 'match_rejoined',
+  SPECTATE_START: 'spectate_start',
+  SPECTATE_UPDATE:'spectate_update',
+  ERROR:          'error',
+};
+const ACTION = {
+  MULLIGAN_CONFIRM:       'mulligan_confirm',
+  PLACE_LAND:             'place_land',
+  PLACE_LAND_N:           'place_land_N',
+  SHIFTING_TIDE:          'shifting_tide',
+  WHEEL_DRAW:             'wheel_draw',
+  WHEEL_BOOST:            'wheel_boost',
+  WHEEL_LAND:             'wheel_land',
+  PLAY_UNIT:              'play_unit',
+  PLAY_STRUCTURE:         'play_structure',
+  PLAY_INSTANT:           'play_instant',
+  PLAY_INSTANT_NOTARGET:  'play_instant_notarget',
+  MOVE_UNIT:              'move_unit',
+  ATTACK_UNIT:            'attack_unit',
+  ATTACK_BASE:            'attack_base',
+  USE_GIFT:               'use_gift',
+  DASH:                   'dash',
+  DISCOVER_PICK:          'discover_pick',
+  CHOOSE_ONE:             'choose_one',
+  OCTOPUS_PICK:           'octopus_pick',
+  WHEEL_OF_CHAOS_TARGET:  'woc_target',
+  FLAME_BURST_TARGET:     'flame_burst_target',
+  SPIRIT_SPICE_TARGET:    'spirit_spice_target',
+  END_TURN:               'end_turn',
+};
+
+// ── MP-State ────────────────────────────────────────────────
+let socket      = null;
+let mySession   = null;    // { id, username, rating, isGuest }
+let myPlayer    = null;    // 'A' | 'B'
+let matchId     = null;
+let inQueue     = false;
+let _waitingForServer = false;  // true nach Action bis STATE_UPDATE kommt
+let _disconnectTimer  = null;
+
+// ── kw Array→Set wiederherstellen (Server serialisiert Sets als Arrays) ──
+function restoreKwSets(state) {
+  if (!state?.units) return;
+  for (const u of Object.values(state.units)) {
+    if (Array.isArray(u.kw)) u.kw = new Set(u.kw);
+    else if (!(u.kw instanceof Set)) u.kw = new Set();
+  }
+}
+
+// ── Helper ──────────────────────────────────────────────────
+function isMPMode()  { return !!myPlayer; }
+function isMyTurn()  {
+  const G = window.G;
+  return G && G.S.ap === myPlayer && G.S.phase === 'FREE' && !G.S._mulliganPhase && !_waitingForServer;
+}
+function playActionType(cardId) {
+  const cd = (typeof cardData === 'function') ? cardData(cardId) : null;
+  if (!cd) return ACTION.PLAY_INSTANT;
+  const t = cd.type;
+  if (t === 'creature' || t === 'UNIT') return ACTION.PLAY_UNIT;
+  if (t === 'structure')                return ACTION.PLAY_STRUCTURE;
+  return ACTION.PLAY_INSTANT;
+}
+
+// ── Action senden ───────────────────────────────────────────
+function sendAction(type, payload = {}) {
+  if (!socket) return;
+  _waitingForServer = true;
+  updateTurnBanner();
+  socket.emit('player_action', { type, payload });
+}
+
+// ── Overlay utils ────────────────────────────────────────────
+function showOverlay(id) { const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
+function hideOverlay(id) { const el = document.getElementById(id); if (el) el.style.display = 'none';  }
+function setAuthErr(msg) { const el = document.getElementById('mp-auth-err'); if (el) el.textContent = msg || ''; }
+function setQueueStatus(msg) { const el = document.getElementById('mp-queue-status'); if (el) el.textContent = msg; }
+
+// ── Hint ─────────────────────────────────────────────────────
+let _hintTimer = null;
+function showHint(msg, ms = 3500) {
+  const el = document.getElementById('action-hint');
+  if (!el) return;
+  el.textContent = msg;
+  if (_hintTimer) clearTimeout(_hintTimer);
+  if (ms > 0) _hintTimer = setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, ms);
+}
+
+// ── Turn banner ──────────────────────────────────────────────
+function updateTurnBanner() {
+  const G = window.G;
+  const banner = document.getElementById('mp-turn-banner');
+  if (!banner || !G) return;
+  const myTurn = G.S.ap === myPlayer && G.S.phase === 'FREE' && !G.S._mulliganPhase;
+  if (G.S.winner) {
+    banner.style.display = 'none';
+  } else if (_waitingForServer) {
+    banner.textContent = 'Sende…';
+    banner.className = 'mp-turn-banner-waiting';
+    banner.style.display = 'block';
+  } else if (!myTurn) {
+    const opp = G.S.playerNames?.[G.S.ap] || (G.S.ap === myPlayer ? 'du' : 'Gegner');
+    banner.textContent = `${opp} ist am Zug…`;
+    banner.className = 'mp-turn-banner-opp';
+    banner.style.display = 'block';
+  } else {
+    banner.textContent = 'Dein Zug';
+    banner.className = 'mp-turn-banner-mine';
+    banner.style.display = 'block';
+    // Fade out after 1.5s
+    setTimeout(() => {
+      if (banner.className === 'mp-turn-banner-mine') banner.style.display = 'none';
+    }, 1500);
+  }
+}
+
+// ── Disconnect banner ────────────────────────────────────────
+function showDisconnectBanner(username, graceSecs) {
+  let el = document.getElementById('mp-disconnect-banner');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'mp-disconnect-banner';
+    el.style.cssText = `
+      position:fixed;top:0;left:0;right:0;z-index:9100;
+      background:#3a1510;border-bottom:1px solid #883030;
+      padding:8px;text-align:center;font-family:'Cinzel',serif;
+      font-size:.6rem;letter-spacing:2px;color:#ff8888;
+    `;
+    document.body.appendChild(el);
+  }
+  let secs = graceSecs;
+  el.style.display = 'block';
+  const update = () => {
+    el.textContent = `⚠ ${username} getrennt — ${secs}s zum Reconnect`;
+    if (secs <= 0) { el.textContent = `${username} hat das Spiel verlassen`; return; }
+    secs--;
+    _disconnectTimer = setTimeout(update, 1000);
   };
-  const S2C = {
-    AUTH_OK:'auth_ok', AUTH_ERR:'auth_err',
-    QUEUE_STATUS:'queue_status', MATCH_FOUND:'match_found',
-    GAME_START:'game_start', STATE_UPDATE:'state_update',
-    ACTION_INVALID:'action_invalid', GAME_OVER:'game_over',
-    OPPONENT_DISCONNECTED:'opponent_disconnected', OPPONENT_RECONNECTED:'opponent_reconnected',
-    MATCH_REJOINED:'match_rejoined', SPECTATE_START:'spectate_start',
-    SPECTATE_UPDATE:'spectate_update', ROOM_CREATED:'room_created',
-    ROOM_ERROR:'room_error', ERROR:'error',
-  };
-  const ACTION = {
-    END_TURN:            'end_turn',
-    PLACE_LAND:          'place_land',
-    PLACE_LAND_N:        'place_land_N',
-    SHIFTING_TIDE:       'shifting_tide',
-    WHEEL_DRAW:          'wheel_draw',
-    WHEEL_BOOST:         'wheel_boost',
-    WHEEL_LAND:          'wheel_land',
-    PLAY_UNIT:           'play_unit',
-    PLAY_STRUCTURE:      'play_structure',
-    PLAY_INSTANT:        'play_instant',
-    PLAY_INSTANT_NOTARGET: 'play_instant_notarget',
-    MOVE_UNIT:           'move_unit',
-    ATTACK_UNIT:         'attack_unit',
-    ATTACK_BASE:         'attack_base',
-    USE_GIFT:            'use_gift',
-    DASH:                'dash',
-    DISCOVER_PICK:       'discover_pick',
-    CHOOSE_ONE:          'choose_one',
-    MULLIGAN_CONFIRM:    'mulligan_confirm',
-  };
+  update();
+}
 
-  let socket = null;
-  let mySession = null;      // { id, username, rating, isGuest }
-  let myPlayer  = null;      // 'A' or 'B'
-  let matchId   = null;
-  let inQueue   = false;
+function hideDisconnectBanner() {
+  if (_disconnectTimer) { clearTimeout(_disconnectTimer); _disconnectTimer = null; }
+  const el = document.getElementById('mp-disconnect-banner');
+  if (el) el.style.display = 'none';
+}
 
-  // MP Engine instance (created when game starts)
-  let G = null;
-  window.G = null;
+// ── Socket ───────────────────────────────────────────────────
+function connectSocket() {
+  if (socket && socket.connected) return;
+  socket = io({ reconnectionDelay: 500, reconnectionDelayMax: 3000 });
 
-  // ── Socket connection ──────────────────────────────────
-  function connectSocket() {
-    if (socket && socket.connected) return;
-    socket = io(window.location.origin);
+  socket.on('connect', () => {
+    hideDisconnectBanner();
+    const token = localStorage.getItem('hf_token');
+    if (token) socket.emit(C2S.AUTH_TOKEN, { token });
+  });
 
-    socket.on('connect', () => {
-      console.log('[MP] Connected', socket.id);
-      const token = localStorage.getItem('hf_token');
-      if (token) socket.emit(C2S.AUTH_TOKEN, { token });
-    });
+  socket.on('disconnect', () => {
+    // Show brief UI feedback
+    const banner = document.getElementById('mp-turn-banner');
+    if (banner && window.G) {
+      banner.textContent = '⚠ Verbindung getrennt — verbinde neu…';
+      banner.className = 'mp-turn-banner-waiting';
+      banner.style.display = 'block';
+    }
+  });
 
-    socket.on('disconnect', () => {
-      console.log('[MP] Disconnected');
-    });
+  socket.on(S2C.AUTH_OK, ({ user, token }) => {
+    mySession = user;
+    if (token) localStorage.setItem('hf_token', token);
+    // Reset auth button state
+    const ab = document.getElementById('mp-auth-btn');
+    const gb = document.getElementById('mp-guest-btn');
+    if (ab) { ab.disabled = false; ab.textContent = 'Login'; }
+    if (gb) { gb.disabled = false; gb.textContent = 'Als Gast spielen'; }
+    // Sync decks from server (non-blocking)
+    if (!user.isGuest) syncDecksFromServer(token);
+    showLobby();
+  });
 
-    socket.on(S2C.AUTH_OK, ({ user, token }) => {
-      mySession = user;
-      if (token) localStorage.setItem('hf_token', token);
+  socket.on(S2C.AUTH_ERR, ({ reason }) => {
+    setAuthErr(reason);
+    const ab = document.getElementById('mp-auth-btn');
+    const gb = document.getElementById('mp-guest-btn');
+    if (ab) { ab.disabled = false; ab.textContent = 'Login'; }
+    if (gb) { gb.disabled = false; gb.textContent = 'Als Gast spielen'; }
+  });
+
+  socket.on(S2C.QUEUE_STATUS, ({ position, queueSize, waitedMs }) => {
+    const s = Math.floor((waitedMs || 0) / 1000);
+    setQueueStatus(`Suche… #${position || 1} · ${s}s`);
+  });
+
+  socket.on(S2C.MATCH_FOUND, ({ opponent }) => {
+    setQueueStatus(`Match gefunden gegen ${opponent?.username}!`);
+  });
+
+  socket.on(S2C.GAME_START, ({ matchId: id, yourPlayer, opponentName, state }) => {
+    matchId  = id;
+    myPlayer = yourPlayer;
+    restoreKwSets(state);
+    startGame(state, yourPlayer, opponentName);
+  });
+
+  socket.on(S2C.STATE_UPDATE, ({ state, pendingInput: pi, seq, reconnected }) => {
+    _waitingForServer = false;
+    if (!window.G) return;
+    if (state) {
+      restoreKwSets(state);
+      window.G.S = state;
+    }
+    window.G._clr();
+    window.G._render();
+    updateTurnBanner();
+    if (pi) handlePendingInput(pi);
+    else if (!reconnected) hideMulligan();
+  });
+
+  socket.on(S2C.ACTION_INVALID, ({ reason }) => {
+    _waitingForServer = false;
+    showHint('⚠ ' + reason, 4000);
+    if (window.G) { window.G._clr(); window.G._render(); updateTurnBanner(); }
+  });
+
+  socket.on(S2C.GAME_OVER, ({ winner, youWon, eloChange }) => {
+    _waitingForServer = false;
+    if (!window.G) return;
+    window.G.S.winner = winner;
+    window.G._clr();
+    window.G._render();
+    // Show win overlay
+    const titleEl = document.getElementById('win-title');
+    if (titleEl) titleEl.textContent = youWon ? '🏆 Sieg!' : '💀 Niederlage';
+    const eloEl = document.getElementById('win-elo');
+    if (eloEl && eloChange != null) {
+      const sign = eloChange >= 0 ? '+' : '';
+      eloEl.textContent = `Rating: ${sign}${eloChange}`;
+    }
+    // Patch "New Game" button to return to lobby
+    const winBtn = document.querySelector('#win-card button');
+    if (winBtn) winBtn.onclick = () => {
+      document.getElementById('win-ov').classList.remove('on');
+      myPlayer = null; matchId = null;
       showLobby();
-    });
+    };
+    document.getElementById('win-ov')?.classList.add('on');
+  });
 
-    socket.on(S2C.AUTH_ERR, ({ reason }) => {
-      setAuthErr(reason);
-    });
+  socket.on(S2C.OPPONENT_DISCONNECTED, ({ username, graceSecs }) => {
+    showDisconnectBanner(username, graceSecs || 60);
+  });
+  socket.on(S2C.OPPONENT_RECONNECTED, ({ username }) => {
+    hideDisconnectBanner();
+    showHint(`${username} ist wieder verbunden ✓`, 3000);
+  });
 
-    socket.on(S2C.QUEUE_STATUS, ({ position, queueSize, waitedMs }) => {
-      const secs = Math.floor((waitedMs||0)/1000);
-      setQueueStatus(`Searching… #${position}/${queueSize} · ${secs}s`);
-    });
+  socket.on(S2C.MATCH_REJOINED, ({ matchId: mid }) => {
+    matchId = mid;
+    hideOverlay('mp-auth-overlay');
+    hideOverlay('mp-lobby-overlay');
+    hideDisconnectBanner();
+  });
 
-    socket.on(S2C.MATCH_FOUND, ({ matchId: id, opponent }) => {
-      setQueueStatus(`Match found vs ${opponent.username}!`);
-    });
+  socket.on(S2C.ERROR, ({ reason }) => {
+    showHint('Server: ' + reason, 5000);
+  });
+}
+  socket.on(S2C.TIMER_UPDATE, ({ ap, secsLeft, totalSecs }) => {
+    if (window.G) updateClocks(ap, secsLeft, totalSecs);
+  });
 
-    socket.on(S2C.GAME_START, ({ matchId: id, yourPlayer, opponentName, state }) => {
-      matchId  = id;
-      myPlayer = yourPlayer;
-      startMPGame(state, yourPlayer, opponentName);
-    });
+  socket.on(S2C.CHAT_MSG, (msg) => {
+    appendChatMsg(msg);
+  });
 
-    socket.on(S2C.STATE_UPDATE, ({ state, pendingInput: pi, seq }) => {
-      if (!G) return;
-      // Apply server state
-      G.S = state;
-      // Reconstruct kw Sets from Arrays
-      Object.values(G.S.units||{}).forEach(u => {
-        if (Array.isArray(u.kw)) u.kw = new Set(u.kw);
-      });
-      G._render();
-      updateWaitingBanner();
-      // Handle mulligan prompt
-      if (pi && pi.type === 'mulligan') {
-        showMPMulligan(state, myPlayer);
-      } else if (pi && pi.type === 'mulligan_waiting') {
-        document.getElementById('mp-mulligan-waiting').style.display = 'block';
-      } else {
-        hideMPMulligan();
-      }
-      // Handle discover / choose_one
-      if (pi && pi.type === 'discover') {
-        // Show discover modal with server-provided pool
-        const item = { pool: pi.pool, label: pi.label || 'Discover', onPick: pi.onPick || 'add_to_hand', p: myPlayer };
-        G._showDiscover(item);
-      }
-      if (pi && pi.type === 'choose_one') {
-        // Build options with server-dispatch callbacks
-        const opts = (pi.options || []).map((opt, i) => ({
-          label: opt.label, icon: opt.icon,
-          fn: () => mpSendAction('choose_one', { choiceIndex: i }),
-        }));
-        G._chooseOne(pi.title || 'Choose One', opts);
-      }
-    });
+  socket.on(S2C.ROOM_CREATED, ({ code }) => {
+    const btn = document.getElementById('mp-create-room-btn');
+    if (btn) btn.disabled = false;
+    setRoomStatus('Code: ' + code + ' — warte auf Gegner…', '#66aa66');
+    const inp = document.getElementById('mp-room-code-input');
+    if (inp) inp.value = code;
+  });
 
-    socket.on(S2C.ACTION_INVALID, ({ reason }) => {
-      if (G) G._showHint('⚠ ' + reason);
-    });
+  socket.on(S2C.ROOM_JOINED, ({ matchId: mid, opponent }) => {
+    setRoomStatus('Verbunden mit ' + (opponent?.username || '?') + '!', '#66aa66');
+  });
 
-    socket.on(S2C.GAME_OVER, ({ winner, youWon, eloChange, newRating, matchId: mid }) => {
-      if (!G) return;
-      G.S.winner = winner;
-      G._render();
-      const titleEl = document.getElementById('win-title');
-      const newGameBtn = document.querySelector('#win-ov button');
-      if (titleEl) titleEl.textContent = youWon ? '🏆 Victory!' : '💀 Defeat';
-      if (newGameBtn) newGameBtn.onclick = () => {
-        document.getElementById('win-ov').style.display = 'none';
-        showLobby();
-      };
-      const winOv = document.getElementById('win-ov');
-      if (winOv) winOv.style.display = 'flex';
-    });
+  socket.on(S2C.ROOM_ERROR, ({ reason }) => {
+    setRoomStatus(reason, '#cc5533');
+    const btn = document.getElementById('mp-create-room-btn');
+    if (btn) btn.disabled = false;
+  });
 
-    socket.on(S2C.OPPONENT_DISCONNECTED, ({ username, graceSecs }) => {
-      if (G) G._showHint(`⚠ ${username} disconnected. ${graceSecs}s to reconnect.`);
-    });
-    socket.on(S2C.OPPONENT_RECONNECTED, ({ username }) => {
-      if (G) G._showHint(`${username} reconnected.`);
-    });
+  // ── Spectator events ────────────────────────────────────
+  socket.on(S2C.SPECTATE_START, ({ matchId: mid, state, players }) => {
+    matchId  = mid;
+    myPlayer = null;  // spectators have no player side
+    restoreKwSets(state);
+    startSpectating(state, players);
+  });
 
-    socket.on(S2C.MATCH_REJOINED, ({ matchId: mid }) => {
-      matchId = mid;
-      setQueueStatus('Rejoined match ' + mid);
-    });
+  socket.on(S2C.SPECTATE_UPDATE, ({ state, lastAction }) => {
+    if (!window.G) return;
+    restoreKwSets(state);
+    window.G.S = state;
+    window.G._render();
+    updateSpectatorInfo();
+  });
 
-    socket.on(S2C.ERROR, ({ reason }) => {
-      console.error('[MP]', reason);
-    });
+
+
+// ── Auth ─────────────────────────────────────────────────────
+window.mpAuthSwitchTab = function(tab) {
+  ['login','register'].forEach(t => {
+    document.getElementById('mp-form-' + t).style.display = t === tab ? '' : 'none';
+    document.getElementById('mp-tab-' + t).classList.toggle('mp-tab-active', t === tab);
+  });
+  setAuthErr('');
+};
+
+window.mpLogin = function() {
+  const username = document.getElementById('mp-login-user').value.trim();
+  const password = document.getElementById('mp-login-pass').value;
+  if (!username || !password) { setAuthErr('Benutzername und Passwort eingeben'); return; }
+  const btn = document.getElementById('mp-auth-btn');
+  btn.disabled = true; btn.textContent = '…';
+  setAuthErr('');
+  const send = () => socket.emit(C2S.LOGIN, { username, password });
+  socket.connected ? send() : socket.once('connect', send);
+};
+
+window.mpRegister = function() {
+  const username  = document.getElementById('mp-reg-user').value.trim();
+  const password  = document.getElementById('mp-reg-pass').value;
+  const password2 = document.getElementById('mp-reg-pass2').value;
+  if (password !== password2) { setAuthErr('Passwörter stimmen nicht überein'); return; }
+  if (username.length < 3)    { setAuthErr('Benutzername mind. 3 Zeichen'); return; }
+  if (password.length < 6)    { setAuthErr('Passwort mind. 6 Zeichen'); return; }
+  const send = () => socket.emit(C2S.REGISTER, { username, password });
+  socket.connected ? send() : socket.once('connect', send);
+};
+
+window.mpGuest = function() {
+  const btn = document.getElementById('mp-guest-btn');
+  btn.disabled = true; btn.textContent = '…';
+  const send = () => socket.emit(C2S.GUEST_LOGIN);
+  socket.connected ? send() : socket.once('connect', send);
+};
+
+window.mpLogout = function() {
+  localStorage.removeItem('hf_token');
+  mySession = null; myPlayer = null; matchId = null; inQueue = false;
+  window.G = null;
+  hideOverlay('mp-lobby-overlay');
+  showOverlay('mp-auth-overlay');
+  setAuthErr('');
+};
+
+// ── Lobby ─────────────────────────────────────────────────────
+function showLobby() {
+  hideOverlay('mp-auth-overlay');
+  // Hide game UI
+  const header = document.getElementById('hdr');
+  const main   = document.getElementById('main');
+  if (header) header.style.display = 'none';
+  if (main)   main.style.display   = 'none';
+  // User info
+  const infoEl = document.getElementById('mp-lobby-user');
+  if (infoEl && mySession) {
+    infoEl.textContent = `${mySession.username}  ·  ${mySession.rating} MMR${mySession.isGuest?' (Gast)':''}`;
   }
+  hideChatPanel();
+  hideClocks();
+  populateDeckSelect();
+  setQueueStatus('Bereit');
+  mpRefreshMatches();
+  // Auto-refresh every 10s while in lobby
+  if (_matchRefreshTimer) clearInterval(_matchRefreshTimer);
+  _matchRefreshTimer = setInterval(() => { if (document.getElementById('mp-lobby-overlay')?.style.display !== 'none') mpRefreshMatches(); }, 10000);
+  const findBtn   = document.getElementById('mp-find-btn');
+  const cancelBtn = document.getElementById('mp-cancel-btn');
+  if (findBtn)   { findBtn.style.display = ''; findBtn.disabled = false; }
+  if (cancelBtn)   cancelBtn.style.display = 'none';
+  inQueue = false;
+  showOverlay('mp-lobby-overlay');
+}
+// ── Timer clocks ─────────────────────────────────────────────
+function updateClocks(ap, secsLeft, totalSecs) {
+  const clocks = document.getElementById('mp-clocks');
+  if (!clocks || !myPlayer) return;
+  clocks.style.display = 'flex';
+  const G    = window.G;
+  const nameA = G?.S?.playerNames?.A || 'A';
+  const nameB = G?.S?.playerNames?.B || 'B';
+  const mine  = myPlayer;
+  const opp   = mine === 'A' ? 'B' : 'A';
+  document.getElementById('mp-clock-mine-name').textContent = mine === 'A' ? nameA : nameB;
+  document.getElementById('mp-clock-opp-name').textContent  = opp  === 'A' ? nameA : nameB;
+  function fmt(s) {
+    const m = Math.floor(Math.max(0,s) / 60);
+    return m + ':' + String(Math.max(0,s) % 60).padStart(2,'0');
+  }
+  const mineActive = ap === mine;
+  const myEl  = document.getElementById('mp-clock-mine');
+  const oppEl = document.getElementById('mp-clock-opp');
+  const warn  = secsLeft <= 15;
+  myEl.className  = 'mp-clock' + (mineActive  ? (warn ? ' warning' : ' active') : '');
+  oppEl.className = 'mp-clock' + (!mineActive ? (warn ? ' warning' : ' active') : '');
+  document.getElementById('mp-clock-mine-secs').textContent = mineActive  ? fmt(secsLeft) : fmt(totalSecs);
+  document.getElementById('mp-clock-opp-secs').textContent  = !mineActive ? fmt(secsLeft) : fmt(totalSecs);
+}
 
-  // ── Auth screens ───────────────────────────────────────
-  window.authSwitchTab = function(tab) {
-    ['login','register'].forEach(t => {
-      document.getElementById(`auth-form-${t}`).classList.toggle('active', t===tab);
-      document.getElementById(`tab-btn-${t}`).classList.toggle('active', t===tab);
+// ── Chat ─────────────────────────────────────────────────────
+function showChatPanel() {
+  const el = document.getElementById('mp-chat-panel');
+  if (el) el.style.display = 'flex';
+}
+function hideChatPanel() {
+  const el = document.getElementById('mp-chat-panel');
+  if (el) el.style.display = 'none';
+}
+function hideClocks() {
+  const el = document.getElementById('mp-clocks');
+  if (el) el.style.display = 'none';
+}
+
+// ── Spectator ─────────────────────────────────────────────
+let _specPlayers = null;
+
+function startSpectating(state, players) {
+  hideOverlay('mp-lobby-overlay');
+  hideOverlay('mp-auth-overlay');
+  _specPlayers = players;
+  _waitingForServer = false;
+
+  // Show game UI
+  const header = document.getElementById('hdr');
+  const main   = document.getElementById('main');
+  if (header) header.style.display = '';
+  if (main)   main.style.display   = '';
+
+  // Create Engine in read-only MP mode
+  window._MP_INIT = true;
+  const G = new Engine();
+  window._MP_INIT = false;
+
+  G.S           = state;
+  G._mpPlayer   = 'A';   // spectator renders from A's perspective (sees both hands later)
+  G.handVisible = true;
+  G.selCard = null; G.selUnit = null; G.pact = null; G.vt = [];
+
+  window.G       = G;
+  window._mpPlayer = null;  // spectators cannot act
+
+  // Patch _rHand: show A's hand
+  const _rHandOrig = Engine.prototype._rHand;
+  G._rHand = function() {
+    this._mpRenderAp = 'A';
+    this.handVisible = true;
+    _rHandOrig.call(this);
+    this._mpRenderAp = null;
+  };
+  // Patch _rOppHand: show B's hand card-backs
+  G._rOppHand = function() {
+    const el = document.getElementById('opp-hand');
+    if (!el) return;
+    const n = this.S.players.B.hand?.length || this.S.players.B.handSize || 0;
+    el.innerHTML = Array.from({length:n}, ()=>'<div class="opp-card"></div>').join('');
+  };
+  // Patch _canP: spectators can't play anything
+  G._canP = function() { return false; };
+  // Patch _rBtns: disable all
+  const _rBtnsOrig = Engine.prototype._rBtns;
+  G._rBtns = function() {
+    _rBtnsOrig.call(this);
+    const lb = document.getElementById('btn-land');
+    const nb = document.getElementById('btn-next');
+    if (lb) lb.disabled = true;
+    if (nb) nb.disabled = true;
+    const ha = document.getElementById('hand-area');
+    if (ha) ha.style.opacity = '0.4';
+  };
+  // Block all actions
+  G.clickCell   = function() {};
+  G.selCardFn   = function() {};
+  G.selUnitFn   = function() {};
+  G.endTurn     = function() {};
+  G.openLandMenu= function() {};
+
+  G._render();
+
+  // Show spectator bar
+  const bar = document.getElementById('mp-spectator-overlay');
+  if (bar) bar.classList.add('active');
+  updateSpectatorInfo();
+  showChatPanel();
+  const chatLog = document.getElementById('mp-chat-log');
+  if (chatLog) chatLog.innerHTML = '';
+  appendChatMsg({ sys:true, text:'Zuschauermodus — du kannst nicht eingreifen' });
+}
+
+function updateSpectatorInfo() {
+  const G = window.G;
+  if (!G || !_specPlayers) return;
+  const infoEl = document.getElementById('spec-match-info');
+  const turnEl = document.getElementById('spec-turn-info');
+  if (infoEl) {
+    const a = _specPlayers.A?.username || 'A';
+    const b = _specPlayers.B?.username || 'B';
+    infoEl.textContent = `${a}  vs  ${b}`;
+  }
+  if (turnEl && G.S) {
+    const ap = _specPlayers[G.S.ap]?.username || G.S.ap;
+    turnEl.textContent = `Runde ${G.S.turn} · ${ap} am Zug`;
+  }
+}
+
+window.mpLeaveSpectator = function() {
+  _specPlayers = null;
+  myPlayer = null; matchId = null;
+  window.G = null;
+  const bar = document.getElementById('mp-spectator-overlay');
+  if (bar) bar.classList.remove('active');
+  hideChatPanel();
+  hideClocks();
+  const header = document.getElementById('hdr');
+  const main   = document.getElementById('main');
+  if (header) header.style.display = 'none';
+  if (main)   main.style.display   = 'none';
+  showLobby();
+};
+
+// ── Live matches in lobby ──────────────────────────────────
+let _matchRefreshTimer = null;
+
+window.mpRefreshMatches = async function() {
+  const listEl = document.getElementById('mp-live-list');
+  if (!listEl) return;
+  try {
+    const r = await fetch('/api/matches');
+    const { matches } = await r.json();
+    if (!matches || !matches.length) {
+      listEl.innerHTML = '<span style="font-size:.58rem;color:#2a3040;font-family:Cinzel,serif;letter-spacing:1px">Keine laufenden Partien</span>';
+      return;
+    }
+    listEl.innerHTML = matches.map(m => `
+      <div class="mp-live-pill">
+        <span class="mp-live-dot"></span>
+        <span class="mp-live-names"><strong>${esc(m.playerA)}</strong> vs <strong>${esc(m.playerB)}</strong></span>
+        <span class="mp-live-meta">Runde ${m.turn}${m.spectators ? ' · 👁'+m.spectators : ''}</span>
+        <button class="mp-live-watch" onclick="mpWatchMatch('${esc(m.matchId)}')">Zuschauen</button>
+      </div>`).join('');
+  } catch(e) {
+    if (listEl) listEl.innerHTML = '<span style="font-size:.58rem;color:#3a2a2a;font-family:Cinzel,serif">Nicht erreichbar</span>';
+  }
+};
+
+window.mpWatchMatch = function(mid) {
+  if (!socket) return;
+  hideOverlay('mp-lobby-overlay');
+  socket.emit(C2S.SPECTATE, { matchId: mid });
+};
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function appendChatMsg({ from, player, text, sys }) {
+  const log = document.getElementById('mp-chat-log');
+  if (!log) return;
+  const div = document.createElement('div');
+  div.className = 'mp-chat-msg';
+  
+  if (sys) {
+    div.innerHTML = '<span class="mp-chat-sys">' + esc(text) + '</span>';
+  } else {
+    div.innerHTML = '<span class="mp-chat-who ' + (player||'') + '">' + esc(from||'?') + '</span> ' + esc(text);
+  }
+  log.appendChild(div);
+  while (log.children.length > 60) log.removeChild(log.firstChild);
+  log.scrollTop = log.scrollHeight;
+}
+window.mpSendChat = function() {
+  const input = document.getElementById('mp-chat-input');
+  if (!input || !socket) return;
+  const text = input.value.trim();
+  if (!text) return;
+  socket.emit(C2S.CHAT_MSG, { text });
+  input.value = '';
+};
+
+// ── Private rooms ─────────────────────────────────────────────
+function setRoomStatus(msg, color) {
+  const el = document.getElementById('mp-room-status');
+  if (el) { el.textContent = msg; el.style.color = color || '#5a8aaa'; }
+}
+
+// ── Deck Sync ─────────────────────────────────────────────
+// Merges server decks with localStorage, server wins on conflict.
+async function syncDecksFromServer(token) {
+  try {
+    const r = await fetch('/api/decks', {
+      headers: { Authorization: 'Bearer ' + (token || localStorage.getItem('hf_token') || '') }
     });
-    setAuthErr('');
-  };
-
-  function setAuthErr(msg) {
-    document.getElementById('auth-err').textContent = msg || '';
-  }
-
-  function requireSocket() {
-    if (!socket || !socket.connected) connectSocket();
-  }
-
-  window.doLogin = function() {
-    const username = document.getElementById('login-user').value.trim();
-    const password = document.getElementById('login-pass').value;
-    if (!username || !password) { setAuthErr('Enter username and password'); return; }
-    requireSocket();
-    // Wait for connect before emitting
-    const send = () => socket.emit(C2S.LOGIN, { username, password });
-    socket.connected ? send() : socket.once('connect', send);
-  };
-
-  window.doGuest = function() {
-    requireSocket();
-    const send = () => socket.emit(C2S.GUEST_LOGIN);
-    socket.connected ? send() : socket.once('connect', send);
-  };
-
-  window.doRegister = function() {
-    const username = document.getElementById('reg-user').value.trim();
-    const password = document.getElementById('reg-pass').value;
-    const password2= document.getElementById('reg-pass2').value;
-    if (password !== password2) { setAuthErr('Passwords do not match'); return; }
-    requireSocket();
-    const send = () => socket.emit(C2S.REGISTER, { username, password });
-    socket.connected ? send() : socket.once('connect', send);
-  };
-
-  window.doLogout = function() {
-    localStorage.removeItem('hf_token');
-    mySession = null; myPlayer = null; matchId = null; inQueue = false; G = null; window.G = null;
-    hideLobby(); hideGame();
-    document.getElementById('mp-auth-overlay').classList.remove('hidden');
-    setAuthErr('');
-  };
-
-  // ── Lobby ───────────────────────────────────────────────
-  function showLobby() {
-    document.getElementById('mp-auth-overlay').classList.add('hidden');
-    hideGame();
-    const lobbyEl = document.getElementById('mp-lobby-overlay');
-    lobbyEl.classList.add('active');
-    document.getElementById('lobby-user-info').textContent =
-      `${mySession.username}  ·  Rating ${mySession.rating}${mySession.isGuest?' (Guest)':''}`;
-    // Load saved decks
+    if (!r.ok) return;
+    const { decks } = await r.json();
+    if (!decks || !decks.length) {
+      // Server has no decks — push local decks up
+      await pushLocalDecksToServer();
+      return;
+    }
+    // Merge: server decks replace local decks (server is source of truth)
+    const normalized = decks.map(d => ({
+      id:       d.id,
+      name:     d.name || 'Unbenannt',
+      cards:    d.cards || [],
+      archetype: d.archetype || null,
+      synced:   true,
+    }));
+    // Keep local-only decks (no server id) that aren't already on server
+    const local = JSON.parse(localStorage.getItem('hf_decks') || '[]');
+    const localOnly = local.filter(d => !d.synced && !d.id);
+    const merged = [...normalized, ...localOnly];
+    localStorage.setItem('hf_decks', JSON.stringify(merged));
     populateDeckSelect();
-    setQueueStatus('Ready to find a match');
-    document.getElementById('btn-find-match').style.display = '';
-    document.getElementById('btn-cancel-q').style.display   = 'none';
-    inQueue = false;
-  }
+  } catch(e) { /* offline — keep local */ }
+}
 
-  function hideLobby() {
-    document.getElementById('mp-lobby-overlay').classList.remove('active');
-  }
-
-  function hideGame() {
-    document.getElementById('mp-waiting-banner').classList.remove('active');
-    hideMPMulligan();
-  }
-
-  function setQueueStatus(msg) {
-    document.getElementById('lobby-queue-status').textContent = msg;
-  }
-
-  function populateDeckSelect() {
-    const sel = document.getElementById('lobby-deck-select');
-    sel.innerHTML = '<option value="">Default Deck</option>';
+async function pushLocalDecksToServer() {
+  const token = localStorage.getItem('hf_token');
+  if (!token) return;
+  const local = JSON.parse(localStorage.getItem('hf_decks') || '[]');
+  const unsynced = local.filter(d => !d.synced && d.cards?.length >= 3);
+  for (const d of unsynced) {
     try {
-      const decks = JSON.parse(localStorage.getItem('hf_decks') || '[]');
-      decks.forEach((d,i) => {
-        const opt = document.createElement('option');
-        opt.value = i; opt.textContent = d.name || `Deck ${i+1}`;
-        sel.appendChild(opt);
+      const r = await fetch('/api/decks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ name: d.name, cards: d.cards, archetype: d.archetype }),
       });
+      if (r.ok) {
+        const { deck } = await r.json();
+        d.id = deck.id; d.synced = true;
+      }
     } catch(e) {}
   }
+  localStorage.setItem('hf_decks', JSON.stringify(local));
+}
 
-  window.findMatch = function() {
-    if (!socket) return;
-    const selIdx = document.getElementById('lobby-deck-select').value;
-    let deck = null;
-    if (selIdx !== '') {
-      try {
-        const decks = JSON.parse(localStorage.getItem('hf_decks') || '[]');
-        deck = decks[parseInt(selIdx)]?.cards || null;
-      } catch(e) {}
-    }
-    socket.emit(C2S.QUEUE_JOIN, { deck });
-    inQueue = true;
-    document.getElementById('btn-find-match').style.display = 'none';
-    document.getElementById('btn-cancel-q').style.display   = '';
-    setQueueStatus('Searching for match…');
-  };
+window.mpSyncDecks = async function() {
+  const token = localStorage.getItem('hf_token');
+  if (!token) { showHint('Zuerst einloggen', 2000); return; }
+  const btn = document.getElementById('mp-sync-decks-btn');
+  if (btn) { btn.textContent = '⟳ Sync…'; btn.disabled = true; }
+  await syncDecksFromServer(token);
+  if (btn) { btn.textContent = '☁ Sync'; btn.disabled = false; }
+  showHint('Decks synchronisiert ✓', 2000);
+  populateDeckSelect();
+};
+window.mpCreateRoom = function() {
+  if (!socket) return;
+  const idx = document.getElementById('mp-deck-select')?.value;
+  let deck = null;
+  if (idx) {
+    try { deck = JSON.parse(localStorage.getItem('hf_decks')||'[]')[parseInt(idx)]?.cards||null; } catch(e){}
+  }
+  setRoomStatus('Erstelle Raum…', '#5a8aaa');
+  const btn = document.getElementById('mp-create-room-btn');
+  if (btn) btn.disabled = true;
+  socket.emit(C2S.ROOM_CREATE, { deck });
+};
+window.mpJoinRoom = function() {
+  if (!socket) return;
+  const code = (document.getElementById('mp-room-code-input')?.value||'').trim().toUpperCase();
+  if (code.length < 4) { setRoomStatus('Bitte Code eingeben', '#cc5533'); return; }
+  const idx = document.getElementById('mp-deck-select')?.value;
+  let deck = null;
+  if (idx) {
+    try { deck = JSON.parse(localStorage.getItem('hf_decks')||'[]')[parseInt(idx)]?.cards||null; } catch(e){}
+  }
+  setRoomStatus('Trete bei…', '#5a8aaa');
+  socket.emit(C2S.ROOM_JOIN, { code, deck });
+};
 
-  window.cancelQueue = function() {
-    if (socket) socket.emit(C2S.QUEUE_LEAVE);
-    inQueue = false;
-    document.getElementById('btn-find-match').style.display = '';
-    document.getElementById('btn-cancel-q').style.display   = 'none';
-    setQueueStatus('Search cancelled.');
-  };
 
-  // ── Game start ──────────────────────────────────────────
-  function startMPGame(state, player, opponentName) {
-    hideLobby();
-    // Reconstruct kw Sets
-    Object.values(state.units||{}).forEach(u => {
-      if (Array.isArray(u.kw)) u.kw = new Set(u.kw);
+
+function populateDeckSelect() {
+  const sel = document.getElementById('mp-deck-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Standard-Deck</option>';
+  try {
+    const decks = JSON.parse(localStorage.getItem('hf_decks') || '[]');
+    decks.forEach((d, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${d.name || 'Deck ' + (i+1)}  (${(d.cards||[]).length} Karten)`;
+      sel.appendChild(opt);
     });
-    // Create Engine with server state, no local game
-    G = new Engine(state, player);
-    window.G = G;
-    G._render();
-    updateWaitingBanner();
-    // Admin: activate dev tools only for the 'admin' account
-    if (mySession && mySession.username === 'admin') {
-      _devEnabled = true;
-      G._devInit();
-    }
-  }
+  } catch(e) {}
+}
 
-  function updateWaitingBanner() {
-    if (!G) return;
-    const isMyTurn = G.S.ap === myPlayer && G.S.phase === 'FREE' && !G.S._mulliganPhase;
-    document.getElementById('mp-waiting-banner').classList.toggle('active', !isMyTurn && !G.S.winner);
+window.mpFindMatch = function() {
+  if (!socket) return;
+  const idx = document.getElementById('mp-deck-select').value;
+  let deck = null;
+  if (idx !== '') {
+    try {
+      const decks = JSON.parse(localStorage.getItem('hf_decks') || '[]');
+      deck = decks[parseInt(idx)]?.cards || null;
+    } catch(e) {}
   }
+  socket.emit(C2S.QUEUE_JOIN, { deck });
+  inQueue = true;
+  document.getElementById('mp-find-btn').style.display = 'none';
+  document.getElementById('mp-cancel-btn').style.display = '';
+  setQueueStatus('Suche nach Gegner…');
+};
 
-  // ── MP Action sender (replaces local engine actions) ───
-  // Helper: determine the right play action type for a card
-  function mpPlayAction(cardId, q, r, s, choice) {
-    const cd = (typeof cardData === 'function') ? cardData(cardId) : null;
-    if (!cd) { mpSendAction('play_instant', { cardId, q, r, s, choice }); return; }
-    const type = cd.type;
-    if (type === 'UNIT' || type === 'creature') {
-      mpSendAction('play_unit', { cardId, q, r, s });
-    } else if (type === 'structure') {
-      mpSendAction('play_structure', { cardId, q, r, s });
-    } else if (type === 'INSTANT' || type === 'event') {
-      // Check if no target needed
-      const noTarget = TARGET_NO_TARGET?.has(cardId) || TARGET_SELF?.has(cardId);
-      if (noTarget || (q === 0 && r === 0 && s === 0)) {
-        mpSendAction('play_instant_notarget', { cardId, choice });
-      } else {
-        mpSendAction('play_instant', { cardId, q, r, s, choice });
-      }
-    } else {
-      mpSendAction('play_instant', { cardId, q, r, s, choice });
-    }
+window.mpCancelQueue = function() {
+  if (socket) socket.emit(C2S.QUEUE_LEAVE);
+  inQueue = false;
+  document.getElementById('mp-find-btn').style.display = '';
+  document.getElementById('mp-cancel-btn').style.display = 'none';
+  setQueueStatus('Suche abgebrochen.');
+};
+
+window.mpPlayVsBot = function() {
+  if (!socket) return;
+  const idx = document.getElementById('mp-deck-select')?.value;
+  let deck = null;
+  if (idx) {
+    try { deck = JSON.parse(localStorage.getItem('hf_decks')||'[]')[parseInt(idx)]?.cards||null; } catch(e){}
   }
+  setQueueStatus('Starte Spiel gegen KI…');
+  socket.emit(C2S.PLAY_VS_BOT, { deck });
+};
 
-  window.mpSendAction = function(type, payload={}) {
-    if (!socket) return;
-    socket.emit(C2S.PLAYER_ACTION, { type, payload });
+// ── startGame ─────────────────────────────────────────────────
+function startGame(state, player, opponentName) {
+  hideOverlay('mp-lobby-overlay');
+  hideMulligan();
+  hideDisconnectBanner();
+  _waitingForServer = false;
+
+  // Show game UI
+  const header = document.getElementById('hdr');
+  const main   = document.getElementById('main');
+  if (header) header.style.display = '';
+  if (main)   main.style.display   = '';
+
+  // Create Engine without local game state
+  window._MP_INIT = true;
+  const G = new Engine();
+  window._MP_INIT = false;
+
+  G.S          = state;
+  G._mpPlayer  = player;
+  G.handVisible = true;
+  G.selCard = null; G.selUnit = null; G.pact = null; G.vt = [];
+  G._landNPositions = [];
+  G._shiftSrc = null;
+
+  window.G       = G;
+  window._mpPlayer = player;
+
+  // ── Patch ap getter: _rHand always renders our own hand ──
+  Object.defineProperty(G, 'ap', {
+    get() { return this._mpRenderAp || this.S.ap; },
+    configurable: true,
+  });
+
+  // ── _rHand: always show our hand ──
+  const _rHandOrig = Engine.prototype._rHand;
+  G._rHand = function() {
+    this._mpRenderAp = this._mpPlayer;
+    this.handVisible = true;
+    _rHandOrig.call(this);
+    this._mpRenderAp = null;
   };
 
-  // ── Mulligan ────────────────────────────────────────────
-  let mulliganSelected = new Set(); // indices
+  // ── _rOppHand: correct opponent card count ──
+  G._rOppHand = function() {
+    const opp = this._mpPlayer === 'A' ? 'B' : 'A';
+    const el  = document.getElementById('opp-hand');
+    if (!el) return;
+    const n = this.S.players[opp].handSize ?? this.S.players[opp].hand.length;
+    el.innerHTML = Array.from({ length: n }, (_, i) =>
+      `<div class="opp-card" title="Gegner Karte ${i+1}"></div>`
+    ).join('');
+  };
 
-  function showMPMulligan(state, player) {
-    const hand = state.players?.[player]?.hand || [];
-    mulliganSelected = new Set();
-    const container = document.getElementById('mp-mulligan-cards');
-    container.innerHTML = hand.map((c,i) => {
-      const cd   = cardData(c.id);
-      const cost = cd ? cd.cost : '?';
-      return `<div class="mp-mull-card" id="mmc-${i}" onclick="toggleMPMulligan(${i})"
-        data-id="${c.id}">
-        <div class="mc-name">${(c.id||'').replace(/_/g,' ')}</div>
-        <div class="mc-cost">✦${cost}</div>
+  // ── _rStats: use deckSize for hidden decks, show both names ──
+  const _rStatsOrig = Engine.prototype._rStats;
+  G._rStats = function() {
+    _rStatsOrig.call(this);
+    ['A', 'B'].forEach(p => {
+      const pl = this.S.players[p];
+      const cardEl = document.getElementById(`cards-${p}`);
+      if (cardEl) {
+        const hand = p === this._mpPlayer
+          ? pl.hand.filter(c => c.id !== '??').length
+          : (pl.handSize ?? pl.hand.length);
+        const deck = pl.deckSize ?? pl.deck.length;
+        cardEl.textContent = `${hand}/${deck}`;
+      }
+      // Show player names if available
+      const nameEl = document.getElementById(`name-${p}`);
+      if (nameEl && this.S.playerNames) {
+        nameEl.textContent = this.S.playerNames[p] || p;
+      }
+    });
+  };
+
+  // ── _rBtns: full disable when not our turn ──
+  const _rBtnsOrig = Engine.prototype._rBtns;
+  G._rBtns = function() {
+    _rBtnsOrig.call(this);
+    const mine = this.S.ap === this._mpPlayer && this.S.phase === 'FREE' && !_waitingForServer;
+    // Disable action buttons when not our turn
+    const landBtn = document.getElementById('btn-land');
+    const nextBtn = document.getElementById('btn-next');
+    if (landBtn) landBtn.disabled = landBtn.disabled || !mine;
+    if (nextBtn) nextBtn.disabled = nextBtn.disabled || !mine;
+    // Visual dimming of hand when not our turn
+    const handArea = document.getElementById('hand-area');
+    if (handArea) handArea.style.opacity = mine ? '1' : '0.45';
+  };
+
+  // ── _canP: only allow our own cards on our turn ──
+  G._canP = function(cardId) {
+    if (this.S.ap !== this._mpPlayer) return false;
+    if (_waitingForServer) return false;
+    return Engine.prototype._canP.call(this, cardId);
+  };
+
+  G._render();
+  updateTurnBanner();
+  showChatPanel();
+  // Reset chat
+  const chatLog = document.getElementById('mp-chat-log');
+  if (chatLog) chatLog.innerHTML = '';
+  appendChatMsg({ sys:true, text:'Spiel gestartet gegen ' + opponentName });
+
+  if (state._mulliganPhase) {
+    showMulliganOverlay(state, player);
+  }
+}
+
+// ── handlePendingInput ────────────────────────────────────────
+function handlePendingInput(pi) {
+  if (!pi) return;
+  const G = window.G;
+  if (!G) return;
+
+  if (pi.type === 'mulligan') {
+    showMulliganOverlay(G.S, myPlayer);
+
+  } else if (pi.type === 'mulligan_waiting') {
+    const btn = document.getElementById('mp-mull-confirm');
+    if (btn) { btn.disabled = true; btn.textContent = 'Warte auf Gegner…'; }
+    const waitEl = document.getElementById('mp-mull-waiting');
+    if (waitEl) waitEl.style.display = 'block';
+
+  } else if (pi.type === 'discover') {
+    G.S._discoverQueue = G.S._discoverQueue || [];
+    G.S._discoverQueue.unshift({ pool: pi.pool, label: pi.label || 'Discover', onPick: 'add_to_hand', p: myPlayer });
+    G._checkDiscover();
+
+  } else if (pi.type === 'choose_one') {
+    const opts = (pi.options || []).map((o, i) => ({
+      label: o.label, icon: o.icon,
+      fn: () => sendAction(ACTION.CHOOSE_ONE, { choiceIndex: i }),
+    }));
+    G._chooseOne(pi.title || 'Wähle eine Option', opts);
+
+  } else if (pi.type === 'gift') {
+    // Unit with pendingGift was summoned — server tells us unitId
+    const u = G.S.units?.[pi.unitId];
+    if (!u || u.own !== myPlayer) return;
+    // Enter gift targeting mode: let selUnitFn handle the pact/vt setup
+    G.selUnit = pi.unitId;
+    // The original selUnitFn sets pact='gift' and vt from pendingGift.type
+    // We override selUnitFn to block enemy selection, but pact setup is in original
+    // Call the original Engine.prototype.selUnitFn to set up targets
+    const origSel = Engine.prototype.selUnitFn;
+    origSel.call(G, pi.unitId);
+
+  } else if (pi.type === 'dash') {
+    // Unit with pendingDash was summoned — server tells us unitId
+    const u = G.S.units?.[pi.unitId];
+    if (!u || u.own !== myPlayer) return;
+    G.selUnit = pi.unitId;
+    G.pact = 'dash';
+    // Compute dash targets: adjPlace + current cell (can dash over terrain)
+    if (typeof adjPlace === 'function') {
+      G.vt = adjPlace(G.S, myPlayer);
+    }
+    showHint('💨 Wähle ein Zielfeld für den Dash', 0);
+    G._render();
+
+  } else if (pi.type === 'woc') {
+    // Wheel of Chaos: pick a target creature with atk ≤ 5 to destroy
+    const targets = Object.values(G.S.units || {})
+      .filter(u => u.q !== null && (u.atk || 0) <= 5);
+    G.pact = 'woc_target';
+    G.vt = targets.map(u => [u.q, u.r, u.s]);
+    showHint('🎡 Wheel of Chaos: Wähle eine Kreatur (ATK ≤ 5) zum Vernichten', 0);
+    G._render();
+
+  } else if (pi.type === 'flame_burst') {
+    // Flame Burst Ruby: pick a target (unit or base)
+    const S = G.S;
+    const opp = myPlayer === 'A' ? 'B' : 'A';
+    const [bq, br, bs] = myPlayer === 'A'
+      ? (typeof BASE_B !== 'undefined' ? BASE_B : [0,3,-3])
+      : (typeof BASE_A !== 'undefined' ? BASE_A : [0,-3,3]);
+    G.pact = 'flame_burst_target';
+    G.vt = [
+      ...Object.values(S.units || {})
+        .filter(u => u.q !== null && u.own === opp && !(u.kw instanceof Set ? u.kw.has('divine') : (u.kw||[]).includes('divine')))
+        .map(u => [u.q, u.r, u.s]),
+      [bq, br, bs],
+    ];
+    showHint('💎 Flame Burst Ruby: Wähle ein Ziel (3 Schaden)', 0);
+    G._render();
+
+  } else if (pi.type === 'spirit_spice') {
+    // Spirit Spice: pick a friendly unit to buff (+4/+4, Flying, Charge 2)
+    G.pact = 'spirit_spice_target';
+    G.vt = Object.values(G.S.units || {})
+      .filter(u => u.q !== null && u.own === myPlayer)
+      .map(u => [u.q, u.r, u.s]);
+    showHint('🌶 Spirit Spice: Wähle eine eigene Kreatur (+4/+4, Flying, Charge 2)', 0);
+    G._render();
+
+  } else if (pi.type === 'octopus') {
+    // Shifting Octopus: pick 2 units to swap positions
+    G.pact = 'octopus_pick';
+    G._octopusTarget1 = null;
+    G.vt = Object.values(G.S.units || {})
+      .filter(u => u.q !== null)
+      .map(u => [u.q, u.r, u.s]);
+    showHint('🐙 Shifting Octopus: Erste Kreatur wählen (tauscht Positionen)', 0);
+    G._render();
+  }
+}
+
+// ── Mulligan ──────────────────────────────────────────────────
+let mulliganSel = new Set();
+
+function showMulliganOverlay(state, player) {
+  if (!state) return;
+  const hand = state.players?.[player]?.hand || [];
+  mulliganSel = new Set();
+
+  const cardsEl = document.getElementById('mp-mull-cards');
+  if (cardsEl) {
+    const colorMap = { blue:'#1a3a5a', green:'#1a3a1a', red:'#3a1010', yellow:'#3a2a05', neutral:'#1e2530' };
+    cardsEl.innerHTML = hand.map((c, i) => {
+      const cd  = (typeof cardData === 'function') ? cardData(c.id) : null;
+      const nm  = cd?.name || (c.id || '').replace(/_/g, ' ');
+      const col = colorMap[cd?.color] || '#1e2530';
+      const str = cd?.atk != null ? `${cd.atk}/${cd.hp}` : '';
+      const cost = cd?.cost != null ? cd.cost : '';
+      return `<div class="mp-mull-card" id="mmc-${i}" onclick="mpToggleMulligan(${i})"
+        style="cursor:pointer;border:2px solid #252d40;border-radius:6px;padding:8px 6px;
+               min-width:72px;max-width:90px;text-align:center;transition:all .15s;
+               background:${col};flex-shrink:0;user-select:none">
+        <div style="font-family:'Cinzel',serif;font-size:.5rem;color:#c8d4e0;margin-bottom:3px;line-height:1.2">${nm}</div>
+        ${str ? `<div style="font-size:.62rem;color:#aaa">⚔${str}</div>` : ''}
+        ${cost !== '' ? `<div style="font-size:.55rem;color:#68aaee;margin-top:2px">${cost}◆</div>` : ''}
       </div>`;
     }).join('');
-    document.getElementById('mp-mulligan-waiting').style.display = 'none';
-    document.getElementById('mp-mulligan-overlay').classList.add('active');
   }
 
-  function hideMPMulligan() {
-    document.getElementById('mp-mulligan-overlay').classList.remove('active');
+  const waitEl = document.getElementById('mp-mull-waiting');
+  if (waitEl) waitEl.style.display = 'none';
+  const btn = document.getElementById('mp-mull-confirm');
+  if (btn) { btn.disabled = false; btn.textContent = 'Behalten ✓'; }
+  showOverlay('mp-mulligan-overlay');
+}
+
+function hideMulligan() {
+  hideOverlay('mp-mulligan-overlay');
+}
+
+window.mpToggleMulligan = function(i) {
+  const el = document.getElementById(`mmc-${i}`);
+  if (!el) return;
+  if (mulliganSel.has(i)) {
+    mulliganSel.delete(i);
+    el.style.borderColor = '#252d40';
+    el.style.opacity = '1';
+    el.title = '';
+  } else {
+    mulliganSel.add(i);
+    el.style.borderColor = '#cc3333';
+    el.style.opacity = '0.5';
+    el.title = 'Wird ersetzt';
   }
+  const count = mulliganSel.size;
+  const btn = document.getElementById('mp-mull-confirm');
+  if (btn) btn.textContent = count > 0 ? `${count} ersetzen ✓` : 'Behalten ✓';
+};
 
-  window.toggleMPMulligan = function(i) {
-    const el = document.getElementById(`mmc-${i}`);
-    if (!el) return;
-    if (mulliganSelected.has(i)) {
-      mulliganSelected.delete(i);
-      el.classList.remove('selected');
-    } else {
-      mulliganSelected.add(i);
-      el.classList.add('selected');
-    }
+window.mpConfirmMulligan = function() {
+  const G = window.G;
+  if (!G) return;
+  const hand = G.S.players?.[myPlayer]?.hand || [];
+  const replaceIds = [...mulliganSel].map(i => hand[i]?.id).filter(Boolean);
+  sendAction(ACTION.MULLIGAN_CONFIRM, { replaceIds });
+  const btn = document.getElementById('mp-mull-confirm');
+  if (btn) { btn.disabled = true; btn.textContent = 'Warte auf Gegner…'; }
+  const waitEl = document.getElementById('mp-mull-waiting');
+  if (waitEl) waitEl.style.display = 'block';
+};
+
+// ── Engine-Methoden überschreiben ─────────────────────────────
+
+// endTurn
+Engine.prototype.endTurn = (function(orig) {
+  return function() {
+    if (!isMPMode()) return orig.call(this);
+    if (!isMyTurn()) return;
+    this._clr();
+    sendAction(ACTION.END_TURN);
   };
+}(Engine.prototype.endTurn));
 
-  window.mpConfirmMulligan = function() {
-    if (!G) return;
-    const hand = G.S.players?.[myPlayer]?.hand || [];
-    const replaceIds = [...mulliganSelected].map(i => hand[i]?.id).filter(Boolean);
-    mpSendAction(ACTION.MULLIGAN_CONFIRM, { replaceIds });
-    document.getElementById('mp-mulligan-waiting').style.display = 'block';
-    // Disable confirm button
-    document.querySelector('#mp-mulligan-overlay .auth-btn').disabled = true;
-    document.querySelector('#mp-mulligan-overlay .auth-btn').textContent = 'Waiting…';
+// openLandMenu: Radial-Menü öffnen ist OK
+Engine.prototype.openLandMenu = (function(orig) {
+  return function() {
+    if (!isMPMode()) return orig.call(this);
+    if (!isMyTurn() || this.S.lobDone) return;
+    orig.call(this);
   };
+}(Engine.prototype.openLandMenu));
 
-  // ── Kick everything off ────────────────────────────────
-  connectSocket();
-
-  // ══════════════════════════════════════════════════════════
-  //  MONKEY-PATCH ENGINE FOR MP
-  //  Intercept all game actions → send to server
-  // ══════════════════════════════════════════════════════════
-
-  // Called after Engine class is defined (same DOMContentLoaded, runs after script)
-  // We patch Engine.prototype so MP instances send actions to server
-
-  function patchEngineForMP() {
-
-    // Save original methods we need to wrap
-    const _orig_endTurn      = Engine.prototype.endTurn;
-    const _orig_openLandMenu = Engine.prototype.openLandMenu;
-    const _orig_selCardFn    = Engine.prototype.selCardFn;
-    const _orig_selUnitFn    = Engine.prototype.selUnitFn;
-    const _orig_clickCell    = Engine.prototype.clickCell;
-    // _selectMenuOpt: intercept land/draw/boost selections
-    const _orig_selectMenuOpt = Engine.prototype._selectMenuOpt;
-    Engine.prototype._selectMenuOpt = function(id) {
-      if (!this._mpPlayer) return _orig_selectMenuOpt.call(this, id);
-      if (!isMine(this)) return;
-      this.closeLandMenu();
-
-      if (id === '_draw') {
-        mpSendAction('wheel_draw', {});
-        return;
-      }
-      if (id === '_boost') {
-        mpSendAction('wheel_boost', {});
-        return;
-      }
-      if (id === 'land_N') {
-        // Multi-step land_N placement — set local pact/vt so user can click cells
-        this.selCard    = 'land_N';
-        this.pact       = 'land_N';
-        this.landN_left = 2;
-        this.vt         = adjPlace(this.S, this._mpPlayer);
-        this._render();
-        return;
-      }
-      // Land type: set pact/vt for cell selection
-      this.selCard = id;
-      this.pact    = 'land';
-      this.vt      = adjPlace(this.S, this._mpPlayer);
+// _selectMenuOpt: Wheel-Auswahl → Server
+Engine.prototype._selectMenuOpt = (function(orig) {
+  return function(id) {
+    if (!isMPMode()) return orig.call(this);
+    this.closeLandMenu();
+    if (id === '_draw') {
+      sendAction(ACTION.WHEEL_DRAW);
+    } else if (id === '_boost') {
+      sendAction(ACTION.WHEEL_BOOST);
+    } else if (id === 'land_N') {
+      this.selCard = 'land_N';
+      this.pact = 'land_N';
+      this.landN_left = 2;
+      this._landNPositions = [];
+      this.vt = (typeof adjPlace === 'function') ? adjPlace(this.S, myPlayer) : [];
       this._render();
-    };
+    } else {
+      // Colored land from wheel
+      const landTypeMap = { land_F:'F', land_D:'D', land_M:'M', land_W:'W' };
+      const landType = landTypeMap[id] || id.replace('land_','');
+      this.selCard = id;
+      this.pact = 'wheel_land';
+      this._wheelLandType = landType;
+      this.vt = (typeof adjPlace === 'function') ? adjPlace(this.S, myPlayer) : [];
+      this._render();
+    }
+  };
+}(Engine.prototype._selectMenuOpt));
 
-    const _orig_boost = Engine.prototype.boost;
+// selCardFn
+Engine.prototype.selCardFn = (function(orig) {
+  return function(id) {
+    if (!isMPMode()) return orig.call(this);
+    if (!isMyTurn()) return;
+    orig.call(this, id);
+  };
+}(Engine.prototype.selCardFn));
 
-    // Helper: is it currently my turn?
-    function isMine(eng) {
-      return eng.S.ap === eng._mpPlayer && eng.S.phase === 'FREE' && !eng.S._mulliganPhase;
+// selUnitFn
+Engine.prototype.selUnitFn = (function(orig) {
+  return function(uid) {
+    if (!isMPMode()) return orig.call(this);
+    if (!isMyTurn()) return;
+    const u = this.S.units[uid];
+    if (u && u.own !== myPlayer) return; // can't select enemy units
+    orig.call(this, uid);
+  };
+}(Engine.prototype.selUnitFn));
+
+// cancelSel
+Engine.prototype.cancelSel = (function(orig) {
+  return function() {
+    if (!isMPMode()) return orig.call(this);
+    this._clr();
+    this._render();
+  };
+}(Engine.prototype.cancelSel));
+
+// clickCell: alle Board-Aktionen → Server
+Engine.prototype.clickCell = (function(orig) {
+  return function(q, r, s) {
+    if (!isMPMode()) return orig.call(this, q, r, s);
+    if (!isMyTurn()) return;
+
+    const S    = this.S;
+    const pact = this.pact;
+
+    // ── Land aus Hand ─────────────────────────────────────
+    if (pact === 'land' && this.selCard) {
+      sendAction(ACTION.PLACE_LAND, { cardId: this.selCard, q, r, s });
+      this._clr(); return;
     }
 
-    // endTurn → send END_TURN to server
-    Engine.prototype.endTurn = function() {
-      if (!this._mpPlayer) return _orig_endTurn.call(this); // single-player fallback
-      if (!isMine(this)) return;
-      this._clr();
-      mpSendAction('end_turn');
-    };
+    // ── Land aus Wheel (farbig) ───────────────────────────
+    if (pact === 'wheel_land' && this._wheelLandType) {
+      sendAction(ACTION.WHEEL_LAND, { landType: this._wheelLandType, q, r, s });
+      this._wheelLandType = null;
+      this._clr(); return;
+    }
 
-    // boost (+1 mana as lobDone action) → send BOOST
-    Engine.prototype.boost = function() {
-      if (!this._mpPlayer) return _orig_boost?.call(this);
-      if (!isMine(this) || this.S.lobDone) return;
-      mpSendAction('wheel_boost');
-    };
-
-    // openLandMenu: only open if it's our turn
-    Engine.prototype.openLandMenu = function() {
-      if (!this._mpPlayer) return _orig_openLandMenu.call(this);
-      if (!isMine(this) || this.S.lobDone) return;
-      _orig_openLandMenu.call(this);
-    };
-
-    // Card selection: only allow our cards
-    Engine.prototype.selCardFn = function(id) {
-      if (!this._mpPlayer) return _orig_selCardFn.call(this, id);
-      if (!isMine(this)) return;
-      _orig_selCardFn.call(this, id);
-    };
-
-    // Unit selection: only interact on our turn
-    Engine.prototype.selUnitFn = function(uid) {
-      if (!this._mpPlayer) return _orig_selUnitFn.call(this, uid);
-      if (!isMine(this)) return;
-      _orig_selUnitFn.call(this, uid);
-    };
-
-    // clickCell: intercept to send server action, don't apply locally
-    Engine.prototype.clickCell = function(q, r, s) {
-      if (!this._mpPlayer) return _orig_clickCell.call(this, q, r, s);
-      if (!isMine(this)) return;
-
-      const S   = this.S;
-      const pact = this.pact;
-
-      if (pact === 'land' && this.selCard) {
-        mpSendAction('place_land', { cardId: this.selCard, q, r, s });
-        this._clr();
-        return;
+    // ── Prairie (2x) ─────────────────────────────────────
+    if (pact === 'land_N') {
+      if (!this._landNPositions) this._landNPositions = [];
+      this._landNPositions.push({ q, r, s });
+      this.landN_left--;
+      if (this.landN_left > 0) {
+        const placed = cK(q, r);
+        this.vt = adjPlace(S, myPlayer).filter(([vq,vr]) => cK(vq,vr) !== placed);
+        this._render(); return;
       }
-      if (pact === 'land_N') {
-        mpSendAction('place_land_N', { q, r, s });
-        this._clr();
-        return;
-      }
-      if ((pact === 'move' || pact === 'dash') && this.selUnit) {
-        mpSendAction('move_unit', { unitId: this.selUnit, q, r, s });
-        this._clr();
-        return;
-      }
-      if (pact === 'atk' && this.selUnit) {
-        // Is it a base attack?
-        const [bq,br,bs] = this.ap === 'A' ? BASE_B : BASE_A;
-        if (q===bq && r===br) {
-          mpSendAction('attack_base', { unitId: this.selUnit });
-        } else {
-          const tu = Object.values(S.units).find(u => u.q===q && u.r===r);
-          if (tu) mpSendAction('attack_unit', { unitId: this.selUnit, targetId: tu.id });
-        }
-        this._clr();
-        return;
-      }
-      if ((pact === 'inst' || pact === 'unit') && this.selCard) {
-        mpPlayAction(this.selCard, q, r, s);
-        this._clr();
-        return;
-      }
-      if (pact === 'gift' && this.selUnit) {
-        const tu = Object.values(S.units).find(u => u.q===q && u.r===r);
-        if (tu) mpSendAction('use_gift', { unitId: this.selUnit, q, r, s });
-        this._clr();
-        return;
-      }
-      if (pact === 'shifting_land_pick' || pact === 'shifting_land_dest') {
-        // Let original handle shifting land selection locally (it's multi-step)
-        _orig_clickCell.call(this, q, r, s);
-        return;
-      }
+      sendAction(ACTION.PLACE_LAND_N, { positions: this._landNPositions });
+      this._landNPositions = [];
+      this._clr(); return;
+    }
 
-      // Default: let original handle cell selection (unit select, etc.)
-      _orig_clickCell.call(this, q, r, s);
-    };
+    // ── Bewegung ──────────────────────────────────────────
+    if (pact === 'move' && this.selUnit) {
+      sendAction(ACTION.MOVE_UNIT, { unitId: this.selUnit, q, r, s });
+      this._clr(); return;
+    }
 
-    // ── Intercept the action functions ──────────────────────
+    // ── Dash ─────────────────────────────────────────────
+    if (pact === 'dash' && this.selUnit) {
+      sendAction(ACTION.DASH, { unitId: this.selUnit, q, r, s });
+      this._clr(); return;
+    }
 
-    // Wrap doPlay to send PLAY_CARD action
-    const _orig_doPlay = window.doPlay;
-    window.doPlay = function(S, p, id, q, r, s, choice) {
-      // Find the MP engine
-      const eng = window.G;
-      if (!eng || !eng._mpPlayer || p !== eng._mpPlayer) {
-        return _orig_doPlay(S, p, id, q, r, s, choice);
+    // ── Angriff ───────────────────────────────────────────
+    if (pact === 'atk' && this.selUnit) {
+      const tu = Object.values(S.units).find(u => u.q === q && u.r === r);
+      if (tu && tu.own !== myPlayer) {
+        sendAction(ACTION.ATTACK_UNIT, { unitId: this.selUnit, targetId: tu.id });
+        this._clr(); return;
       }
-      // Send to server; don't execute locally
-      mpPlayAction(id, q, r, s, choice);
-      return null; // server will update state
-    };
+      // Basis angreifen?
+      const [bq, br] = myPlayer === 'A'
+        ? (typeof BASE_B !== 'undefined' ? BASE_B : [0,3,-3])
+        : (typeof BASE_A !== 'undefined' ? BASE_A : [0,-3,3]);
+      if (q === bq && r === br) {
+        sendAction(ACTION.ATTACK_BASE, { unitId: this.selUnit });
+        this._clr(); return;
+      }
+      this._clr(); return;
+    }
 
-    // Wrap doAtk
-    const _orig_doAtk = window.doAtk;
-    window.doAtk = function(S, attackerId, targetType, targetId) {
-      const eng = window.G;
-      if (!eng || !eng._mpPlayer) return _orig_doAtk(S, attackerId, targetType, targetId);
-      if (targetType === 'base') {
-        mpSendAction('attack_base', { unitId: attackerId });
+    // ── Unit / Structure spielen ──────────────────────────
+    if (pact === 'unit' && this.selCard) {
+      sendAction(playActionType(this.selCard), { cardId: this.selCard, q, r, s });
+      this._clr(); return;
+    }
+
+    // ── Instant spielen ───────────────────────────────────
+    if (pact === 'inst' && this.selCard) {
+      const noTarget = (typeof TARGET_NO_TARGET !== 'undefined' && TARGET_NO_TARGET.has(this.selCard))
+                    || (typeof TARGET_SELF !== 'undefined'      && TARGET_SELF.has(this.selCard));
+      if (noTarget) {
+        sendAction(ACTION.PLAY_INSTANT_NOTARGET, { cardId: this.selCard });
       } else {
-        mpSendAction('attack_unit', { unitId: attackerId, targetId });
+        sendAction(ACTION.PLAY_INSTANT, { cardId: this.selCard, q, r, s });
       }
-      return null;
-    };
-
-    // Wrap doMove
-    const _orig_doMove = window.doMove;
-    if (_orig_doMove) {
-      window.doMove = function(S, uid, q, r, s) {
-        const eng = window.G;
-        if (!eng || !eng._mpPlayer) return _orig_doMove(S, uid, q, r, s);
-        mpSendAction('move_unit', { unitId: uid, q, r, s });
-        return null;
-      };
+      this._clr(); return;
     }
 
-    // Wrap doPlaceLand / doPlaceLandN / doWheelLand
-    const _orig_doPlaceLand = window.doPlaceLand;
-    if (_orig_doPlaceLand) {
-      window.doPlaceLand = function(S, p, id, q, r, s) {
-        const eng = window.G;
-        if (!eng || !eng._mpPlayer) return _orig_doPlaceLand(S, p, id, q, r, s);
-        mpSendAction('place_land', { cardId: id, q, r, s });
-        return null;
-      };
+    // ── Gift ──────────────────────────────────────────────
+    if (pact === 'gift' && this.selUnit) {
+      sendAction(ACTION.USE_GIFT, { unitId: this.selUnit, q, r, s });
+      this._clr(); return;
     }
 
-    const _orig_doPlaceLandN = window.doPlaceLandN;
-    if (_orig_doPlaceLandN) {
-      window.doPlaceLandN = function(S, p, q, r, s) {
-        const eng = window.G;
-        if (!eng || !eng._mpPlayer) return _orig_doPlaceLandN(S, p, q, r, s);
-        mpSendAction('place_land_N', { q, r, s });
-        return null;
-      };
+    // ── Shifting Tide (2-Schritt) ─────────────────────────
+    if (pact === 'shifting_land_pick') {
+      this._shiftSrc = { q, r, s };
+      this.pact = 'shifting_land_dest';
+      const dirs = [[1,-1,0],[-1,1,0],[1,0,-1],[-1,0,1],[0,1,-1],[0,-1,1]];
+      this.vt = dirs.map(([dq,dr,ds]) => [q+dq,r+dr,s+ds])
+        .filter(([nq,nr,ns]) => {
+          if (typeof inB === 'function' && !inB(nq,nr,ns)) return false;
+          const c = S.cells[cK(nq,nr)];
+          return c?.type === 'EMPTY';
+        });
+      this._render(); return;
     }
-
-    const _orig_doWheelLand = window.doWheelLand;
-    if (_orig_doWheelLand) {
-      window.doWheelLand = function(S, p, landType, q, r, s) {
-        const eng = window.G;
-        if (!eng || !eng._mpPlayer) return _orig_doWheelLand(S, p, landType, q, r, s);
-        mpSendAction('wheel_land', { landType, q, r, s });
-        // Close land menu
-        eng.closeLandMenu();
-        return null;
-      };
-    }
-
-    // Wrap harvest (if global function exists)
-    const _orig_doHarvest = window.doHarvest;
-    if (_orig_doHarvest) {
-      window.doHarvest = function(S, uid) {
-        const eng = window.G;
-        if (!eng || !eng._mpPlayer) return _orig_doHarvest(S, uid);
-        mpSendAction('harvest', { unitId: uid });
-        return null;
-      };
-    }
-
-    // _pickDiscover: send DISCOVER_PICK to server in MP mode
-    const _orig_pickDiscover = Engine.prototype._pickDiscover;
-    Engine.prototype._pickDiscover = function(item, chosenId) {
-      if (!this._mpPlayer) return _orig_pickDiscover.call(this, item, chosenId);
-      const modal = document.getElementById('discover-modal');
-      if (modal) modal.style.display = 'none';
-      mpSendAction('discover_pick', { chosenId });
-    };
-
-    // _showHint: display a message in the action-hint area
-    Engine.prototype._showHint = function(msg) {
-      const el = document.getElementById('action-hint');
-      if (el) { el.textContent = msg; setTimeout(() => { if (el.textContent===msg) el.textContent=''; }, 3000); }
-    };
-
-  } // end patchEngineForMP
-
-  // Patch immediately — Engine is already defined in prior <script> tag
-  patchEngineForMP();
-
-  // ── Patch _rHand to show our player's hand in MP ──────────
-  const _orig_rHand = Engine.prototype._rHand;
-  Engine.prototype._rHand = function() {
-    if (!this._mpPlayer) return _orig_rHand.call(this);
-    // Temporarily show our player's hand regardless of whose turn it is
-    const savedHandVisible = this.handVisible;
-    const savedAp = this.S.ap;
-    this.handVisible = true;
-    // The hand we display is always ours
-    // _rHand uses this.ap, so we need to point it to our player
-    // We can do this by temporarily overriding ap's return via _mpRenderAp
-    this._mpRenderAp = this._mpPlayer;
-    _orig_rHand.call(this);
-    this._mpRenderAp = null;
-    this.handVisible = savedHandVisible;
-  };
-
-  // Patch get ap to use _mpRenderAp when set
-  // We need to override the getter on instances
-  // ── startMPGame creates and patches the Engine instance ───
-  window.startMPGame = function(state, player, opponentName) {
-    hideLobby();
-    Object.values(state.units||{}).forEach(u => {
-      if (Array.isArray(u.kw)) u.kw = new Set(u.kw);
-    });
-
-    // Create engine without triggering a full render yet
-    // We suppress the initial render by temporarily patching _render
-    // Create engine with MP flag to skip pass&play mulligan
-    window._mpConstructing = true;
-    G = new Engine();
-    window._mpConstructing = false;
-
-    // Now override the state and player
-    G.S = state;
-    G._mpPlayer = player;
-    G.handVisible = true;
-    G.selCard = null; G.selUnit = null; G.pact = null; G.vt = [];
-
-    // Override 'ap' getter on this instance so _rHand uses our player
-    Object.defineProperty(G, 'ap', {
-      get() {
-        if (this._mpRenderHandMode) return this._mpPlayer;
-        return this.S.ap;
-      },
-      configurable: true,
-    });
-
-    // Always show our hand
-    G._rHandMP = function() {
-      this._mpRenderHandMode = true;
-      this.handVisible = true;
-      Engine.prototype._rHand.call(this);
-      this._mpRenderHandMode = false;
-    };
-    G._rHand = G._rHandMP;
-
-    // _canP: only allow on our turn
-    G._canP = function(id) {
-      if (this.S.ap !== this._mpPlayer) return false;
-      return Engine.prototype._canP.call(this, id);
-    };
-
-    // Show correct opponent hand count (server sends handSize for hidden hands)
-    G._rOppHand = function() {
-      const S   = this.S;
-      const opp = this._mpPlayer === 'A' ? 'B' : 'A';
-      const el  = document.getElementById('opp-hand');
-      if (!el) return;
-      const n = S.players[opp].handSize ?? S.players[opp].hand.length;
-      el.innerHTML = Array.from({length: n}, () => `<div class="opp-card"></div>`).join('');
-    };
-
-    // _rStats: use deckSize from server
-    const _rStatsOrig = G._rStats.bind(G);
-    G._rStats = function() {
-      _rStatsOrig();
-      // Fix deck counts using server's deckSize
-      ['A','B'].forEach(p => {
-        const pl = this.S.players[p];
-        const deckSz = pl.deckSize ?? pl.deck.length;
-        const handSz = p === this._mpPlayer ? pl.hand.length : (pl.handSize ?? pl.hand.length);
-        const el = document.getElementById(`cards-${p}`);
-        if (el) el.textContent = `${handSz}/${deckSz}`;
+    if (pact === 'shifting_land_dest' && this._shiftSrc) {
+      const src = this._shiftSrc;
+      sendAction(ACTION.SHIFTING_TIDE, {
+        srcQ:src.q, srcR:src.r, srcS:src.s,
+        dstQ:q, dstR:r, dstS:s,
       });
-    };
+      this._shiftSrc = null;
+      this._clr(); return;
+    }
 
-    window.G = G;
-    G._render();
-    updateWaitingBanner();
+    // ── Wheel of Chaos target ─────────────────────────────
+    if (pact === 'woc_target') {
+      const tu = Object.values(S.units).find(u => u.q === q && u.r === r);
+      if (tu && (tu.atk || 0) <= 5) {
+        sendAction(ACTION.WHEEL_OF_CHAOS_TARGET, { unitId: tu.id });
+      } else {
+        showHint('⚠ Ungültiges Ziel — ATK muss ≤ 5 sein', 2500);
+      }
+      this._clr(); return;
+    }
+
+    // ── Flame Burst Ruby target ───────────────────────────
+    if (pact === 'flame_burst_target') {
+      const tu = Object.values(S.units).find(u => u.q === q && u.r === r);
+      if (tu) {
+        sendAction(ACTION.FLAME_BURST_TARGET, { q, r, s });
+      } else {
+        // Base target?
+        const [bq, br] = myPlayer === 'A'
+          ? (typeof BASE_B !== 'undefined' ? BASE_B : [0,3,-3])
+          : (typeof BASE_A !== 'undefined' ? BASE_A : [0,-3,3]);
+        if (q === bq && r === br) {
+          sendAction(ACTION.FLAME_BURST_TARGET, { q, r, s });
+        } else {
+          showHint('⚠ Ungültiges Ziel', 2000);
+        }
+      }
+      this._clr(); return;
+    }
+
+    // ── Spirit Spice target ───────────────────────────────
+    if (pact === 'spirit_spice_target') {
+      const tu = Object.values(S.units).find(u => u.q === q && u.r === r);
+      if (tu && tu.own === myPlayer) {
+        sendAction(ACTION.SPIRIT_SPICE_TARGET, { unitId: tu.id });
+      } else {
+        showHint('⚠ Eigene Kreatur wählen', 2000);
+      }
+      this._clr(); return;
+    }
+
+    // ── Wheel of Chaos Octopus pick ───────────────────────
+    if (pact === 'octopus_pick') {
+      const tu = Object.values(S.units).find(u => u.q === q && u.r === r);
+      if (tu) {
+        this._octopusTarget1 = this._octopusTarget1 || null;
+        if (!this._octopusTarget1) {
+          this._octopusTarget1 = tu.id;
+          // Highlight second pick
+          showHint('🐙 Zweite Kreatur wählen', 0);
+          return;
+        } else {
+          sendAction(ACTION.OCTOPUS_PICK, { unitId1: this._octopusTarget1, unitId2: tu.id });
+          this._octopusTarget1 = null;
+          this._clr(); return;
+        }
+      }
+      return;
+    }
+
+    // ── Default: Einheit auswählen ────────────────────────
+    const u = Object.values(S.units).find(v => v.q === q && v.r === r);
+    if (u) {
+      if (u.own === myPlayer) this.selUnitFn(u.id);
+      // Enemy units: no select (could show tooltip)
+    }
   };
-  startMPGame = window.startMPGame;
+}(Engine.prototype.clickCell));
 
-}); // end DOMContentLoaded
+// _win: no-op (GAME_OVER socket event handles this)
+Engine.prototype._win = (function(orig) {
+  return function() {
+    if (!isMPMode()) return orig.call(this);
+  };
+}(Engine.prototype._win));
 
+// Pass-and-Play methods: no-op in MP
+Engine.prototype._showSwitch   = (function(orig) { return function() { if (!isMPMode()) orig.call(this); }; }(Engine.prototype._showSwitch));
+Engine.prototype.handOff       = function() {};
+Engine.prototype.dismissSwitch = function() {};
+Engine.prototype._showReady    = function() {};
 
+// Mulligan: MP uses own overlay
+Engine.prototype._showMulligan  = function() {};
+Engine.prototype.confirmMulligan= function() {};
+Engine.prototype.startBMulligan = function() {};
+
+// _pickDiscover → Server
+Engine.prototype._pickDiscover = (function(orig) {
+  return function(item, chosenId) {
+    if (!isMPMode()) return orig.call(this, item, chosenId);
+    document.getElementById('discover-modal')?.style.setProperty('display','none');
+    sendAction(ACTION.DISCOVER_PICK, { chosenId });
+  };
+}(Engine.prototype._pickDiscover));
+
+// _chooseOnePick → Server
+Engine.prototype._chooseOnePick = (function(orig) {
+  return function(idx) {
+    if (!isMPMode()) return orig.call(this, idx);
+    document.querySelector('[id^="choose-one"]')?.remove();
+    this._chooseOneOptions = null;
+    this._clr();
+    sendAction(ACTION.CHOOSE_ONE, { choiceIndex: idx });
+  };
+}(Engine.prototype._chooseOnePick));
+
+// ── Boot ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  // kw-badge CSS
+  const kwStyle = document.createElement('style');
+  kwStyle.textContent = `.kw-badge{display:inline-block;font-size:.48rem;padding:1px 5px;border:1px solid;border-radius:2px;font-family:'Cinzel',serif;letter-spacing:1px;white-space:nowrap;}`;
+  document.head.appendChild(kwStyle);
+
+  // ── Pinch-to-zoom on board ─────────────────────────────
+  initBoardTouch();
+
+  const token = localStorage.getItem('hf_token');
+  if (!token) showOverlay('mp-auth-overlay');
+  connectSocket();
+});
+
+function initBoardTouch() {
+  const wrap = document.getElementById('board-touch-wrap');
+  if (!wrap) return;
+
+  let scale = 1, lastScale = 1;
+  let startDist = 0;
+  let panX = 0, panY = 0, startPanX = 0, startPanY = 0, startTouchX = 0, startTouchY = 0;
+  let isPinching = false;
+
+  function dist(t) {
+    const dx = t[0].clientX - t[1].clientX;
+    const dy = t[0].clientY - t[1].clientY;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+
+  function applyTransform() {
+    const board = document.getElementById('board');
+    if (board) board.style.transform = `scale(${scale}) translate(${panX}px, ${panY}px)`;
+  }
+
+  wrap.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      isPinching = true;
+      startDist  = dist(e.touches);
+      lastScale  = scale;
+      e.preventDefault();
+    } else if (e.touches.length === 1) {
+      isPinching  = false;
+      startTouchX = e.touches[0].clientX;
+      startTouchY = e.touches[0].clientY;
+      startPanX   = panX;
+      startPanY   = panY;
+    }
+  }, { passive: false });
+
+  wrap.addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && isPinching) {
+      const newDist = dist(e.touches);
+      scale = Math.min(3, Math.max(0.5, lastScale * (newDist / startDist)));
+      applyTransform();
+      e.preventDefault();
+    } else if (e.touches.length === 1 && scale > 1.05) {
+      // Pan only when zoomed in
+      panX = startPanX + (e.touches[0].clientX - startTouchX) / scale;
+      panY = startPanY + (e.touches[0].clientY - startTouchY) / scale;
+      applyTransform();
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  wrap.addEventListener('touchend', e => {
+    if (e.touches.length === 0) isPinching = false;
+    // Double-tap to reset zoom
+    if (!wrap._lastTap) { wrap._lastTap = Date.now(); return; }
+    const gap = Date.now() - wrap._lastTap;
+    wrap._lastTap = 0;
+    if (gap < 300) {
+      scale = 1; panX = 0; panY = 0;
+      applyTransform();
+    }
+  });
+}
+
+})();
 </script>
 
 

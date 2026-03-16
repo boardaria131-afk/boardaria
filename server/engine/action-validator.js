@@ -84,15 +84,15 @@ function validCoord(q, r, s) {
 // ── Per-action validators ─────────────────────────────────
 
 function validateMulligan(S, action, player) {
-  // Must be in mulligan phase for this player
-  if (!S._mulliganPhase || S._mulliganPhase !== player) {
+  // _mulliganPhase is 'BOTH' when both players can mulligan simultaneously
+  if (!S._mulliganPhase) {
     return fail('not in mulligan phase');
   }
-  const { keep } = action.payload || {};
-  if (!Array.isArray(keep)) return fail('keep must be array of indices');
+  const { replaceIds = [] } = action.payload || {};
+  if (!Array.isArray(replaceIds)) return fail('replaceIds must be an array');
   const hand = S.players[player].hand;
-  if (keep.some(i => typeof i !== 'number' || i < 0 || i >= hand.length)) {
-    return fail('invalid keep indices');
+  if (replaceIds.some(id => typeof id !== 'string')) {
+    return fail('replaceIds must be card id strings');
   }
   return ok();
 }

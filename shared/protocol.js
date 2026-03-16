@@ -7,19 +7,22 @@
 // ── Client → Server ────────────────────────────────────────
 const C2S = {
   // Auth
-  AUTH:           'auth',           // { token } | { guest: true }
   REGISTER:       'register',       // { username, password }
   LOGIN:          'login',          // { username, password }
+  GUEST_LOGIN:    'guest_login',    // {}
+  AUTH_TOKEN:     'auth_token',     // { token }
 
   // Lobby
-  QUEUE_JOIN:     'queue_join',     // { deckA: string[] }
+  QUEUE_JOIN:     'queue_join',     // { deck: string[] }
   QUEUE_LEAVE:    'queue_leave',    // {}
-  ROOM_CREATE:    'room_create',    // { deckA: string[] }
-  ROOM_JOIN:      'room_join',      // { code, deckA: string[] }
+  ROOM_CREATE:    'room_create',    // { deck: string[] }
+  ROOM_JOIN:      'room_join',      // { code, deck: string[] }
   SPECTATE:       'spectate',       // { matchId }
 
   // In-game
   PLAYER_ACTION:  'player_action',  // { type, payload }
+  CHAT_MSG:       'chat_msg',       // { text }
+  PLAY_VS_BOT:    'play_vs_bot',    // { deck?: string[] }
 
   // Misc
   PING:           'ping',
@@ -52,6 +55,12 @@ const S2C = {
   ROOM_CREATED:   'room_created',   // { code }
   ROOM_JOINED:    'room_joined',    // { matchId, opponent }
   ROOM_ERROR:     'room_error',     // { reason }
+
+  // Timer
+  TIMER_UPDATE:   'timer_update',   // { ap, secsLeft, totalSecs }
+
+  // Chat
+  CHAT_MSG:       'chat_msg',       // { from, text, ts }
 
   // Misc
   PONG:           'pong',

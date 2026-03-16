@@ -13,6 +13,7 @@ const { Server } = require('socket.io');
 
 const { C2S, S2C }          = require('../shared/protocol');
 const { register, login, guestLogin, authFromToken, store: memUserStore } = require('./auth/auth');
+const { BotPlayer }          = require('./bot/bot-player');
 const { MatchmakingQueue }  = require('./matchmaking/queue');
 const { RoomManager }       = require('./matchmaking/room-manager');
 const { processMatchResult, matchStore: memMatchStore } = require('./ladder/elo');
@@ -119,95 +120,70 @@ function requireAuth(req, res, next) {
   next();
 }
 
+// ── In-memory deck store (works without PostgreSQL) ──────
+class InMemoryDeckStore {
+  constructor() { this._data = new Map(); this._nextId = 1; }
+  getForUser(userId) { return this._data.get(userId) || []; }
+  save({ userId, deckId, name, cards, archetype }) {
+    const decks = this._data.get(userId) ? [...this._data.get(userId)] : [];
+    if (deckId) {
+      const idx = decks.findIndex(d => d.id === deckId);
+      if (idx < 0) return null;
+      decks[idx] = { ...decks[idx], name, cards, archetype };
+      this._data.set(userId, decks);
+      return decks[idx];
+    }
+    const deck = { id: this._nextId++, userId, name, cards: cards || [], archetype: archetype || null };
+    decks.push(deck);
+    this._data.set(userId, decks);
+    return deck;
+  }
+  delete(deckId, userId) {
+    this._data.set(userId, (this._data.get(userId) || []).filter(d => d.id !== deckId));
+  }
+}
+const memDeckStore = new InMemoryDeckStore();
+
 app.get('/api/decks', requireAuth, async (req, res) => {
-  if (!isUsingDB) return res.json({ decks: [] });
-  try {
-    const decks = await db.getDecksForUser(req.userId);
-    res.json({ decks });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  if (isUsingDB) {
+    try { return res.json({ decks: await db.getDecksForUser(req.userId) }); }
+    catch(e) { return res.status(500).json({ error: e.message }); }
+  }
+  res.json({ decks: memDeckStore.getForUser(req.userId) });
 });
 
 app.post('/api/decks', requireAuth, async (req, res) => {
-  if (!isUsingDB) return res.status(503).json({ error: 'DB not enabled' });
   const { name, cards, archetype, isDefault } = req.body;
   if (!name || !Array.isArray(cards)) return res.status(400).json({ error: 'name and cards required' });
-  try {
-    const deck = await db.saveDeck({ userId: req.userId, name, cards, archetype, isDefault });
-    res.json({ deck });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  if (isUsingDB) {
+    try { return res.json({ deck: await db.saveDeck({ userId: req.userId, name, cards, archetype, isDefault }) }); }
+    catch(e) { return res.status(500).json({ error: e.message }); }
+  }
+  res.json({ deck: memDeckStore.save({ userId: req.userId, name, cards, archetype }) });
 });
 
 app.put('/api/decks/:id', requireAuth, async (req, res) => {
-  if (!isUsingDB) return res.status(503).json({ error: 'DB not enabled' });
   const { name, cards, archetype, isDefault } = req.body;
-  try {
-    const deck = await db.saveDeck({ userId: req.userId, deckId: parseInt(req.params.id), name, cards, archetype, isDefault });
-    if (!deck) return res.status(404).json({ error: 'Deck not found' });
-    res.json({ deck });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  if (isUsingDB) {
+    try {
+      const deck = await db.saveDeck({ userId: req.userId, deckId: parseInt(req.params.id), name, cards, archetype, isDefault });
+      if (!deck) return res.status(404).json({ error: 'Deck not found' });
+      return res.json({ deck });
+    } catch(e) { return res.status(500).json({ error: e.message }); }
+  }
+  const deck = memDeckStore.save({ userId: req.userId, deckId: parseInt(req.params.id), name, cards, archetype });
+  if (!deck) return res.status(404).json({ error: 'Deck not found' });
+  res.json({ deck });
 });
 
 app.delete('/api/decks/:id', requireAuth, async (req, res) => {
-  if (!isUsingDB) return res.status(503).json({ error: 'DB not enabled' });
-  try {
-    await db.deleteDeck(parseInt(req.params.id), req.userId);
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// ── Async auth helpers (work with both in-memory and DB) ──
-
-async function registerUser(username, password, store, useDB) {
-  if (!username || username.length < 3 || username.length > 24)
-    return { ok: false, reason: 'Username must be 3–24 characters' };
-  if (!/^[a-zA-Z0-9_-]+$/.test(username))
-    return { ok: false, reason: 'Username may only contain letters, digits, _ and -' };
-  if (!password || password.length < 6)
-    return { ok: false, reason: 'Password must be at least 6 characters' };
-
-  const existing = await Promise.resolve(store.findByName(username));
-  if (existing) return { ok: false, reason: 'Username already taken' };
-
-  const { hashPassword, signJWT, publicUser } = require('./auth/auth');
-  const user = await Promise.resolve(store.create({ username, passwordHash: hashPassword(password) }));
-  const token = signJWT({ userId: user.id, username: user.username });
-  return { ok: true, user: publicUser(user), token };
-}
-
-async function loginUser(username, password, store, useDB) {
-  const user = await Promise.resolve(store.findByName(username));
-  if (!user)          return { ok: false, reason: 'User not found' };
-  if (user.isGuest)   return { ok: false, reason: 'Cannot login to guest account' };
-  const { verifyPassword, signJWT, publicUser } = require('./auth/auth');
-  if (!verifyPassword(password, user.passwordHash)) return { ok: false, reason: 'Wrong password' };
-  const token = signJWT({ userId: user.id, username: user.username });
-  return { ok: true, user: publicUser(user), token };
-}
-
-async function guestLoginUser(store, useDB) {
-  const { signJWT, publicUser } = require('./auth/auth');
-  let username;
-  do { username = `Guest${Math.floor(1000 + Math.random() * 9000)}`; }
-  while (await Promise.resolve(store.findByName(username)));
-  const user = await Promise.resolve(store.create({ username, isGuest: true }));
-  const token = signJWT({ userId: user.id, username: user.username, guest: true });
-  return { ok: true, user: publicUser(user), token };
-}
-
-// ── Ensure admin account exists ───────────────────────────
-(async () => {
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
-  try {
-    const existing = await Promise.resolve(userStore.findByName('admin'));
-    if (!existing) {
-      const { hashPassword } = require('./auth/auth');
-      await Promise.resolve(userStore.create({ username: 'admin', passwordHash: hashPassword(ADMIN_PASSWORD) }));
-      console.log('[Auth] Admin account created');
-    }
-  } catch(e) {
-    console.warn('[Auth] Could not ensure admin account:', e.message);
+  if (isUsingDB) {
+    try { await db.deleteDeck(parseInt(req.params.id), req.userId); return res.json({ ok: true }); }
+    catch(e) { return res.status(500).json({ error: e.message }); }
   }
-})();
+  memDeckStore.delete(parseInt(req.params.id), req.userId);
+  res.json({ ok: true });
+});
 
 // ── Socket.IO ─────────────────────────────────────────────
 const io = new Server(server, {
@@ -270,11 +246,11 @@ io.on('connection', (socket) => {
 
   // ── Auth ────────────────────────────────────────────────
 
-  socket.on(C2S.REGISTER, async ({ username, password } = {}) => {
+  socket.on(C2S.REGISTER, ({ username, password } = {}) => {
     if (!rateLimiter(rlKey(socket, 'register'), 5, 60_000)) {
       return socket.emit(S2C.AUTH_ERR, { reason: 'Too many attempts. Try again in a minute.' });
     }
-    const result = await registerUser(username, password, userStore, isUsingDB);
+    const result = register(username, password);
     if (result.ok) {
       sessions.set(socket.id, { ...result.user, socketId: socket.id });
       socket.emit(S2C.AUTH_OK, { user: result.user, token: result.token });
@@ -283,11 +259,11 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on(C2S.LOGIN, async ({ username, password } = {}) => {
+  socket.on(C2S.LOGIN, ({ username, password } = {}) => {
     if (!rateLimiter(rlKey(socket, 'login'), 10, 60_000)) {
       return socket.emit(S2C.AUTH_ERR, { reason: 'Too many attempts. Try again in a minute.' });
     }
-    const result = await loginUser(username, password, userStore, isUsingDB);
+    const result = login(username, password);
     if (result.ok) {
       sessions.set(socket.id, { ...result.user, socketId: socket.id });
       socket.emit(S2C.AUTH_OK, { user: result.user, token: result.token });
@@ -296,8 +272,8 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on(C2S.GUEST_LOGIN, async () => {
-    const result = await guestLoginUser(userStore, isUsingDB);
+  socket.on(C2S.GUEST_LOGIN, () => {
+    const result = guestLogin();
     sessions.set(socket.id, { ...result.user, socketId: socket.id });
     socket.emit(S2C.AUTH_OK, { user: result.user, token: result.token });
   });
@@ -315,7 +291,13 @@ io.on('connection', (socket) => {
       if (user.id && roomManager.hasPendingReconnect(user.id)) {
         const result = roomManager.handleReconnect(socket.id, user.id);
         if (result.ok) {
+          const room   = roomManager.getRoom(result.matchId);
+          const player = room?.socketToPlayer[socket.id];
           socket.emit(S2C.MATCH_REJOINED, { matchId: result.matchId });
+          if (room && player) {
+            room.sendState(socket.id, player);
+            room._emitTimer(); // resend current timer state
+          }
           console.log(`[Auth] ${user.username} auto-rejoined match ${result.matchId}`);
         }
       }
@@ -377,11 +359,43 @@ io.on('connection', (socket) => {
     if (!result.ok) socket.emit(S2C.ROOM_ERROR, { reason: result.reason });
   });
 
+  // ── Play vs Bot ───────────────────────────────────────────
+
+  socket.on(C2S.PLAY_VS_BOT, ({ deck } = {}) => {
+    const sess = sessions.get(socket.id);
+    if (!sess) return socket.emit(S2C.AUTH_ERR, { reason: 'Not authenticated' });
+
+    // Create a fake bot socket ID
+    const botSocketId = `bot:${require('crypto').randomUUID()}`;
+
+    const humanPlayer = { socketId: socket.id, userId: sess.id, username: sess.username, rating: sess.rating || 1000, isGuest: sess.isGuest, deck: Array.isArray(deck) ? deck : null };
+    const botPlayer   = { socketId: botSocketId, userId: null,   username: 'HexBot',     rating: 1200,               isGuest: true,         deck: null };
+
+    // Randomly assign sides
+    const [pA, pB] = Math.random() < 0.5 ? [humanPlayer, botPlayer] : [botPlayer, humanPlayer];
+    const room = roomManager.createMatch(pA, pB);
+
+    // Attach bot to room
+    const botSide = room.socketToPlayer[botSocketId];
+    const bot = new BotPlayer(botSide, room, botSocketId);
+    room._bot = bot;
+
+    // Trigger bot mulligan (broadcastMulliganPrompt already called in start())
+    bot.onStateUpdate(room.S, { type: 'mulligan' });
+
+    console.log(`[Bot] Match ${room.id}: ${sess.username} vs HexBot`);
+  });
+
   // ── In-game actions ──────────────────────────────────────
 
   socket.on(C2S.PLAYER_ACTION, (action) => {
     if (!action || typeof action !== 'object') return;
     roomManager.handleAction(socket.id, action);
+  });
+
+  socket.on(C2S.CHAT_MSG, ({ text } = {}) => {
+    const room = roomManager.getRoomBySocket(socket.id);
+    if (room) room.handleChat(socket.id, text);
   });
 
   // ── Spectator ────────────────────────────────────────────
