@@ -10818,7 +10818,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.2.0';
+window.HEXFORGE_VERSION = '5.3.0';
 (function () {
 'use strict';
 
@@ -11040,7 +11040,7 @@ function connectSocket() {
   });
 
   socket.on('connect_error', (err) => {
-    setConnStatus('⟳ Server startet… bitte warten');
+    setConnStatus('⟳ Server startet… bitte warten (~30s)');
   });
 
   socket.on('disconnect', () => {
@@ -11214,6 +11214,7 @@ window.mpLogin = function() {
   const username = document.getElementById('mp-login-user').value.trim();
   const password = document.getElementById('mp-login-pass').value;
   if (!username || !password) { setAuthErr('Benutzername und Passwort eingeben'); return; }
+  if (!socket) { connectSocket(); setAuthErr('Verbindet… bitte nochmal klicken.'); return; }
   const btn = document.getElementById('mp-auth-btn');
   btn.disabled = true; btn.textContent = '…';
   setAuthErr('');
@@ -11221,13 +11222,17 @@ window.mpLogin = function() {
   if (socket.connected) {
     send();
   } else {
-    socket.once('connect', send);
-    setTimeout(() => {
-      if (btn.disabled && btn.textContent === '…') {
+    // Server noch am Starten (Render cold start) – warten und automatisch senden
+    setConnStatus('⟳ Server startet… bitte warten (~30s)');
+    const onConnect = () => { clearTimeout(timer); send(); };
+    socket.once('connect', onConnect);
+    const timer = setTimeout(() => {
+      socket.off('connect', onConnect);
+      if (btn.disabled) {
         btn.disabled = false; btn.textContent = 'Login';
-        setAuthErr('Verbindung fehlgeschlagen. Bitte Seite neu laden.');
+        setAuthErr('Server nicht erreichbar. Seite neu laden und nochmal versuchen.');
       }
-    }, 12000);
+    }, 40000);
   }
 };
 
@@ -11238,28 +11243,34 @@ window.mpRegister = function() {
   if (password !== password2) { setAuthErr('Passwörter stimmen nicht überein'); return; }
   if (username.length < 3)    { setAuthErr('Benutzername mind. 3 Zeichen'); return; }
   if (password.length < 6)    { setAuthErr('Passwort mind. 6 Zeichen'); return; }
+  if (!socket) { connectSocket(); setAuthErr('Verbindet… bitte nochmal klicken.'); return; }
   const send = () => socket.emit(C2S.REGISTER, { username, password });
   if (socket.connected) { send(); }
-  else { socket.once('connect', send); }
+  else {
+    setConnStatus('⟳ Server startet… bitte warten (~30s)');
+    socket.once('connect', send);
+  }
 };
 
 window.mpGuest = function() {
-  if (!socket) { setAuthErr('Verbindung nicht bereit. Seite neu laden.'); return; }
+  if (!socket) { connectSocket(); setAuthErr('Verbindet… bitte nochmal klicken.'); return; }
   const btn = document.getElementById('mp-guest-btn');
   btn.disabled = true; btn.textContent = '…';
   const send = () => { socket.emit(C2S.GUEST_LOGIN); };
   if (socket.connected) {
     send();
   } else {
-    setConnStatus('⟳ Verbinde…');
-    socket.once('connect', send);
-    // Timeout: re-enable button if no connection after 12s
-    setTimeout(() => {
-      if (btn.disabled && btn.textContent === '…') {
+    setConnStatus('⟳ Server startet… bitte warten (~30s)');
+    const onConnect = () => { clearTimeout(timer); send(); };
+    socket.once('connect', onConnect);
+    // Render free tier kann bis zu 40s zum Starten brauchen
+    const timer = setTimeout(() => {
+      socket.off('connect', onConnect);
+      if (btn.disabled) {
         btn.disabled = false; btn.textContent = 'Als Gast spielen';
-        setAuthErr('Verbindung fehlgeschlagen. Bitte Seite neu laden.');
+        setAuthErr('Server nicht erreichbar. Seite neu laden und nochmal versuchen.');
       }
-    }, 12000);
+    }, 40000);
   }
 };
 
