@@ -776,6 +776,14 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     <div id="mp-room-err" style="color:#cc5050;font-size:.6rem;min-height:1em;text-align:center;margin-bottom:6px"></div>
 
     <button class="mp-btn mp-btn-ghost" onclick="mpLogout()" style="margin-top:6px;opacity:.6">Abmelden</button>
+    <button onclick="mpOpenBugReport()" style="
+      width:100%;padding:5px;margin-top:4px;cursor:pointer;border-radius:4px;
+      background:transparent;border:1px solid #3a2020;color:#664444;
+      font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:1px;transition:all .15s;
+    " onmouseover="this.style.borderColor='#aa4444';this.style.color='#ff7777'"
+       onmouseout="this.style.borderColor='#3a2020';this.style.color='#664444'">
+      🐛 Bug melden
+    </button>
     <a href="/leaderboard.html" target="_blank" style="display:block;text-align:center;margin-top:8px;font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:2px;color:#3a4a5a;text-decoration:none" onmouseover="this.style.color='#c8a84b'" onmouseout="this.style.color='#3a4a5a'">📊 Rangliste anzeigen</a>
 
     <div style="margin-top:16px;border-top:1px solid #1a2535;padding-top:14px">
@@ -854,6 +862,16 @@ svg#board { display: block; overflow: visible; touch-action: none; }
       <span class="mp-clock-time"  id="mp-clock-opp-secs">1:30</span>
     </div>
   </div>
+  <!-- Bug Reporter Button -->
+  <button onclick="mpOpenBugReport()" title="Bug melden" style="
+    margin-left:8px;padding:3px 8px;background:transparent;
+    border:1px solid #3a2020;border-radius:4px;color:#884444;
+    font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:1px;
+    cursor:pointer;opacity:.7;transition:all .15s;
+  " onmouseover="this.style.opacity='1';this.style.borderColor='#aa4444';this.style.color='#ff7777'"
+     onmouseout="this.style.opacity='.7';this.style.borderColor='#3a2020';this.style.color='#884444'">
+    🐛 Bug
+  </button>
 </div>
 
 <!-- Unit hover tooltip -->
@@ -10818,7 +10836,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.5.0';
+window.HEXFORGE_VERSION = '5.8.0';
 (function () {
 'use strict';
 
@@ -11281,6 +11299,141 @@ window.mpLogout = function() {
   hideOverlay('mp-lobby-overlay');
   showOverlay('mp-auth-overlay');
   setAuthErr('');
+};
+
+// ── Bug Reporter ──────────────────────────────────────────────
+window.mpOpenBugReport = function() {
+  const existing = document.getElementById('bug-report-overlay');
+  if (existing) existing.remove();
+
+  // Snapshot des aktuellen Spielzustands sammeln
+  const snapshot = _collectBugSnapshot();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'bug-report-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;';
+
+  overlay.innerHTML = `
+    <div style="background:#0d1118;border:1px solid #4a2020;border-radius:8px;padding:24px 28px;
+                min-width:340px;max-width:540px;width:90vw;font-family:'Cinzel',serif;color:#c8d4e0;">
+      <div style="color:#ff7777;font-size:.85rem;letter-spacing:3px;margin-bottom:16px">🐛 BUG MELDEN</div>
+      
+      <div style="font-size:.55rem;color:#5a6a7a;letter-spacing:1px;margin-bottom:6px">BESCHREIBUNG</div>
+      <textarea id="bug-desc" placeholder="Was ist passiert? Was hast du erwartet?"
+        style="width:100%;height:90px;background:#060a0e;border:1px solid #2a3040;border-radius:4px;
+               color:#c8d4e0;font-family:'Crimson Pro',serif;font-size:.85rem;padding:8px;
+               resize:vertical;outline:none;box-sizing:border-box"></textarea>
+
+      <div style="font-size:.55rem;color:#5a6a7a;letter-spacing:1px;margin:12px 0 6px">SPIELZUSTAND (automatisch)</div>
+      <textarea id="bug-state" readonly
+        style="width:100%;height:120px;background:#050709;border:1px solid #1a2030;border-radius:4px;
+               color:#4a6a4a;font-family:monospace;font-size:.6rem;padding:8px;
+               resize:none;outline:none;box-sizing:border-box">${snapshot}</textarea>
+
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button onclick="mpCopyBugReport()" style="
+          flex:1;padding:8px;background:#1a1208;border:1px solid #6a4a00;border-radius:4px;
+          color:#c8a84b;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;cursor:pointer">
+          📋 Kopieren
+        </button>
+        <button onclick="document.getElementById('bug-report-overlay').remove()" style="
+          flex:1;padding:8px;background:transparent;border:1px solid #2a3040;border-radius:4px;
+          color:#5a6a7a;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;cursor:pointer">
+          ✕ Schließen
+        </button>
+      </div>
+      <div id="bug-copy-confirm" style="text-align:center;font-size:.55rem;color:#44aa44;
+           letter-spacing:1px;margin-top:8px;min-height:1.2em"></div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  setTimeout(() => document.getElementById('bug-desc')?.focus(), 50);
+};
+
+function _collectBugSnapshot() {
+  const lines = [];
+  const ts = new Date().toISOString();
+  lines.push(`=== HexForge Bug Report — ${ts} ===`);
+  lines.push(`Version: ${window.HEXFORGE_VERSION || '?'}`);
+
+  // Session
+  if (mySession) {
+    lines.push(`Spieler: ${mySession.username} (${mySession.isGuest ? 'Gast' : 'Konto'}) | ELO: ${mySession.rating}`);
+  } else {
+    lines.push('Spieler: nicht eingeloggt');
+  }
+
+  lines.push(`Match-ID: ${matchId || '—'} | Seite: ${myPlayer || '—'}`);
+
+  const G = window.G;
+  if (G && G.S) {
+    const S = G.S;
+    lines.push('');
+    lines.push(`--- Spielfeld ---`);
+    lines.push(`Runde: ${S.turn} | Am Zug: ${S.ap} | Phase: ${S.phase}`);
+    lines.push(`lobDone: ${S.lobDone} | Gewinner: ${S.winner || '—'}`);
+
+    // Spieler A
+    const pA = S.players?.A;
+    const pB = S.players?.B;
+    if (pA) lines.push(`Spieler A: ${pA.hp} LP | ${pA.mana} Mana | Hand:${pA.hand?.length} Deck:${pA.deck?.length}`);
+    if (pB) lines.push(`Spieler B: ${pB.hp} LP | ${pB.mana} Mana | Hand:${pB.hand?.length} Deck:${pB.deck?.length}`);
+
+    // Einheiten auf dem Feld
+    const units = Object.values(S.units || {}).filter(u => u.q !== null);
+    if (units.length) {
+      lines.push('');
+      lines.push('--- Einheiten ---');
+      for (const u of units) {
+        const kw = u.kw instanceof Set ? [...u.kw].join(',') : (Array.isArray(u.kw) ? u.kw.join(',') : '');
+        lines.push(`[${u.own}] ${u.cid} ${u.atk}/${u.hp} @ (${u.q},${u.r}) | moved:${u.moved} atked:${u.atked} sick:${u.summonSick}${kw?'  kw:'+kw:''}`);
+      }
+    }
+
+    // Letzte Aktion aus dem Log
+    if (S.log?.length) {
+      lines.push('');
+      lines.push('--- Letzte 5 Log-Einträge ---');
+      S.log.slice(-5).forEach(l => lines.push('  ' + l));
+    }
+
+    // Hand des lokalen Spielers
+    const myHand = S.players?.[myPlayer]?.hand;
+    if (myHand?.length) {
+      lines.push('');
+      lines.push(`--- Meine Hand (${myPlayer}) ---`);
+      lines.push(myHand.map(c => c.id).join(', '));
+    }
+  } else {
+    lines.push('Kein aktives Spiel.');
+  }
+
+  // Browser-Info
+  lines.push('');
+  lines.push(`Browser: ${navigator.userAgent.split(' ').slice(-2).join(' ')}`);
+  lines.push(`Bildschirm: ${window.innerWidth}×${window.innerHeight}`);
+
+  return lines.join('\n');
+}
+
+window.mpCopyBugReport = function() {
+  const desc = document.getElementById('bug-desc')?.value?.trim() || '';
+  const state = document.getElementById('bug-state')?.value || '';
+  const full = (desc ? `BESCHREIBUNG:\n${desc}\n\n` : '') + state;
+
+  navigator.clipboard.writeText(full).then(() => {
+    const el = document.getElementById('bug-copy-confirm');
+    if (el) { el.textContent = '✓ In Zwischenablage kopiert!'; setTimeout(() => { if(el) el.textContent=''; }, 3000); }
+  }).catch(() => {
+    // Fallback für ältere Browser
+    const ta = document.createElement('textarea');
+    ta.value = full; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    const el = document.getElementById('bug-copy-confirm');
+    if (el) { el.textContent = '✓ Kopiert!'; setTimeout(() => { if(el) el.textContent=''; }, 3000); }
+  });
 };
 
 // ── Lobby ─────────────────────────────────────────────────────

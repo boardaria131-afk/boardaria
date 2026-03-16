@@ -2,12 +2,12 @@
 console.warn = () => {};
 
 const { mkState, doMulligan, mkUnit, adjPlace, validMoves, cK, BASE_B, BASE_A, cardData }
-      = require('/home/claude/hexforge-mp/server/engine/game-engine');
+      = require('/home/claude/hexforge-fixed/server/engine/game-engine');
 const { applyAction, runDrawPhase, runManaPhase }
-      = require('/home/claude/hexforge-mp/server/engine/action-handler');
-const { validateAction }  = require('/home/claude/hexforge-mp/server/engine/action-validator');
-const { GameRoom }        = require('/home/claude/hexforge-mp/server/rooms/game-room');
-const { ACTION }          = require('/home/claude/hexforge-mp/shared/protocol');
+      = require('/home/claude/hexforge-fixed/server/engine/action-handler');
+const { validateAction }  = require('/home/claude/hexforge-fixed/server/engine/action-validator');
+const { GameRoom }        = require('/home/claude/hexforge-fixed/server/rooms/game-room');
+const { ACTION }          = require('/home/claude/hexforge-fixed/shared/protocol');
 
 let passed = 0, failed = 0;
 const _asyncTests = [];
@@ -506,7 +506,7 @@ test('Chat truncates messages >200 chars', () => {
 // ─── 11. Bot Player ────────────────────────────────────────
 console.log('\n── 11. Bot Player ──');
 
-const { BotPlayer } = require('/home/claude/hexforge-mp/server/bot/bot-player');
+const { BotPlayer } = require('/home/claude/hexforge-fixed/server/bot/bot-player');
 
 test('Bot instance creation', () => {
   const { room } = makeStartedRoom();
@@ -617,7 +617,7 @@ console.log('\n── 12. Bot special pending inputs ──');
 
 test('Bot handles woc pending: destroys weakest unit', () => {
   const { room } = makeStartedRoom();
-  const { mkUnit, cK } = require('/home/claude/hexforge-mp/server/engine/game-engine');
+  const { mkUnit, cK } = require('/home/claude/hexforge-fixed/server/engine/game-engine');
   // Place a weak enemy unit  
   room.S.cells[cK(-1,-1)] = { type:'LAND', owner:'B', landType:'N' };
   const weak = mkUnit(room.S, 'B', 'keldran_soldier', -1, -1, 2);
@@ -644,14 +644,14 @@ test('Bot handles flame_burst pending: targets enemy base', () => {
   bot._handlePending(room.S, { type: 'flame_burst' });
   assert(actions.some(a => a.type === ACTION.FLAME_BURST_TARGET), 'flame_burst_target sent');
   // Should target enemy base (B's base for player A)
-  const { BASE_B } = require('/home/claude/hexforge-mp/server/engine/game-engine');
+  const { BASE_B } = require('/home/claude/hexforge-fixed/server/engine/game-engine');
   const [bq, br] = BASE_B;
   assert(actions[0].payload.q === bq && actions[0].payload.r === br, 'targets enemy base');
 });
 
 test('Bot handles spirit_spice pending: buffs strongest unit', () => {
   const { room } = makeStartedRoom();
-  const { mkUnit, cK } = require('/home/claude/hexforge-mp/server/engine/game-engine');
+  const { mkUnit, cK } = require('/home/claude/hexforge-fixed/server/engine/game-engine');
   room.S.cells[cK(-1,-2)] = { type:'LAND', owner:'A', landType:'N' };
   const strong = mkUnit(room.S, 'A', 'imperial_guard', -1, -2, 3);
   strong.atk = 5;
@@ -669,7 +669,7 @@ test('Bot handles spirit_spice pending: buffs strongest unit', () => {
 
 test('Bot handles octopus pending: swaps two units', () => {
   const { room } = makeStartedRoom();
-  const { mkUnit, cK } = require('/home/claude/hexforge-mp/server/engine/game-engine');
+  const { mkUnit, cK } = require('/home/claude/hexforge-fixed/server/engine/game-engine');
   room.S.cells[cK(-1,-2)] = { type:'LAND', owner:'A', landType:'N' };
   room.S.cells[cK(-2,-1)] = { type:'LAND', owner:'B', landType:'N' };
   const u1 = mkUnit(room.S, 'A', 'imperial_guard', -1, -2, 3);
