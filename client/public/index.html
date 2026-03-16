@@ -11156,7 +11156,7 @@ function connectSocket() {
   socket.on(S2C.ERROR, ({ reason }) => {
     showHint('Server: ' + reason, 5000);
   });
-}
+
   socket.on(S2C.TIMER_UPDATE, ({ ap, secsLeft, totalSecs }) => {
     if (window.G) updateClocks(ap, secsLeft, totalSecs);
   });
@@ -11199,7 +11199,7 @@ function connectSocket() {
     updateSpectatorInfo();
   });
 
-
+} // end connectSocket()
 
 // ── Auth ─────────────────────────────────────────────────────
 window.mpAuthSwitchTab = function(tab) {
