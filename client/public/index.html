@@ -694,7 +694,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 </style>
 
 <!-- ═══ MP AUTH OVERLAY ═══════════════════════════════════ -->
-<div id="mp-auth-overlay" class="mp-overlay">
+<div id="mp-auth-overlay" class="mp-overlay" style="display:flex">
   <div class="mp-box" style="min-width:340px">
     <h2>HEXFORGE</h2>
     <div class="mp-tabs">
@@ -10818,7 +10818,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.0.0';
+window.HEXFORGE_VERSION = '5.1.0';
 (function () {
 'use strict';
 
@@ -11033,7 +11033,17 @@ function connectSocket() {
     if (ab) { ab.disabled = false; ab.style.opacity = ''; }
     if (gb) { gb.disabled = false; gb.style.opacity = ''; }
     const token = localStorage.getItem('hf_token');
-    if (token) socket.emit(C2S.AUTH_TOKEN, { token });
+    if (token) {
+      socket.emit(C2S.AUTH_TOKEN, { token });
+      // If token auth fails silently, show auth overlay after 5s
+      setTimeout(() => {
+        if (document.getElementById('mp-auth-overlay').style.display !== 'none') return;
+        if (!mySession) {
+          showOverlay('mp-auth-overlay');
+          setConnStatus('Sitzung abgelaufen — bitte neu anmelden');
+        }
+      }, 5000);
+    }
   });
 
   socket.on('connect_error', (err) => {
@@ -11064,7 +11074,11 @@ function connectSocket() {
   });
 
   socket.on(S2C.AUTH_ERR, ({ reason }) => {
-    setAuthErr(reason);
+    // Clear bad token so user isn't stuck
+    localStorage.removeItem('hf_token');
+    mySession = null;
+    setAuthErr(reason || 'Sitzung abgelaufen');
+    showOverlay('mp-auth-overlay');
     const ab = document.getElementById('mp-auth-btn');
     const gb = document.getElementById('mp-guest-btn');
     if (ab) { ab.disabled = false; ab.textContent = 'Login'; }
@@ -12207,8 +12221,8 @@ window.addEventListener('DOMContentLoaded', () => {
   // ── Pinch-to-zoom on board ─────────────────────────────
   initBoardTouch();
 
-  const token = localStorage.getItem('hf_token');
-  if (!token) showOverlay('mp-auth-overlay');
+  // Always show auth overlay initially — hidden once connected+authenticated
+  showOverlay('mp-auth-overlay');
   connectSocket();
 });
 
