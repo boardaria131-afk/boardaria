@@ -832,7 +832,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 
 
 <!-- ── Header ──────────────────────────────────────────── -->
-<div id="hdr">
+<div id="hdr" style="display:none">
   <h1>HEX<span style="color:#5a6a7a">FORGE</span></h1>
   <div id="phdis">
     <div class="ap" id="ph-name">DRAW</div>
@@ -865,7 +865,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 </div>
 
 <!-- ── Main Layout ─────────────────────────────────────── -->
-<div id="main">
+<div id="main" style="display:none">
 
   <!-- Left panel: Player A + hand -->
   <div class="sp">
@@ -10815,9 +10815,10 @@ class Engine {
 
 <script>
 // ═══════════════════════════════════════════════════════════
-//  HexForge MP Adapter  v2  —  Phase 1
-//  Vollständige Spielbarkeit: Rendering, Actions, Disconnect
+//  HexForge MP Adapter  v5  —  Complete
+//  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
+window.HEXFORGE_VERSION = '5.0.0';
 (function () {
 'use strict';
 
