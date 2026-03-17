@@ -4722,25 +4722,38 @@ function deal(S, p, n) {
 // ══════════════════════════════════════════════════════════
 //  FALLBACK DECKS
 // ══════════════════════════════════════════════════════════
+// ── Hub Decks (von faeria.com/the-hub) ────────────────────
+const HUB_DECKS = [
+  { name:'Yellow Rush', author:'SuperbLizard',
+    cards:['khalims_prayer','khalims_prayer','khalims_prayer','last_nightmare','last_nightmare','last_nightmare','shaytan_scavenger','shaytan_scavenger','soul_drain','soul_drain','flash_salmon','flash_salmon','spirit_theft','spirit_theft','oradrim_sagittarius','oradrim_sagittarius','wind_soldier','wind_soldier','wind_soldier','zealous_crusader','zealous_crusader','zealous_crusader','mistral_guide','mistral_guide','mistral_guide','demonic_salmon','demonic_salmon','barrensky_vermin','barrensky_vermin','barrensky_vermin'] },
+  { name:'Mono Red Burn', author:'Aquablad',
+    cards:['underground_brigand','underground_brigand','underground_brigand','shedim_brute','shedim_brute','shedim_brute','grim_guard','grim_guard','grim_guard','flame_burst','flame_burst','flame_burst','groundshaker','groundshaker','groundshaker','gift_of_steel','gift_of_steel','gift_of_steel','blood_singer','blood_singer','blood_singer','bomb_slinger','bomb_slinger','bomb_slinger','derelict_tower','derelict_tower','derelict_tower','seifers_wrath','seifers_wrath','seifers_wrath'] },
+  { name:'Beginner Green', author:'Aquablad',
+    cards:['bone_collector','bone_collector','bone_collector','tiki_caretaker','tiki_caretaker','oakling','oakling','oakling','oak_father','oak_father','oak_father','elderwood_embrace','elderwood_embrace','elderwood_embrace','feed_the_forest','feed_the_forest','feed_the_forest','sagami_grovecaller','sagami_grovecaller','tiki_piper','tiki_piper','thyrian_golem','thyrian_golem','thyrian_golem','wood_elemental','wood_elemental','wood_elemental','verduran_force','verduran_force','verduran_force'] },
+  { name:'Blue Jump', author:'Aquablad',
+    cards:['campfire','campfire','mystic_beast','mystic_beast','mystic_beast','frogify','frogify','frogify','wavecrash_colossus','wavecrash_colossus','wavecrash_colossus','sunken_tower','sunken_tower','aurora_myth_maker','forbidden_library','triton_warrior','triton_warrior','triton_warrior','mirror_phantasm','baeru','water_elemental','water_elemental','gabrian_archon','gabrian_archon','gabrian_archon','battle_toads','battle_toads','battle_toads','the_emperors_command','the_emperors_command'] },
+  { name:'Green Rush', author:'Aquablad',
+    cards:['sagami_warrior','sagami_warrior','sagami_warrior','oakling','oakling','oakling','elderwood_embrace','elderwood_embrace','elderwood_embrace','verduran_force','verduran_force','verduran_force','feed_the_forest','feed_the_forest','feed_the_forest','tiki_caretaker','tiki_caretaker','tiki_caretaker','living_willow','living_willow','living_willow','ruunins_messenger','ruunins_messenger','ruunins_messenger','ruunins_guidance','ruunins_guidance','ruunins_guidance','god_hunter','god_hunter','god_hunter'] },
+  { name:'Sorocco in Paradise', author:'SuperbLizard',
+    cards:['mystic_beast','mystic_beast','mystic_beast','water_elemental','water_elemental','water_elemental','axe_grinder','axe_grinder','axe_grinder','seed_of_paradise','seed_of_paradise','seed_of_paradise','rakoakopter','rakoakopter','rakoakopter','auroras_creation','auroras_creation','auroras_creation','sunken_tower','sunken_tower','sunken_tower','time_of_legends','fugoro_merchant','sapphire_yak','sapphire_yak','sapphire_yak','sorocco','triton_warrior','triton_warrior','triton_warrior'] },
+  { name:'Doomsday Carassius', author:'SuperbLizard',
+    cards:['plague_bearer','village_elder','failed_experiment','demon_wrangler','demon_wrangler','demon_wrangler','doomgate','doomsday','doomsday','balloon_fish','balloon_fish','swarming_carassius','swarming_carassius','swarming_carassius','ulani_defender','cartographer','cartographer','cartographer','auroras_creation','auroras_creation','auroras_creation','earthcraft','earthcraft','soul_drain','soul_drain','radiance_airship','ionas_smile','ionas_smile','fugoro_merchant','laya'] },
+  { name:'BR Midrange', author:'happyjo',
+    cards:['shifting_tide','shifting_tide','shifting_tide','triton_banquet','seifer','flame_burst','flame_burst','flame_burst','groundshaker','groundshaker','groundshaker','laya','rakoan_war_machine','rakoan_war_machine','rakoan_war_machine','humbling_vision','humbling_vision','humbling_vision','underground_brigand','underground_brigand','underground_brigand','axe_grinder','axe_grinder','axe_grinder','garudan','seifers_wrath','seifers_wrath','seifers_wrath','rakoakopter','rakoakopter'] },
+  { name:'Lord of Terror Burn', author:'Aquablad',
+    cards:['falcon_dive','falcon_dive','falcon_dive','famine','famine','famine','lord_of_terror','lord_of_terror','lord_of_terror','flame_burst','flame_burst','flame_burst','seifers_wrath','seifers_wrath','seifers_wrath','plague_bearer','plague_bearer','plague_bearer','blood_singer','blood_singer','blood_singer','grim_guard','grim_guard','grim_guard','derelict_tower','derelict_tower','derelict_tower','rebel_slinger','rebel_slinger','rebel_slinger'] },
+  { name:'Triton Aggro', author:'HexForge',
+    cards:['triton_warrior','triton_warrior','triton_warrior','triton_diver','triton_diver','triton_diver','triton_chef','triton_chef','triton_chef','triton_tactician','triton_tactician','triton_tactician','triton_trainer','triton_trainer','triton_trainer','snowstorm_lancer','snowstorm_lancer','snowstorm_lancer','gabrian_archon','gabrian_archon','gabrian_archon','gabrian_commander','gabrian_commander','gabrian_commander','humbling_vision','humbling_vision','humbling_vision','water_elemental','water_elemental','water_elemental'] },
+];
+
 function mkDefaultDeck(player) {
-  // Fallback decks using core Faeria cards only
-  const d = [];
-  const add = (id, n) => { for(let i=0;i<n;i++) d.push(id); };
-  if (player==='A') {
-    // Green/Forest starter
-    add('land_F',4); add('land_N',2);
-    add('tiki_chieftain',3); add('sagami_warrior',3); add('living_willow',2);
-    add('deepwood_grizzly',2); add('tiki_healer',2);
-    add('wild_growth',2); add('elderwood_embrace',2);
-    add('imperial_guard',2); add('healing_song',2); add('campfire',2);
-  } else {
-    // Red/Mountain starter
-    add('land_M',4); add('land_N',2);
-    add('flame_spitter',3); add('underground_brigand',3); add('axe_grinder',3);
-    add('shedim_brute',2); add('barbarian_ogre',1);
-    add('firebomb',3); add('flame_burst',2);
-    add('imperial_guard',2); add('healing_song',2); add('campfire',1);
-  }
+  // Zufälliges Hub-Deck wählen (A und B bekommen unterschiedliche)
+  const idx = player === 'A'
+    ? Math.floor(Math.random() * HUB_DECKS.length)
+    : Math.floor(Math.random() * HUB_DECKS.length);
+  const chosen = HUB_DECKS[idx];
+  // Shuffle
+  const d = [...chosen.cards];
   for (let i=d.length-1;i>0;i--) {
     const j=Math.floor(Math.random()*(i+1));
     [d[i],d[j]]=[d[j],d[i]];
@@ -6995,7 +7008,7 @@ module.exports = {
   handUnshift,
   handIdxOf,
   deal,
-  mkDefaultDeck,
+  mkDefaultDeck, HUB_DECKS,
   loadGameParams,
   mkState,
   doMulligan,
