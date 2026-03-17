@@ -237,8 +237,7 @@ class GameRoom {
     if (this.S.winner) return; // game already over
     const winner = player === 'A' ? 'B' : 'A';
     this.S.winner = winner;
-    this._broadcastState({ type: 'resign', player });
-    this._stopTimer();
+    // Don't broadcastState here — GAME_OVER from _endGame handles everything
     this._endGame(winner, 'resign');
   }
 

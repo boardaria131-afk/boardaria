@@ -61,7 +61,7 @@ app.use(express.static(path.join(__dirname, '../client/public')));
 
 // Health
 app.get('/api/health', async (req, res) => {
-  const info = { status: 'ok', version: '5.10.0', uptime: process.uptime(), usingDB: isUsingDB };
+  const info = { status: 'ok', version: '5.12.0', uptime: process.uptime(), usingDB: isUsingDB };
   if (isUsingDB) {
     try { const r = await db.healthCheck(); info.db = r; } catch(e) { info.dbError = e.message; }
   }

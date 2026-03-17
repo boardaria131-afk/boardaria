@@ -784,6 +784,14 @@ svg#board { display: block; overflow: visible; touch-action: none; }
        onmouseout="this.style.borderColor='#3a2020';this.style.color='#664444'">
       🐛 Bug melden
     </button>
+    <button id="dev-match-btn" onclick="mpStartDevMatch()" style="
+      display:none;width:100%;padding:5px;margin-top:4px;cursor:pointer;border-radius:4px;
+      background:rgba(40,10,60,.6);border:1px solid #6a3a9a;color:#bb88ff;
+      font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:1px;transition:all .15s;
+    " onmouseover="this.style.borderColor='#aa66ff';this.style.color='#ddaaff'"
+       onmouseout="this.style.borderColor='#6a3a9a';this.style.color='#bb88ff'">
+      🛠 Dev Match (lokal)
+    </button>
     <a href="/leaderboard.html" target="_blank" style="display:block;text-align:center;margin-top:8px;font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:2px;color:#3a4a5a;text-decoration:none" onmouseover="this.style.color='#c8a84b'" onmouseout="this.style.color='#3a4a5a'">📊 Rangliste anzeigen</a>
 
     <div style="margin-top:16px;border-top:1px solid #1a2535;padding-top:14px">
@@ -1030,7 +1038,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   <div id="win-card">
     <h2 id="win-title">Sieg!</h2>
     <p id="win-elo" style="font-family:'Cinzel',serif;font-size:.65rem;color:#68aaee;letter-spacing:2px;margin:6px 0 12px"></p>
-    <button onclick="location.href='hexforge-start.html'">Neues Spiel</button>
+    <button onclick="document.getElementById('win-ov').classList.remove('on'); if(window._DEV_MATCH){mpEndDevMatch();}else{if(typeof myPlayer!=='undefined'){myPlayer=null;matchId=null;} if(typeof showLobby==='function')showLobby();}">Zurück zur Lobby</button>
   </div>
 </div>
 
@@ -1091,12 +1099,29 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 
 // ── Dev flag ──────────────────────────────────────────────
 // ⚠ set to false before release
-const DEV_MODE_DEFAULT = true;
+const DEV_MODE_DEFAULT = false;
 let   _devEnabled = DEV_MODE_DEFAULT;
 // Proxy so existing `if(!DEV_MODE)` checks still work
 const DEV_MODE_PROXY = new Proxy({}, { get:() => _devEnabled });
 // Alias used everywhere
 function isDevMode() { return _devEnabled; }
+
+// Aktiviere DEV-Modus mit Ctrl+Shift+D (nur für Playtesting)
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+    _devEnabled = !_devEnabled;
+    if (_devEnabled && window.G) window.G._devInit();
+    if (!_devEnabled) {
+      document.getElementById('dev-banner')?.remove();
+      ["btn-rnd","btn-placecreature","btn-skipround"].forEach(id => {
+        const el = document.getElementById(id); if (el) el.style.display = "none";
+      });
+    }
+    const dmb = document.getElementById('dev-match-btn');
+    if (dmb) dmb.style.display = _devEnabled ? 'block' : 'none';
+    if (typeof showHint === "function") showHint(_devEnabled ? "🛠 Dev-Modus AN — Dev Match Button erscheint in der Lobby" : "🛠 Dev-Modus AUS", 2500);
+  }
+});
 
 // ── Board constants ───────────────────────────────────────
 const BOARD_R   = 3;
@@ -8215,7 +8240,8 @@ class Engine {
       this.landN_left  = 0;
       this.handVisible = true;
       this.mulliganSel = new Set();
-      this._devInit();
+      // Dev tools only in test mode, not in real MP matches
+      if (window._TEST_MODE) this._devInit();
       return;
     }
     // Single-Player-Modus
@@ -8229,7 +8255,7 @@ class Engine {
     this.mulliganSel = new Set(); // cards selected for replacement
 
     this._render();
-    this._devInit();
+    if (isDevMode()) this._devInit();
     // Start with Mulligan for Player A
     this._showMulligan('A');
   }
@@ -9529,6 +9555,7 @@ class Engine {
       <button onclick="G.devSkipMulligan()" title="Skip Mulligan" style="margin-left:6px;padding:1px 6px;font-size:.55rem;background:rgba(80,40,120,.5);border:1px solid #6a3a9a;color:#cc99ff;border-radius:3px;cursor:pointer">Skip Mulligan</button>
       <button onclick="G.devSetHP()" title="Set HP to 5" style="margin-left:4px;padding:1px 6px;font-size:.55rem;background:rgba(120,30,30,.5);border:1px solid #882222;color:#ff9090;border-radius:3px;cursor:pointer">HP→5</button>
       <button id="dev-toggle-btn" onclick="G.devToggle()" title="Toggle DEV mode on/off" style="margin-left:8px;padding:1px 7px;font-size:.55rem;background:rgba(40,120,40,.5);border:1px solid #3a8a3a;color:#88ff88;border-radius:3px;cursor:pointer">ON</button>
+      <button onclick="if(window._DEV_MATCH)mpEndDevMatch();" title="Dev Match beenden" style="margin-left:4px;padding:1px 7px;font-size:.55rem;background:rgba(80,40,10,.5);border:1px solid #8a5a1a;color:#ffaa44;border-radius:3px;cursor:pointer" id="dev-exit-btn">⏹ Exit</button>
     `;
     banner.style.cssText = 'position:fixed;top:4px;right:4px;z-index:9999;font-size:.6rem;font-family:monospace;color:#aa77ff;background:rgba(20,10,30,.8);border:1px solid #4a2a6a;border-radius:4px;padding:3px 8px;display:flex;align-items:center;gap:2px;';
     document.body.appendChild(banner);
@@ -10857,7 +10884,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.10.0';
+window.HEXFORGE_VERSION = '5.12.0';
 (function () {
 'use strict';
 
@@ -10941,9 +10968,12 @@ function restoreKwSets(state) {
 }
 
 // ── Helper ──────────────────────────────────────────────────
-function isMPMode()  { return !!myPlayer; }
+function isMPMode()  { return !!myPlayer || !!window._DEV_MATCH; }
 function isMyTurn()  {
   const G = window.G;
+  if (!G) return false;
+  // DEV MATCH: immer dran (beide Seiten kontrollierbar)
+  if (window._DEV_MATCH) return G.S.phase === 'FREE' && !G.S._mulliganPhase;
   return G && G.S.ap === myPlayer && G.S.phase === 'FREE' && !G.S._mulliganPhase && !_waitingForServer;
 }
 function playActionType(cardId) {
@@ -10957,6 +10987,9 @@ function playActionType(cardId) {
 
 // ── Action senden ───────────────────────────────────────────
 function sendAction(type, payload = {}) {
+  // DEV MATCH: Aktionen werden direkt vom lokalen Engine-Override abgehandelt.
+  // Nur falls sendAction doch aufgerufen wird (z.B. alter Pfad), ignorieren.
+  if (window._DEV_MATCH) return;
   if (!socket) return;
   _waitingForServer = true;
   updateTurnBanner();
@@ -11419,7 +11452,10 @@ function _collectBugSnapshot() {
     if (S.log?.length) {
       lines.push('');
       lines.push('--- Letzte 5 Log-Einträge ---');
-      S.log.slice(-5).forEach(l => lines.push('  ' + l));
+      S.log.slice(0, 5).forEach(l => {
+        const msg = typeof l === 'string' ? l : (l?.m || JSON.stringify(l));
+        lines.push(`  [${l?.p||'?'}] ${msg}`);
+      });
     }
 
     // Hand des lokalen Spielers
@@ -11499,6 +11535,71 @@ window.mpDoResign = function() {
   // Immediately hide resign button so it can't be clicked again
   const rb = document.getElementById('resign-float-btn');
   if (rb) rb.style.display = 'none';
+};
+
+// ── Dev Match (lokales Spiel ohne Server) ────────────────────
+window.mpStartDevMatch = function() {
+  if (!isDevMode()) return;
+
+  // Lade Deck aus Selector (optional)
+  const idx = document.getElementById('mp-deck-select')?.value;
+  let deckCards = null;
+  if (idx) {
+    try { deckCards = JSON.parse(localStorage.getItem('hf_decks')||'[]')[parseInt(idx)]?.cards||null; } catch(e){}
+  }
+
+  hideOverlay('mp-lobby-overlay');
+  hideMulligan();
+
+  // Flag: kein Server-Sync
+  window._DEV_MATCH = true;
+  myPlayer = 'A'; // Dev sieht beide Seiten als A
+  matchId  = 'dev-local';
+
+  // Show game UI + float buttons
+  const header = document.getElementById('hdr');
+  const main   = document.getElementById('main');
+  if (header) header.style.display = '';
+  if (main)   main.style.display   = '';
+  const _fb2 = document.getElementById('bug-float-btn'); if (_fb2) _fb2.style.display = 'block';
+  const _rb2 = document.getElementById('resign-float-btn'); if (_rb2) _rb2.style.display = 'none'; // kein Resign im Dev Match
+
+  // Lokale Engine starten (KEIN _MP_INIT — voller lokaler Modus)
+  _devEnabled = true;
+  const G = new Engine();  // löst _devInit() aus da isDevMode()=true
+  window.G = G;
+
+  // Dev-Banner-Hinweis ergänzen
+  const banner = document.getElementById('dev-banner');
+  if (banner) {
+    const hint = document.createElement('span');
+    hint.style.cssText = 'margin-left:8px;font-size:.5rem;color:#ffcc44;opacity:.8';
+    hint.textContent = '| LOKAL — kein Server';
+    banner.appendChild(hint);
+  }
+
+  showHint('🛠 Dev Match gestartet — alle Aktionen lokal, kein Server-Sync', 4000);
+};
+
+// Dev Match beenden → zurück zur Lobby
+window.mpEndDevMatch = function() {
+  window._DEV_MATCH = false;
+  myPlayer = null; matchId = null;
+  window.G = null;
+  document.getElementById('dev-banner')?.remove();
+  ['btn-rnd','btn-placecreature','btn-skipround'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+  const header = document.getElementById('hdr');
+  const main   = document.getElementById('main');
+  if (header) header.style.display = 'none';
+  if (main)   main.style.display   = 'none';
+  const _fb = document.getElementById('bug-float-btn'); if (_fb) _fb.style.display = 'none';
+  const _fb2 = document.getElementById('bug-float-btn'); if (_fb2) _fb2.style.display = 'none';
+  const _rb = document.getElementById('resign-float-btn'); if (_rb) _rb.style.display = 'none';
+  const _rb2 = document.getElementById('resign-float-btn'); if (_rb2) _rb2.style.display = 'none';
+  document.getElementById('win-ov')?.classList.remove('on');
+  showLobby();
 };
 
 // ── Lobby ─────────────────────────────────────────────────────
@@ -12158,6 +12259,16 @@ window.mpToggleMulligan = function(i) {
 window.mpConfirmMulligan = function() {
   const G = window.G;
   if (!G) return;
+  // DEV MATCH: lokale Engine direkt ansprechen
+  if (window._DEV_MATCH) {
+    const hand = G.S.players?.[G.S.ap]?.hand || [];
+    const replaceIds = [...mulliganSel].map(i => hand[i]?.id).filter(Boolean);
+    G.confirmMulligan(G.S.ap, replaceIds);
+    mulliganSel.clear();
+    const btn = document.getElementById('mp-mull-confirm');
+    if (btn) { btn.disabled = false; btn.textContent = 'Bestätigen ▶'; }
+    return;
+  }
   const hand = G.S.players?.[myPlayer]?.hand || [];
   const replaceIds = [...mulliganSel].map(i => hand[i]?.id).filter(Boolean);
   sendAction(ACTION.MULLIGAN_CONFIRM, { replaceIds });
@@ -12172,7 +12283,7 @@ window.mpConfirmMulligan = function() {
 // endTurn
 Engine.prototype.endTurn = (function(orig) {
   return function() {
-    if (!isMPMode()) return orig.call(this);
+    if (!isMPMode() || window._DEV_MATCH) return orig.call(this);
     if (!isMyTurn()) return;
     this._clr();
     sendAction(ACTION.END_TURN);
@@ -12182,7 +12293,7 @@ Engine.prototype.endTurn = (function(orig) {
 // openLandMenu: Radial-Menü öffnen ist OK
 Engine.prototype.openLandMenu = (function(orig) {
   return function() {
-    if (!isMPMode()) return orig.call(this);
+    if (!isMPMode() || window._DEV_MATCH) return orig.call(this);
     if (!isMyTurn() || this.S.lobDone) return;
     orig.call(this);
   };
@@ -12191,7 +12302,7 @@ Engine.prototype.openLandMenu = (function(orig) {
 // _selectMenuOpt: Wheel-Auswahl → Server
 Engine.prototype._selectMenuOpt = (function(orig) {
   return function(id) {
-    if (!isMPMode()) return orig.call(this);
+    if (!isMPMode() || window._DEV_MATCH) return orig.call(this);
     this.closeLandMenu();
     if (id === '_draw') {
       sendAction(ACTION.WHEEL_DRAW);
@@ -12220,7 +12331,7 @@ Engine.prototype._selectMenuOpt = (function(orig) {
 // selCardFn
 Engine.prototype.selCardFn = (function(orig) {
   return function(id) {
-    if (!isMPMode()) return orig.call(this);
+    if (!isMPMode() || window._DEV_MATCH) return orig.call(this);
     if (!isMyTurn()) return;
     orig.call(this, id);
   };
@@ -12229,7 +12340,7 @@ Engine.prototype.selCardFn = (function(orig) {
 // selUnitFn
 Engine.prototype.selUnitFn = (function(orig) {
   return function(uid) {
-    if (!isMPMode()) return orig.call(this);
+    if (!isMPMode() || window._DEV_MATCH) return orig.call(this);
     if (!isMyTurn()) return;
     const u = this.S.units[uid];
     if (u && u.own !== myPlayer) return; // can't select enemy units
@@ -12240,7 +12351,7 @@ Engine.prototype.selUnitFn = (function(orig) {
 // cancelSel
 Engine.prototype.cancelSel = (function(orig) {
   return function() {
-    if (!isMPMode()) return orig.call(this);
+    if (!isMPMode() || window._DEV_MATCH) return orig.call(this);
     this._clr();
     this._render();
   };
@@ -12249,7 +12360,7 @@ Engine.prototype.cancelSel = (function(orig) {
 // clickCell: alle Board-Aktionen → Server
 Engine.prototype.clickCell = (function(orig) {
   return function(q, r, s) {
-    if (!isMPMode()) return orig.call(this, q, r, s);
+    if (!isMPMode() || window._DEV_MATCH) return orig.call(this, q, r, s);
     if (!isMyTurn()) return;
 
     const S    = this.S;
@@ -12432,7 +12543,7 @@ Engine.prototype.clickCell = (function(orig) {
 // _win: no-op (GAME_OVER socket event handles this)
 Engine.prototype._win = (function(orig) {
   return function() {
-    if (!isMPMode()) return orig.call(this);
+    if (!isMPMode() || window._DEV_MATCH) return orig.call(this);
   };
 }(Engine.prototype._win));
 
