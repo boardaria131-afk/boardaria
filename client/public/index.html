@@ -562,9 +562,41 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 .discover-card .dc-text { font-size:.55rem; color:#4a5a72; line-height:1.4; }
 
 </style>
-<script src="/socket.io/socket.io.js"></script>
+<!-- socket.io async - verhindert schwarzen Bildschirm beim Laden -->
+<script>
+  // bfcache: Wenn der Browser die Seite aus dem Cache wiederherstellt,
+  // wird kein DOMContentLoaded gefeuert. pageshow löst das.
+  window.addEventListener('pageshow', function(e) {
+    // Kein schwarzer Bildschirm bei Back/Forward Navigation
+    if (e.persisted) {
+      var splash = document.getElementById('_splash');
+      if (splash) splash.style.display = 'none';
+      // Auth-Overlay zeigen falls nicht eingeloggt
+      if (typeof showOverlay === 'function' && typeof mySession !== 'undefined' && !mySession) {
+        showOverlay('mp-auth-overlay');
+      }
+    }
+  });
+</script>
+<script src="/socket.io/socket.io.js" async></script>
 </head>
 <body>
+
+<!-- Sofort sichtbarer Ladebildschirm (reines HTML/CSS, kein JS nötig) -->
+<div id="_splash" style="
+  position:fixed;inset:0;z-index:99999;
+  background:#080a0e;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  font-family:'Cinzel',serif;
+">
+  <div style="color:#c8a84b;font-size:1.6rem;letter-spacing:6px;margin-bottom:16px">HEXFORGE</div>
+  <div style="color:#3a4a5a;font-size:.55rem;letter-spacing:3px;margin-bottom:28px">MULTIPLAYER</div>
+  <div style="width:48px;height:2px;background:#1a2030;border-radius:1px;overflow:hidden">
+    <div id="_splash_bar" style="height:100%;width:0;background:#c8a84b;transition:width 0.3s ease;border-radius:1px"></div>
+  </div>
+  <div style="color:#2a3040;font-size:.5rem;letter-spacing:2px;margin-top:20px" id="_splash_msg">VERBINDE…</div>
+</div>
 
 <style>
 /* ── MP Overlay System ──────────────────────────────────── */
@@ -725,7 +757,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 <!-- ═══ MP LOBBY OVERLAY ════════════════════════════════════ -->
 <div id="mp-lobby-overlay" class="mp-overlay">
   <div class="mp-box" style="min-width:380px;max-width:440px">
-    <h2>LOBBY</h2>
+    <h2 id="lobby-title" style="cursor:default;user-select:none" title="">LOBBY</h2>
     <div id="mp-lobby-user" style="font-family:'Cinzel',serif;font-size:.6rem;color:#5a6a7a;letter-spacing:2px;margin-bottom:16px">—</div>
 
     <!-- Deck select -->
@@ -1106,9 +1138,14 @@ const DEV_MODE_PROXY = new Proxy({}, { get:() => _devEnabled });
 // Alias used everywhere
 function isDevMode() { return _devEnabled; }
 
-// Aktiviere DEV-Modus mit Ctrl+Shift+D (nur für Playtesting)
-document.addEventListener('keydown', e => {
-  if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+// DEV-Modus: 5× Klick auf "LOBBY"-Titel
+let _devClickCount = 0, _devClickTimer = null;
+function _devTitleClick() {
+  _devClickCount++;
+  clearTimeout(_devClickTimer);
+  _devClickTimer = setTimeout(() => { _devClickCount = 0; }, 1500);
+  if (_devClickCount >= 5) {
+    _devClickCount = 0;
     _devEnabled = !_devEnabled;
     if (_devEnabled && window.G) window.G._devInit();
     if (!_devEnabled) {
@@ -1119,8 +1156,16 @@ document.addEventListener('keydown', e => {
     }
     const dmb = document.getElementById('dev-match-btn');
     if (dmb) dmb.style.display = _devEnabled ? 'block' : 'none';
-    if (typeof showHint === "function") showHint(_devEnabled ? "🛠 Dev-Modus AN — Dev Match Button erscheint in der Lobby" : "🛠 Dev-Modus AUS", 2500);
+    const title = document.getElementById('lobby-title');
+    if (title) title.style.color = _devEnabled ? '#aa66ff' : '';
+    if (typeof showHint === "function") 
+      showHint(_devEnabled ? '🛠 Dev-Modus AN' : '🛠 Dev-Modus AUS', 2000);
   }
+}
+// Attach after DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  const t = document.getElementById('lobby-title');
+  if (t) t.addEventListener('click', _devTitleClick);
 });
 
 // ── Board constants ───────────────────────────────────────
@@ -10884,7 +10929,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.12.0';
+window.HEXFORGE_VERSION = '5.14.0';
 (function () {
 'use strict';
 
@@ -11082,38 +11127,60 @@ function connectSocket() {
   if (socket && socket.connected) return;
   setConnStatus('⟳ Verbinde mit Server…');
 
-  socket = io({
-    reconnectionDelay:    1000,
-    reconnectionDelayMax: 8000,
-    reconnectionAttempts: 20,
-    timeout:              15000,
-    // Prefer WebSocket to avoid issues with Render's reverse proxy
-    // dropping long-polling (XHR) connections mid-handshake.
-    transports: ['websocket', 'polling'],
-  });
+  // Splash-Bar animieren solange socket.io noch lädt / verbindet
+  const bar = document.getElementById('_splash_bar');
+  const msg = document.getElementById('_splash_msg');
+  let pct = 0;
+  const barTimer = setInterval(() => {
+    pct = Math.min(pct + (pct < 70 ? 3 : 0.3), 92);
+    if (bar) bar.style.width = pct + '%';
+  }, 120);
 
-  socket.on('connect', () => {
-    hideDisconnectBanner();
-    setConnStatus('✓ Verbunden');
-    setTimeout(() => setConnStatus(''), 2000);
+  // Warte auf socket.io-Skript (async geladen)
+  function _doConnect() {
+    socket = io({
+      reconnectionDelay:    1000,
+      reconnectionDelayMax: 8000,
+      reconnectionAttempts: 20,
+      timeout:              15000,
+      transports: ['websocket', 'polling'],
+    });
 
-    const token = localStorage.getItem('hf_token');
-    if (token) {
-      socket.emit(C2S.AUTH_TOKEN, { token });
-      // If token auth fails silently, show auth overlay after 5s
+    socket.on('connect', () => {
+      // Splash ausblenden
+      clearInterval(barTimer);
+      if (bar) { bar.style.width = '100%'; }
       setTimeout(() => {
-        if (document.getElementById('mp-auth-overlay').style.display !== 'none') return;
-        if (!mySession) {
-          showOverlay('mp-auth-overlay');
-          setConnStatus('Sitzung abgelaufen — bitte neu anmelden');
-        }
-      }, 5000);
-    }
-  });
+        const splash = document.getElementById('_splash');
+        if (splash) splash.style.display = 'none';
+      }, 300);
 
-  socket.on('connect_error', (err) => {
-    setConnStatus('⟳ Server startet… bitte warten (~30s)');
-  });
+      hideDisconnectBanner();
+      setConnStatus('✓ Verbunden');
+      setTimeout(() => setConnStatus(''), 2000);
+
+      const token = localStorage.getItem('hf_token');
+      if (token) {
+        socket.emit(C2S.AUTH_TOKEN, { token });
+        // If token auth fails silently, show auth overlay after 5s
+        setTimeout(() => {
+          if (document.getElementById('mp-auth-overlay').style.display !== 'none') return;
+          if (!mySession) {
+            showOverlay('mp-auth-overlay');
+            setConnStatus('Sitzung abgelaufen — bitte neu anmelden');
+          }
+        }, 5000);
+      } else {
+        // Kein Token → sofort Auth-Overlay zeigen
+        showOverlay('mp-auth-overlay');
+      }
+    });
+
+    socket.on('connect_error', (err) => {
+      if (msg) msg.textContent = 'SERVER STARTET… (~30S)';
+      if (bar) bar.style.width = '40%';
+      setConnStatus('⟳ Server startet… bitte warten (~30s)');
+    });
 
   socket.on('disconnect', () => {
     setConnStatus('⚠ Verbindung unterbrochen — verbinde neu…');
@@ -11274,6 +11341,29 @@ function connectSocket() {
     updateSpectatorInfo();
   });
 
+  } // end _doConnect
+
+  // socket.io wird async geladen — warten bis io() verfügbar ist
+  if (typeof io !== 'undefined') {
+    _doConnect();
+  } else {
+    if (msg) msg.textContent = 'LADE SOCKET.IO…';
+    const waitForIo = setInterval(() => {
+      if (typeof io !== 'undefined') {
+        clearInterval(waitForIo);
+        _doConnect();
+      }
+    }, 100);
+    // Timeout nach 20s → Fehlermeldung
+    setTimeout(() => {
+      if (typeof io === 'undefined') {
+        clearInterval(waitForIo);
+        clearInterval(barTimer);
+        if (bar) bar.style.background = '#aa4444';
+        if (msg) msg.textContent = 'SERVER NICHT ERREICHBAR — SEITE NEU LADEN';
+      }
+    }, 20000);
+  }
 } // end connectSocket()
 
 // ── Auth ─────────────────────────────────────────────────────
@@ -12588,8 +12678,8 @@ window.addEventListener('DOMContentLoaded', () => {
   // ── Pinch-to-zoom on board ─────────────────────────────
   initBoardTouch();
 
-  // Always show auth overlay initially — hidden once connected+authenticated
-  showOverlay('mp-auth-overlay');
+  // Splash ausblenden sobald DOM bereit (socket.io noch am Laden)
+  // Auth-Overlay wird erst nach Connect angezeigt (im connect-Handler)
   connectSocket();
 });
 
