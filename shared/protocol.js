@@ -110,6 +110,8 @@ const ACTION = {
 
 // ── Pending-input types (server → client: what to do next) ─
 const PENDING = {
+  GIFT:            'gift',          // { unitId }
+  DASH:            'dash',          // { unitId }
   DISCOVER:        'discover',      // { cards: [id, id, id] }
   CHOOSE_ONE:      'choose_one',    // { options: [{icon,label}] }
   OCTOPUS:         'octopus',       // {}

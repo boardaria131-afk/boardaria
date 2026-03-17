@@ -552,7 +552,7 @@ const CARDS = (function() {
   });
   add({ id:'triton_adventurer', set:'gagana',
     name:'Triton Adventurer', color:'blue', type:'creature', subtype:'Triton',
-    cost:4, req:{lake:2, desert:1}, kw:kw('jump'), atk:4, hp:3, rarity:'rare',
+    cost:4, req:{lake:2, wild:1}, kw:kw('jump'), atk:4, hp:3, rarity:'rare',
     text:'Jump. End of turn: if on enemy land, draw a card.',
     onTurnStart:(S,u)=>{
       const c=S.cells[cK(u.q,u.r)];
@@ -846,7 +846,7 @@ const CARDS = (function() {
     },
   });
   add({ id:'mystic_beast', set:'dlc', name:'Mystic Beast', color:'blue', type:'creature', subtype:'Beast',
-    cost:3, req:{lake:2, desert:1}, kw:kw(), atk:2, hp:5,
+    cost:3, req:{lake:2, wild:1}, kw:kw(), atk:2, hp:5,
     rarity:'rare', treasure:false,
     text:'Gift: Gains +2/+0 and Jump if summoned adjacent to an enemy well.',
     onGift:(S,p,unit)=>{
@@ -881,7 +881,7 @@ const CARDS = (function() {
     text:'Transform a creature into a 2/2 Frog with Jump.',
   });
   add({ id:'auroras_creation', set:'dlc', name:'Aurora\'s Creation', color:'blue', type:'event', subtype:null,
-    cost:5, req:{ mountain:3}, kw:kw(), atk:null, hp:null,
+    cost:5, req:{lake:3}, kw:kw(), atk:null, hp:null,
     rarity:'epic', treasure:false,
     text:'Add a copy of a creature to your hand. It costs 5 less.',
   });
@@ -1012,7 +1012,7 @@ const CARDS = (function() {
     text:'Transform a creature into a random creature costing 2 more.',
   });
   add({ id:'auroras_trick', set:'dlc', name:'Aurora\'s Trick', color:'blue', type:'event', subtype:null,
-    cost:4, req:{ mountain:5}, kw:kw(), atk:null, hp:null,
+    cost:4, req:{lake:5}, kw:kw(), atk:null, hp:null,
     rarity:'epic', treasure:false,
     text:'Gain control of a creature with 2 Attack or less.',
   });
@@ -1089,7 +1089,7 @@ const CARDS = (function() {
     },
   });
   add({ id:'tide_lord', set:'dlc', name:'Tide Lord', color:'blue', type:'creature', subtype:'Triton',
-    cost:5, req:{lake:2, desert:2}, kw:kw('jump'), atk:5, hp:5, rarity:'rare', treasure:false,
+    cost:5, req:{lake:2, wild:2}, kw:kw('jump'), atk:5, hp:5, rarity:'rare', treasure:false,
     text:'Jump. Can be summoned adjacent to friendly Tritons. If it is, gains +1/+1.',
     onSummon:(S,u,summoned,summonOwner) => {
       if(summoned.id!==u.id)return;
@@ -1180,7 +1180,7 @@ const CARDS = (function() {
     },
   });
   add({ id:'orphan_fugu', set:'dlc', name:'Orphan Fugu', color:'blue', type:'creature', subtype:'Beast',
-    cost:4, req:{lake:1, desert:1}, kw:kw('jump'), atk:3, hp:5, rarity:'common', treasure:false,
+    cost:4, req:{lake:1, wild:1}, kw:kw('jump'), atk:3, hp:5, rarity:'common', treasure:false,
     text:'Jump. Has +2/+0 while you control another Beast.',
     onTurnStart:(S,u) => {
       const hasBeast=Object.values(S.units).some(v=>v.own===u.own&&v.id!==u.id&&cardData(v.cid)?.subtype==='Beast');
@@ -1188,7 +1188,7 @@ const CARDS = (function() {
     },
   });
   add({ id:'rapala', set:'dlc', name:'Rapala', color:'blue', type:'creature', subtype:'Beast',
-    cost:1, req:{lake:1, desert:3}, kw:kw('aquatic'), atk:1, hp:1, rarity:'legendary', treasure:false,
+    cost:1, req:{lake:1, wild:3}, kw:kw('aquatic'), atk:1, hp:1, rarity:'legendary', treasure:false,
     text:'Aquatic. Gift: Fill opponent\'s hand with frogs.',
     onGift:(S,p,unit) => {
       const o=p==='A'?'B':'A'; const pl=S.players[o];
@@ -1197,7 +1197,7 @@ const CARDS = (function() {
     },
   });
   add({ id:'fugoro_merchant', set:'gagana', name:'Fugoro Merchant', color:'blue', type:'creature', subtype:null,
-    cost:5, req:{lake:3, forest:3}, kw:kw('jump'), atk:3, hp:5, rarity:'legendary', treasure:false,
+    cost:5, req:{lake:3, wild:3}, kw:kw('jump'), atk:3, hp:5, rarity:'legendary', treasure:false,
     text:'Jump. Gift: Choose — Draw Urn of Gabria, Crystal Dragon, or Ulani\'s Medallion.',
     onGift:(S,p,unit) => {
       const choices=['urn_of_gabria','crystal_dragon','ulanis_medallion'];
@@ -1827,7 +1827,7 @@ const CARDS = (function() {
     },
   });
   add({ id:'architect', set:'dlc', name:'Architect', color:'red', type:'creature', subtype:null,
-    cost:2, req:{lake:1, forest:1, wild:1}, kw:kw(), atk:2, hp:2, rarity:'epic', treasure:false,
+    cost:2, req:{mountain:1, wild:1}, kw:kw(), atk:2, hp:2, rarity:'epic', treasure:false,
     text:'Gift: Give a structure +0/+2.',
     onGift:(S,p,unit) => { unit.pendingGift={type:'buff_structure',atk:2,hp:2}; lg(S,p,'🏗 Architect: Wähle Struktur'); },
   });
@@ -1906,7 +1906,7 @@ const CARDS = (function() {
     text:'',
   });
   add({ id:'blood_obelisk', set:'dlc', name:'Blood Obelisk', color:'red', type:'structure', subtype:null,
-    cost:2, req:{lake:1, forest:1, wild:1}, kw:kw(), atk:null, hp:2, rarity:'rare', treasure:false,
+    cost:2, req:{mountain:1, wild:1}, kw:kw(), atk:null, hp:2, rarity:'rare', treasure:false,
     text:'Whenever an enemy creature dies in combat, deal 1 damage to your opponent and gain 1 Faeria.',
     onEnemyDies:(S,u,dead) => {
       if(dead._diedInCombat){

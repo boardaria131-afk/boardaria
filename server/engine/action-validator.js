@@ -262,7 +262,11 @@ function validateGift(S, action, player) {
   if (u.own !== player) return fail('not your unit');
   if (u.q === null) return fail('unit not on board');
   if (u.summonSick) return fail('summoning sickness');
-  if (!u.pendingGift) return fail('no pending gift');
+  // Allow if: unit has pendingGift (resolving) OR unit has onGift (triggering Activate)
+  const cd = cardData(u.cid);
+  const hasActivate = cd && typeof cd.onGift === 'function';
+  if (!u.pendingGift && !hasActivate) return fail('no pending gift');
+  if (!u.pendingGift && u.atked) return fail('already activated this turn');
   if (q !== undefined && !validCoord(q, r, s)) return fail('invalid target coords');
   return ok();
 }

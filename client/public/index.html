@@ -564,16 +564,22 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 </style>
 <!-- socket.io async - verhindert schwarzen Bildschirm beim Laden -->
 <script>
-  // bfcache: Wenn der Browser die Seite aus dem Cache wiederherstellt,
-  // wird kein DOMContentLoaded gefeuert. pageshow löst das.
+  // bfcache: Bei Back/Forward Navigation aus Cache
   window.addEventListener('pageshow', function(e) {
-    // Kein schwarzer Bildschirm bei Back/Forward Navigation
     if (e.persisted) {
+      // Splash verstecken
       var splash = document.getElementById('_splash');
       if (splash) splash.style.display = 'none';
-      // Auth-Overlay zeigen falls nicht eingeloggt
-      if (typeof showOverlay === 'function' && typeof mySession !== 'undefined' && !mySession) {
-        showOverlay('mp-auth-overlay');
+      // Immer Auth-Overlay zeigen wenn kein aktives Spiel
+      if (typeof showOverlay === 'function') {
+        var hasGame = window.G && typeof myPlayer !== 'undefined' && myPlayer;
+        if (!hasGame) {
+          showOverlay('mp-auth-overlay');
+          // Falls Session noch vorhanden war, direkt zur Lobby
+          if (typeof mySession !== 'undefined' && mySession && typeof showLobby === 'function') {
+            showLobby();
+          }
+        }
       }
     }
   });
@@ -8264,10 +8270,16 @@ const TARGET_ALL        = new Set(['flame_burst', 'soul_drain']);
 const TARGET_SELF      = new Set(['healing_song', 'wisdom', 'wild_growth', 'tidal_force']);
 // Cards that need no target at all — auto-play on card click
 const TARGET_NO_TARGET = new Set([
-  'treasure_map','message_bottle','famine','seek_shelter',
-  'thyrian_expedition','crystal_spice','barter',
-  'lore_thief','royal_judge','shifting_octopus','wheel_of_chaos','flame_burst_ruby',
-  'ruunins_presence',
+  'treasure_map','message_bottle','famine','seek_shelter','thyrian_expedition','crystal_spice',
+  'barter','lore_thief','royal_judge','shifting_octopus','wheel_of_chaos','flame_burst_ruby',
+  'ruunins_presence','time_of_legends','healing_song','tidal_force','shifting_tide','wild_growth',
+  'explore','spirit_spice','key_of_the_elements','key_of_the_giants','earthcraft','ogre_dance',
+  'blood_song','hellfire','soul_pact','khalims_prayer','ionas_smile','doomsday',
+  'hold_the_line','day_of_the_dragons','three_wishes','victory_celebration','urn_of_gabria','eredons_drum',
+  'chalice_from_the_palace','djinns_lamp','ring_of_dominion','auroras_teapot','stone_of_fair_fortune','dark_crystal',
+  'ionas_mirror','the_worlds_tear','ocarina','treasure_found','shard_of_pandora','wrath_of_ignus',
+  'auroras_dream','battle_toads','failed_experiment','spellwhirl','tale_of_the_old_turtle','windfall',
+  'yak_attack','yakhorn_warhorn'
 ]);
 // Cards that target empty adjacent land cells
 const TARGET_LAND  = new Set(['explore']);
@@ -9066,22 +9078,30 @@ class Engine {
     // ── ACTIVATE: Structures fire their Gift once per turn ──────────────
     const cd2 = cardData(u.cid);
     if (isStructureCard(cd2)) {
-      // Structures can Activate (use Gift) once per turn — even same turn as played
-      // They never move or attack — clicking them just activates if available
-      if (!u._activated && u.onGift) {
-        u._activated = true;
-        doGift(S, this.ap, u);
-        // If there's a pendingGift, enter gift targeting mode
-        if (u.pendingGift) {
-          this.selUnit = uid;
-          this.selUnitFn(uid);
+      // In MP mode: check cardData for onGift (u.onGift is null after serialization)
+      const hasActivate = cd2 && typeof cd2.onGift === 'function';
+      const alreadyUsed = u.atked || u._activated;
+      if (hasActivate && !alreadyUsed && !u.summonSick) {
+        if (isMPMode() && !window._DEV_MATCH) {
+          // MP: send USE_GIFT to server (server calls onGift + handles pendingGift)
+          u._activated = true;
+          sendAction(ACTION.USE_GIFT, { unitId: uid, q: 0, r: 0, s: 0 });
+          return;
+        } else {
+          // Solo/Dev: call doGift locally
+          u._activated = true;
+          doGift(S, this.ap, u);
+          if (u.pendingGift) {
+            this.selUnit = uid;
+            this.selUnitFn(uid);
+            return;
+          }
+          this._clr(); this._render();
           return;
         }
-        this._clr(); this._render();
-        return;
       } else {
-        // Already activated this turn — just show stats
-        lg(S, this.ap, `🏛 ${cd2.name} — already activated this turn`);
+        const reason = u.summonSick ? '(Beschwörungskrankheit)' : alreadyUsed ? '(bereits aktiviert)' : '(kein Activate)';
+        showHint(`🏛 ${cd2.name} kann nicht aktiviert werden ${reason}`, 2000);
         this.pact = null; this.vt = [];
         this._showUD(u); this._render();
         return;
@@ -10929,7 +10949,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.16.0';
+window.HEXFORGE_VERSION = '5.19.0';
 (function () {
 'use strict';
 
@@ -11147,33 +11167,41 @@ function connectSocket() {
     });
 
     socket.on('connect', () => {
-      // Splash ausblenden
       clearInterval(barTimer);
       if (bar) { bar.style.width = '100%'; }
-      setTimeout(() => {
-        const splash = document.getElementById('_splash');
-        if (splash) splash.style.display = 'none';
-      }, 300);
 
       hideDisconnectBanner();
       setConnStatus('✓ Verbunden');
       setTimeout(() => setConnStatus(''), 2000);
 
       const token = localStorage.getItem('hf_token');
-      if (token) {
-        socket.emit(C2S.AUTH_TOKEN, { token });
-        // If token auth fails silently, show auth overlay after 5s
-        setTimeout(() => {
-          if (document.getElementById('mp-auth-overlay').style.display !== 'none') return;
-          if (!mySession) {
-            showOverlay('mp-auth-overlay');
-            setConnStatus('Sitzung abgelaufen — bitte neu anmelden');
-          }
-        }, 5000);
-      } else {
-        // Kein Token → sofort Auth-Overlay zeigen
+
+      // Auth-Overlay SOFORT zeigen bevor Splash verschwindet — verhindert schwarzen Bildschirm
+      // Wird durch AUTH_OK (→ showLobby) oder AUTH_ERR überschrieben
+      if (!window.G && !window._DEV_MATCH) {
+        // Nur zeigen wenn kein aktives Spiel
         showOverlay('mp-auth-overlay');
       }
+
+      // Splash erst ausblenden nachdem Auth-Overlay sichtbar ist
+      setTimeout(() => {
+        const splash = document.getElementById('_splash');
+        if (splash) splash.style.display = 'none';
+      }, 150);
+
+      if (token) {
+        // Status im Auth-Overlay anzeigen während Token geprüft wird
+        setAuthErr('Sitzung wird wiederhergestellt…');
+        socket.emit(C2S.AUTH_TOKEN, { token });
+        // Fallback: falls AUTH_OK/ERR nicht kommt
+        setTimeout(() => {
+          if (!mySession) {
+            setAuthErr('');
+            setConnStatus('Bitte neu anmelden');
+          }
+        }, 8000);
+      }
+      // Kein Token → Auth-Overlay bereits gezeigt oben
     });
 
     socket.on('connect_error', (err) => {
@@ -11182,7 +11210,7 @@ function connectSocket() {
       setConnStatus('⟳ Server startet… bitte warten (~30s)');
     });
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', (reason) => {
     setConnStatus('⚠ Verbindung unterbrochen — verbinde neu…');
     const banner = document.getElementById('mp-turn-banner');
     if (banner && window.G) {
@@ -11190,17 +11218,24 @@ function connectSocket() {
       banner.className = 'mp-turn-banner-waiting';
       banner.style.display = 'block';
     }
+    // Falls kein aktives Spiel und nach kurzem Warten kein Reconnect:
+    // Sicherheitsnetz — Auth-Overlay nach 12s zeigen
+    setTimeout(() => {
+      if (!socket?.connected && !window.G && !mySession) {
+        showOverlay('mp-auth-overlay');
+        setAuthErr('Verbindung getrennt — bitte neu laden oder anmelden');
+      }
+    }, 12000);
   });
 
   socket.on(S2C.AUTH_OK, ({ user, token }) => {
     mySession = user;
     if (token) localStorage.setItem('hf_token', token);
-    // Reset auth button state
+    setAuthErr(''); // "wiederhergestellt..." Meldung löschen
     const ab = document.getElementById('mp-auth-btn');
     const gb = document.getElementById('mp-guest-btn');
     if (ab) { ab.disabled = false; ab.textContent = 'Login'; }
     if (gb) { gb.disabled = false; gb.textContent = 'Als Gast spielen'; }
-    // Sync decks from server (non-blocking)
     if (!user.isGuest) syncDecksFromServer(token);
     showLobby();
   });

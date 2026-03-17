@@ -222,10 +222,29 @@ function doUseGift(S, action, player) {
   const { unitId, q, r, s } = action.payload;
   const u = S.units[unitId];
   if (!u) return {};
+
+  // If no pendingGift yet: this is an Activate trigger (structure clicked)
+  if (!u.pendingGift) {
+    const cd = cardData(u.cid);
+    if (cd && typeof cd.onGift === 'function') {
+      u.atked = true; // mark as activated this turn
+      cd.onGift(S, player, u);
+      // If onGift set a pendingGift, send it back to the player
+      if (u.pendingGift) {
+        return { pendingInput: { type: PENDING.GIFT, unitId } };
+      }
+      // onGift resolved immediately (e.g. Triton Sanctuary)
+      const disc = checkDiscover(S, player);
+      if (disc) return { pendingInput: disc };
+      return {};
+    }
+    return {};
+  }
+
+  // Normal path: resolve existing pendingGift
   const resolved = resolvePendingGift(S, player, u, q ?? 0, r ?? 0, s ?? 0);
   const disc = checkDiscover(S, player);
   if (disc) return { pendingInput: disc };
-  // Check for chained pendingGift (some cards chain)
   if (u.pendingGift) {
     return { pendingInput: { type: PENDING.GIFT, unitId } };
   }
