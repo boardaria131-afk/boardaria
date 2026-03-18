@@ -9087,10 +9087,10 @@ class Engine {
       const hasActivate = cd2 && typeof cd2.onGift === 'function';
       const alreadyUsed = u.atked || u._activated;
       if (hasActivate && !alreadyUsed && !u.summonSick) {
-        if (isMPMode() && !window._DEV_MATCH) {
+        if ((window.isMPMode ? window.isMPMode() : false) && !window._DEV_MATCH) {
           // MP: send USE_GIFT to server (server calls onGift + handles pendingGift)
           u._activated = true;
-          sendAction(ACTION.USE_GIFT, { unitId: uid, q: 0, r: 0, s: 0 });
+          if (typeof sendAction === 'function') sendAction(ACTION.USE_GIFT, { unitId: uid, q: 0, r: 0, s: 0 });
           return;
         } else {
           // Solo/Dev: call doGift locally
@@ -9106,7 +9106,7 @@ class Engine {
         }
       } else {
         const reason = u.summonSick ? '(Beschwörungskrankheit)' : alreadyUsed ? '(bereits aktiviert)' : '(kein Activate)';
-        showHint(`🏛 ${cd2.name} kann nicht aktiviert werden ${reason}`, 2000);
+        if (typeof showHint === 'function') showHint(`🏛 ${cd2.name} kann nicht aktiviert werden ${reason}`, 2000);
         this.pact = null; this.vt = [];
         this._showUD(u); this._render();
         return;
@@ -10286,7 +10286,7 @@ class Engine {
     // When flipped (player A): left = A = me, right = B = opponent → no swap needed
     // When not flipped (player B): left = A = opponent, right = B = me → swap labels
     const S = this.S;
-    const me  = (isMPMode() && !window._DEV_MATCH) ? this._mpPlayer : this.ap;
+    const me  = ((window.isMPMode ? window.isMPMode() : false) && !window._DEV_MATCH) ? this._mpPlayer : this.ap;
     const opp = me === 'A' ? 'B' : 'A';
     const myName  = S.playerNames?.[me]  || `Player ${me}`;
     const oppName = S.playerNames?.[opp] || `Player ${opp}`;
@@ -10483,8 +10483,10 @@ class Engine {
   // Returns true when board should be flipped (player A sees board from below)
   _flipped() {
     // In MP: flip when player is A (so A's base is always at bottom)
-    if (isMPMode() && !window._DEV_MATCH) return this._mpPlayer === 'A';
-    // In solo pass-and-play: flip for active player A
+    // NOTE: (window.isMPMode ? window.isMPMode() : false) is IIFE-scoped, not accessible here (Engine defined before IIFE).
+    // Use window._mpPlayer (set in startGame) as the MP indicator instead.
+    if (window._mpPlayer && !window._DEV_MATCH) return this._mpPlayer === 'A';
+    // Solo pass-and-play: flip for active player A
     return this.ap === 'A';
   }
   // Convert game hex coords → display pixel position (flipped if needed)
@@ -10999,7 +11001,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.35.0';
+window.HEXFORGE_VERSION = '5.36.0';
 (function () {
 'use strict';
 
@@ -11091,6 +11093,9 @@ function isMyTurn()  {
   if (window._DEV_MATCH) return G.S.phase === 'FREE' && !G.S._mulliganPhase;
   return G && G.S.ap === myPlayer && G.S.phase === 'FREE' && !G.S._mulliganPhase && !_waitingForServer;
 }
+// Expose on window so Engine class (defined in script 1) can call them
+window.isMPMode = isMPMode;
+window.isMyTurn = isMyTurn;
 function playActionType(cardId) {
   const cd = (typeof cardData === 'function') ? cardData(cardId) : null;
   if (!cd) return ACTION.PLAY_INSTANT;
