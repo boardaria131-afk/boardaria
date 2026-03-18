@@ -354,3 +354,76 @@ module.exports = {
   healthCheck,
   query, // escape hatch for custom queries
 };
+
+// ════════════════════════════════════════════════════════════
+//  AUTO-MIGRATION
+//  Erstellt fehlende Tabellen beim Server-Start.
+//  Sicher wiederholbar (IF NOT EXISTS).
+// ════════════════════════════════════════════════════════════
+
+async function migrate() {
+  console.log('[DB] Running migrations…');
+
+  await query(`
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto"
+  `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id            SERIAL PRIMARY KEY,
+      username      VARCHAR(32)  UNIQUE NOT NULL,
+      password_hash VARCHAR(255),
+      is_guest      BOOLEAN      DEFAULT FALSE,
+      rating        INTEGER      DEFAULT 1000,
+      wins          INTEGER      DEFAULT 0,
+      losses        INTEGER      DEFAULT 0,
+      created_at    TIMESTAMPTZ  DEFAULT NOW(),
+      last_seen_at  TIMESTAMPTZ  DEFAULT NOW()
+    )
+  `);
+
+  await query(`CREATE INDEX IF NOT EXISTS idx_users_rating   ON users(rating DESC)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_users_username ON users(LOWER(username))`);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS matches (
+      id              UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+      player_a_id     INTEGER      REFERENCES users(id) ON DELETE SET NULL,
+      player_b_id     INTEGER      REFERENCES users(id) ON DELETE SET NULL,
+      player_a_name   VARCHAR(32)  NOT NULL,
+      player_b_name   VARCHAR(32)  NOT NULL,
+      winner          CHAR(1),
+      rating_a_before INTEGER,
+      rating_b_before INTEGER,
+      elo_delta_a     INTEGER      DEFAULT 0,
+      elo_delta_b     INTEGER      DEFAULT 0,
+      ranked          BOOLEAN      DEFAULT TRUE,
+      actions         JSONB        NOT NULL DEFAULT '[]',
+      duration_secs   INTEGER,
+      created_at      TIMESTAMPTZ  DEFAULT NOW()
+    )
+  `);
+
+  await query(`CREATE INDEX IF NOT EXISTS idx_matches_player_a ON matches(player_a_id)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_matches_player_b ON matches(player_b_id)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_matches_created  ON matches(created_at DESC)`);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS decks (
+      id         SERIAL PRIMARY KEY,
+      user_id    INTEGER     REFERENCES users(id) ON DELETE CASCADE,
+      name       VARCHAR(64) NOT NULL,
+      cards      JSONB       NOT NULL,
+      archetype  VARCHAR(32),
+      is_default BOOLEAN     DEFAULT FALSE,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  await query(`CREATE INDEX IF NOT EXISTS idx_decks_user ON decks(user_id)`);
+
+  console.log('[DB] Migrations complete ✓');
+}
+
+module.exports.migrate = migrate;

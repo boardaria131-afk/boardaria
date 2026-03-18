@@ -76,11 +76,14 @@ const pgMatchStore = {
 const USE_DB = process.env.USE_DB === 'true' || process.env.USE_DB === '1';
 
 if (USE_DB) {
-  // Verify DB connection on startup
+  // Verify DB connection and run migrations on startup
   db.healthCheck()
-    .then(row => console.log(`[DB] Connected ✓  PostgreSQL ${row.pg_version.split(' ')[1]}  time=${row.now}`))
+    .then(row => {
+      console.log(`[DB] Connected ✓  PostgreSQL ${row.pg_version.split(' ')[1]}  time=${row.now}`);
+      return db.migrate();
+    })
     .catch(err => {
-      console.error('[DB] Connection failed:', err.message);
+      console.error('[DB] Startup error:', err.message);
       console.error('[DB] Set DATABASE_URL or individual PG* env vars, or unset USE_DB to use in-memory stores.');
       process.exit(1);
     });
