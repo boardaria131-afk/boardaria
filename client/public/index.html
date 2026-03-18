@@ -764,7 +764,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 <div id="mp-lobby-overlay" class="mp-overlay">
   <div class="mp-box" style="min-width:380px;max-width:440px">
     <h2 id="lobby-title" style="cursor:default;user-select:none" title="">LOBBY</h2>
-    <div id="mp-lobby-user" style="font-family:'Cinzel',serif;font-size:.6rem;color:#9abbd4;letter-spacing:2px;margin-bottom:16px">—</div>
+    <div id="mp-lobby-user" style="font-family:'Cinzel',serif;font-size:.6rem;color:#9abbd4;letter-spacing:2px;margin-bottom:16px;padding:6px 10px;background:rgba(20,40,60,.3);border-radius:4px">—</div>
 
     <!-- Deck select -->
     <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
@@ -814,7 +814,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     </div>
     <div id="mp-room-err" style="color:#cc5050;font-size:.6rem;min-height:1em;text-align:center;margin-bottom:6px"></div>
 
-    <button class="mp-btn mp-btn-ghost" onclick="mpLogout()" style="margin-top:6px;opacity:.6">Abmelden</button>
+    <button class="mp-btn mp-btn-ghost" onclick="mpLogout()" style="margin-top:6px;border-color:#4a5a6a;color:#8aааbb">↩ Abmelden</button>
     <button onclick="mpOpenBugReport()" style="
       width:100%;padding:5px;margin-top:4px;cursor:pointer;border-radius:4px;
       background:transparent;border:1px solid #3a2020;color:#664444;
@@ -10995,7 +10995,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.26.0';
+window.HEXFORGE_VERSION = '5.29.0';
 (function () {
 'use strict';
 
@@ -11222,9 +11222,9 @@ function connectSocket() {
       const token = localStorage.getItem('hf_token');
 
       // Auth-Overlay SOFORT zeigen bevor Splash verschwindet — verhindert schwarzen Bildschirm
-      // Wird durch AUTH_OK (→ showLobby) oder AUTH_ERR überschrieben
-      if (!window.G && !window._DEV_MATCH) {
-        // Nur zeigen wenn kein aktives Spiel
+      // Nur wenn kein aktives Spiel läuft (bei Reconnect während Spiel nicht unterbrechen)
+      const _hasActiveGame = window.G && matchId;
+      if (!_hasActiveGame && !window._DEV_MATCH) {
         showOverlay('mp-auth-overlay');
       }
 
@@ -11235,16 +11235,28 @@ function connectSocket() {
       }, 150);
 
       if (token) {
-        // Status im Auth-Overlay anzeigen während Token geprüft wird
-        setAuthErr('Sitzung wird wiederhergestellt…');
-        socket.emit(C2S.AUTH_TOKEN, { token });
-        // Fallback: falls AUTH_OK/ERR nicht kommt
-        setTimeout(() => {
-          if (!mySession) {
-            setAuthErr('');
-            setConnStatus('Bitte neu anmelden');
+        // Token vorhanden → Sitzung wiederherstellen
+        // Gast-Tokens nicht wiederherstellen (keine persistente Session)
+        try {
+          const parts = token.split('.');
+          if (parts.length === 3) {
+            const payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+            if (payload.guest) {
+              // Gast-Token: nicht wiederherstellen, Auth-Overlay zeigen
+              localStorage.removeItem('hf_token');
+              // Auth-Overlay bleibt
+            } else {
+              setAuthErr('Sitzung wird wiederhergestellt…');
+              socket.emit(C2S.AUTH_TOKEN, { token });
+              setTimeout(() => {
+                if (!mySession) { setAuthErr(''); setConnStatus('Bitte neu anmelden'); }
+              }, 8000);
+            }
           }
-        }, 8000);
+        } catch(e) {
+          // Kaputtes Token → löschen
+          localStorage.removeItem('hf_token');
+        }
       }
       // Kein Token → Auth-Overlay bereits gezeigt oben
     });
@@ -11276,13 +11288,25 @@ function connectSocket() {
   socket.on(S2C.AUTH_OK, ({ user, token }) => {
     mySession = user;
     if (token) localStorage.setItem('hf_token', token);
-    setAuthErr(''); // "wiederhergestellt..." Meldung löschen
+    setAuthErr('');
     const ab = document.getElementById('mp-auth-btn');
     const gb = document.getElementById('mp-guest-btn');
     if (ab) { ab.disabled = false; ab.textContent = 'Login'; }
     if (gb) { gb.disabled = false; gb.textContent = 'Als Gast spielen'; }
     if (!user.isGuest) syncDecksFromServer(token);
-    showLobby();
+
+    // Nur zur Lobby wenn kein aktives Spiel läuft
+    // (bei Reconnect während eines Spiels soll das Spiel weiterlaufen)
+    if (window.G && matchId) {
+      // Aktives Spiel: Auth-Overlay verstecken, Spiel weiterlaufen lassen
+      hideOverlay('mp-auth-overlay');
+      const header = document.getElementById('hdr');
+      const main   = document.getElementById('main');
+      if (header) header.style.display = '';
+      if (main)   main.style.display   = '';
+    } else {
+      showLobby();
+    }
   });
 
   socket.on(S2C.AUTH_ERR, ({ reason }) => {
@@ -11714,11 +11738,7 @@ window.mpStartDevMatch = function() {
   if (!isDevMode()) return;
 
   // Lade Deck aus Selector (optional)
-  const idx = document.getElementById('mp-deck-select')?.value;
-  let deckCards = null;
-  if (idx) {
-    try { deckCards = JSON.parse(localStorage.getItem('hf_decks')||'[]')[parseInt(idx)]?.cards||null; } catch(e){}
-  }
+  const deckCards = _getSelectedDeck();
 
   hideOverlay('mp-lobby-overlay');
   hideMulligan();
@@ -11787,7 +11807,10 @@ function showLobby() {
   // User info
   const infoEl = document.getElementById('mp-lobby-user');
   if (infoEl && mySession) {
-    infoEl.textContent = `${mySession.username}  ·  ${mySession.rating} MMR${mySession.isGuest?' (Gast)':''}`;
+    const label = mySession.isGuest ? 'Gast' : 'Angemeldet';
+    infoEl.textContent = `${label}: ${mySession.username}  ·  ${mySession.rating ?? 1000} MMR`;
+  } else if (infoEl) {
+    infoEl.textContent = '—';
   }
   hideChatPanel();
   hideClocks();
@@ -12113,11 +12136,7 @@ window.mpSyncDecks = async function() {
 };
 window.mpCreateRoom = function() {
   if (!socket) return;
-  const idx = document.getElementById('mp-deck-select')?.value;
-  let deck = null;
-  if (idx) {
-    try { deck = JSON.parse(localStorage.getItem('hf_decks')||'[]')[parseInt(idx)]?.cards||null; } catch(e){}
-  }
+  const deck = _getSelectedDeck();
   setRoomStatus('Erstelle Raum…', '#5a8aaa');
   const btn = document.getElementById('mp-create-room-btn');
   if (btn) btn.disabled = true;
@@ -12127,11 +12146,7 @@ window.mpJoinRoom = function() {
   if (!socket) return;
   const code = (document.getElementById('mp-room-code-input')?.value||'').trim().toUpperCase();
   if (code.length < 4) { setRoomStatus('Bitte Code eingeben', '#cc5533'); return; }
-  const idx = document.getElementById('mp-deck-select')?.value;
-  let deck = null;
-  if (idx) {
-    try { deck = JSON.parse(localStorage.getItem('hf_decks')||'[]')[parseInt(idx)]?.cards||null; } catch(e){}
-  }
+  const deck = _getSelectedDeck();
   setRoomStatus('Trete bei…', '#5a8aaa');
   socket.emit(C2S.ROOM_JOIN, { code, deck });
 };
@@ -12264,11 +12279,7 @@ window.mpCancelQueue = function() {
 
 window.mpPlayVsBot = function() {
   if (!socket) return;
-  const idx = document.getElementById('mp-deck-select')?.value;
-  let deck = null;
-  if (idx) {
-    try { deck = JSON.parse(localStorage.getItem('hf_decks')||'[]')[parseInt(idx)]?.cards||null; } catch(e){}
-  }
+  const deck = _getSelectedDeck();
   setQueueStatus('Starte Spiel gegen KI…');
   socket.emit(C2S.PLAY_VS_BOT, { deck });
 };
