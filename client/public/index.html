@@ -68,15 +68,15 @@ body {
   text-shadow: none;
 }
 #phdis {
-  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
-  font-size: .68rem;
-  color: var(--dim);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .70rem;
+  color: #aaa;
   letter-spacing: 2px;
   text-align: center;
 }
-#phdis .ap { color: var(--gold); font-size: .82rem; }
-#turdis { font-family: 'Bebas Neue', 'IBM Plex Mono', monospace; font-size: .72rem; color: var(--dim); text-align: right; }
-#turdis .pn { font-size: .9rem; font-weight: 600; }
+#phdis .ap { color: #fff; font-size: .84rem; font-weight: 500; }
+#turdis { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: #aaa; text-align: right; }
+#turdis .pn { font-size: .9rem; font-weight: 500; color: #fff; }
 #turdis .pn.A { color: var(--bA); }
 #turdis .pn.B { color: var(--bB); }
 
@@ -101,12 +101,12 @@ body {
 .sp:last-child { border-right: none; border-left: 1px solid #2a2a2a; }
 
 .pt {
-  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
-  font-size: .58rem;
-  letter-spacing: 3px;
-  color: var(--dim);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .60rem;
+  letter-spacing: 2px;
+  color: #aaa;
   text-transform: uppercase;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid #2a2a2a;
   padding-bottom: 4px;
 }
 .ps {
@@ -115,12 +115,12 @@ body {
   border-radius: 4px;
   padding: 6px;
 }
-.ps .nm { font-family: 'Bebas Neue', 'IBM Plex Mono', monospace; font-size: .72rem; font-weight: 600; margin-bottom: 4px; }
+.ps .nm { font-family: 'IBM Plex Mono', monospace; font-size: .74rem; font-weight: 500; margin-bottom: 4px; letter-spacing: 1px; }
 .ps.A .nm { color: #fff; }
 .ps.B .nm { color: #888; }
 .sr { display: flex; justify-content: space-between; margin: 2px 0; font-size: .72rem; }
-.sl { color: var(--dim); }
-.sv { font-weight: 600; }
+.sl { color: #888; font-size: .70rem; }
+.sv { font-weight: 500; color: #fff; }
 .sv.hp   { color: var(--hp); }
 .sv.mn   { color: var(--mana); }
 .sv.cd   { color: var(--gold); }
@@ -170,9 +170,9 @@ body {
   box-shadow: none;
   display: none;
 }
-#unit-tip .tip-name  { font-family:'Bebas Neue', 'IBM Plex Mono', monospace; font-size:.72rem; color:var(--gold); margin-bottom:3px; }
-#unit-tip .tip-stats { display:flex; gap:8px; margin-bottom:3px; }
-#unit-tip .tip-text  { font-size:.6rem; color:var(--dim); font-style:italic; line-height:1.35; }
+#unit-tip .tip-name  { font-family:'IBM Plex Mono', monospace; font-size:.75rem; color:#fff; margin-bottom:3px; font-weight:500; }
+#unit-tip .tip-stats { display:flex; gap:8px; margin-bottom:3px; font-size:.70rem; }
+#unit-tip .tip-text  { font-size:.65rem; color:#aaa; font-style:normal; line-height:1.4; }
 #unit-tip .tip-kw    { display:flex; flex-wrap:wrap; gap:2px; margin-bottom:3px; }
 
 /* ── Enemy hand (face-down cards at top) ────────────────── */
@@ -201,14 +201,14 @@ body {
   background: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.04) 3px, rgba(255,255,255,.04) 4px);
 }
 .ch  { display: flex; justify-content: space-between; margin-bottom: 2px; }
-.cn  { font-family: 'Bebas Neue', 'IBM Plex Mono', monospace; font-size: .66rem; color: var(--text); line-height: 1.2; }
-.cc  { font-family: 'Bebas Neue', 'IBM Plex Mono', monospace; font-size: .72rem; color: var(--mana); font-weight: 600; margin-left: 3px; }
-.cb  { font-size: .56rem; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1px; }
+.cn  { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: var(--text); line-height: 1.2; font-weight: 500; }
+.cc  { font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: #aaa; font-weight: 500; margin-left: 3px; }
+.cb  { font-size: .58rem; color: #666; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1px; }
 .cs  { display: flex; gap: 4px; font-size: .64rem; margin-top: 1px; }
 .cra { color: var(--atk); }
 .crh { color: var(--hp); }
-.creq { font-size: .56rem; color: var(--dim); }
-.ctx  { font-size: .61rem; color: var(--dim); font-style: italic; line-height: 1.3; }
+.creq { font-size: .60rem; color: #666; }
+.ctx  { font-size: .64rem; color: #888; font-style: normal; line-height: 1.35; }
 
 /* card left-border by type */
 .lF { border-left: 2px solid var(--F); }
@@ -227,7 +227,7 @@ body {
   justify-content: center;
   position: relative;
   overflow: hidden;
-  background: #000000;
+  background: #111111;
 }
 svg#board { display: block; overflow: visible; touch-action: none; }
 
@@ -10550,7 +10550,7 @@ class Engine {
       g.style.cursor = 'pointer';
       g.onclick = () => { const [rq,rr,rs]=this._v2g(q,r,s); this.clickCell(rq,rr,rs); };
 
-      let fill='#080808', stroke='#222222', sw='1';
+      let fill='#1a1a1a', stroke='#333333', sw='1';
       if (cd) {
         if      (cd.type==='WELL') { fill='#0d1018'; stroke='#2a3545'; sw='1.5'; } // dezent sichtbar
         else if (cd.type==='BASE') { fill=cd.owner==='A'?'#1a1a1a':'#0d0d0d'; stroke=cd.owner==='A'?'#ffffff':'#888888'; sw='2'; }
@@ -10995,7 +10995,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.32.0';
+window.HEXFORGE_VERSION = '5.33.0';
 (function () {
 'use strict';
 
