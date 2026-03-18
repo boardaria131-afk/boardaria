@@ -1,6 +1,6 @@
 {
   "name": "hexforge-mp",
-  "version": "5.29.0",
+  "version": "5.30.0",
   "description": "HexForge Online Multiplayer Server",
   "main": "server/index.js",
   "scripts": {

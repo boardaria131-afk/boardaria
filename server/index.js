@@ -62,7 +62,7 @@ app.use(express.static(path.join(__dirname, '../client/public')));
 
 // Health
 app.get('/api/health', async (req, res) => {
-  const info = { status: 'ok', version: '5.29.0', uptime: process.uptime(), usingDB: isUsingDB };
+  const info = { status: 'ok', version: '5.30.0', uptime: process.uptime(), usingDB: isUsingDB };
   if (isUsingDB) {
     try { const r = await db.healthCheck(); info.db = r; } catch(e) { info.dbError = e.message; }
   }
@@ -156,21 +156,31 @@ app.get('/api/decks', requireAuth, async (req, res) => {
 app.post('/api/decks', requireAuth, async (req, res) => {
   const { name, cards, archetype, isDefault } = req.body;
   if (!name || !Array.isArray(cards)) return res.status(400).json({ error: 'name and cards required' });
+  // Validate: name max 64 chars, cards max 60
+  if (name.length > 64) return res.status(400).json({ error: 'Deck name too long (max 64 chars)' });
+  if (cards.length > 60) return res.status(400).json({ error: 'Too many cards (max 60)' });
   if (isUsingDB) {
     try { return res.json({ deck: await db.saveDeck({ userId: req.userId, name, cards, archetype, isDefault }) }); }
-    catch(e) { return res.status(500).json({ error: e.message }); }
+    catch(e) {
+      console.error('[API] POST /api/decks error:', e.message, 'userId:', req.userId, 'name:', name);
+      return res.status(500).json({ error: e.message });
+    }
   }
   res.json({ deck: memDeckStore.save({ userId: req.userId, name, cards, archetype }) });
 });
 
 app.put('/api/decks/:id', requireAuth, async (req, res) => {
   const { name, cards, archetype, isDefault } = req.body;
+  if (name && name.length > 64) return res.status(400).json({ error: 'Deck name too long (max 64 chars)' });
   if (isUsingDB) {
     try {
       const deck = await db.saveDeck({ userId: req.userId, deckId: parseInt(req.params.id), name, cards, archetype, isDefault });
       if (!deck) return res.status(404).json({ error: 'Deck not found' });
       return res.json({ deck });
-    } catch(e) { return res.status(500).json({ error: e.message }); }
+    } catch(e) {
+      console.error('[API] PUT /api/decks error:', e.message, 'deckId:', req.params.id);
+      return res.status(500).json({ error: e.message });
+    }
   }
   const deck = memDeckStore.save({ userId: req.userId, deckId: parseInt(req.params.id), name, cards, archetype });
   if (!deck) return res.status(404).json({ error: 'Deck not found' });
