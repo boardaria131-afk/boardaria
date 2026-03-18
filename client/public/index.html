@@ -270,31 +270,31 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   display: flex;
   gap: 5px;
   background: #000;
-  border: 2px solid #fff;
-  border-radius: 0;
+  border: 1px solid #555;
+  border-radius: 2px;
   padding: 6px 10px;
   backdrop-filter: none;
   white-space: nowrap;
 }
 .ab {
-  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
-  font-size: .63rem;
-  letter-spacing: 1.5px;
-  padding: 4px 10px;
-  border: 1px solid var(--border);
-  background: var(--bg3);
-  color: var(--dim);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: 1px;
+  padding: 5px 12px;
+  border: 1px solid #555;
+  background: #111;
+  color: #ccc;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 2px;
   transition: all .12s;
   text-transform: uppercase;
 }
-.ab:hover:not(:disabled) { border-color: var(--goldd); color: var(--text); background: #1e2530; }
-.ab.pr                   { border-color: var(--goldd); color: var(--gold); background: rgba(200,168,75,.08); }
-.ab.pr:hover:not(:disabled) { border-color: var(--gold); background: rgba(200,168,75,.15); }
-.ab:disabled             { opacity: .25; cursor: not-allowed; }
-.ab.dn                   { border-color: #5a2020; color: #cc5555; }
-.ab.dn:hover:not(:disabled) { border-color: var(--atk); background: rgba(204,68,68,.1); }
+.ab:hover:not(:disabled) { border-color: #fff; color: #fff; background: #222; }
+.ab.pr                   { border-color: #fff; color: #fff; background: #1a1a1a; }
+.ab.pr:hover:not(:disabled) { border-color: #fff; background: #333; }
+.ab:disabled             { opacity: .2; cursor: not-allowed; }
+.ab.dn                   { border-color: #cc4444; color: #ff6666; }
+.ab.dn:hover:not(:disabled) { border-color: #ff4444; background: rgba(255,50,50,.1); }
 
 /* phase dots */
 .pdot {
@@ -742,8 +742,12 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     <div class="mp-form mp-active" id="mp-form-login">
       <input class="mp-input" id="mp-login-user" type="text"     placeholder="Benutzername" autocomplete="username">
       <input class="mp-input" id="mp-login-pass" type="password" placeholder="Passwort"     autocomplete="current-password">
+      <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:.60rem;color:#888;letter-spacing:1px">
+        <input type="checkbox" id="mp-remember-me" style="width:14px;height:14px;cursor:pointer;accent-color:#fff">
+        Angemeldet bleiben
+      </label>
       <button class="mp-btn mp-btn-primary" id="mp-auth-btn" onclick="mpLogin()">Login</button>
-      <div style="color:#3a4a5a;font-size:.65rem;margin:6px 0">— oder —</div>
+      <div style="color:#444;font-size:.65rem;margin:6px 0;text-align:center">— oder —</div>
       <button class="mp-btn mp-btn-ghost" id="mp-guest-btn" onclick="mpGuest()">Als Gast spielen</button>
     </div>
     <div class="mp-form" id="mp-form-register">
@@ -924,28 +928,28 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 <!-- ── Floating Bug Reporter Button ──────────────────────── -->
 <button id="bug-float-btn" onclick="mpOpenBugReport()" title="Bug melden"
   style="display:none;position:fixed;bottom:58px;right:10px;z-index:8200;
-         padding:5px 9px;background:rgba(10,5,5,.85);border:1px solid #4a2020;
-         border-radius:5px;color:#884444;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.52rem;
-         letter-spacing:1px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.5);"
-  onmouseover="this.style.background='rgba(30,8,8,.95)';this.style.borderColor='#cc4444';this.style.color='#ff7777'"
-  onmouseout="this.style.background='rgba(10,5,5,.85)';this.style.borderColor='#4a2020';this.style.color='#884444'">
+         padding:6px 11px;background:#111;border:1px solid #666;
+         border-radius:2px;color:#ccc;font-family:'IBM Plex Mono',monospace;font-size:.60rem;
+         letter-spacing:1px;cursor:pointer;transition:all .2s;"
+  onmouseover="this.style.background='#222';this.style.borderColor='#fff';this.style.color='#fff'"
+  onmouseout="this.style.background='#111';this.style.borderColor='#666';this.style.color='#ccc'">
   🐛
 </button>
 
 <!-- ── Floating Resign Button ────────────────────────────── -->
 <button id="resign-float-btn" onclick="mpConfirmResign()" title="Aufgeben"
   style="display:none;position:fixed;bottom:58px;right:46px;z-index:8200;
-         padding:5px 9px;background:rgba(10,5,5,.85);border:1px solid #4a2020;
-         border-radius:5px;color:#884444;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.52rem;
-         letter-spacing:1px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.5);"
-  onmouseover="this.style.background='rgba(30,8,8,.95)';this.style.borderColor='#cc4444';this.style.color='#ff7777'"
-  onmouseout="this.style.background='rgba(10,5,5,.85)';this.style.borderColor='#4a2020';this.style.color='#884444'">
+         padding:6px 11px;background:#111;border:1px solid #cc4444;
+         border-radius:2px;color:#ff6666;font-family:'IBM Plex Mono',monospace;font-size:.60rem;
+         letter-spacing:1px;cursor:pointer;transition:all .2s;"
+  onmouseover="this.style.background='#200';this.style.borderColor='#ff4444';this.style.color='#ff8888'"
+  onmouseout="this.style.background='#111';this.style.borderColor='#cc4444';this.style.color='#ff6666'">
   🏳
 </button>
 
 <div id="unit-tip">
   <div class="tip-name" id="tip-name"></div>
-  <div class="tip-stats"><span id="tip-atk" style="color:var(--atk)"></span><span id="tip-hp" style="color:var(--hp)"></span><span id="tip-cost" style="color:var(--mana)"></span></div>
+  <div class="tip-stats"><span id="tip-atk" style="color:#fff;font-weight:500"></span><span id="tip-hp" style="color:#aaa;font-weight:500"></span><span id="tip-cost" style="color:#888"></span></div>
   <div class="tip-kw" id="tip-kw"></div>
   <div class="tip-text" id="tip-text"></div>
 </div>
@@ -10995,7 +10999,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.33.0';
+window.HEXFORGE_VERSION = '5.35.0';
 (function () {
 'use strict';
 
@@ -11219,7 +11223,7 @@ function connectSocket() {
       setConnStatus('✓ Verbunden');
       setTimeout(() => setConnStatus(''), 2000);
 
-      const token = localStorage.getItem('hf_token');
+      const token = localStorage.getItem('hf_token') || sessionStorage.getItem('hf_token');
 
       // Auth-Overlay SOFORT zeigen bevor Splash verschwindet — verhindert schwarzen Bildschirm
       // Nur wenn kein aktives Spiel läuft (bei Reconnect während Spiel nicht unterbrechen)
@@ -11244,6 +11248,7 @@ function connectSocket() {
             if (payload.guest) {
               // Gast-Token: nicht wiederherstellen, Auth-Overlay zeigen
               localStorage.removeItem('hf_token');
+              sessionStorage.removeItem('hf_token');
               // Auth-Overlay bleibt
             } else {
               setAuthErr('Sitzung wird wiederhergestellt…');
@@ -11287,7 +11292,17 @@ function connectSocket() {
 
   socket.on(S2C.AUTH_OK, ({ user, token }) => {
     mySession = user;
-    if (token) localStorage.setItem('hf_token', token);
+    if (token) {
+      // "Angemeldet bleiben" bestimmt ob Token dauerhaft gespeichert wird
+      const remember = document.getElementById('mp-remember-me')?.checked;
+      if (remember) {
+        localStorage.setItem('hf_token', token);
+        sessionStorage.removeItem('hf_token');
+      } else {
+        sessionStorage.setItem('hf_token', token);
+        localStorage.removeItem('hf_token'); // altes Token löschen
+      }
+    }
     setAuthErr('');
     const ab = document.getElementById('mp-auth-btn');
     const gb = document.getElementById('mp-guest-btn');
@@ -11341,6 +11356,13 @@ function connectSocket() {
 
   socket.on(S2C.STATE_UPDATE, ({ state, pendingInput: pi, seq, reconnected }) => {
     _waitingForServer = false;
+    // Bei Reconnect ohne aktive Engine: Spiel neu aufbauen
+    if (!window.G && reconnected && state && matchId && myPlayer) {
+      restoreKwSets(state);
+      startGame(state, myPlayer, '???');
+      if (pi) handlePendingInput(pi);
+      return;
+    }
     if (!window.G) return;
     if (state) {
       restoreKwSets(state);
@@ -11399,6 +11421,16 @@ function connectSocket() {
     hideOverlay('mp-auth-overlay');
     hideOverlay('mp-lobby-overlay');
     hideDisconnectBanner();
+    // Sofort game UI zeigen (main war durch showLobby versteckt)
+    const _hdr = document.getElementById('hdr');
+    const _main = document.getElementById('main');
+    if (_hdr)  _hdr.style.display  = '';
+    if (_main) _main.style.display = '';
+    const _fb = document.getElementById('bug-float-btn');
+    const _rb = document.getElementById('resign-float-btn');
+    if (_fb) _fb.style.display = 'block';
+    if (_rb) _rb.style.display = 'block';
+    // STATE_UPDATE folgt sofort vom Server und rendert das Board
   });
 
   socket.on(S2C.ERROR, ({ reason }) => {
@@ -11547,6 +11579,7 @@ window.mpGuest = function() {
 
 window.mpLogout = function() {
   localStorage.removeItem('hf_token');
+  sessionStorage.removeItem('hf_token');
   mySession = null; myPlayer = null; matchId = null; inQueue = false;
   window.G = null;
   hideOverlay('mp-lobby-overlay');
@@ -12045,7 +12078,7 @@ function setRoomStatus(msg, color) {
 // ── Deck-Verwaltung: API-first, localStorage als Fallback für Gäste ──
 
 function _authHeader() {
-  const t = localStorage.getItem('hf_token');
+  const t = localStorage.getItem('hf_token') || sessionStorage.getItem('hf_token');
   return t ? { 'Authorization': 'Bearer ' + t } : {};
 }
 function _isLoggedIn() { return !!(mySession && !mySession.isGuest); }
