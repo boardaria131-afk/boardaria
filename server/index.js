@@ -61,7 +61,7 @@ app.use(express.static(path.join(__dirname, '../client/public')));
 
 // Health
 app.get('/api/health', async (req, res) => {
-  const info = { status: 'ok', version: '5.21.0', uptime: process.uptime(), usingDB: isUsingDB };
+  const info = { status: 'ok', version: '5.22.0', uptime: process.uptime(), usingDB: isUsingDB };
   if (isUsingDB) {
     try { const r = await db.healthCheck(); info.db = r; } catch(e) { info.dbError = e.message; }
   }
@@ -201,19 +201,23 @@ const io = new Server(server, {
 const sessions = new Map();
 
 // ── Matchmaking queue ─────────────────────────────────────
-const queue = new MatchmakingQueue(({ playerA, playerB }) => {
-  // Attach socket IDs from sessions
-  const result = roomManager.createMatch(playerA, playerB);
-  // Notify both players
-  io.to(playerA.socketId).emit(S2C.MATCH_FOUND, {
-    matchId:  result.id,
-    opponent: { username: playerB.username, rating: playerB.rating },
-  });
-  io.to(playerB.socketId).emit(S2C.MATCH_FOUND, {
-    matchId:  result.id,
-    opponent: { username: playerA.username, rating: playerA.rating },
-  });
-});
+const queue = new MatchmakingQueue(
+  ({ playerA, playerB }) => {
+    const result = roomManager.createMatch(playerA, playerB);
+    io.to(playerA.socketId).emit(S2C.MATCH_FOUND, {
+      matchId:  result.id,
+      opponent: { username: playerB.username, rating: playerB.rating },
+    });
+    io.to(playerB.socketId).emit(S2C.MATCH_FOUND, {
+      matchId:  result.id,
+      opponent: { username: playerA.username, rating: playerA.rating },
+    });
+  },
+  (socketId, status) => {
+    // Send live queue status to waiting player
+    io.to(socketId).emit(S2C.QUEUE_STATUS, status);
+  }
+);
 
 queue.start();
 

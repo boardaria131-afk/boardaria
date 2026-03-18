@@ -10994,7 +10994,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.21.0';
+window.HEXFORGE_VERSION = '5.22.0';
 (function () {
 'use strict';
 
@@ -11308,6 +11308,8 @@ function connectSocket() {
   socket.on(S2C.GAME_START, ({ matchId: id, yourPlayer, opponentName, state }) => {
     matchId  = id;
     myPlayer = yourPlayer;
+    inQueue  = false;
+    clearInterval(_queueRetryTimer); _queueRetryTimer = null;
     restoreKwSets(state);
     startGame(state, yourPlayer, opponentName);
   });
@@ -12117,18 +12119,31 @@ function populateDeckSelect() {
   } catch(e) {}
 }
 
+let _queueDeck = null;
+let _queueRetryTimer = null;
+
+function _getSelectedDeck() {
+  const idx = document.getElementById('mp-deck-select')?.value;
+  if (idx === '' || idx === undefined) return null;
+  try {
+    const decks = JSON.parse(localStorage.getItem('hf_decks') || '[]');
+    return decks[parseInt(idx)]?.cards || null;
+  } catch(e) { return null; }
+}
+
+function _queueRetry() {
+  if (!inQueue || !socket?.connected) return;
+  socket.emit(C2S.QUEUE_JOIN, { deck: _queueDeck });
+}
+
 window.mpFindMatch = function() {
   if (!socket) return;
-  const idx = document.getElementById('mp-deck-select').value;
-  let deck = null;
-  if (idx !== '') {
-    try {
-      const decks = JSON.parse(localStorage.getItem('hf_decks') || '[]');
-      deck = decks[parseInt(idx)]?.cards || null;
-    } catch(e) {}
-  }
-  socket.emit(C2S.QUEUE_JOIN, { deck });
+  _queueDeck = _getSelectedDeck();
+  socket.emit(C2S.QUEUE_JOIN, { deck: _queueDeck });
   inQueue = true;
+  // Retry every 4s in case of reconnect / Render cold-start timing
+  clearInterval(_queueRetryTimer);
+  _queueRetryTimer = setInterval(_queueRetry, 4000);
   document.getElementById('mp-find-btn').style.display = 'none';
   document.getElementById('mp-cancel-btn').style.display = '';
   setQueueStatus('Suche nach Gegner…');
@@ -12137,6 +12152,7 @@ window.mpFindMatch = function() {
 window.mpCancelQueue = function() {
   if (socket) socket.emit(C2S.QUEUE_LEAVE);
   inQueue = false;
+  clearInterval(_queueRetryTimer); _queueRetryTimer = null;
   document.getElementById('mp-find-btn').style.display = '';
   document.getElementById('mp-cancel-btn').style.display = 'none';
   setQueueStatus('Suche abgebrochen.');

@@ -14,10 +14,11 @@ class MatchmakingQueue {
   /**
    * @param {function} onMatchFound  callback({ playerA, playerB })
    */
-  constructor(onMatchFound) {
-    this.onMatchFound = onMatchFound;
-    this.queue        = [];  // { entry }[]
-    this._timer       = null;
+  constructor(onMatchFound, onQueueStatus) {
+    this.onMatchFound  = onMatchFound;
+    this.onQueueStatus = onQueueStatus || null;
+    this.queue         = [];  // { entry }[]
+    this._timer        = null;
   }
 
   // ── Public API ────────────────────────────────────────────
@@ -67,8 +68,6 @@ class MatchmakingQueue {
   // ── Internal ──────────────────────────────────────────────
 
   _tick() {
-    if (this.queue.length < 2) return;
-
     const now = Date.now();
 
     // Expand ELO windows for waiting players
@@ -80,6 +79,20 @@ class MatchmakingQueue {
         MAX_WINDOW,
       );
     }
+
+    // Notify waiting players of queue status (every other tick to reduce noise)
+    if (this.queue.length > 0 && this.onQueueStatus) {
+      for (const entry of this.queue) {
+        const waited = now - entry.joinedAt;
+        this.onQueueStatus(entry.socketId, {
+          position:  this.queue.indexOf(entry) + 1,
+          queueSize: this.queue.length,
+          waitedMs:  waited,
+        });
+      }
+    }
+
+    if (this.queue.length < 2) return;
 
     // Sort by rating for efficient matching
     this.queue.sort((a, b) => a.rating - b.rating);

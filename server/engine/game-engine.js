@@ -6916,6 +6916,8 @@ function doCleanup(S) {
     u.moved=false; u.atked=false; u.summonSick=false;
     if (u._shozenUsed)  u._shozenUsed  = false;
     if (u._activated)   u._activated   = false; // reset Activate once-per-turn
+    // Clear unresolved pendingGift (e.g. Balloon Fish if target selection was skipped)
+    if (u.pendingGift)  { u.pendingGift = null; }
   });
   // Reset per-turn discounts
   if(S._handDiscount)S._handDiscount[S.ap]=0;
