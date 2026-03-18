@@ -14,26 +14,26 @@
 
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
 
 /* ── Design Tokens ─────────────────────────────────────── */
 :root {
-  --bg:    #0a0c0f;
-  --bg2:   #111418;
-  --bg3:   #1a1f26;
-  --border:#2e3a4e;
-  --text:  #c8d4e0;
-  --dim:   #7a9ab8;
-  --gold:  #c8a84b;
-  --goldd: #7a6030;
-  --F: #4a9e40;  --D: #d4982a;  --M: #8a8aaa;
-  --W: #3a8acc;  --N: #4a5a70;
-  --well: #cc44ff;
-  --bA: #c84040;
-  --bB: #4070c8;
-  --hp:   #4aaa44;
-  --atk:  #cc4444;
-  --mana: #4488cc;
+  --bg:    #000000;
+  --bg2:   #0a0a0a;
+  --bg3:   #141414;
+  --border:#2a2a2a;
+  --text:  #e8e8e8;
+  --dim:   #888888;
+  --gold:  #ffffff;
+  --goldd: #444444;
+  --F: #4a9e40;  --D: #d4982a;  --M: #cc4444;
+  --W: #3a8acc;  --N: #888888;
+  --well: #ffffff;
+  --bA: #ffffff;
+  --bB: #888888;
+  --hp:   #aaaaaa;
+  --atk:  #ffffff;
+  --mana: #cccccc;
 }
 
 /* ── Reset ─────────────────────────────────────────────── */
@@ -42,7 +42,7 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   height: 100vh;
   overflow: hidden;
   display: flex;
@@ -55,27 +55,27 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 5px 16px;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
+  background: #000;
+  border-bottom: 2px solid #fff;
   flex-shrink: 0;
   height: 42px;
 }
 #hdr h1 {
-  font-family: 'Cinzel', serif;
-  font-size: 1.25rem;
-  color: var(--gold);
-  letter-spacing: 4px;
-  text-shadow: 0 0 18px rgba(200,168,75,.4);
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
+  font-size: 1.4rem;
+  color: #fff;
+  letter-spacing: 6px;
+  text-shadow: none;
 }
 #phdis {
-  font-family: 'Cinzel', serif;
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size: .68rem;
   color: var(--dim);
   letter-spacing: 2px;
   text-align: center;
 }
 #phdis .ap { color: var(--gold); font-size: .82rem; }
-#turdis { font-family: 'Cinzel', serif; font-size: .72rem; color: var(--dim); text-align: right; }
+#turdis { font-family: 'Bebas Neue', 'IBM Plex Mono', monospace; font-size: .72rem; color: var(--dim); text-align: right; }
 #turdis .pn { font-size: .9rem; font-weight: 600; }
 #turdis .pn.A { color: var(--bA); }
 #turdis .pn.B { color: var(--bB); }
@@ -90,18 +90,18 @@ body {
 
 /* ── Side Panels ───────────────────────────────────────── */
 .sp {
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
+  background: #000;
+  border-right: 1px solid #2a2a2a;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   padding: 8px;
   gap: 5px;
 }
-.sp:last-child { border-right: none; border-left: 1px solid var(--border); }
+.sp:last-child { border-right: none; border-left: 1px solid #2a2a2a; }
 
 .pt {
-  font-family: 'Cinzel', serif;
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size: .58rem;
   letter-spacing: 3px;
   color: var(--dim);
@@ -110,24 +110,24 @@ body {
   padding-bottom: 4px;
 }
 .ps {
-  background: var(--bg3);
-  border: 1px solid var(--border);
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
   border-radius: 4px;
   padding: 6px;
 }
-.ps .nm { font-family: 'Cinzel', serif; font-size: .72rem; font-weight: 600; margin-bottom: 4px; }
-.ps.A .nm { color: var(--bA); }
-.ps.B .nm { color: var(--bB); }
+.ps .nm { font-family: 'Bebas Neue', 'IBM Plex Mono', monospace; font-size: .72rem; font-weight: 600; margin-bottom: 4px; }
+.ps.A .nm { color: #fff; }
+.ps.B .nm { color: #888; }
 .sr { display: flex; justify-content: space-between; margin: 2px 0; font-size: .72rem; }
 .sl { color: var(--dim); }
 .sv { font-weight: 600; }
 .sv.hp   { color: var(--hp); }
 .sv.mn   { color: var(--mana); }
 .sv.cd   { color: var(--gold); }
-.hbw { background: #1a1a1a; border-radius: 2px; height: 4px; margin: 3px 0; overflow: hidden; }
+.hbw { background: #222; border-radius: 0; height: 3px; margin: 3px 0; overflow: hidden; }
 .hb  { height: 100%; border-radius: 2px; transition: width .3s; }
-.A .hb { background: var(--bA); }
-.B .hb { background: var(--bB); }
+.A .hb { background: #fff; }
+.B .hb { background: #888; }
 
 /* ── Hand ──────────────────────────────────────────────── */
 #hand-area {
@@ -141,36 +141,36 @@ body {
 #hand-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 .hc {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 3px;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  border-radius: 2px;
   padding: 4px 6px;
   cursor: pointer;
   transition: all .12s;
   font-size: .72rem;
 }
-.hc:hover           { border-color: var(--goldd); background: #1e2530; }
-.hc.sel             { border-color: var(--gold); box-shadow: 0 0 7px rgba(200,168,75,.3); }
-.hc.np              { opacity: .35; cursor: not-allowed; }
-.hc.np:hover        { border-color: var(--border); background: var(--bg3); }
+.hc:hover           { border-color: #888; background: #111; }
+.hc.sel             { border-color: #fff; box-shadow: none; background: #111; }
+.hc.np              { opacity: .25; cursor: not-allowed; }
+.hc.np:hover        { border-color: #2a2a2a; background: #0a0a0a; }
 
 /* ── Unit Hover Tooltip ─────────────────────────────────── */
 #unit-tip {
   position: fixed;
   z-index: 8000;
   pointer-events: none;
-  background: rgba(8,12,20,.97);
-  border: 1px solid #3a4a60;
-  border-radius: 6px;
+  background: #000;
+  border: 1px solid #555;
+  border-radius: 0;
   padding: 7px 10px;
   min-width: 160px;
   max-width: 220px;
   font-size: .65rem;
   color: var(--text);
-  box-shadow: 0 4px 16px rgba(0,0,0,.7);
+  box-shadow: none;
   display: none;
 }
-#unit-tip .tip-name  { font-family:'Cinzel',serif; font-size:.72rem; color:var(--gold); margin-bottom:3px; }
+#unit-tip .tip-name  { font-family:'Bebas Neue', 'IBM Plex Mono', monospace; font-size:.72rem; color:var(--gold); margin-bottom:3px; }
 #unit-tip .tip-stats { display:flex; gap:8px; margin-bottom:3px; }
 #unit-tip .tip-text  { font-size:.6rem; color:var(--dim); font-style:italic; line-height:1.35; }
 #unit-tip .tip-kw    { display:flex; flex-wrap:wrap; gap:2px; margin-bottom:3px; }
@@ -187,8 +187,8 @@ body {
 .opp-card {
   width: 18px; height: 26px;
   border-radius: 3px;
-  background: linear-gradient(135deg, #1a2030 0%, #0d1220 100%);
-  border: 1px solid #2a3a50;
+  background: #111;
+  border: 1px solid #333;
   box-shadow: inset 0 0 4px rgba(0,0,0,.5);
   position: relative;
   overflow: hidden;
@@ -198,11 +198,11 @@ body {
   position: absolute; inset: 2px;
   border: 1px solid rgba(60,80,120,.4);
   border-radius: 2px;
-  background: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(40,60,100,.15) 3px, rgba(40,60,100,.15) 4px);
+  background: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,.04) 3px, rgba(255,255,255,.04) 4px);
 }
 .ch  { display: flex; justify-content: space-between; margin-bottom: 2px; }
-.cn  { font-family: 'Cinzel', serif; font-size: .66rem; color: var(--text); line-height: 1.2; }
-.cc  { font-family: 'Cinzel', serif; font-size: .72rem; color: var(--mana); font-weight: 600; margin-left: 3px; }
+.cn  { font-family: 'Bebas Neue', 'IBM Plex Mono', monospace; font-size: .66rem; color: var(--text); line-height: 1.2; }
+.cc  { font-family: 'Bebas Neue', 'IBM Plex Mono', monospace; font-size: .72rem; color: var(--mana); font-weight: 600; margin-left: 3px; }
 .cb  { font-size: .56rem; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1px; }
 .cs  { display: flex; gap: 4px; font-size: .64rem; margin-top: 1px; }
 .cra { color: var(--atk); }
@@ -227,7 +227,7 @@ body {
   justify-content: center;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(ellipse at center, #0c1822 0%, #060a0e 100%);
+  background: #000000;
 }
 svg#board { display: block; overflow: visible; touch-action: none; }
 
@@ -269,15 +269,15 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   transform: translateX(-50%);
   display: flex;
   gap: 5px;
-  background: rgba(8,10,14,.93);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  background: #000;
+  border: 2px solid #fff;
+  border-radius: 0;
   padding: 6px 10px;
-  backdrop-filter: blur(6px);
+  backdrop-filter: none;
   white-space: nowrap;
 }
 .ab {
-  font-family: 'Cinzel', serif;
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size: .63rem;
   letter-spacing: 1.5px;
   padding: 4px 10px;
@@ -318,7 +318,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   font-size: .72rem;
   min-height: 65px;
 }
-#ud .udn { font-family: 'Cinzel', serif; font-size: .73rem; color: var(--gold); margin-bottom: 3px; }
+#ud .udn { font-family: 'Bebas Neue', 'IBM Plex Mono', monospace; font-size: .73rem; color: var(--gold); margin-bottom: 3px; }
 
 /* ── Log ───────────────────────────────────────────────── */
 #lp {
@@ -362,7 +362,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   bottom: -50px;
   left: 50%;
   transform: translateX(-50%);
-  font-family: 'Cinzel', serif;
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size: .62rem;
   letter-spacing: 2px;
   padding: 5px 18px;
@@ -407,7 +407,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   to   { opacity: 1; transform: scale(1); }
 }
 .sc-sub {
-  font-family: 'Cinzel', serif;
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size: .62rem;
   letter-spacing: 4px;
   color: var(--dim);
@@ -415,7 +415,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   margin-bottom: 10px;
 }
 .sc-nm {
-  font-family: 'Cinzel', serif;
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size: 2.1rem;
   font-weight: 900;
   letter-spacing: 6px;
@@ -430,7 +430,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   margin: 0 auto 18px;
 }
 .sc-instruct {
-  font-family: 'Cinzel', serif;
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size: .8rem;
   letter-spacing: 1px;
   color: var(--text);
@@ -446,10 +446,10 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   color: var(--dim);
   letter-spacing: 2px;
   margin-bottom: 24px;
-  font-family: 'Cinzel', serif;
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
 }
 .sc-yt {
-  font-family: 'Cinzel', serif;
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size: .95rem;
   color: var(--gold);
   letter-spacing: 3px;
@@ -462,7 +462,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   line-height: 1.6;
 }
 .sw-panel button {
-  font-family: 'Cinzel', serif;
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size: .72rem;
   letter-spacing: 3px;
   padding: 10px 28px;
@@ -481,23 +481,23 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.85);
+  background: rgba(0,0,0,.95);
   z-index: 300;
   align-items: center;
   justify-content: center;
 }
 #win-ov.on { display: flex; }
 #win-card {
-  background: var(--bg2);
-  border: 1px solid var(--goldd);
-  border-radius: 8px;
+  background: #000;
+  border: 2px solid #fff;
+  border-radius: 0;
   padding: 34px 48px;
   text-align: center;
 }
-#win-card h2 { font-family: 'Cinzel', serif; font-size: 1.7rem; color: var(--gold); margin-bottom: 8px; }
+#win-card h2 { font-family: 'Bebas Neue', 'IBM Plex Mono', monospace; font-size: 1.7rem; color: var(--gold); margin-bottom: 8px; }
 #win-card p  { color: var(--dim); margin-bottom: 20px; font-size: .88rem; }
 #win-card button {
-  font-family: 'Cinzel', serif;
+  font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size: .72rem;
   letter-spacing: 2px;
   padding: 9px 22px;
@@ -519,15 +519,15 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 }
 #combat-flash.show { opacity: 1; }
 #combat-flash .cf-inner {
-  background: rgba(10,8,16,.88);
-  border: 2px solid #c8a84b;
-  border-radius: 8px;
+  background: #000;
+  border: 2px solid #fff;
+  border-radius: 0;
   padding: 14px 24px;
   display: flex; flex-direction: column; align-items: center; gap: 8px;
-  box-shadow: 0 0 40px rgba(200,168,75,.4), 0 0 80px rgba(0,0,0,.8);
+  box-shadow: none;
 }
 #combat-flash .cf-row {
-  display: flex; align-items: center; gap: 16px; font-family: 'Cinzel', serif;
+  display: flex; align-items: center; gap: 16px; font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
 }
 #combat-flash .cf-name { font-size: .75rem; font-weight: bold; }
 #combat-flash .cf-nameA { color: #ff9090; }
@@ -536,9 +536,9 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   font-size: 1.2rem; color: #c8a84b; animation: cfPulse .3s ease-in-out infinite alternate;
 }
 #combat-flash .cf-dmg {
-  font-size: .65rem; color: var(--dim); font-family: 'Cinzel', serif;
+  font-size: .65rem; color: var(--dim); font-family: 'Bebas Neue', 'IBM Plex Mono', monospace;
 }
-#combat-flash .cf-result { font-size: .6rem; color: #aaa; font-family: 'Cinzel', serif; }
+#combat-flash .cf-result { font-size: .6rem; color: #aaa; font-family: 'Bebas Neue', 'IBM Plex Mono', monospace; }
 @keyframes cfPulse { from { transform: scale(1); } to { transform: scale(1.3); } }
 @keyframes cfShake {
   0%,100% { transform: translateX(0); }
@@ -556,7 +556,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   transition:all .15s; text-align:center; color:#c0ccd8;
 }
 .discover-card:hover { border-color:#c8a84b; transform:translateY(-4px); box-shadow:0 8px 24px rgba(200,168,75,.2); }
-.discover-card .dc-name { font-family:'Cinzel',serif; font-size:.65rem; color:#c8a84b; margin-bottom:6px; }
+.discover-card .dc-name { font-family:'Bebas Neue', 'IBM Plex Mono', monospace; font-size:.65rem; color:#c8a84b; margin-bottom:6px; }
 .discover-card .dc-stats { font-size:.7rem; color:#8899aa; margin-bottom:4px; }
 .discover-card .dc-cost { font-size:.6rem; color:#6a8aaa; margin-bottom:6px; }
 .discover-card .dc-text { font-size:.55rem; color:#4a5a72; line-height:1.4; }
@@ -594,7 +594,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   background:#080a0e;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  font-family:'Cinzel',serif;
+  font-family:'Bebas Neue', 'IBM Plex Mono', monospace;
 ">
   <div style="color:#c8a84b;font-size:1.6rem;letter-spacing:6px;margin-bottom:16px">HEXFORGE</div>
   <div style="color:#3a4a5a;font-size:.55rem;letter-spacing:3px;margin-bottom:28px">MULTIPLAYER</div>
@@ -618,12 +618,12 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   padding:32px 40px;min-width:320px;text-align:center;
 }
 .mp-box h2 {
-  font-family:'Cinzel',serif;font-size:1.1rem;color:#c8a84b;
+  font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:1.1rem;color:#c8a84b;
   letter-spacing:4px;margin-bottom:24px;
 }
 .mp-tabs { display:flex;margin-bottom:20px;border-bottom:1px solid #334455; }
 .mp-tab  {
-  flex:1;padding:8px;cursor:pointer;font-family:'Cinzel',serif;
+  flex:1;padding:8px;cursor:pointer;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size:.6rem;letter-spacing:2px;color:#7a90a8;transition:all .15s;
 }
 .mp-tab-active { color:#c8a84b;border-bottom:2px solid #c8a84b; }
@@ -637,21 +637,21 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 .mp-input:focus { outline:none;border-color:#5a80a8;box-shadow:0 0 0 2px rgba(90,128,168,.15); }
 .mp-btn {
   width:100%;padding:9px;margin-bottom:8px;cursor:pointer;
-  border-radius:4px;font-family:'Cinzel',serif;font-size:.6rem;
+  border-radius:4px;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.6rem;
   letter-spacing:2px;transition:all .15s;
 }
-.mp-btn-primary { background:#1a2a40;border:1px solid #3a5a7a;color:#68aaee; }
-.mp-btn-primary:hover { background:#1e3248;border-color:#5a7aaa; }
+.mp-btn-primary { background:#fff;border:1px solid #fff;color:#000; }
+.mp-btn-primary:hover { background:#ddd;border-color:#ddd; }
 .mp-btn-primary:disabled { opacity:.4;cursor:not-allowed; }
-.mp-btn-ghost  { background:transparent;border:1px solid #334455;color:#7a90a8; }
-.mp-btn-ghost:hover { border-color:#4a5a7a;color:#8a9ab0; }
+.mp-btn-ghost  { background:transparent;border:1px solid #555;color:#aaa; }
+.mp-btn-ghost:hover { border-color:#fff;color:#fff; }
 .mp-err { color:#ff7070;font-size:.65rem;min-height:1.2em;margin-top:4px; }
 /* Turn banner */
 #mp-turn-banner {
   display:none;
   position:fixed;top:42px;left:0;right:0;z-index:8000;
   padding:7px;text-align:center;
-  font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;
+  font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.6rem;letter-spacing:2px;
   border-bottom:1px solid #2a3040;transition:background .3s,color .3s;
 }
 #mp-turn-banner.mp-turn-banner-mine {
@@ -675,15 +675,15 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 }
 .mp-clock.active  { border-color:#224422;background:#0a120a; }
 .mp-clock.warning { border-color:#883322;background:#120808;animation:mp-clock-pulse .6s ease-in-out infinite; }
-.mp-clock-label { font-family:'Cinzel',serif;font-size:.45rem;letter-spacing:1px;color:#3a4a5a; }
-.mp-clock-time  { font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:2px;color:#5a6a7a;font-variant-numeric:tabular-nums; }
+.mp-clock-label { font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.45rem;letter-spacing:1px;color:#3a4a5a; }
+.mp-clock-time  { font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.85rem;letter-spacing:2px;color:#5a6a7a;font-variant-numeric:tabular-nums; }
 .mp-clock.active  .mp-clock-time  { color:#66aa66; }
 .mp-clock.warning .mp-clock-time  { color:#cc5533; }
 @keyframes mp-clock-pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
 
 /* Chat log messages */
 .mp-chat-msg { font-size:.62rem;color:#7a8a9a;font-family:'Crimson Pro',serif;line-height:1.4; }
-.mp-chat-msg .mp-chat-who { font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:1px; }
+.mp-chat-msg .mp-chat-who { font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.5rem;letter-spacing:1px; }
 .mp-chat-msg .mp-chat-who.A { color:#5a9a5a; }
 .mp-chat-msg .mp-chat-who.B { color:#5a7aaa; }
 .mp-chat-msg .mp-chat-sys  { color:#4a5a6a;font-style:italic; }
@@ -692,7 +692,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 .mp-live-pill {
   display:flex;align-items:center;justify-content:space-between;
   padding:5px 10px;background:#080c14;border:1px solid #1a2535;
-  border-radius:4px;font-family:'Cinzel',serif;font-size:.52rem;
+  border-radius:4px;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.52rem;
   letter-spacing:1px;transition:border-color .15s;
 }
 .mp-live-pill:hover { border-color:#2a4060; }
@@ -705,7 +705,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 .mp-live-meta { color:#3a4a5a;font-size:.45rem;white-space:nowrap; }
 .mp-live-watch {
   padding:2px 8px;background:transparent;border:1px solid #2a3a50;
-  border-radius:2px;color:#4a6a8a;font-family:'Cinzel',serif;
+  border-radius:2px;color:#4a6a8a;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;
   font-size:.45rem;letter-spacing:1px;cursor:pointer;flex-shrink:0;
   transition:all .12s;
 }
@@ -726,7 +726,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:16px;
 }
 #mp-mull-waiting {
-  display:none;font-family:'Cinzel',serif;font-size:.6rem;
+  display:none;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.6rem;
   color:#5a6a7a;letter-spacing:2px;margin-top:10px;
 }
 </style>
@@ -754,7 +754,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     </div>
     <div class="mp-err" id="mp-auth-err"></div>
     <div id="mp-conn-status" style="
-      margin-top:12px;font-family:'Cinzel',serif;font-size:.5rem;
+      margin-top:12px;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.5rem;
       letter-spacing:1px;color:#6a8aaa;min-height:1.4em;text-align:center;
     ">⟳ Verbinde mit Server…</div>
   </div>
@@ -764,20 +764,20 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 <div id="mp-lobby-overlay" class="mp-overlay">
   <div class="mp-box" style="min-width:380px;max-width:440px">
     <h2 id="lobby-title" style="cursor:default;user-select:none" title="">LOBBY</h2>
-    <div id="mp-lobby-user" style="font-family:'Cinzel',serif;font-size:.6rem;color:#9abbd4;letter-spacing:2px;margin-bottom:16px;padding:6px 10px;background:rgba(20,40,60,.3);border-radius:4px">—</div>
+    <div id="mp-lobby-user" style="font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.6rem;color:#9abbd4;letter-spacing:2px;margin-bottom:16px;padding:6px 10px;background:rgba(20,40,60,.3);border-radius:4px">—</div>
 
     <!-- Deck select -->
     <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
-      <select id="mp-deck-select" onchange="mpDeckSelectChanged()" style="flex:1;padding:8px;background:#0e1320;border:1px solid #334455;border-radius:4px;color:#c8d4e0;font-family:'Cinzel',serif;font-size:.6rem">
+      <select id="mp-deck-select" onchange="mpDeckSelectChanged()" style="flex:1;padding:8px;background:#0e1320;border:1px solid #334455;border-radius:4px;color:#c8d4e0;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.6rem">
         <option value="">Standard-Deck</option>
       </select>
-      <button id="mp-deck-delete-btn" onclick="mpDeleteSelectedDeck()" title="Dieses Deck löschen" style="display:none;padding:7px 10px;background:transparent;border:1px solid #5a2a2a;border-radius:4px;color:#cc6666;font-family:'Cinzel',serif;font-size:.55rem;cursor:pointer">🗑</button>
-      <a href="/deckbuilder.html" target="_blank" style="padding:7px 10px;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#5a6a7a;font-family:'Cinzel',serif;font-size:.55rem;text-decoration:none;white-space:nowrap">⚙ Decks</a>
-      <button id="mp-sync-decks-btn" onclick="mpSyncDecks()" title="Decks mit Server synchronisieren" style="padding:7px 10px;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#3a5a7a;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:1px;cursor:pointer">☁ Sync</button>
+      <button id="mp-deck-delete-btn" onclick="mpDeleteSelectedDeck()" title="Dieses Deck löschen" style="display:none;padding:7px 10px;background:transparent;border:1px solid #5a2a2a;border-radius:4px;color:#cc6666;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.55rem;cursor:pointer">🗑</button>
+      <a href="/deckbuilder.html" target="_blank" style="padding:7px 10px;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#5a6a7a;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.55rem;text-decoration:none;white-space:nowrap">⚙ Decks</a>
+      <button id="mp-sync-decks-btn" onclick="mpSyncDecks()" title="Decks mit Server synchronisieren" style="padding:7px 10px;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#3a5a7a;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.55rem;letter-spacing:1px;cursor:pointer">☁ Sync</button>
     </div>
 
     <!-- Queue status -->
-    <div id="mp-queue-status" style="font-family:'Cinzel',serif;font-size:.62rem;color:#99ddff;min-height:1.4em;margin-bottom:12px;letter-spacing:1px;text-align:center">Bereit</div>
+    <div id="mp-queue-status" style="font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.62rem;color:#99ddff;min-height:1.4em;margin-bottom:12px;letter-spacing:1px;text-align:center">Bereit</div>
 
     <!-- Main queue buttons -->
     <button class="mp-btn mp-btn-primary" id="mp-find-btn"   onclick="mpFindMatch()">⚔ Ranked Match suchen</button>
@@ -786,29 +786,29 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     <button class="mp-btn mp-btn-ghost" onclick="mpPlayVsBot()" style="margin-bottom:4px">🤖 Gegen KI spielen</button>
     <!-- Live matches -->
     <div id="mp-live-matches-section" style="margin-bottom:10px">
-      <div style="font-family:'Cinzel',serif;font-size:.5rem;color:#3a4a5a;letter-spacing:2px;margin-bottom:6px">
+      <div style="font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.5rem;color:#3a4a5a;letter-spacing:2px;margin-bottom:6px">
         LAUFENDE PARTIEN
         <span id="mp-live-refresh" onclick="mpRefreshMatches()" style="cursor:pointer;margin-left:8px;color:#2a3a50;font-size:.45rem" title="Aktualisieren">⟳</span>
       </div>
       <div id="mp-live-list" style="display:flex;flex-direction:column;gap:4px;min-height:24px">
-        <span style="font-size:.58rem;color:#2a3040;font-family:'Cinzel',serif;letter-spacing:1px">Keine laufenden Partien</span>
+        <span style="font-size:.58rem;color:#2a3040;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;letter-spacing:1px">Keine laufenden Partien</span>
       </div>
     </div>
 
     <!-- Divider -->
     <div style="display:flex;align-items:center;gap:8px;margin:14px 0 10px">
       <div style="flex:1;height:1px;background:#2a3040"></div>
-      <span style="font-family:'Cinzel',serif;font-size:.5rem;color:#3a4a5a;letter-spacing:2px">ODER</span>
+      <span style="font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.5rem;color:#3a4a5a;letter-spacing:2px">ODER</span>
       <div style="flex:1;height:1px;background:#2a3040"></div>
     </div>
 
     <!-- Private room -->
     <div style="display:flex;gap:6px;margin-bottom:6px">
       <button class="mp-btn mp-btn-ghost" style="flex:1;padding:7px" onclick="mpCreateRoom()">🔗 Privates Match</button>
-      <input id="mp-room-code-input" class="mp-input" style="width:100px;margin:0;text-align:center;font-family:'Cinzel',serif;letter-spacing:3px;text-transform:uppercase" placeholder="CODE" maxlength="6">
+      <input id="mp-room-code-input" class="mp-input" style="width:100px;margin:0;text-align:center;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;letter-spacing:3px;text-transform:uppercase" placeholder="CODE" maxlength="6">
       <button class="mp-btn mp-btn-ghost" style="padding:7px 10px" onclick="mpJoinRoom()">→</button>
     </div>
-    <div id="mp-room-code-display" style="display:none;text-align:center;margin-bottom:8px;font-family:'Cinzel',serif;font-size:.75rem;color:#68aaee;letter-spacing:4px;border:1px solid #2a4060;border-radius:4px;padding:8px;background:#0a1420">
+    <div id="mp-room-code-display" style="display:none;text-align:center;margin-bottom:8px;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.75rem;color:#68aaee;letter-spacing:4px;border:1px solid #2a4060;border-radius:4px;padding:8px;background:#0a1420">
       Dein Code: <span id="mp-room-code-text">——————</span>
       <div style="font-size:.5rem;color:#3a4a5a;letter-spacing:1px;margin-top:3px">Teile diesen Code mit deinem Freund</div>
     </div>
@@ -818,7 +818,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     <button onclick="mpOpenBugReport()" style="
       width:100%;padding:5px;margin-top:4px;cursor:pointer;border-radius:4px;
       background:transparent;border:1px solid #3a2020;color:#664444;
-      font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:1px;transition:all .15s;
+      font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.5rem;letter-spacing:1px;transition:all .15s;
     " onmouseover="this.style.borderColor='#aa4444';this.style.color='#ff7777'"
        onmouseout="this.style.borderColor='#3a2020';this.style.color='#664444'">
       🐛 Bug melden
@@ -826,25 +826,25 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     <button id="dev-match-btn" onclick="mpStartDevMatch()" style="
       display:none;width:100%;padding:5px;margin-top:4px;cursor:pointer;border-radius:4px;
       background:rgba(40,10,60,.6);border:1px solid #6a3a9a;color:#bb88ff;
-      font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:1px;transition:all .15s;
+      font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.5rem;letter-spacing:1px;transition:all .15s;
     " onmouseover="this.style.borderColor='#aa66ff';this.style.color='#ddaaff'"
        onmouseout="this.style.borderColor='#6a3a9a';this.style.color='#bb88ff'">
       🛠 Dev Match (lokal)
     </button>
-    <a href="/leaderboard.html" target="_blank" style="display:block;text-align:center;margin-top:8px;font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:2px;color:#3a4a5a;text-decoration:none" onmouseover="this.style.color='#c8a84b'" onmouseout="this.style.color='#3a4a5a'">📊 Rangliste anzeigen</a>
+    <a href="/leaderboard.html" target="_blank" style="display:block;text-align:center;margin-top:8px;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.5rem;letter-spacing:2px;color:#3a4a5a;text-decoration:none" onmouseover="this.style.color='#c8a84b'" onmouseout="this.style.color='#3a4a5a'">📊 Rangliste anzeigen</a>
 
     <div style="margin-top:16px;border-top:1px solid #1a2535;padding-top:14px">
-      <div style="font-family:'Cinzel',serif;font-size:.55rem;color:#3a4a5a;letter-spacing:2px;margin-bottom:8px">PRIVATES SPIEL</div>
+      <div style="font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.55rem;color:#3a4a5a;letter-spacing:2px;margin-bottom:8px">PRIVATES SPIEL</div>
       <button class="mp-btn mp-btn-ghost" onclick="mpCreateRoom()" id="mp-create-room-btn" style="margin-bottom:6px">🔑 Raum erstellen</button>
       <div style="display:flex;gap:6px;margin-bottom:4px">
         <input id="mp-room-code-input" type="text" maxlength="6" placeholder="Code eingeben"
           style="flex:1;padding:6px 8px;background:#0e1320;border:1px solid #1a2535;border-radius:3px;
-                 color:#c8d4e0;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:3px;text-transform:uppercase"
+                 color:#c8d4e0;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.6rem;letter-spacing:3px;text-transform:uppercase"
           oninput="this.value=this.value.toUpperCase()"
           onkeydown="if(event.key==='Enter')mpJoinRoom()">
         <button class="mp-btn mp-btn-ghost" onclick="mpJoinRoom()" style="width:auto;padding:6px 10px">▶ Join</button>
       </div>
-      <div id="mp-room-status" style="font-family:'Cinzel',serif;font-size:.58rem;color:#5a8aaa;letter-spacing:1px;min-height:1.4em"></div>
+      <div id="mp-room-status" style="font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.58rem;color:#5a8aaa;letter-spacing:1px;min-height:1.4em"></div>
     </div>
   </div>
 </div>
@@ -857,7 +857,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   display:none;position:fixed;top:0;left:0;right:0;z-index:8500;
   background:rgba(8,10,15,.92);padding:8px 16px;
   display:none;align-items:center;justify-content:space-between;
-  font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:2px;
+  font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.55rem;letter-spacing:2px;
   border-bottom:1px solid #2a3040;
 ">
   <div style="display:flex;align-items:center;gap:12px">
@@ -867,7 +867,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   </div>
   <button onclick="mpLeaveSpectator()" style="
     background:transparent;border:1px solid #2a3040;border-radius:3px;
-    color:#4a5a6a;font-family:'Cinzel',serif;font-size:.5rem;
+    color:#4a5a6a;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.5rem;
     letter-spacing:1px;padding:3px 10px;cursor:pointer;
   ">✕ Verlassen</button>
 </div>
@@ -876,7 +876,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 <div id="mp-mulligan-overlay">
   <div class="mp-box" style="min-width:380px;max-width:580px">
     <h2 style="font-size:.9rem;margin-bottom:6px">MULLIGAN</h2>
-    <p style="font-size:.65rem;color:#5a6a7a;font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:16px">
+    <p style="font-size:.65rem;color:#5a6a7a;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;letter-spacing:1px;margin-bottom:16px">
       Karten zum Ersetzen anklicken, dann bestätigen.
     </p>
     <div class="mp-mull-cards" id="mp-mull-cards"></div>
@@ -913,7 +913,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   <button onclick="mpOpenBugReport()" title="Bug melden" style="
     margin-left:8px;padding:3px 8px;background:transparent;
     border:1px solid #3a2020;border-radius:4px;color:#884444;
-    font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:1px;
+    font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.5rem;letter-spacing:1px;
     cursor:pointer;opacity:.7;transition:all .15s;
   " onmouseover="this.style.opacity='1';this.style.borderColor='#aa4444';this.style.color='#ff7777'"
      onmouseout="this.style.opacity='.7';this.style.borderColor='#3a2020';this.style.color='#884444'">
@@ -925,7 +925,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 <button id="bug-float-btn" onclick="mpOpenBugReport()" title="Bug melden"
   style="display:none;position:fixed;bottom:58px;right:10px;z-index:8200;
          padding:5px 9px;background:rgba(10,5,5,.85);border:1px solid #4a2020;
-         border-radius:5px;color:#884444;font-family:'Cinzel',serif;font-size:.52rem;
+         border-radius:5px;color:#884444;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.52rem;
          letter-spacing:1px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.5);"
   onmouseover="this.style.background='rgba(30,8,8,.95)';this.style.borderColor='#cc4444';this.style.color='#ff7777'"
   onmouseout="this.style.background='rgba(10,5,5,.85)';this.style.borderColor='#4a2020';this.style.color='#884444'">
@@ -936,7 +936,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 <button id="resign-float-btn" onclick="mpConfirmResign()" title="Aufgeben"
   style="display:none;position:fixed;bottom:58px;right:46px;z-index:8200;
          padding:5px 9px;background:rgba(10,5,5,.85);border:1px solid #4a2020;
-         border-radius:5px;color:#884444;font-family:'Cinzel',serif;font-size:.52rem;
+         border-radius:5px;color:#884444;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.52rem;
          letter-spacing:1px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.5);"
   onmouseover="this.style.background='rgba(30,8,8,.95)';this.style.borderColor='#cc4444';this.style.color='#ff7777'"
   onmouseout="this.style.background='rgba(10,5,5,.85)';this.style.borderColor='#4a2020';this.style.color='#884444'">
@@ -972,7 +972,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   <div id="bw">
     <!-- Opponent hand (face-down) above board -->
     <div style="width:100%;display:flex;flex-direction:column;align-items:center;padding:4px 0 0">
-      <div style="font-size:.5rem;color:var(--dim);letter-spacing:2px;margin-bottom:2px;font-family:'Cinzel',serif">GEGNER</div>
+      <div style="font-size:.5rem;color:var(--dim);letter-spacing:2px;margin-bottom:2px;font-family:'Bebas Neue', 'IBM Plex Mono', monospace">GEGNER</div>
       <div id="opp-hand"></div>
     </div>
     <svg id="board" style="min-width:320px;touch-action:none"></svg>
@@ -983,7 +983,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
       <button class="ab"    id="btn-rnd"       onclick="G.devRandomize()" style="background:rgba(80,40,120,.35);border-color:#6a3a9a;color:#bb88ff;display:none">🎲 Randomize</button>
       <button class="ab"    id="btn-placecreature" onclick="G.devPlaceCreature()" style="background:rgba(20,60,90,.35);border-color:#1a6aaa;color:#55ccff;display:none">🧬 Place Card</button>
       <button class="ab"    id="btn-skipround" onclick="G.devSkipRound()" style="background:rgba(60,10,80,.35);border-color:#8a1acc;color:#dd88ff;display:none">⏭ Skip Round</button>
-      <div id="action-hint" style="font-size:.6rem;color:var(--gold);letter-spacing:1px;margin-top:6px;min-height:1em;font-family:'Cinzel',serif;text-align:center"></div>
+      <div id="action-hint" style="font-size:.6rem;color:var(--gold);letter-spacing:1px;margin-top:6px;min-height:1em;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;text-align:center"></div>
     </div>
   </div>
 
@@ -1076,7 +1076,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 <div id="win-ov">
   <div id="win-card">
     <h2 id="win-title">Sieg!</h2>
-    <p id="win-elo" style="font-family:'Cinzel',serif;font-size:.65rem;color:#68aaee;letter-spacing:2px;margin:6px 0 12px"></p>
+    <p id="win-elo" style="font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.65rem;color:#68aaee;letter-spacing:2px;margin:6px 0 12px"></p>
     <button onclick="document.getElementById('win-ov').classList.remove('on'); if(window._DEV_MATCH){mpEndDevMatch();}else{if(typeof myPlayer!=='undefined'){myPlayer=null;matchId=null;} if(typeof showLobby==='function')showLobby();}">Zurück zur Lobby</button>
   </div>
 </div>
@@ -8358,14 +8358,14 @@ class Engine {
       return `<div id="mull-idx-${idx}" data-cardid="${id}" data-idx="${idx}" onclick="G.toggleMulligan(${idx},'${id}')"
         style="cursor:pointer;border:2px solid #252d40;border-radius:6px;padding:6px 8px;
                background:${bg};min-width:90px;max-width:110px;text-align:center;transition:all .15s">
-        <div style="font-family:'Cinzel',serif;font-size:.58rem;color:${col};margin-bottom:3px">${cd.name}</div>
+        <div style="font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.58rem;color:${col};margin-bottom:3px">${cd.name}</div>
         ${atk!=null?`<div style="font-size:.65rem;color:#aaa">⚔${atk} ♥${hp}</div>`:''}
         <div style="font-size:.5rem;color:var(--dim);margin-top:2px">${cd.cost>0?cd.cost+'◆':'kostenlos'}</div>
       </div>`;
     }).join('');
 
     const exploreNote = hasExplore
-      ? `<div style="font-size:.55rem;color:#c8a84b;margin-bottom:10px;font-family:'Cinzel',serif">
+      ? `<div style="font-size:.55rem;color:#c8a84b;margin-bottom:10px;font-family:'Bebas Neue', 'IBM Plex Mono', monospace">
            ✦ Explore wird automatisch zu deiner Hand hinzugefügt
          </div>`
       : '';
@@ -8373,14 +8373,14 @@ class Engine {
     mp.innerHTML = `
       <div class="sc-sub">Mulligan</div>
       <div class="sc-nm ${p}">${name.toUpperCase()}</div>
-      <div style="font-size:.65rem;color:var(--dim);margin:8px 0 14px;font-family:'Cinzel',serif;letter-spacing:1px">
+      <div style="font-size:.65rem;color:var(--dim);margin:8px 0 14px;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;letter-spacing:1px">
         Wähle Karten zum Ersetzen (oder keine)
       </div>
       ${exploreNote}
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
         ${cardsHtml}
       </div>
-      <div style="font-size:.55rem;color:var(--dim);margin-bottom:14px;font-family:'Cinzel',serif">
+      <div style="font-size:.55rem;color:var(--dim);margin-bottom:14px;font-family:'Bebas Neue', 'IBM Plex Mono', monospace">
         Replaced cards cannot be drawn again
       </div>
       <button onclick="G.confirmMulligan('${p}')">Confirm ▶</button>`;
@@ -9460,7 +9460,7 @@ class Engine {
     ).join('');
     modal.innerHTML = `
       <div style="background:#0e1520;border:2px solid #c8a84b;border-radius:10px;
-           padding:24px 32px;text-align:center;font-family:'Cinzel',serif;max-width:360px">
+           padding:24px 32px;text-align:center;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;max-width:360px">
         <div style="color:#c8a84b;font-size:.8rem;letter-spacing:2px;margin-bottom:14px">
           ${title}
         </div>
@@ -9514,7 +9514,7 @@ class Engine {
       align-items:center;justify-content:center;background:rgba(0,0,0,.7)`;
     modal.innerHTML = `
       <div style="background:#0e1520;border:2px solid #c8a84b;border-radius:10px;
-           padding:24px 32px;text-align:center;font-family:'Cinzel',serif;max-width:280px">
+           padding:24px 32px;text-align:center;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;max-width:280px">
         <div style="color:#c8a84b;font-size:.8rem;letter-spacing:2px;margin-bottom:18px">
           SHIFTING TIDE
         </div>
@@ -10361,7 +10361,7 @@ class Engine {
       const count = S.players[this.ap].hand.length;
       el.innerHTML = `<div style="
         display:flex; align-items:center; justify-content:center;
-        height:80px; color:var(--dim); font-family:'Cinzel',serif;
+        height:80px; color:var(--dim); font-family:'Bebas Neue', 'IBM Plex Mono', monospace;
         font-size:.6rem; letter-spacing:3px; gap:8px;
         border:1px dashed var(--border); border-radius:6px;
       ">🂠 ${count} Karte${count!==1?'n':''} verdeckt</div>`;
@@ -10550,14 +10550,14 @@ class Engine {
       g.style.cursor = 'pointer';
       g.onclick = () => { const [rq,rr,rs]=this._v2g(q,r,s); this.clickCell(rq,rr,rs); };
 
-      let fill='#0a0d12', stroke='#151c26', sw='1';
+      let fill='#080808', stroke='#222222', sw='1';
       if (cd) {
         if      (cd.type==='WELL') { fill='#0d1018'; stroke='#2a3545'; sw='1.5'; } // dezent sichtbar
-        else if (cd.type==='BASE') { fill=cd.owner==='A'?'#1e0808':'#08081e'; stroke=cd.owner==='A'?'#882222':'#224488'; sw='2'; }
+        else if (cd.type==='BASE') { fill=cd.owner==='A'?'#1a1a1a':'#0d0d0d'; stroke=cd.owner==='A'?'#ffffff':'#888888'; sw='2'; }
         else if (cd.type==='LAND') { fill=LF[cd.landType]||'#1e2530'; stroke=LS[cd.landType]||'#3a4a60'; }
         else                        { fill='#0e1520'; stroke='#1a2535'; }
         // Well flash override: brief gold glow during mana animation
-        if (cd.type==='WELL' && cd._flash) { fill='#2a2010'; stroke='#c8a83a'; sw='2'; }
+        if (cd.type==='WELL' && cd._flash) { fill='#333333'; stroke='#ffffff'; sw='2'; }
       }
 
       const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
@@ -10568,14 +10568,14 @@ class Engine {
       // Well: colored by original owner, dim when empty (mana=0)
       if (cd?.type==='WELL') {
         const full = (cd.mana || 0) > 0;
-        const col = cd._flash ? '#c8a83a'
-                  : cd.owner==='A' ? (full ? '#882222' : '#3a1212')
-                  : cd.owner==='B' ? (full ? '#224488' : '#121830')
-                  : (full ? '#334455' : '#1a2028');
-        const strk = cd._flash ? '#ffe080'
-                   : cd.owner==='A' ? (full ? '#cc5050' : '#551a1a')
-                   : cd.owner==='B' ? (full ? '#4466cc' : '#1a2255')
-                   : (full ? '#556677' : '#2a3040');
+        const col = cd._flash ? '#ffffff'
+                  : cd.owner==='A' ? (full ? '#eeeeee' : '#2a2a2a')
+                  : cd.owner==='B' ? (full ? '#888888' : '#1a1a1a')
+                  : (full ? '#555555' : '#1a1a1a');
+        const strk = cd._flash ? '#ffffff'
+                   : cd.owner==='A' ? (full ? '#ffffff' : '#444444')
+                   : cd.owner==='B' ? (full ? '#aaaaaa' : '#333333')
+                   : (full ? '#777777' : '#2a2a2a');
         const orb = document.createElementNS('http://www.w3.org/2000/svg','circle');
         orb.setAttribute('cx',cx); orb.setAttribute('cy',cy); orb.setAttribute('r',HS*.32);
         orb.setAttribute('fill',col); orb.setAttribute('stroke',strk);
@@ -10583,7 +10583,7 @@ class Engine {
         g.appendChild(orb);
         const sym = document.createElementNS('http://www.w3.org/2000/svg','text');
         sym.setAttribute('x',cx); sym.setAttribute('y',cy+4); sym.setAttribute('text-anchor','middle');
-        sym.setAttribute('fill', full ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.2)');
+        sym.setAttribute('fill', full ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.15)');
         sym.setAttribute('font-size','10'); sym.setAttribute('pointer-events','none');
         sym.textContent = full ? '◎' : '○';
         g.appendChild(sym);
@@ -10591,7 +10591,7 @@ class Engine {
 
       // Base decoration
       if (cd?.type==='BASE') {
-        const col = cd.owner==='A'?'#ff6060':'#6090ff';
+        const col = cd.owner==='A'?'#ffffff':'#aaaaaa';
         const t = document.createElementNS('http://www.w3.org/2000/svg','text');
         t.setAttribute('x',cx); t.setAttribute('y',cy+5); t.setAttribute('text-anchor','middle');
         t.setAttribute('fill',col); t.setAttribute('font-size','15'); t.setAttribute('font-family','Cinzel,serif');
@@ -10599,7 +10599,7 @@ class Engine {
         t.textContent=cd.owner; g.appendChild(t);
         const hp = document.createElementNS('http://www.w3.org/2000/svg','text');
         hp.setAttribute('x',cx); hp.setAttribute('y',cy+HS*.82); hp.setAttribute('text-anchor','middle');
-        hp.setAttribute('fill',cd.owner==='A'?'#cc5050':'#5070cc'); hp.setAttribute('font-size','8');
+        hp.setAttribute('fill',cd.owner==='A'?'#ffffff':'#aaaaaa'); hp.setAttribute('font-size','8');
         hp.setAttribute('pointer-events','none');
         hp.textContent=`${S.players[cd.owner].hp}HP`; g.appendChild(hp);
       }
@@ -10614,7 +10614,7 @@ class Engine {
         }).join(' ');
         const inner = document.createElementNS('http://www.w3.org/2000/svg','polygon');
         inner.setAttribute('points', iPts);
-        const innerFill = {F:'rgba(18,130,25,0.38)',D:'rgba(200,120,10,0.38)',M:'rgba(190,30,30,0.34)',W:'rgba(15,100,210,0.38)',N:'rgba(60,130,70,0.30)'}[cd.landType]||'rgba(50,70,50,0.2)';
+        const innerFill = {F:'rgba(80,200,80,0.18)',D:'rgba(220,160,40,0.18)',M:'rgba(220,80,80,0.18)',W:'rgba(60,140,255,0.18)',N:'rgba(180,180,180,0.12)'}[cd.landType]||'rgba(100,100,100,0.1)';
         inner.setAttribute('fill', innerFill);
         inner.setAttribute('stroke','none');
         inner.setAttribute('pointer-events','none');
@@ -10631,8 +10631,8 @@ class Engine {
 
         // Owner indicator: glow halo + solid dot (top-right corner)
         const dotX = cx + HS*0.52, dotY = cy - HS*0.52;
-        const ownerSolid = cd.owner==='A' ? '#ff4444' : '#4488ff';
-        const ownerHalo  = cd.owner==='A' ? 'rgba(255,60,60,0.4)' : 'rgba(50,120,255,0.4)';
+        const ownerSolid = cd.owner==='A' ? '#ffffff' : '#888888';
+        const ownerHalo  = cd.owner==='A' ? 'rgba(255,255,255,0.25)' : 'rgba(150,150,150,0.2)';
         const halo = document.createElementNS('http://www.w3.org/2000/svg','circle');
         halo.setAttribute('cx',dotX); halo.setAttribute('cy',dotY); halo.setAttribute('r','6.5');
         halo.setAttribute('fill',ownerHalo); halo.setAttribute('pointer-events','none'); g.appendChild(halo);
@@ -10644,8 +10644,8 @@ class Engine {
       // Valid-target highlight
       if (isV) {
         const hl = document.createElementNS('http://www.w3.org/2000/svg','polygon');
-        hl.setAttribute('points',P); hl.setAttribute('fill','rgba(200,168,75,0.15)');
-        hl.setAttribute('stroke','#c8a84b'); hl.setAttribute('stroke-width','2');
+        hl.setAttribute('points',P); hl.setAttribute('fill','rgba(255,255,255,0.12)');
+        hl.setAttribute('stroke','#ffffff'); hl.setAttribute('stroke-width','2');
         hl.setAttribute('pointer-events','none'); g.appendChild(hl);
       }
 
@@ -10995,7 +10995,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.31.0';
+window.HEXFORGE_VERSION = '5.32.0';
 (function () {
 'use strict';
 
@@ -11165,7 +11165,7 @@ function showDisconnectBanner(username, graceSecs) {
     el.style.cssText = `
       position:fixed;top:0;left:0;right:0;z-index:9100;
       background:#3a1510;border-bottom:1px solid #883030;
-      padding:8px;text-align:center;font-family:'Cinzel',serif;
+      padding:8px;text-align:center;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;
       font-size:.6rem;letter-spacing:2px;color:#ff8888;
     `;
     document.body.appendChild(el);
@@ -11568,7 +11568,7 @@ window.mpOpenBugReport = function() {
 
   overlay.innerHTML = `
     <div style="background:#0d1118;border:1px solid #4a2020;border-radius:8px;padding:24px 28px;
-                min-width:340px;max-width:540px;width:90vw;font-family:'Cinzel',serif;color:#c8d4e0;">
+                min-width:340px;max-width:540px;width:90vw;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;color:#c8d4e0;">
       <div style="color:#ff7777;font-size:.85rem;letter-spacing:3px;margin-bottom:16px">🐛 BUG MELDEN</div>
       
       <div style="font-size:.55rem;color:#5a6a7a;letter-spacing:1px;margin-bottom:6px">BESCHREIBUNG</div>
@@ -11586,12 +11586,12 @@ window.mpOpenBugReport = function() {
       <div style="display:flex;gap:8px;margin-top:14px">
         <button onclick="mpCopyBugReport()" style="
           flex:1;padding:8px;background:#1a1208;border:1px solid #6a4a00;border-radius:4px;
-          color:#c8a84b;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;cursor:pointer">
+          color:#c8a84b;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.6rem;letter-spacing:2px;cursor:pointer">
           📋 Kopieren
         </button>
         <button onclick="document.getElementById('bug-report-overlay').remove()" style="
           flex:1;padding:8px;background:transparent;border:1px solid #2a3040;border-radius:4px;
-          color:#5a6a7a;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;cursor:pointer">
+          color:#5a6a7a;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.6rem;letter-spacing:2px;cursor:pointer">
           ✕ Schließen
         </button>
       </div>
@@ -11701,7 +11701,7 @@ window.mpConfirmResign = function() {
   overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;';
   overlay.innerHTML = `
     <div style="background:#0d1118;border:1px solid #4a2020;border-radius:8px;
-                padding:28px 32px;text-align:center;font-family:'Cinzel',serif;color:#c8d4e0;max-width:320px;">
+                padding:28px 32px;text-align:center;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;color:#c8d4e0;max-width:320px;">
       <div style="font-size:1.4rem;margin-bottom:12px">🏳</div>
       <div style="font-size:.8rem;letter-spacing:3px;color:#cc6666;margin-bottom:8px">AUFGEBEN?</div>
       <div style="font-size:.6rem;color:#5a6a7a;letter-spacing:1px;margin-bottom:20px">
@@ -11710,12 +11710,12 @@ window.mpConfirmResign = function() {
       <div style="display:flex;gap:10px">
         <button onclick="mpDoResign()" style="
           flex:1;padding:9px;background:#2a0a0a;border:1px solid #884444;border-radius:4px;
-          color:#cc6666;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;cursor:pointer;">
+          color:#cc6666;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.6rem;letter-spacing:2px;cursor:pointer;">
           Ja, aufgeben
         </button>
         <button onclick="document.getElementById('resign-confirm-overlay').remove()" style="
           flex:1;padding:9px;background:transparent;border:1px solid #2a3040;border-radius:4px;
-          color:#5a6a7a;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:2px;cursor:pointer;">
+          color:#5a6a7a;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.6rem;letter-spacing:2px;cursor:pointer;">
           Abbrechen
         </button>
       </div>
@@ -12519,7 +12519,7 @@ function showMulliganOverlay(state, player) {
         style="cursor:pointer;border:2px solid #252d40;border-radius:6px;padding:8px 6px;
                min-width:72px;max-width:90px;text-align:center;transition:all .15s;
                background:${col};flex-shrink:0;user-select:none">
-        <div style="font-family:'Cinzel',serif;font-size:.5rem;color:#c8d4e0;margin-bottom:3px;line-height:1.2">${nm}</div>
+        <div style="font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.5rem;color:#c8d4e0;margin-bottom:3px;line-height:1.2">${nm}</div>
         ${str ? `<div style="font-size:.62rem;color:#aaa">⚔${str}</div>` : ''}
         ${cost !== '' ? `<div style="font-size:.55rem;color:#68aaee;margin-top:2px">${cost}◆</div>` : ''}
       </div>`;
@@ -12876,7 +12876,7 @@ Engine.prototype._chooseOnePick = (function(orig) {
 window.addEventListener('DOMContentLoaded', () => {
   // kw-badge CSS
   const kwStyle = document.createElement('style');
-  kwStyle.textContent = `.kw-badge{display:inline-block;font-size:.48rem;padding:1px 5px;border:1px solid;border-radius:2px;font-family:'Cinzel',serif;letter-spacing:1px;white-space:nowrap;}`;
+  kwStyle.textContent = `.kw-badge{display:inline-block;font-size:.48rem;padding:1px 5px;border:1px solid;border-radius:2px;font-family:'Bebas Neue', 'IBM Plex Mono', monospace;letter-spacing:1px;white-space:nowrap;}`;
   document.head.appendChild(kwStyle);
 
   // ── Pinch-to-zoom on board ─────────────────────────────
@@ -12947,7 +12947,7 @@ function initBoardTouch() {
 <!-- ── Discover Modal ─────────────────────────────────── -->
 <div id="discover-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.82);
   display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;">
-  <div style="font-family:'Cinzel',serif;font-size:.9rem;letter-spacing:4px;color:#c8a84b;text-align:center"
+  <div style="font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.9rem;letter-spacing:4px;color:#c8a84b;text-align:center"
        id="discover-label">DISCOVER</div>
   <div id="discover-cards" style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:600px;"></div>
 </div>
