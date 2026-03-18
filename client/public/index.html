@@ -21,9 +21,9 @@
   --bg:    #0a0c0f;
   --bg2:   #111418;
   --bg3:   #1a1f26;
-  --border:#2a3040;
+  --border:#2e3a4e;
   --text:  #c8d4e0;
-  --dim:   #5a6a7a;
+  --dim:   #7a9ab8;
   --gold:  #c8a84b;
   --goldd: #7a6030;
   --F: #4a9e40;  --D: #d4982a;  --M: #8a8aaa;
@@ -614,27 +614,27 @@ svg#board { display: block; overflow: visible; touch-action: none; }
   flex-direction:column;
 }
 .mp-box {
-  background:#111418;border:1px solid #2a3040;border-radius:10px;
+  background:#141920;border:1px solid #32404e;border-radius:10px;
   padding:32px 40px;min-width:320px;text-align:center;
 }
 .mp-box h2 {
   font-family:'Cinzel',serif;font-size:1.1rem;color:#c8a84b;
   letter-spacing:4px;margin-bottom:24px;
 }
-.mp-tabs { display:flex;margin-bottom:20px;border-bottom:1px solid #2a3040; }
+.mp-tabs { display:flex;margin-bottom:20px;border-bottom:1px solid #334455; }
 .mp-tab  {
   flex:1;padding:8px;cursor:pointer;font-family:'Cinzel',serif;
-  font-size:.6rem;letter-spacing:2px;color:#5a6a7a;transition:all .15s;
+  font-size:.6rem;letter-spacing:2px;color:#7a90a8;transition:all .15s;
 }
 .mp-tab-active { color:#c8a84b;border-bottom:2px solid #c8a84b; }
 .mp-form { display:none; }
 .mp-form.mp-active { display:block; }
 .mp-input {
   width:100%;padding:8px 12px;margin-bottom:10px;
-  background:#0e1320;border:1px solid #2a3040;border-radius:4px;
+  background:#0e1320;border:1px solid #334455;border-radius:4px;
   color:#c8d4e0;font-family:'Crimson Pro',serif;font-size:.85rem;
 }
-.mp-input:focus { outline:none;border-color:#4a5a7a; }
+.mp-input:focus { outline:none;border-color:#5a80a8;box-shadow:0 0 0 2px rgba(90,128,168,.15); }
 .mp-btn {
   width:100%;padding:9px;margin-bottom:8px;cursor:pointer;
   border-radius:4px;font-family:'Cinzel',serif;font-size:.6rem;
@@ -643,9 +643,9 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 .mp-btn-primary { background:#1a2a40;border:1px solid #3a5a7a;color:#68aaee; }
 .mp-btn-primary:hover { background:#1e3248;border-color:#5a7aaa; }
 .mp-btn-primary:disabled { opacity:.4;cursor:not-allowed; }
-.mp-btn-ghost  { background:transparent;border:1px solid #2a3040;color:#5a6a7a; }
+.mp-btn-ghost  { background:transparent;border:1px solid #334455;color:#7a90a8; }
 .mp-btn-ghost:hover { border-color:#4a5a7a;color:#8a9ab0; }
-.mp-err { color:#cc5050;font-size:.65rem;min-height:1.2em;margin-top:4px; }
+.mp-err { color:#ff7070;font-size:.65rem;min-height:1.2em;margin-top:4px; }
 /* Turn banner */
 #mp-turn-banner {
   display:none;
@@ -734,7 +734,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 <!-- ═══ MP AUTH OVERLAY ═══════════════════════════════════ -->
 <div id="mp-auth-overlay" class="mp-overlay" style="display:flex">
   <div class="mp-box" style="min-width:340px">
-    <h2>HEXFORGE</h2>
+    <h2 style="color:#c8a84b;letter-spacing:4px">HEXFORGE</h2>
     <div class="mp-tabs">
       <div class="mp-tab mp-tab-active" id="mp-tab-login"    onclick="mpAuthSwitchTab('login')">Login</div>
       <div class="mp-tab"               id="mp-tab-register" onclick="mpAuthSwitchTab('register')">Registrieren</div>
@@ -755,7 +755,7 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     <div class="mp-err" id="mp-auth-err"></div>
     <div id="mp-conn-status" style="
       margin-top:12px;font-family:'Cinzel',serif;font-size:.5rem;
-      letter-spacing:1px;color:#3a4a5a;min-height:1.4em;text-align:center;
+      letter-spacing:1px;color:#6a8aaa;min-height:1.4em;text-align:center;
     ">⟳ Verbinde mit Server…</div>
   </div>
 </div>
@@ -764,19 +764,20 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 <div id="mp-lobby-overlay" class="mp-overlay">
   <div class="mp-box" style="min-width:380px;max-width:440px">
     <h2 id="lobby-title" style="cursor:default;user-select:none" title="">LOBBY</h2>
-    <div id="mp-lobby-user" style="font-family:'Cinzel',serif;font-size:.6rem;color:#5a6a7a;letter-spacing:2px;margin-bottom:16px">—</div>
+    <div id="mp-lobby-user" style="font-family:'Cinzel',serif;font-size:.6rem;color:#9abbd4;letter-spacing:2px;margin-bottom:16px">—</div>
 
     <!-- Deck select -->
     <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
-      <select id="mp-deck-select" style="flex:1;padding:8px;background:#0e1320;border:1px solid #2a3040;border-radius:4px;color:#c8d4e0;font-family:'Cinzel',serif;font-size:.6rem">
+      <select id="mp-deck-select" onchange="mpDeckSelectChanged()" style="flex:1;padding:8px;background:#0e1320;border:1px solid #334455;border-radius:4px;color:#c8d4e0;font-family:'Cinzel',serif;font-size:.6rem">
         <option value="">Standard-Deck</option>
       </select>
+      <button id="mp-deck-delete-btn" onclick="mpDeleteSelectedDeck()" title="Dieses Deck löschen" style="display:none;padding:7px 10px;background:transparent;border:1px solid #5a2a2a;border-radius:4px;color:#cc6666;font-family:'Cinzel',serif;font-size:.55rem;cursor:pointer">🗑</button>
       <a href="/deckbuilder.html" target="_blank" style="padding:7px 10px;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#5a6a7a;font-family:'Cinzel',serif;font-size:.55rem;text-decoration:none;white-space:nowrap">⚙ Decks</a>
       <button id="mp-sync-decks-btn" onclick="mpSyncDecks()" title="Decks mit Server synchronisieren" style="padding:7px 10px;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#3a5a7a;font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:1px;cursor:pointer">☁ Sync</button>
     </div>
 
     <!-- Queue status -->
-    <div id="mp-queue-status" style="font-family:'Cinzel',serif;font-size:.62rem;color:#68aaee;min-height:1.4em;margin-bottom:12px;letter-spacing:1px;text-align:center">Bereit</div>
+    <div id="mp-queue-status" style="font-family:'Cinzel',serif;font-size:.62rem;color:#99ddff;min-height:1.4em;margin-bottom:12px;letter-spacing:1px;text-align:center">Bereit</div>
 
     <!-- Main queue buttons -->
     <button class="mp-btn mp-btn-primary" id="mp-find-btn"   onclick="mpFindMatch()">⚔ Ranked Match suchen</button>
@@ -10994,7 +10995,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.22.0';
+window.HEXFORGE_VERSION = '5.25.0';
 (function () {
 'use strict';
 
@@ -11790,7 +11791,8 @@ function showLobby() {
   }
   hideChatPanel();
   hideClocks();
-  populateDeckSelect();
+  populateDeckSelect().then(() => mpDeckSelectChanged());
+  // populateDeckSelect is async (loads from server for logged-in users)
   setQueueStatus('Bereit');
   mpRefreshMatches();
   // Auto-refresh every 10s while in lobby
@@ -12017,62 +12019,94 @@ function setRoomStatus(msg, color) {
 
 // ── Deck Sync ─────────────────────────────────────────────
 // Merges server decks with localStorage, server wins on conflict.
-async function syncDecksFromServer(token) {
-  try {
-    const r = await fetch('/api/decks', {
-      headers: { Authorization: 'Bearer ' + (token || localStorage.getItem('hf_token') || '') }
-    });
-    if (!r.ok) return;
-    const { decks } = await r.json();
-    if (!decks || !decks.length) {
-      // Server has no decks — push local decks up
-      await pushLocalDecksToServer();
-      return;
-    }
-    // Merge: server decks replace local decks (server is source of truth)
-    const normalized = decks.map(d => ({
-      id:       d.id,
-      name:     d.name || 'Unbenannt',
-      cards:    d.cards || [],
-      archetype: d.archetype || null,
-      synced:   true,
-    }));
-    // Keep local-only decks (no server id) that aren't already on server
-    const local = JSON.parse(localStorage.getItem('hf_decks') || '[]');
-    const localOnly = local.filter(d => !d.synced && !d.id);
-    const merged = [...normalized, ...localOnly];
-    localStorage.setItem('hf_decks', JSON.stringify(merged));
-    populateDeckSelect();
-  } catch(e) { /* offline — keep local */ }
+// ── Deck-Verwaltung: API-first, localStorage als Fallback für Gäste ──
+
+function _authHeader() {
+  const t = localStorage.getItem('hf_token');
+  return t ? { 'Authorization': 'Bearer ' + t } : {};
+}
+function _isLoggedIn() { return !!(mySession && !mySession.isGuest); }
+
+// Lade Decks: eingeloggte Nutzer von Server, Gäste aus localStorage
+async function loadDecksForUser() {
+  if (_isLoggedIn()) {
+    try {
+      const r = await fetch('/api/decks', { headers: _authHeader() });
+      if (r.ok) {
+        const { decks } = await r.json();
+        // Server ist Quelle der Wahrheit — localStorage als Cache updaten
+        localStorage.setItem('hf_decks', JSON.stringify(
+          (decks || []).map(d => ({ id: d.id, name: d.name, cards: d.cards || [], synced: true }))
+        ));
+        return decks || [];
+      }
+    } catch(e) { /* offline — Cache nutzen */ }
+  }
+  // Gast oder offline: localStorage
+  try { return JSON.parse(localStorage.getItem('hf_decks') || '[]'); }
+  catch(e) { return []; }
 }
 
-async function pushLocalDecksToServer() {
-  const token = localStorage.getItem('hf_token');
-  if (!token) return;
-  const local = JSON.parse(localStorage.getItem('hf_decks') || '[]');
-  const unsynced = local.filter(d => !d.synced && d.cards?.length >= 3);
-  for (const d of unsynced) {
+// Speichere Deck (neu oder Update)
+async function saveDeckToServer(deck) {
+  // deck: { id?, name, cards, archetype? }
+  if (!_isLoggedIn()) {
+    // Gast: nur localStorage
+    const decks = JSON.parse(localStorage.getItem('hf_decks') || '[]');
+    if (deck.localIdx !== undefined) {
+      decks[deck.localIdx] = { name: deck.name, cards: deck.cards };
+    } else {
+      decks.push({ name: deck.name, cards: deck.cards });
+    }
+    localStorage.setItem('hf_decks', JSON.stringify(decks));
+    return { ok: true };
+  }
+  try {
+    const url    = deck.id ? `/api/decks/${deck.id}` : '/api/decks';
+    const method = deck.id ? 'PUT' : 'POST';
+    const r = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json', ...(_authHeader()) },
+      body: JSON.stringify({ name: deck.name, cards: deck.cards, archetype: deck.archetype }),
+    });
+    if (!r.ok) return { ok: false, error: (await r.json()).error };
+    const { deck: saved } = await r.json();
+    // Cache updaten
+    await loadDecksForUser();
+    return { ok: true, deck: saved };
+  } catch(e) { return { ok: false, error: e.message }; }
+}
+
+// Lösche Deck
+async function deleteDeckFromServer(deckId, localIdx) {
+  if (_isLoggedIn() && deckId) {
     try {
-      const r = await fetch('/api/decks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify({ name: d.name, cards: d.cards, archetype: d.archetype }),
-      });
-      if (r.ok) {
-        const { deck } = await r.json();
-        d.id = deck.id; d.synced = true;
-      }
+      await fetch(`/api/decks/${deckId}`, { method: 'DELETE', headers: _authHeader() });
     } catch(e) {}
   }
-  localStorage.setItem('hf_decks', JSON.stringify(local));
+  // Auch aus localStorage entfernen
+  try {
+    const decks = JSON.parse(localStorage.getItem('hf_decks') || '[]');
+    const idx = localIdx !== undefined ? localIdx
+      : decks.findIndex(d => d.id === deckId);
+    if (idx >= 0) {
+      decks.splice(idx, 1);
+      localStorage.setItem('hf_decks', JSON.stringify(decks));
+    }
+  } catch(e) {}
+}
+
+async function syncDecksFromServer(token) {
+  // Vereinfacht: loadDecksForUser macht das jetzt
+  await loadDecksForUser();
+  populateDeckSelect();
 }
 
 window.mpSyncDecks = async function() {
-  const token = localStorage.getItem('hf_token');
-  if (!token) { showHint('Zuerst einloggen', 2000); return; }
+  if (!mySession) { showHint('Zuerst einloggen', 2000); return; }
   const btn = document.getElementById('mp-sync-decks-btn');
   if (btn) { btn.textContent = '⟳ Sync…'; btn.disabled = true; }
-  await syncDecksFromServer(token);
+  await loadDecksForUser();
   if (btn) { btn.textContent = '☁ Sync'; btn.disabled = false; }
   showHint('Decks synchronisiert ✓', 2000);
   populateDeckSelect();
@@ -12104,32 +12138,102 @@ window.mpJoinRoom = function() {
 
 
 
-function populateDeckSelect() {
+// ── Hub Decks (eingebettet für Client-seitige Deck-Auswahl) ──
+const HUB_DECKS_CLIENT = [
+  { name:'Yellow Rush',        author:'SuperbLizard', cards:['khalims_prayer','khalims_prayer','khalims_prayer','last_nightmare','last_nightmare','last_nightmare','shaytan_scavenger','shaytan_scavenger','soul_drain','soul_drain','flash_salmon','flash_salmon','spirit_theft','spirit_theft','oradrim_sagittarius','oradrim_sagittarius','wind_soldier','wind_soldier','wind_soldier','zealous_crusader','zealous_crusader','zealous_crusader','mistral_guide','mistral_guide','mistral_guide','demonic_salmon','demonic_salmon','barrensky_vermin','barrensky_vermin','barrensky_vermin'] },
+  { name:'Mono Red Burn',      author:'Aquablad',     cards:['underground_brigand','underground_brigand','underground_brigand','shedim_brute','shedim_brute','shedim_brute','grim_guard','grim_guard','grim_guard','flame_burst','flame_burst','flame_burst','groundshaker','groundshaker','groundshaker','gift_of_steel','gift_of_steel','gift_of_steel','blood_singer','blood_singer','blood_singer','bomb_slinger','bomb_slinger','bomb_slinger','derelict_tower','derelict_tower','derelict_tower','seifers_wrath','seifers_wrath','seifers_wrath'] },
+  { name:'Beginner Green',     author:'Aquablad',     cards:['bone_collector','bone_collector','bone_collector','tiki_caretaker','tiki_caretaker','oakling','oakling','oakling','oak_father','oak_father','oak_father','elderwood_embrace','elderwood_embrace','elderwood_embrace','feed_the_forest','feed_the_forest','feed_the_forest','sagami_grovecaller','sagami_grovecaller','tiki_piper','tiki_piper','thyrian_golem','thyrian_golem','thyrian_golem','wood_elemental','wood_elemental','wood_elemental','verduran_force','verduran_force','verduran_force'] },
+  { name:'Blue Jump',          author:'Aquablad',     cards:['campfire','campfire','mystic_beast','mystic_beast','mystic_beast','frogify','frogify','frogify','wavecrash_colossus','wavecrash_colossus','wavecrash_colossus','sunken_tower','sunken_tower','aurora_myth_maker','forbidden_library','triton_warrior','triton_warrior','triton_warrior','mirror_phantasm','baeru','water_elemental','water_elemental','gabrian_archon','gabrian_archon','gabrian_archon','battle_toads','battle_toads','battle_toads','the_emperors_command','the_emperors_command'] },
+  { name:'Green Rush',         author:'Aquablad',     cards:['sagami_warrior','sagami_warrior','sagami_warrior','oakling','oakling','oakling','elderwood_embrace','elderwood_embrace','elderwood_embrace','verduran_force','verduran_force','verduran_force','feed_the_forest','feed_the_forest','feed_the_forest','tiki_caretaker','tiki_caretaker','tiki_caretaker','living_willow','living_willow','living_willow','ruunins_messenger','ruunins_messenger','ruunins_messenger','ruunins_guidance','ruunins_guidance','ruunins_guidance','god_hunter','god_hunter','god_hunter'] },
+  { name:'Sorocco in Paradise',author:'SuperbLizard', cards:['mystic_beast','mystic_beast','mystic_beast','water_elemental','water_elemental','water_elemental','axe_grinder','axe_grinder','axe_grinder','seed_of_paradise','seed_of_paradise','seed_of_paradise','rakoakopter','rakoakopter','rakoakopter','auroras_creation','auroras_creation','auroras_creation','sunken_tower','sunken_tower','sunken_tower','time_of_legends','fugoro_merchant','sapphire_yak','sapphire_yak','sapphire_yak','sorocco','triton_warrior','triton_warrior','triton_warrior'] },
+  { name:'Doomsday Carassius', author:'SuperbLizard', cards:['plague_bearer','village_elder','failed_experiment','demon_wrangler','demon_wrangler','demon_wrangler','doomgate','doomsday','doomsday','balloon_fish','balloon_fish','swarming_carassius','swarming_carassius','swarming_carassius','ulani_defender','cartographer','cartographer','cartographer','auroras_creation','auroras_creation','auroras_creation','earthcraft','earthcraft','soul_drain','soul_drain','radiance_airship','ionas_smile','ionas_smile','fugoro_merchant','laya'] },
+  { name:'BR Midrange',        author:'happyjo',      cards:['shifting_tide','shifting_tide','shifting_tide','triton_banquet','seifer','flame_burst','flame_burst','flame_burst','groundshaker','groundshaker','groundshaker','laya','rakoan_war_machine','rakoan_war_machine','rakoan_war_machine','humbling_vision','humbling_vision','humbling_vision','underground_brigand','underground_brigand','underground_brigand','axe_grinder','axe_grinder','axe_grinder','garudan','seifers_wrath','seifers_wrath','seifers_wrath','rakoakopter','rakoakopter'] },
+  { name:'Lord of Terror Burn',author:'Aquablad',     cards:['falcon_dive','falcon_dive','falcon_dive','famine','famine','famine','lord_of_terror','lord_of_terror','lord_of_terror','flame_burst','flame_burst','flame_burst','seifers_wrath','seifers_wrath','seifers_wrath','plague_bearer','plague_bearer','plague_bearer','blood_singer','blood_singer','blood_singer','grim_guard','grim_guard','grim_guard','derelict_tower','derelict_tower','derelict_tower','rebel_slinger','rebel_slinger','rebel_slinger'] },
+  { name:'Triton Aggro',       author:'HexForge',     cards:['triton_warrior','triton_warrior','triton_warrior','triton_diver','triton_diver','triton_diver','triton_chef','triton_chef','triton_chef','triton_tactician','triton_tactician','triton_tactician','triton_trainer','triton_trainer','triton_trainer','snowstorm_lancer','snowstorm_lancer','snowstorm_lancer','gabrian_archon','gabrian_archon','gabrian_archon','gabrian_commander','gabrian_commander','gabrian_commander','humbling_vision','humbling_vision','humbling_vision','water_elemental','water_elemental','water_elemental'] },
+];
+
+async function populateDeckSelect() {
   const sel = document.getElementById('mp-deck-select');
   if (!sel) return;
-  sel.innerHTML = '<option value="">Standard-Deck</option>';
-  try {
-    const decks = JSON.parse(localStorage.getItem('hf_decks') || '[]');
+  sel.innerHTML = '';
+
+  // Optgroup 1: Hub Decks (immer verfügbar)
+  const hubGroup = document.createElement('optgroup');
+  hubGroup.label = '📚 Hub Decks';
+  HUB_DECKS_CLIENT.forEach((d, i) => {
+    const opt = document.createElement('option');
+    opt.value = 'hub:' + i;
+    opt.textContent = d.name + '  (' + d.author + ')';
+    hubGroup.appendChild(opt);
+  });
+  sel.appendChild(hubGroup);
+
+  // Optgroup 2: Eigene Decks (von Server für eingeloggte, localStorage für Gäste)
+  const decks = await loadDecksForUser();
+  if (decks.length > 0) {
+    const myGroup = document.createElement('optgroup');
+    myGroup.label = mySession && !mySession.isGuest ? '🗂 Meine Decks (gespeichert)' : '🗂 Meine Decks (lokal)';
     decks.forEach((d, i) => {
       const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = `${d.name || 'Deck ' + (i+1)}  (${(d.cards||[]).length} Karten)`;
-      sel.appendChild(opt);
+      opt.value = 'my:' + i;
+      opt.dataset.deckId = d.id || '';
+      opt.textContent = (d.name || 'Deck ' + (i+1)) + '  (' + (d.cards||[]).length + ' Karten)';
+      myGroup.appendChild(opt);
     });
-  } catch(e) {}
+    sel.appendChild(myGroup);
+  }
 }
 
 let _queueDeck = null;
 let _queueRetryTimer = null;
 
 function _getSelectedDeck() {
-  const idx = document.getElementById('mp-deck-select')?.value;
-  if (idx === '' || idx === undefined) return null;
+  const val = document.getElementById('mp-deck-select')?.value;
+  if (!val) return null;
+  try {
+    if (val.startsWith('hub:')) {
+      const i = parseInt(val.slice(4));
+      return HUB_DECKS_CLIENT[i]?.cards || null;
+    }
+    if (val.startsWith('my:')) {
+      const i = parseInt(val.slice(3));
+      const decks = JSON.parse(localStorage.getItem('hf_decks') || '[]');
+      return decks[i]?.cards || null;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function _getSelectedDeckId() {
+  const sel = document.getElementById('mp-deck-select');
+  const opt = sel?.options[sel.selectedIndex];
+  return opt?.dataset?.deckId ? parseInt(opt.dataset.deckId) : null;
+}
+
+// Show/hide delete button based on selection type
+window.mpDeckSelectChanged = function() {
+  const val = document.getElementById('mp-deck-select')?.value || '';
+  const delBtn = document.getElementById('mp-deck-delete-btn');
+  if (delBtn) delBtn.style.display = val.startsWith('my:') ? '' : 'none';
+};
+
+// Delete a custom deck (API + localStorage)
+window.mpDeleteSelectedDeck = async function() {
+  const val = document.getElementById('mp-deck-select')?.value || '';
+  if (!val.startsWith('my:')) return;
+  const i = parseInt(val.slice(3));
+  const deckId = _getSelectedDeckId();
   try {
     const decks = JSON.parse(localStorage.getItem('hf_decks') || '[]');
-    return decks[parseInt(idx)]?.cards || null;
-  } catch(e) { return null; }
-}
+    const name = decks[i]?.name || 'Deck ' + (i+1);
+    if (!confirm(`Deck "${name}" löschen?`)) return;
+    await deleteDeckFromServer(deckId, i);
+    await populateDeckSelect();
+    const delBtn = document.getElementById('mp-deck-delete-btn');
+    if (delBtn) delBtn.style.display = 'none';
+    showHint('Deck gelöscht ✓', 2000);
+  } catch(e) {}
+};
 
 function _queueRetry() {
   if (!inQueue || !socket?.connected) return;
@@ -12470,7 +12574,9 @@ Engine.prototype.endTurn = (function(orig) {
   return function() {
     if (!isMPMode() || window._DEV_MATCH) return orig.call(this);
     if (!isMyTurn()) return;
-    orig.call(this);          // sofort lokal: Cleanup + Zug wechseln
+    // In MP: nur visuelles Reset, kein lokales State-Advance (würde async Phase-Chain starten)
+    this._clr();
+    this._render();
     sendAction(ACTION.END_TURN);
   };
 }(Engine.prototype.endTurn));

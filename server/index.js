@@ -12,7 +12,7 @@ const cors    = require('cors');
 const { Server } = require('socket.io');
 
 const { C2S, S2C }          = require('../shared/protocol');
-const { register, login, guestLogin, authFromToken, store: memUserStore } = require('./auth/auth');
+const { register, login, guestLogin, authFromToken, setStore, store: memUserStore } = require('./auth/auth');
 const { BotPlayer }          = require('./bot/bot-player');
 const { MatchmakingQueue }  = require('./matchmaking/queue');
 const { RoomManager }       = require('./matchmaking/room-manager');
@@ -25,6 +25,7 @@ const matchStore = pgMatchStore || memMatchStore;
 
 if (isUsingDB) {
   console.log('[Server] Using PostgreSQL stores');
+  setStore(pgUserStore); // Wire auth to DB store
 } else {
   console.log('[Server] Using in-memory stores (set USE_DB=true for PostgreSQL)');
 }
@@ -61,7 +62,7 @@ app.use(express.static(path.join(__dirname, '../client/public')));
 
 // Health
 app.get('/api/health', async (req, res) => {
-  const info = { status: 'ok', version: '5.22.0', uptime: process.uptime(), usingDB: isUsingDB };
+  const info = { status: 'ok', version: '5.25.0', uptime: process.uptime(), usingDB: isUsingDB };
   if (isUsingDB) {
     try { const r = await db.healthCheck(); info.db = r; } catch(e) { info.dbError = e.message; }
   }
@@ -254,11 +255,11 @@ io.on('connection', (socket) => {
 
   // ── Auth ────────────────────────────────────────────────
 
-  socket.on(C2S.REGISTER, ({ username, password } = {}) => {
+  socket.on(C2S.REGISTER, async ({ username, password } = {}) => {
     if (!rateLimiter(rlKey(socket, 'register'), 5, 60_000)) {
       return socket.emit(S2C.AUTH_ERR, { reason: 'Too many attempts. Try again in a minute.' });
     }
-    const result = register(username, password);
+    const result = await register(username, password);
     if (result.ok) {
       sessions.set(socket.id, { ...result.user, socketId: socket.id });
       socket.emit(S2C.AUTH_OK, { user: result.user, token: result.token });
@@ -267,11 +268,11 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on(C2S.LOGIN, ({ username, password } = {}) => {
+  socket.on(C2S.LOGIN, async ({ username, password } = {}) => {
     if (!rateLimiter(rlKey(socket, 'login'), 10, 60_000)) {
       return socket.emit(S2C.AUTH_ERR, { reason: 'Too many attempts. Try again in a minute.' });
     }
-    const result = login(username, password);
+    const result = await login(username, password);
     if (result.ok) {
       sessions.set(socket.id, { ...result.user, socketId: socket.id });
       socket.emit(S2C.AUTH_OK, { user: result.user, token: result.token });
@@ -280,8 +281,8 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on(C2S.GUEST_LOGIN, () => {
-    const result = guestLogin();
+  socket.on(C2S.GUEST_LOGIN, async () => {
+    const result = await guestLogin();
     sessions.set(socket.id, { ...result.user, socketId: socket.id });
     socket.emit(S2C.AUTH_OK, { user: result.user, token: result.token });
   });

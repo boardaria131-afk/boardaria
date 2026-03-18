@@ -950,41 +950,51 @@ async function saveDeck() {
   }
   if (cards.length === 0) { toast('Deck is empty'); return; }
 
-  // Always save to localStorage first
+  const token = localStorage.getItem('hf_token');
+
+  if (token) {
+    // Eingeloggt: Server ist Quelle der Wahrheit
+    try {
+      // Prüfen ob Deck mit diesem Namen schon auf Server existiert
+      const decks = getDeckList();
+      const existing = decks.find(d => d.name === name && d.id);
+      const url    = existing ? `/api/decks/${existing.id}` : '/api/decks';
+      const method = existing ? 'PUT' : 'POST';
+      const r = await fetch(url, {
+        method,
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+        body: JSON.stringify({ name, cards }),
+      });
+      if (r.ok) {
+        const { deck: saved } = await r.json();
+        // Lokal cachen mit Server-ID
+        const fresh = getDeckList().filter(d => d.name !== name);
+        fresh.unshift({ id: saved.id, name, cards, synced: true, updatedAt: Date.now() });
+        saveDeckList(fresh);
+        toast(`Deck "${name}" gespeichert ✓  ☁ Server`);
+      } else {
+        // Fallback localStorage
+        _saveLocalOnly(name, cards);
+        toast(`Deck gespeichert (lokal — Server-Fehler ${r.status})`);
+      }
+    } catch(e) {
+      _saveLocalOnly(name, cards);
+      toast(`Deck gespeichert ✓ (lokal — offline)`);
+    }
+  } else {
+    // Nicht eingeloggt: nur localStorage
+    _saveLocalOnly(name, cards);
+    toast(`Deck "${name}" gespeichert ✓  📱 Nur lokal (einloggen zum Synchronisieren)`);
+  }
+}
+
+function _saveLocalOnly(name, cards) {
   const decks = getDeckList();
   const idx   = decks.findIndex(d => d.name === name);
   const entry = { name, cards, updatedAt: Date.now() };
   if (idx >= 0) decks[idx] = entry;
   else decks.push(entry);
   saveDeckList(decks);
-
-  // Try server API
-  const token = localStorage.getItem('hf_token');
-  if (token) {
-    try {
-      const r = await fetch('/api/decks', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
-        body: JSON.stringify({ name, cards }),
-      });
-      if (r.ok) {
-        const { deck: saved } = await r.json();
-        if (saved?.id) {
-          // Update local entry with server ID for future syncs
-          const d2 = getDeckList();
-          const i2 = d2.findIndex(d => d.name === name);
-          if (i2 >= 0) { d2[i2].id = saved.id; d2[i2].synced = true; saveDeckList(d2); }
-        }
-        toast(`Deck "${name}" gespeichert ✓ (lokal + Server)`);
-      } else {
-        toast(`Deck "${name}" gespeichert (nur lokal — Server ${r.status})`);
-      }
-    } catch(e) {
-      toast(`Deck "${name}" gespeichert ✓ (lokal — Server nicht erreichbar)`);
-    }
-  } else {
-    toast(`Deck "${name}" gespeichert ✓ (lokal — nicht eingeloggt)`);
-  }
 }
 
 async function syncFromServer() {
@@ -1053,21 +1063,24 @@ async function openLoadModal() {
   document.getElementById('loadModal').classList.add('open');
 }
 
-function deleteDeck(idx) {
+async function deleteDeck(idx) {
   const decks = getDeckList();
   const d = decks[idx];
   if (!d) return;
   if (!confirm(`Deck "${d.name}" wirklich löschen?`)) return;
-  decks.splice(idx, 1);
-  saveDeckList(decks);
-  // Try delete from server
+  // Server-Delete zuerst (wenn eingeloggt und ID vorhanden)
   const token = localStorage.getItem('hf_token');
   if (token && d.id) {
-    fetch(`/api/decks/${d.id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + token }
-    }).catch(() => {});
+    try {
+      await fetch(`/api/decks/${d.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } catch(e) {}
   }
+  decks.splice(idx, 1);
+  saveDeckList(decks);
+  toast(`Deck "${d.name}" gelöscht`);
   openLoadModal(); // refresh list
 }
 
