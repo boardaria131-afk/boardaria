@@ -62,7 +62,7 @@ app.use(express.static(path.join(__dirname, '../client/public')));
 
 // Health
 app.get('/api/health', async (req, res) => {
-  const info = { status: 'ok', version: '5.25.0', uptime: process.uptime(), usingDB: isUsingDB };
+  const info = { status: 'ok', version: '5.26.0', uptime: process.uptime(), usingDB: isUsingDB };
   if (isUsingDB) {
     try { const r = await db.healthCheck(); info.db = r; } catch(e) { info.dbError = e.message; }
   }
@@ -112,12 +112,12 @@ app.get('/api/user/:id', async (req, res) => {
 });
 
 // ── Deck endpoints (require auth header: Bearer <token>) ──
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   const auth = req.headers.authorization || '';
   const token = auth.replace('Bearer ', '');
-  const payload = authFromToken(token);
+  const payload = await authFromToken(token);
   if (!payload) return res.status(401).json({ error: 'Unauthorized' });
-  req.userId = payload.id;  // authFromToken returns publicUser() which has .id, not .userId
+  req.userId = payload.id;
   next();
 }
 
@@ -288,7 +288,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on(C2S.AUTH_TOKEN, async ({ token } = {}) => {
-    const user = authFromToken(token);
+    const user = await authFromToken(token);
     if (user) {
       // Refresh rating from live store (await handles both sync and async stores)
       const live = await Promise.resolve(userStore.findById(user.id));
