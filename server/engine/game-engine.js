@@ -2708,7 +2708,14 @@ const CARDS = (function() {
     onSummon:(S,u,summoned,summonOwner) => {
       if(summonOwner!==u.own||summoned.id===u.id||u.q===null||summoned.q===null)return;
       if(cDist([u.q,u.r,u.s],[summoned.q,summoned.r,summoned.s])===1){
-        summoned.kw.add('flying'); summoned.bew=Math.max(summoned.bew,2);
+        summoned.kw.add('flying');
+        summoned.bew = Math.max(summoned.bew, 2);
+        // pendingDash lets unit move immediately on summon turn (like native Dash)
+        summoned.pendingDash = Math.max(summoned.pendingDash || 0, 2);
+        // Add dash:2 keyword so it's visible in UI
+        if (![...summoned.kw].some(k => k.startsWith('dash:'))) {
+          summoned.kw.add('dash:2');
+        }
         lg(S,u.own,`🌬 Mistral Guide: ${cardData(summoned.cid)?.name} erhält Flying + Dash 2`);
       }
     },
@@ -4853,7 +4860,7 @@ function motherYakCost(S, p) {
   return Math.max(0, base - deaths);
 }
 
-function canPlay(S, p, id) {
+function canPlay(S, p, id, wild=false) {
   const cd = cardData(id);
   if (!cd) return false;
   const isFree = S._permZeroCost?.has(id);
@@ -4869,6 +4876,15 @@ function canPlay(S, p, id) {
                       : Math.max(0, cd.cost - totalDisc
                           - (cd.rarity==='legendary' && Object.values(S.units).some(u=>u.own===p&&u.q!==null&&u.cid==='magda_queen') ? 1 : 0));
   if (!isFree && S.players[p].mana < effectiveCost) return false;
+  // Wild cards (stolen, granted) skip COLOR requirements but still need total land count
+  if (wild) {
+    const totalReq = Object.values(cd.req || {}).reduce((s, n) => s + (n || 0), 0);
+    if (totalReq > 0) {
+      const totalLands = Object.values(S.cells).filter(c => c.owner === p && c.type === 'LAND').length;
+      if (totalLands < totalReq) return false;
+    }
+    return true;
+  }
   const reqMap = { lake:'W', forest:'F', mountain:'M', desert:'D' };
   for (const [lt,n] of Object.entries(cd.req||{})) {
     if (!n) continue;

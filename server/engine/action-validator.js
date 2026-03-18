@@ -179,7 +179,8 @@ function validatePlayCard(S, action, player) {
   const { cardId, q, r, s } = action.payload || {};
   if (!validCoord(q, r, s)) return fail('invalid coordinates');
   const err2 = requireCard(S, player, cardId); if (err2) return err2;
-  if (!canPlay(S, player, cardId)) return fail('cannot play card (cost or land req)');
+  const isWild1 = S.players[player].hand.some(c => c.id === cardId && c._wild);
+  if (!canPlay(S, player, cardId, isWild1)) return fail('cannot play card (cost or land req)');
   if (!inB(q, r, s)) return fail('out of bounds');
   // Placement cell must be valid
   const cell = S.cells[cK(q, r)];
@@ -191,7 +192,8 @@ function validatePlayInstant(S, action, player) {
   const err = requireFreePhase(S); if (err) return err;
   const { cardId, q, r, s } = action.payload || {};
   const err2 = requireCard(S, player, cardId); if (err2) return err2;
-  if (!canPlay(S, player, cardId)) return fail('cannot play card');
+  const isWild2 = S.players[player].hand.some(c => c.id === cardId && c._wild);
+  if (!canPlay(S, player, cardId, isWild2)) return fail('cannot play card');
   if (!validCoord(q, r, s) || !inB(q, r, s)) return fail('invalid target');
   // Explore: target must be an empty ocean cell adjacent to own land/base
   if (cardId === 'explore') {
@@ -208,7 +210,8 @@ function validatePlayInstantNoTarget(S, action, player) {
   const err = requireFreePhase(S); if (err) return err;
   const { cardId } = action.payload || {};
   const err2 = requireCard(S, player, cardId); if (err2) return err2;
-  if (!canPlay(S, player, cardId)) return fail('cannot play card');
+  const isWild3 = S.players[player].hand.some(c => c.id === cardId && c._wild);
+  if (!canPlay(S, player, cardId, isWild3)) return fail('cannot play card');
   return ok();
 }
 

@@ -8847,10 +8847,14 @@ class Engine {
         ({ lake:'W', forest:'F', mountain:'M', desert:'D' }[lt] || lt)
       );
 
+      // Wild cards (stolen/granted) can be placed on any own land
+      const isWildCard = !!S.players[this.ap].hand.find(c => c.id === id)?._wild;
       this.vt = Object.entries(S.cells)
         .filter(([k, c]) => {
           if (c.owner !== this.ap) return false;
           if (c.type !== 'LAND') return false;
+          // Wild card: any own land is valid
+          if (isWildCard) return true;
           // No typed requirements (or wild-only) → any own land
           if (reqTypes.length === 0) return true;
           // Must match at least one typed land requirement
@@ -10437,10 +10441,22 @@ class Engine {
 
     if (isLandCard(cd)) return !S.lobDone && adjPlace(S, this.ap).length > 0;
 
-    if (!canPlay(S, this.ap, id)) return false;
+    // Check if this card is wild in hand (stolen/granted — no land req)
+    const handCard = S.players[this.ap].hand.find(c => c.id === id);
+    const isWild   = !!handCard?._wild;
+
+    if (!canPlay(S, this.ap, id, isWild)) return false;
 
     if (isUnitCard(cd)) {
-      // Check that at least one valid unoccupied spawn tile exists
+      // Wild units can spawn on ANY own land (no type restriction)
+      if (isWild) {
+        return Object.entries(S.cells).some(([k,c]) => {
+          if (c.owner !== this.ap || c.type !== 'LAND') return false;
+          const [q,r,s] = pK(k);
+          return !unitAt(S,q,r,s);
+        });
+      }
+      // Normal: Check that at least one valid unoccupied spawn tile exists
       const reqEntries = Object.entries(cd.req || {}).filter(([,v]) => v > 0);
       const reqTypes   = reqEntries.map(([lt]) =>
         ({ lake:'W', forest:'F', mountain:'M', desert:'D' }[lt] || lt)
@@ -11002,7 +11018,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.37.0';
+window.HEXFORGE_VERSION = '5.40.0';
 (function () {
 'use strict';
 
