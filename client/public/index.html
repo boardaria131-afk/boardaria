@@ -8278,7 +8278,7 @@ const TARGET_NO_TARGET = new Set([
   'treasure_map','message_bottle','famine','seek_shelter','thyrian_expedition','crystal_spice',
   'barter','lore_thief','royal_judge','shifting_octopus','wheel_of_chaos','flame_burst_ruby',
   'ruunins_presence','time_of_legends','healing_song','tidal_force','shifting_tide','wild_growth',
-  'explore','spirit_spice','key_of_the_elements','key_of_the_giants','earthcraft','ogre_dance',
+  'spirit_spice','key_of_the_elements','key_of_the_giants','earthcraft','ogre_dance',
   'blood_song','hellfire','soul_pact','khalims_prayer','ionas_smile','doomsday',
   'hold_the_line','day_of_the_dragons','three_wishes','victory_celebration','urn_of_gabria','eredons_drum',
   'chalice_from_the_palace','djinns_lamp','ring_of_dominion','auroras_teapot','stone_of_fair_fortune','dark_crystal',
@@ -8966,6 +8966,7 @@ class Engine {
 
       // explore: target an empty adjacent cell to place a Prairie
       if (TARGET_LAND.has(id)) {
+        this.pact = 'inst'; // cell click will trigger PLAY_INSTANT handler
         this.vt = adjPlace(S, this.ap); // empty adjacent cells
         this._render();
         return;
@@ -10456,7 +10457,7 @@ class Engine {
 
     if (isInstantCard(cd)) {
       // Self-targeting spells are always playable if affordable
-      const selfTargets = new Set(['healing_song','wisdom','tidal_force','shifting_tide','wild_growth','explore']);
+      const selfTargets = new Set(['healing_song','wisdom','tidal_force','shifting_tide','wild_growth']);
       if (selfTargets.has(id)) return true;
       // Unrestricted damage (can always hit a god even with no creatures)
       if (TARGET_ALL.has(id)) return true;
@@ -11001,7 +11002,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.36.0';
+window.HEXFORGE_VERSION = '5.37.0';
 (function () {
 'use strict';
 

@@ -193,6 +193,14 @@ function validatePlayInstant(S, action, player) {
   const err2 = requireCard(S, player, cardId); if (err2) return err2;
   if (!canPlay(S, player, cardId)) return fail('cannot play card');
   if (!validCoord(q, r, s) || !inB(q, r, s)) return fail('invalid target');
+  // Explore: target must be an empty ocean cell adjacent to own land/base
+  if (cardId === 'explore') {
+    const cell = S.cells[cK(q, r)];
+    if (!cell || cell.type !== 'EMPTY') return fail('Explore: target must be an empty cell');
+    const validSpots = adjPlace(S, player);
+    const isValid = validSpots.some(([vq, vr]) => vq === q && vr === r);
+    if (!isValid) return fail('Explore: target must be adjacent to your lands');
+  }
   return ok();
 }
 

@@ -5966,9 +5966,14 @@ function doPlay(S, p, id, q, r, s, p_choice) {
     }
     case 'explore': {
       const k=cK(q,r), ec=S.cells[k];
-      if(ec&&ec.type==='EMPTY'){S.cells[k]={type:'LAND',owner:p,landType:'N'};}
-      S.players[p].mana+=2;
-      lg(S,p,`Explore: Prairie placed, +2 Mana → ${S.players[p].mana}`);
+      if(ec && ec.type==='EMPTY') {
+        S.cells[k]={type:'LAND',owner:p,landType:'N'};
+        S.players[p].mana+=2;
+        lg(S,p,`Explore: Prairie placed at (${q},${r}), +2 Mana → ${S.players[p].mana}`);
+      } else {
+        // Invalid target slipped through (shouldn't happen after validator fix)
+        lg(S,p,'Explore: invalid target, no land placed');
+      }
       break;
     }
     case 'wild_growth': {
