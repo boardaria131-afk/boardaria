@@ -954,9 +954,9 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 
   <!-- Left panel: Player A + hand -->
   <div class="sp">
-    <div class="pt">Player A</div>
+    <div class="pt" id="panel-left-title">Player A</div>
     <div class="ps A">
-      <div class="nm">⚔ SPIELER A</div>
+      <div class="nm" id="panel-nm-A">⚔ SPIELER A</div>
       <div class="hbw"><div class="hb A" id="hpbar-A" style="width:100%"></div></div>
       <div class="sr"><span class="sl">Base HP</span>  <span class="sv hp" id="hp-A">20</span></div>
       <div class="sr"><span class="sl">Mana</span>       <span class="sv mn" id="mana-A">3</span></div>
@@ -988,9 +988,9 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 
   <!-- Right panel: Player B + unit detail + log -->
   <div class="sp">
-    <div class="pt">Player B</div>
+    <div class="pt" id="panel-right-title">Player B</div>
     <div class="ps B">
-      <div class="nm">⚔ SPIELER B</div>
+      <div class="nm" id="panel-nm-B">⚔ SPIELER B</div>
       <div class="hbw"><div class="hb B" id="hpbar-B" style="width:100%"></div></div>
       <div class="sr"><span class="sl">Base HP</span>  <span class="sv hp" id="hp-B">20</span></div>
       <div class="sr"><span class="sl">Mana</span>       <span class="sv mn" id="mana-B">3</span></div>
@@ -10276,6 +10276,34 @@ class Engine {
     n.className   = `pn ${S.ap}`;
   }
 
+  _rPanelLabels() {
+    // Left panel = always "Ich" (bottom player), Right = "Gegner" (top)
+    // When flipped (player A): left = A = me, right = B = opponent → no swap needed
+    // When not flipped (player B): left = A = opponent, right = B = me → swap labels
+    const S = this.S;
+    const me  = (isMPMode() && !window._DEV_MATCH) ? this._mpPlayer : this.ap;
+    const opp = me === 'A' ? 'B' : 'A';
+    const myName  = S.playerNames?.[me]  || `Player ${me}`;
+    const oppName = S.playerNames?.[opp] || `Player ${opp}`;
+
+    const flipped = this._flipped();
+    // Left panel always shows the "bottom" player (me when flipped, me when not flipped for B)
+    // Actually: left panel HTML is for player A.
+    // When flipped (I am A): A is bottom → left panel = me ✓
+    // When not flipped (I am B): B is bottom → right panel = me ✓
+    // Labels: just mark which is "me"
+    const leftIsMe = (me === 'A');
+    const ltitle = document.getElementById('panel-left-title');
+    const rtitle = document.getElementById('panel-right-title');
+    const lnm    = document.getElementById('panel-nm-A');
+    const rnm    = document.getElementById('panel-nm-B');
+
+    if (ltitle) ltitle.textContent = leftIsMe ? 'Ich' : 'Gegner';
+    if (rtitle) rtitle.textContent = leftIsMe ? 'Gegner' : 'Ich';
+    if (lnm) lnm.textContent = '⚔ ' + (S.playerNames?.A || 'Player A').toUpperCase();
+    if (rnm) rnm.textContent = '⚔ ' + (S.playerNames?.B || 'Player B').toUpperCase();
+  }
+
   _rPhase() {
     const S = this.S;
     const labels = { DRAW:'Draw', MANA:'Mana', FREE:'Free Turn', CLEANUP:'Cleanup' };
@@ -10446,6 +10474,23 @@ class Engine {
   }
 
   // ── SVG Board Renderer ──────────────────────────────────
+  // ── Board perspective ──────────────────────────────────────
+  // Returns true when board should be flipped (player A sees board from below)
+  _flipped() {
+    // In MP: flip when player is A (so A's base is always at bottom)
+    if (isMPMode() && !window._DEV_MATCH) return this._mpPlayer === 'A';
+    // In solo pass-and-play: flip for active player A
+    return this.ap === 'A';
+  }
+  // Convert game hex coords → display pixel position (flipped if needed)
+  _c2p(q, r) {
+    return this._flipped() ? c2p(-q, -r) : c2p(q, r);
+  }
+  // Convert visual click coords → real game coords
+  _v2g(q, r, s) {
+    return this._flipped() ? [-q, -r, -s] : [q, r, s];
+  }
+
   _rBoard() {
     const S   = this.S;
     const svg = document.getElementById('board');
@@ -10495,14 +10540,14 @@ class Engine {
     cells.forEach(([q,r,s]) => {
       const k  = cK(q,r);
       const cd = S.cells[k];
-      const [px,py] = c2p(q,r);
+      const [px,py] = this._c2p(q,r);
       const cx = px+ox, cy = py+oy;
       const P  = pts(cx,cy);
       const isV = vs.has(k);
 
       const g = document.createElementNS('http://www.w3.org/2000/svg','g');
       g.style.cursor = 'pointer';
-      g.onclick = () => this.clickCell(q,r,s);
+      g.onclick = () => { const [rq,rr,rs]=this._v2g(q,r,s); this.clickCell(rq,rr,rs); };
 
       let fill='#0a0d12', stroke='#151c26', sw='1';
       if (cd) {
@@ -10615,7 +10660,7 @@ class Engine {
         hit.setAttribute('fill', 'transparent');
         hit.setAttribute('stroke', 'none');
         hit.style.cursor = (window._devPlaceMode || isV) ? 'crosshair' : 'default';
-        hit.onclick = () => this.clickCell(q, r, s);
+        hit.onclick = () => { const [rq,rr,rs]=this._v2g(q,r,s); this.clickCell(rq,rr,rs); };
         g.appendChild(hit);
       }
 
@@ -10627,7 +10672,7 @@ class Engine {
       // Skip units that are swallowed (no board position)
       if (u.q === null || u.r === null) return;
 
-      const [px,py] = c2p(u.q,u.r);
+      const [px,py] = this._c2p(u.q,u.r);
       const cx = px+ox, cy = py+oy;
       const cd    = cardData(u.cid);
       const isSel = this.selUnit === u.id;
@@ -10654,7 +10699,7 @@ class Engine {
         const tm = this.pact;
         if (            tm==='atk'||tm==='inst'||tm==='gift'||tm==='dash'||
             tm==='shifting_land_pick'||tm==='shifting_land_dest') {
-          this.clickCell(u.q, u.r, u.s);
+          { const [rq,rr,rs]=this._v2g(u.q,u.r,u.s??-u.q-u.r); this.clickCell(rq,rr,rs); }
         } else {
           this.selUnitFn(u.id);
         }
@@ -10781,7 +10826,7 @@ class Engine {
       [BASE_A, BASE_B].forEach(base => {
         const [bq,br,bs] = base;
         if (!vs.has(cK(bq,br))) return;
-        const [px,py] = c2p(bq,br);
+        const [px,py] = this._c2p(bq,br);
         const cx=px+ox, cy=py+oy;
         const r2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
         r2.setAttribute('cx',cx); r2.setAttribute('cy',cy); r2.setAttribute('r','22');
@@ -10791,7 +10836,7 @@ class Engine {
         const hit2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
         hit2.setAttribute('cx',cx); hit2.setAttribute('cy',cy); hit2.setAttribute('r','24');
         hit2.setAttribute('fill','transparent'); hit2.style.cursor='pointer';
-        hit2.onclick = () => this.clickCell(bq,br,bs);
+        hit2.onclick = () => { const [rq,rr,rs]=this._v2g(bq,br,bs); this.clickCell(rq,rr,rs); };
         svg.appendChild(hit2);
       });
     }
@@ -10949,7 +10994,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.19.0';
+window.HEXFORGE_VERSION = '5.21.0';
 (function () {
 'use strict';
 
@@ -11053,11 +11098,10 @@ function playActionType(cardId) {
 // ── Action senden ───────────────────────────────────────────
 function sendAction(type, payload = {}) {
   // DEV MATCH: Aktionen werden direkt vom lokalen Engine-Override abgehandelt.
-  // Nur falls sendAction doch aufgerufen wird (z.B. alter Pfad), ignorieren.
   if (window._DEV_MATCH) return;
   if (!socket) return;
-  _waitingForServer = true;
-  updateTurnBanner();
+  // Kein _waitingForServer mehr — optimistisches Rendering zeigt Änderung sofort.
+  // Server-State überschreibt bei STATE_UPDATE (sollte identisch sein).
   socket.emit('player_action', { type, payload });
 }
 
@@ -12410,7 +12454,7 @@ Engine.prototype.endTurn = (function(orig) {
   return function() {
     if (!isMPMode() || window._DEV_MATCH) return orig.call(this);
     if (!isMyTurn()) return;
-    this._clr();
+    orig.call(this);          // sofort lokal: Cleanup + Zug wechseln
     sendAction(ACTION.END_TURN);
   };
 }(Engine.prototype.endTurn));
@@ -12430,8 +12474,10 @@ Engine.prototype._selectMenuOpt = (function(orig) {
     if (!isMPMode() || window._DEV_MATCH) return orig.call(this);
     this.closeLandMenu();
     if (id === '_draw') {
+      orig.call(this, id);    // sofort lokal
       sendAction(ACTION.WHEEL_DRAW);
     } else if (id === '_boost') {
+      orig.call(this, id);    // sofort lokal
       sendAction(ACTION.WHEEL_BOOST);
     } else if (id === 'land_N') {
       this.selCard = 'land_N';
@@ -12482,7 +12528,7 @@ Engine.prototype.cancelSel = (function(orig) {
   };
 }(Engine.prototype.cancelSel));
 
-// clickCell: alle Board-Aktionen → Server
+// clickCell: optimistisches Rendering — lokal sofort anwenden, dann Server bestätigen
 Engine.prototype.clickCell = (function(orig) {
   return function(q, r, s) {
     if (!isMPMode() || window._DEV_MATCH) return orig.call(this, q, r, s);
@@ -12491,20 +12537,7 @@ Engine.prototype.clickCell = (function(orig) {
     const S    = this.S;
     const pact = this.pact;
 
-    // ── Land aus Hand ─────────────────────────────────────
-    if (pact === 'land' && this.selCard) {
-      sendAction(ACTION.PLACE_LAND, { cardId: this.selCard, q, r, s });
-      this._clr(); return;
-    }
-
-    // ── Land aus Wheel (farbig) ───────────────────────────
-    if (pact === 'wheel_land' && this._wheelLandType) {
-      sendAction(ACTION.WHEEL_LAND, { landType: this._wheelLandType, q, r, s });
-      this._wheelLandType = null;
-      this._clr(); return;
-    }
-
-    // ── Prairie (2x) ─────────────────────────────────────
+    // Prairie (2x): kein sofortiger Server-Call, UI-only bis beide Felder gewählt
     if (pact === 'land_N') {
       if (!this._landNPositions) this._landNPositions = [];
       this._landNPositions.push({ q, r, s });
@@ -12519,58 +12552,61 @@ Engine.prototype.clickCell = (function(orig) {
       this._clr(); return;
     }
 
-    // ── Bewegung ──────────────────────────────────────────
-    if (pact === 'move' && this.selUnit) {
-      sendAction(ACTION.MOVE_UNIT, { unitId: this.selUnit, q, r, s });
-      this._clr(); return;
-    }
+    // Bestimme welche Server-Aktion gesendet werden soll
+    let serverAction = null;
+    let serverPayload = {};
 
-    // ── Dash ─────────────────────────────────────────────
-    if (pact === 'dash' && this.selUnit) {
-      sendAction(ACTION.DASH, { unitId: this.selUnit, q, r, s });
-      this._clr(); return;
-    }
-
-    // ── Angriff ───────────────────────────────────────────
-    if (pact === 'atk' && this.selUnit) {
+    if (pact === 'land' && this.selCard) {
+      serverAction = ACTION.PLACE_LAND;
+      serverPayload = { cardId: this.selCard, q, r, s };
+    } else if (pact === 'wheel_land' && this._wheelLandType) {
+      serverAction = ACTION.WHEEL_LAND;
+      serverPayload = { landType: this._wheelLandType, q, r, s };
+      this._wheelLandType = null;
+    } else if (pact === 'move' && this.selUnit) {
+      serverAction = ACTION.MOVE_UNIT;
+      serverPayload = { unitId: this.selUnit, q, r, s };
+    } else if (pact === 'dash' && this.selUnit) {
+      serverAction = ACTION.DASH;
+      serverPayload = { unitId: this.selUnit, q, r, s };
+    } else if (pact === 'atk' && this.selUnit) {
       const tu = Object.values(S.units).find(u => u.q === q && u.r === r);
       if (tu && tu.own !== myPlayer) {
-        sendAction(ACTION.ATTACK_UNIT, { unitId: this.selUnit, targetId: tu.id });
-        this._clr(); return;
+        serverAction = ACTION.ATTACK_UNIT;
+        serverPayload = { unitId: this.selUnit, targetId: tu.id };
+      } else {
+        const [bq, br] = myPlayer === 'A' ? BASE_B : BASE_A;
+        if (q === bq && r === br) {
+          serverAction = ACTION.ATTACK_BASE;
+          serverPayload = { unitId: this.selUnit };
+        } else { this._clr(); return; }
       }
-      // Basis angreifen?
-      const [bq, br] = myPlayer === 'A'
-        ? (typeof BASE_B !== 'undefined' ? BASE_B : [0,3,-3])
-        : (typeof BASE_A !== 'undefined' ? BASE_A : [0,-3,3]);
-      if (q === bq && r === br) {
-        sendAction(ACTION.ATTACK_BASE, { unitId: this.selUnit });
-        this._clr(); return;
-      }
-      this._clr(); return;
-    }
-
-    // ── Unit / Structure spielen ──────────────────────────
-    if (pact === 'unit' && this.selCard) {
-      sendAction(playActionType(this.selCard), { cardId: this.selCard, q, r, s });
-      this._clr(); return;
+    } else if (pact === 'unit' && this.selCard) {
+      serverAction = playActionType(this.selCard);
+      serverPayload = { cardId: this.selCard, q, r, s };
     }
 
     // ── Instant spielen ───────────────────────────────────
     if (pact === 'inst' && this.selCard) {
       const noTarget = (typeof TARGET_NO_TARGET !== 'undefined' && TARGET_NO_TARGET.has(this.selCard))
                     || (typeof TARGET_SELF !== 'undefined'      && TARGET_SELF.has(this.selCard));
-      if (noTarget) {
-        sendAction(ACTION.PLAY_INSTANT_NOTARGET, { cardId: this.selCard });
-      } else {
-        sendAction(ACTION.PLAY_INSTANT, { cardId: this.selCard, q, r, s });
-      }
-      this._clr(); return;
+      serverAction  = noTarget ? ACTION.PLAY_INSTANT_NOTARGET : ACTION.PLAY_INSTANT;
+      serverPayload = { cardId: this.selCard, q, r, s };
     }
 
     // ── Gift ──────────────────────────────────────────────
     if (pact === 'gift' && this.selUnit) {
-      sendAction(ACTION.USE_GIFT, { unitId: this.selUnit, q, r, s });
-      this._clr(); return;
+      serverAction  = ACTION.USE_GIFT;
+      serverPayload = { unitId: this.selUnit, q, r, s };
+    }
+
+    // ── Optimistisches Rendering: lokal sofort anwenden, dann Server bestätigen ──
+    if (serverAction) {
+      // 1. Sofort lokal anwenden für responsives Gefühl
+      orig.call(this, q, r, s);
+      // 2. An Server senden zur Bestätigung (Server-State überschreibt bei STATE_UPDATE)
+      sendAction(serverAction, serverPayload);
+      return;
     }
 
     // ── Shifting Tide (2-Schritt) ─────────────────────────
