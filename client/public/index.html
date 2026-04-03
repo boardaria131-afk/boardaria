@@ -787,7 +787,15 @@ svg#board { display: block; overflow: visible; touch-action: none; }
     <button class="mp-btn mp-btn-primary" id="mp-find-btn"   onclick="mpFindMatch()">⚔ Ranked Match suchen</button>
     <button class="mp-btn mp-btn-ghost"   id="mp-cancel-btn" onclick="mpCancelQueue()" style="display:none">✕ Suche abbrechen</button>
 
-    <button class="mp-btn mp-btn-ghost" onclick="mpPlayVsBot()" style="margin-bottom:4px">🤖 Gegen KI spielen</button>
+    <!-- Bot difficulty selector -->
+    <div style="margin-bottom:4px">
+      <div style="font-family:'Bebas Neue','IBM Plex Mono',monospace;font-size:.45rem;color:#3a4a5a;letter-spacing:2px;margin-bottom:4px">GEGEN KI SPIELEN</div>
+      <div style="display:flex;gap:4px;justify-content:center">
+        <button class="mp-btn mp-btn-ghost" onclick="mpPlayVsBot('easy')"   style="flex:1;font-size:.55rem;padding:5px 4px">🟢 Leicht</button>
+        <button class="mp-btn mp-btn-ghost" onclick="mpPlayVsBot('medium')" style="flex:1;font-size:.55rem;padding:5px 4px">🟡 Mittel</button>
+        <button class="mp-btn mp-btn-ghost" onclick="mpPlayVsBot('hard')"   style="flex:1;font-size:.55rem;padding:5px 4px;border-color:#c0392b;color:#e74c3c">🔴 Schwer</button>
+      </div>
+    </div>
     <!-- Live matches -->
     <div id="mp-live-matches-section" style="margin-bottom:10px">
       <div style="font-family:'Bebas Neue', 'IBM Plex Mono', monospace;font-size:.5rem;color:#3a4a5a;letter-spacing:2px;margin-bottom:6px">
@@ -11018,7 +11026,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.40.0';
+window.HEXFORGE_VERSION = '5.47.0';
 (function () {
 'use strict';
 
@@ -11454,6 +11462,8 @@ function connectSocket() {
     if (_rb) _rb.style.display = 'block';
     // STATE_UPDATE folgt sofort vom Server und rendert das Board
   });
+
+  socket.on(S2C.PONG, () => { /* keep-alive pong received — no action needed */ });
 
   socket.on(S2C.ERROR, ({ reason }) => {
     showHint('Server: ' + reason, 5000);
@@ -12332,11 +12342,13 @@ window.mpCancelQueue = function() {
   setQueueStatus('Suche abgebrochen.');
 };
 
-window.mpPlayVsBot = function() {
+window.mpPlayVsBot = function(difficulty) {
   if (!socket) return;
+  const diff = difficulty || 'medium';
   const deck = _getSelectedDeck();
-  setQueueStatus('Starte Spiel gegen KI…');
-  socket.emit(C2S.PLAY_VS_BOT, { deck });
+  const labels = { easy:'Leicht', medium:'Mittel', hard:'Schwer' };
+  setQueueStatus(`Starte Spiel gegen KI (${labels[diff]||diff})…`);
+  socket.emit(C2S.PLAY_VS_BOT, { deck, difficulty: diff });
 };
 
 // ── startGame ─────────────────────────────────────────────────

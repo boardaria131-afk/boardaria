@@ -81,8 +81,8 @@ function processMatchResult(result, userStore, externalMatchStore) {
 
   if (!aIsGuest && !bIsGuest) {
     eloResult = calcElo(pA.rating || 1000, pB.rating || 1000, result.winner);
-    userStore.updateRating(pA.userId, eloResult.deltaA);
-    userStore.updateRating(pB.userId, eloResult.deltaB);
+    userStore.updateRating(pA.userId, eloResult.newA, result.winner === 'A' ? 'win' : 'loss');
+    userStore.updateRating(pB.userId, eloResult.newB, result.winner === 'B' ? 'win' : 'loss');
   }
 
   // Record match for replay (use external store if provided, else internal)

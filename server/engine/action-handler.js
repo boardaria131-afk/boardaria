@@ -128,6 +128,10 @@ function doWheelBoost(S, action, player) {
   S.players[player].boostUsed = true;
   S.lobDone = true;
   lg(S, player, `+1 Mana Boost → ${S.players[player].mana}`);
+  // Fire onWheelBoost triggers (Flamestoker, Ignus)
+  Object.values(S.units).filter(u=>u.own===player&&u.q!==null).forEach(u=>{
+    if(typeof u.onWheelBoost==='function') try{u.onWheelBoost(S,u);}catch(e){}
+  });
   return {};
 }
 
@@ -168,11 +172,16 @@ function doPlayInstant(S, action, player) {
       return { pendingInput: { type: PENDING.WHEEL_OF_CHAOS } };
     }
   } else if (cardId === 'flame_burst_ruby') {
-    // Flame burst needs target pick (handled as separate action)
     S._pendingFlameBurst = player;
     return { pendingInput: { type: PENDING.FLAME_BURST } };
   } else {
     doPlay(S, player, cardId, q ?? 0, r ?? 0, s ?? 0);
+  }
+  // Set dark_stalker discount flag (onEventPlayed already fires inside doPlay/doPlayCard)
+  const evCd = cardData(cardId);
+  if (evCd && evCd.type === 'event') {
+    if (!S._eventPlayedThisTurn) S._eventPlayedThisTurn = {};
+    S._eventPlayedThisTurn[player] = true;
   }
   const disc = checkDiscover(S, player);
   if (disc) return { pendingInput: disc };
@@ -188,10 +197,10 @@ function doMoveUnit(S, action, player) {
   u.moved = true;
   if (u.kw.has('ranged')) u.atked = true; // ranged can't also shoot after moving
   harvestMana(S, player);
+  // Fire onMove trigger (Sorocco, Zephyr Vulpine, Dwordia)
+  // Pass destination coords (u already moved so u.q/r/s = destination)
+  if (typeof u.onMove === 'function') try { u.onMove(S, u, u.q, u.r, u.s); } catch(e) {}
   lg(S, player, `${cardData(u.cid)?.name || u.id} moved`);
-  if (typeof u.onMove === 'function') {
-    try { u.onMove(S, u, q, r, s); } catch (e) { /* swallow */ }
-  }
   // Corrupt keyword
   if (u.kw.has('corrupt') && !u._corrupted) {
     const destCell = S.cells[cK(q, r)];

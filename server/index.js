@@ -62,7 +62,7 @@ app.use(express.static(path.join(__dirname, '../client/public')));
 
 // Health
 app.get('/api/health', async (req, res) => {
-  const info = { status: 'ok', version: '5.40.0', uptime: process.uptime(), usingDB: isUsingDB };
+  const info = { status: 'ok', version: '5.47.0', uptime: process.uptime(), usingDB: isUsingDB };
   if (isUsingDB) {
     try { const r = await db.healthCheck(); info.db = r; } catch(e) { info.dbError = e.message; }
   }
@@ -380,29 +380,34 @@ io.on('connection', (socket) => {
 
   // ── Play vs Bot ───────────────────────────────────────────
 
-  socket.on(C2S.PLAY_VS_BOT, ({ deck } = {}) => {
+  socket.on(C2S.PLAY_VS_BOT, ({ deck, difficulty } = {}) => {
     const sess = sessions.get(socket.id);
     if (!sess) return socket.emit(S2C.AUTH_ERR, { reason: 'Not authenticated' });
+
+    // Validate difficulty
+    const diff = ['easy','medium','hard'].includes(difficulty) ? difficulty : 'medium';
+    const botNames = { easy: 'HexBot (Leicht)', medium: 'HexBot (Mittel)', hard: 'HexBot (Schwer)' };
+    const botRatings = { easy: 800, medium: 1200, hard: 1600 };
 
     // Create a fake bot socket ID
     const botSocketId = `bot:${require('crypto').randomUUID()}`;
 
     const humanPlayer = { socketId: socket.id, userId: sess.id, username: sess.username, rating: sess.rating || 1000, isGuest: sess.isGuest, deck: Array.isArray(deck) ? deck : null };
-    const botPlayer   = { socketId: botSocketId, userId: null,   username: 'HexBot',     rating: 1200,               isGuest: true,         deck: null };
+    const botPlayer   = { socketId: botSocketId, userId: null, username: botNames[diff], rating: botRatings[diff], isGuest: true, deck: null };
 
     // Randomly assign sides
     const [pA, pB] = Math.random() < 0.5 ? [humanPlayer, botPlayer] : [botPlayer, humanPlayer];
     const room = roomManager.createMatch(pA, pB);
 
-    // Attach bot to room
+    // Attach bot to room with chosen difficulty
     const botSide = room.socketToPlayer[botSocketId];
-    const bot = new BotPlayer(botSide, room, botSocketId);
+    const bot = new BotPlayer(botSide, room, botSocketId, diff);
     room._bot = bot;
 
-    // Trigger bot mulligan (broadcastMulliganPrompt already called in start())
+    // Trigger bot mulligan
     bot.onStateUpdate(room.S, { type: 'mulligan' });
 
-    console.log(`[Bot] Match ${room.id}: ${sess.username} vs HexBot`);
+    console.log(`[Bot] Match ${room.id}: ${sess.username} vs ${botNames[diff]} (${diff})`);
   });
 
   // ── In-game actions ──────────────────────────────────────

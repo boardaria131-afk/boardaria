@@ -239,10 +239,15 @@ function validateAttackUnit(S, action, player) {
   if (u.q === null) return fail('unit not on board');
   if (u.atked) return fail('unit already attacked');
   if (u.summonSick && !u.kw.has('haste')) return fail('summoning sickness');
+  // God Hunter: can only attack gods (base), not creatures
+  if (u.kw.has('cant_attack_creatures') || u.cid === 'god_hunter')
+    return fail('God Hunter kann nur Götter angreifen');
   const target = S.units[targetId];
   if (!target) return fail('target not found');
   if (target.own === player) return fail('cannot attack own unit');
   if (target.q === null) return fail('target not on board');
+  // Iona: can't be attacked
+  if (target.kw.has('cant_be_attacked')) return fail('Kann nicht angegriffen werden');
   const atks = validAtks(S, unitId);
   if (!atks.some(t => t.id === targetId)) return fail('target out of range');
   return ok();

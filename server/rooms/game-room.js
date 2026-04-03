@@ -337,7 +337,9 @@ class GameRoom {
         onFriendlyYakDeath: null, onEnemyDies: null, onFriendlyDies: null,
         onAdjDies: null, onDraw: null, onEventPlayed: null, onManaSelect: null,
         onSummon: null, onHarvestOppWell: null, onSelfHarvest: null,
-        onDamageReceived: null, onGodDamaged: null, onMove: null,
+        onDamageReceived: null, onDamageTaken: null, onGodDamaged: null,
+        onMove: null, onWheelBoost: null, onFriendlyDamaged: null,
+        onForestCreated: null, onEnemyCleanup: null,
       };
     }
     return out;
