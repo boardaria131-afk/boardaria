@@ -477,6 +477,10 @@ svg#board { display: block; overflow: visible; touch-action: none; }
 .sw-panel button:hover { background: rgba(200,168,75,.2); border-color: var(--gold); }
 
 /* ── Win Overlay ───────────────────────────────────────── */
+@keyframes wheel-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(200,168,75,0); }
+  50%      { box-shadow: 0 0 8px 3px rgba(200,168,75,0.6); }
+}
 #win-ov {
   display: none;
   position: fixed;
@@ -11026,7 +11030,7 @@ class Engine {
 //  HexForge MP Adapter  v5  —  Complete
 //  Version: 5.0.0  (Board-fix, Spectator, Deck-Sync, Mobile)
 // ═══════════════════════════════════════════════════════════
-window.HEXFORGE_VERSION = '5.47.0';
+window.HEXFORGE_VERSION = '5.48.0';
 (function () {
 'use strict';
 
@@ -11180,13 +11184,26 @@ function updateTurnBanner() {
     banner.className = 'mp-turn-banner-opp';
     banner.style.display = 'block';
   } else {
-    banner.textContent = 'Dein Zug';
     banner.className = 'mp-turn-banner-mine';
     banner.style.display = 'block';
-    // Fade out after 1.5s
-    setTimeout(() => {
-      if (banner.className === 'mp-turn-banner-mine') banner.style.display = 'none';
-    }, 1500);
+    if (!G.S.lobDone) {
+      banner.textContent = '🎡 Dein Zug — Wähle eine Aktion (⬡)';
+    } else {
+      banner.textContent = 'Dein Zug';
+      // Fade out after 1.5s
+      setTimeout(() => {
+        if (banner.className === 'mp-turn-banner-mine') banner.style.display = 'none';
+      }, 1500);
+    }
+  }
+  // Wheel-Button glow when action required
+  const lb = document.getElementById('btn-land');
+  if (lb) {
+    const needsWheel = G.S.ap === myPlayer && G.S.phase === 'FREE'
+                    && !G.S.lobDone && !G.S.winner && !G.S._mulliganPhase;
+    lb.style.animation = needsWheel ? 'wheel-pulse 1.2s ease-in-out infinite' : '';
+    lb.style.borderColor = needsWheel ? '#c8a84b' : '';
+    lb.style.color = needsWheel ? '#c8a84b' : '';
   }
 }
 
@@ -11695,8 +11712,8 @@ function _collectBugSnapshot() {
     // Spieler A
     const pA = S.players?.A;
     const pB = S.players?.B;
-    if (pA) lines.push(`Spieler A: ${pA.hp} LP | ${pA.mana} Mana | Hand:${pA.hand?.length} Deck:${pA.deck?.length}`);
-    if (pB) lines.push(`Spieler B: ${pB.hp} LP | ${pB.mana} Mana | Hand:${pB.hand?.length} Deck:${pB.deck?.length}`);
+    if (pA) lines.push(`Spieler A: ${pA.hp} LP | ${pA.mana} Mana | Hand:${pA.hand?.length} Deck:${pA.deckSize ?? pA.deck?.length}`);
+    if (pB) lines.push(`Spieler B: ${pB.hp} LP | ${pB.mana} Mana | Hand:${pB.hand?.length} Deck:${pB.deckSize ?? pB.deck?.length}`);
 
     // Einheiten auf dem Feld
     const units = Object.values(S.units || {}).filter(u => u.q !== null);

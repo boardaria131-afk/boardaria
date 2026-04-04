@@ -4947,7 +4947,13 @@ function mkState(serverOpts) {
   const filter = arr => {
     if (!Array.isArray(arr)) return null;
     const valid = arr.filter(id => { const cd=cardData(id); if(!cd) console.warn('[HexForge] Unknown card:',id); return !!cd; });
-    return valid.length >= 5 ? valid : null;
+    if (valid.length < 5) return null;
+    // Shuffle: client sends deck in fixed order, must randomize before dealing
+    for (let i = valid.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [valid[i], valid[j]] = [valid[j], valid[i]];
+    }
+    return valid;
   };
 
   const filteredA = filter(rawA) || mkDefaultDeck('A');
