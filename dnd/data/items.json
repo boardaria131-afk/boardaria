@@ -1,0 +1,216 @@
+{
+  "items": [
+    {
+      "id": "longsword",
+      "name": "Longsword",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "15 gp",
+      "damage": "1d8 slashing",
+      "properties": ["Versatile (1d10)"],
+      "description": "A versatile sword for one or two hands. Its crossguard is crafted of iron while the blade is tempered steel, suitable for both slashing and thrusting attacks."
+    },
+    {
+      "id": "shortsword",
+      "name": "Shortsword",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "10 gp",
+      "damage": "1d6 piercing",
+      "properties": ["Finesse", "Light"],
+      "description": "A light, finesse blade favored by duelists and rogues. Quick to draw and easy to dual wield."
+    },
+    {
+      "id": "greataxe",
+      "name": "Greataxe",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "7 lb.",
+      "cost": "30 gp",
+      "damage": "1d12 slashing",
+      "properties": ["Heavy", "Two-Handed"],
+      "description": "A massive two-handed axe that can cleave through armor. Preferred weapon of barbarians and berserkers."
+    },
+    {
+      "id": "dagger",
+      "name": "Dagger",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "2 gp",
+      "damage": "1d4 piercing",
+      "properties": ["Finesse", "Light", "Thrown (20/60)"],
+      "description": "A simple blade easily concealed beneath clothing. Can be thrown at enemies or used for close-quarters combat."
+    },
+    {
+      "id": "longbow",
+      "name": "Longbow",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "50 gp",
+      "damage": "1d8 piercing",
+      "properties": ["Ammunition (150/600)", "Heavy", "Two-Handed"],
+      "description": "A tall, elegant bow crafted from a single piece of wood. Capable of launching arrows at great distance."
+    },
+    {
+      "id": "chain_mail",
+      "name": "Chain Mail",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "55 lb.",
+      "cost": "75 gp",
+      "ac": "16",
+      "properties": ["Heavy Armor", "Str 13 required", "Stealth Disadvantage"],
+      "description": "Made of interlocking metal rings, chain mail is heavy and strong. The rings are riveted together for added durability."
+    },
+    {
+      "id": "leather_armor",
+      "name": "Leather Armor",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "10 lb.",
+      "cost": "10 gp",
+      "ac": "11 + DEX",
+      "properties": ["Light Armor"],
+      "description": "The breastplate and shoulder protectors of this armor are made of leather that has been stiffened by being boiled in oil."
+    },
+    {
+      "id": "shield",
+      "name": "Shield",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "6 lb.",
+      "cost": "10 gp",
+      "ac": "+2",
+      "properties": ["Shield"],
+      "description": "A shield is made from wood or metal and is carried in one hand. Wielding a shield increases your Armor Class by 2."
+    },
+    {
+      "id": "potion_healing",
+      "name": "Potion of Healing",
+      "type": "Potion",
+      "rarity": "Common",
+      "weight": "0.5 lb.",
+      "cost": "50 gp",
+      "effect": "Restores 2d4 + 2 HP",
+      "properties": ["Consumable"],
+      "description": "A character who drinks the magical red fluid in this vial regains 2d4 + 2 hit points. Drinking or administering a potion takes an action."
+    },
+    {
+      "id": "potion_greater_healing",
+      "name": "Potion of Greater Healing",
+      "type": "Potion",
+      "rarity": "Uncommon",
+      "weight": "0.5 lb.",
+      "cost": "150 gp",
+      "effect": "Restores 4d4 + 4 HP",
+      "properties": ["Consumable"],
+      "description": "A character who drinks the magical fluid in this vial regains 4d4 + 4 hit points. The potion's color is a vibrant red."
+    },
+    {
+      "id": "bag_of_holding",
+      "name": "Bag of Holding",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "15 lb.",
+      "cost": "—",
+      "properties": ["Magical"],
+      "description": "This bag has an interior space considerably larger than its outside dimensions suggest. The bag can hold up to 500 pounds without exceeding its weight limit of 15 pounds."
+    },
+    {
+      "id": "rope_hempen",
+      "name": "Hempen Rope (50 ft.)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "10 lb.",
+      "cost": "1 gp",
+      "properties": [],
+      "description": "Rope, whether made of hemp or silk, has 2 hit points and can be burst with a DC 17 Strength check. 50 feet of stout, reliable rope."
+    },
+    {
+      "id": "thieves_tools",
+      "name": "Thieves' Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "25 gp",
+      "properties": [],
+      "description": "This set of tools includes a small file, a set of lock picks, a small mirror mounted on a metal handle, a set of narrow-bladed scissors, and a pair of pliers."
+    },
+    {
+      "id": "spellbook",
+      "name": "Spellbook",
+      "type": "Arcane Focus",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "50 gp",
+      "properties": ["Focus"],
+      "description": "Essential for wizards, a spellbook is a leather-bound tome with 100 vellum pages suitable for recording spells. Each page glows faintly with arcane ink."
+    },
+    {
+      "id": "ring_protection",
+      "name": "Ring of Protection",
+      "type": "Ring",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "effect": "+1 AC and saving throws",
+      "properties": ["Magical", "Requires Attunement"],
+      "description": "You gain a +1 bonus to AC and saving throws while wearing this ring. The ring is crafted of cold iron inlaid with silver runes."
+    },
+    {
+      "id": "cloak_elvenkind",
+      "name": "Cloak of Elvenkind",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": ["Magical", "Requires Attunement"],
+      "description": "While you wear this cloak with its hood up, Wisdom (Perception) checks made to see you have disadvantage, and you have advantage on Dexterity (Stealth) checks made to hide."
+    },
+    {
+      "id": "flame_tongue",
+      "name": "Flame Tongue",
+      "type": "Weapon",
+      "rarity": "Rare",
+      "weight": "3 lb.",
+      "cost": "—",
+      "damage": "1d8 + 2d6 fire slashing",
+      "properties": ["Magical", "Requires Attunement", "Versatile"],
+      "description": "You can use a bonus action to speak this magic sword's command word, causing flames to erupt from the blade. These flames shed bright light in a 40-foot radius and dim light for an additional 40 feet."
+    },
+    {
+      "id": "staff_power",
+      "name": "Staff of Power",
+      "type": "Staff",
+      "rarity": "Very Rare",
+      "weight": "4 lb.",
+      "cost": "—",
+      "properties": ["Magical", "Requires Attunement (Sorcerer/Warlock/Wizard)"],
+      "description": "This staff can be wielded as a magic quarterstaff that grants a +2 bonus to attack and damage rolls. While holding it, you gain a +2 bonus to Armor Class, saving throws, and spell attack rolls."
+    },
+    {
+      "id": "amulet_health",
+      "name": "Amulet of Health",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "properties": ["Magical", "Requires Attunement"],
+      "description": "Your Constitution score is 19 while you wear this amulet. It has no effect on you if your Constitution is already 19 or higher."
+    },
+    {
+      "id": "boots_speed",
+      "name": "Boots of Speed",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "properties": ["Magical", "Requires Attunement"],
+      "description": "While you wear these boots, you can use a bonus action and click the boots' heels together. If you do, the boots double your walking speed, and any creature that makes an opportunity attack against you has disadvantage on the attack roll."
+    }
+  ]
+}

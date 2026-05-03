@@ -1,0 +1,382 @@
+{
+  "classes": [
+    {
+      "id": "barbarian",
+      "name": "Barbarian",
+      "icon": "🪓",
+      "hit_dice": "d12",
+      "primary_abilities": ["STR", "CON"],
+      "saving_throws": ["str", "con"],
+      "description": "A fierce warrior of primitive background who can enter a battle rage. Barbarians are fierce warriors from the wilds. They live for the thrill of battle and revel in the joy of conquest.",
+      "features": ["Rage", "Unarmored Defense", "Reckless Attack", "Danger Sense"],
+      "subclasses": [
+        {
+          "id": "berserker",
+          "name": "Path of the Berserker",
+          "description": "For some barbarians, rage is a means to an end – that end being violence. The Path of the Berserker is a path of untrammeled fury, slick with blood.",
+          "features": ["Frenzy", "Mindless Rage", "Intimidating Presence"]
+        },
+        {
+          "id": "totem_warrior",
+          "name": "Path of the Totem Warrior",
+          "description": "The Path of the Totem Warrior is a spiritual journey, as the barbarian accepts a spirit animal as guide, protector, and inspiration.",
+          "features": ["Spirit Seeker", "Totem Spirit", "Aspect of the Beast"]
+        },
+        {
+          "id": "ancestral_guardian",
+          "name": "Path of the Ancestral Guardian",
+          "description": "Some barbarians hail from cultures that revere their ancestors. These tribes teach that the warriors of the past linger in the world as mighty spirits.",
+          "features": ["Ancestral Protectors", "Spirit Shield", "Consult the Spirits"]
+        }
+      ]
+    },
+    {
+      "id": "bard",
+      "name": "Bard",
+      "icon": "🎵",
+      "hit_dice": "d8",
+      "primary_abilities": ["CHA"],
+      "saving_throws": ["dex", "cha"],
+      "description": "An inspiring magician whose power echoes the music of creation. Bards use their artistry to inspire, enchant, and unravel mysteries.",
+      "features": ["Bardic Inspiration", "Jack of All Trades", "Song of Rest", "Expertise"],
+      "subclasses": [
+        {
+          "id": "lore",
+          "name": "College of Lore",
+          "description": "Bards of the College of Lore know something about most things, collecting bits of knowledge from sources as diverse as scholarly tomes and peasant tales.",
+          "features": ["Bonus Proficiencies", "Cutting Words", "Additional Magical Secrets"]
+        },
+        {
+          "id": "valor",
+          "name": "College of Valor",
+          "description": "Bards of the College of Valor are daring skalds whose tales keep alive the memory of the great heroes of the past.",
+          "features": ["Bonus Proficiencies", "Combat Inspiration", "Extra Attack", "Battle Magic"]
+        },
+        {
+          "id": "swords",
+          "name": "College of Swords",
+          "description": "Bards of the College of Swords are called blades, and they entertain through daring feats of weapon prowess.",
+          "features": ["Bonus Proficiencies", "Fighting Style", "Blade Flourish"]
+        }
+      ]
+    },
+    {
+      "id": "cleric",
+      "name": "Cleric",
+      "icon": "✝️",
+      "hit_dice": "d8",
+      "primary_abilities": ["WIS"],
+      "saving_throws": ["wis", "cha"],
+      "description": "A priestly champion who wields divine magic in service of a higher power. Clerics are intermediaries between the mortal world and the distant planes of the gods.",
+      "features": ["Spellcasting", "Divine Domain", "Channel Divinity", "Divine Intervention"],
+      "subclasses": [
+        {
+          "id": "life",
+          "name": "Life Domain",
+          "description": "The Life domain focuses on the vibrant positive energy – one of the fundamental forces of the universe – that sustains all life.",
+          "features": ["Disciple of Life", "Preserve Life", "Blessed Healer"]
+        },
+        {
+          "id": "light",
+          "name": "Light Domain",
+          "description": "Gods of light – including Helm, Lathander, Pholtus, Branchala, the Silver Flame, Belenus, Apollo, and Re-Horakhty – promote the ideals of rebirth and renewal.",
+          "features": ["Warding Flare", "Radiance of the Dawn", "Corona of Light"]
+        },
+        {
+          "id": "trickery",
+          "name": "Trickery Domain",
+          "description": "Gods of trickery – such as Tymora, Beshaba, Olidammara, the Traveler, Garl Glittergold, and Loki – are mischief-makers and instigators.",
+          "features": ["Invoke Duplicity", "Cloak of Shadows"]
+        },
+        {
+          "id": "war",
+          "name": "War Domain",
+          "description": "War has many manifestations. It can make heroes of ordinary people. It can be desperate and horrific, with acts of cruelty and cowardice eclipsing instances of excellence and courage.",
+          "features": ["War Priest", "Guided Strike", "War God's Blessing"]
+        }
+      ]
+    },
+    {
+      "id": "druid",
+      "name": "Druid",
+      "icon": "🌿",
+      "hit_dice": "d8",
+      "primary_abilities": ["WIS"],
+      "saving_throws": ["int", "wis"],
+      "description": "A priest of the Old Faith, wielding the powers of nature – moonlight and plant growth, fire and lightning – and adopting animal forms.",
+      "features": ["Druidic", "Spellcasting", "Wild Shape", "Timeless Body"],
+      "subclasses": [
+        {
+          "id": "moon",
+          "name": "Circle of the Moon",
+          "description": "Druids of the Circle of the Moon are fierce guardians of the wilds. Their order gathers under the full moon to share news and trade warnings.",
+          "features": ["Combat Wild Shape", "Circular Forms", "Elemental Wild Shape"]
+        },
+        {
+          "id": "land",
+          "name": "Circle of the Land",
+          "description": "The Circle of the Land is made up of mystics and sages who safeguard ancient knowledge and rites through a vast oral tradition.",
+          "features": ["Bonus Cantrip", "Natural Recovery", "Land's Stride", "Nature's Sanctuary"]
+        }
+      ]
+    },
+    {
+      "id": "fighter",
+      "name": "Fighter",
+      "icon": "⚔️",
+      "hit_dice": "d10",
+      "primary_abilities": ["STR", "DEX"],
+      "saving_throws": ["str", "con"],
+      "description": "A master of martial combat, skilled with a variety of weapons and armor. Fighters share an unparalleled mastery with weapons and armor.",
+      "features": ["Fighting Style", "Second Wind", "Action Surge", "Extra Attack"],
+      "subclasses": [
+        {
+          "id": "champion",
+          "name": "Champion",
+          "description": "The archetypal Champion focuses on the development of raw physical power honed to deadly perfection.",
+          "features": ["Improved Critical", "Remarkable Athlete", "Additional Fighting Style", "Superior Critical"]
+        },
+        {
+          "id": "battle_master",
+          "name": "Battle Master",
+          "description": "Those who emulate the archetypal Battle Master employ martial techniques passed down through generations.",
+          "features": ["Combat Superiority", "Student of War", "Know Your Enemy", "Relentless"]
+        },
+        {
+          "id": "eldritch_knight",
+          "name": "Eldritch Knight",
+          "description": "The archetypal Eldritch Knight combines the martial mastery common to all fighters with a careful study of magic.",
+          "features": ["Spellcasting", "Weapon Bond", "War Magic", "Eldritch Strike"]
+        }
+      ]
+    },
+    {
+      "id": "monk",
+      "name": "Monk",
+      "icon": "🥋",
+      "hit_dice": "d8",
+      "primary_abilities": ["DEX", "WIS"],
+      "saving_throws": ["str", "dex"],
+      "description": "A master of martial arts, harnessing the power of the body in pursuit of physical and spiritual perfection.",
+      "features": ["Unarmored Defense", "Martial Arts", "Ki", "Unarmored Movement"],
+      "subclasses": [
+        {
+          "id": "open_hand",
+          "name": "Way of the Open Hand",
+          "description": "Monks of the Way of the Open Hand are the ultimate masters of martial arts combat, whether armed or unarmed.",
+          "features": ["Open Hand Technique", "Wholeness of Body", "Tranquility", "Quivering Palm"]
+        },
+        {
+          "id": "shadow",
+          "name": "Way of Shadow",
+          "description": "Monks of the Way of Shadow follow a tradition that values stealth and subterfuge. These monks might be called ninjas or shadowdancers.",
+          "features": ["Shadow Arts", "Shadow Step", "Cloak of Shadows", "Opportunist"]
+        },
+        {
+          "id": "four_elements",
+          "name": "Way of the Four Elements",
+          "description": "You follow a monastic tradition that teaches you to harness the elements. When you focus your ki, you can align yourself with the forces of creation.",
+          "features": ["Disciple of the Elements", "Elemental Disciplines"]
+        }
+      ]
+    },
+    {
+      "id": "paladin",
+      "name": "Paladin",
+      "icon": "🛡️",
+      "hit_dice": "d10",
+      "primary_abilities": ["STR", "CHA"],
+      "saving_throws": ["wis", "cha"],
+      "description": "A holy warrior bound to a sacred oath. Paladins are united by their oaths to stand against the forces of evil.",
+      "features": ["Divine Sense", "Lay on Hands", "Spellcasting", "Divine Smite", "Aura of Protection"],
+      "subclasses": [
+        {
+          "id": "devotion",
+          "name": "Oath of Devotion",
+          "description": "The Oath of Devotion binds a paladin to the loftiest ideals of justice, virtue, and order.",
+          "features": ["Sacred Weapon", "Turn the Unholy", "Aura of Devotion", "Holy Nimbus"]
+        },
+        {
+          "id": "ancients",
+          "name": "Oath of the Ancients",
+          "description": "The Oath of the Ancients is as old as the race of elves and the rituals of the druids. Sometimes called fey knights or green knights.",
+          "features": ["Nature's Wrath", "Turn the Faithless", "Aura of Warding", "Undying Sentinel"]
+        },
+        {
+          "id": "vengeance",
+          "name": "Oath of Vengeance",
+          "description": "The Oath of Vengeance is a solemn commitment to punish those who have committed a grievous sin.",
+          "features": ["Abjure Enemy", "Vow of Enmity", "Relentless Avenger", "Soul of Vengeance"]
+        }
+      ]
+    },
+    {
+      "id": "ranger",
+      "name": "Ranger",
+      "icon": "🏹",
+      "hit_dice": "d10",
+      "primary_abilities": ["DEX", "WIS"],
+      "saving_throws": ["str", "dex"],
+      "description": "A warrior who uses martial prowess and nature magic to combat threats on the edges of civilization.",
+      "features": ["Favored Enemy", "Natural Explorer", "Primeval Awareness", "Spellcasting"],
+      "subclasses": [
+        {
+          "id": "hunter",
+          "name": "Hunter",
+          "description": "Emulating the Hunter archetype means accepting your place as a bulwark between civilization and the terrors of the wilderness.",
+          "features": ["Hunter's Prey", "Defensive Tactics", "Multiattack", "Superior Hunter's Defense"]
+        },
+        {
+          "id": "beast_master",
+          "name": "Beast Master",
+          "description": "The Beast Master archetype embodies a friendship between the civilized races and the beasts of the world.",
+          "features": ["Ranger's Companion", "Exceptional Training", "Bestial Fury", "Share Spells"]
+        }
+      ]
+    },
+    {
+      "id": "rogue",
+      "name": "Rogue",
+      "icon": "🗡️",
+      "hit_dice": "d8",
+      "primary_abilities": ["DEX"],
+      "saving_throws": ["dex", "int"],
+      "description": "A scoundrel who uses stealth and trickery to overcome obstacles and enemies. Rogues have many faces: a swindler, bounty hunter, or guild thief.",
+      "features": ["Expertise", "Sneak Attack", "Thieves' Cant", "Cunning Action"],
+      "subclasses": [
+        {
+          "id": "thief",
+          "name": "Thief",
+          "description": "You hone your skills in the larcenous arts. Burglars, bandits, cutpurses, and other criminals typically follow this archetype.",
+          "features": ["Fast Hands", "Second-Story Work", "Supreme Sneak", "Use Magic Device"]
+        },
+        {
+          "id": "assassin",
+          "name": "Assassin",
+          "description": "You focus your training on the grim art of death. Those who adhere to this archetype are diverse: hired killers, spies, bounty hunters.",
+          "features": ["Bonus Proficiencies", "Assassinate", "Infiltration Expertise", "Imposter", "Death Strike"]
+        },
+        {
+          "id": "arcane_trickster",
+          "name": "Arcane Trickster",
+          "description": "Some rogues enhance their fine-honed skills of stealth and agility with magic, learning tricks of enchantment and illusion.",
+          "features": ["Spellcasting", "Mage Hand Legerdemain", "Magical Ambush", "Versatile Trickster"]
+        }
+      ]
+    },
+    {
+      "id": "sorcerer",
+      "name": "Sorcerer",
+      "icon": "🔮",
+      "hit_dice": "d6",
+      "primary_abilities": ["CHA"],
+      "saving_throws": ["con", "cha"],
+      "description": "A spellcaster who draws on inherent magic from a gift or bloodline. Sorcerers carry a magical birthright conferred upon them by an exotic bloodline.",
+      "features": ["Spellcasting", "Sorcerous Origin", "Font of Magic", "Metamagic"],
+      "subclasses": [
+        {
+          "id": "draconic",
+          "name": "Draconic Bloodline",
+          "description": "Your innate magic comes from draconic magic that was mingled with your blood or that of your ancestors.",
+          "features": ["Dragon Ancestor", "Draconic Resilience", "Elemental Affinity", "Dragon Wings", "Draconic Presence"]
+        },
+        {
+          "id": "wild_magic",
+          "name": "Wild Magic",
+          "description": "Your innate magic comes from the wild forces of chaos that underlie the order of creation.",
+          "features": ["Wild Magic Surge", "Tides of Chaos", "Bend Luck", "Controlled Chaos", "Spell Bombardment"]
+        }
+      ]
+    },
+    {
+      "id": "warlock",
+      "name": "Warlock",
+      "icon": "👁️",
+      "hit_dice": "d8",
+      "primary_abilities": ["CHA"],
+      "saving_throws": ["wis", "cha"],
+      "description": "A wielder of magic that is derived from a bargain with an extraplanar entity. Warlocks are seekers of the knowledge that lies hidden in the fabric of the multiverse.",
+      "features": ["Otherworldly Patron", "Pact Magic", "Eldritch Invocations", "Pact Boon"],
+      "subclasses": [
+        {
+          "id": "archfey",
+          "name": "The Archfey",
+          "description": "Your patron is a lord or lady of the fey, a creature of legend who holds secrets that were forgotten before the mortal races were born.",
+          "features": ["Fey Presence", "Misty Escape", "Beguiling Defenses", "Dark Delirium"]
+        },
+        {
+          "id": "fiend",
+          "name": "The Fiend",
+          "description": "You have made a pact with a fiend from the lower planes of existence, a being whose aims are evil, even if you strive against those aims.",
+          "features": ["Dark One's Blessing", "Dark One's Own Luck", "Fiendish Resilience", "Hurl Through Hell"]
+        },
+        {
+          "id": "great_old_one",
+          "name": "The Great Old One",
+          "description": "Your patron is a mysterious entity whose nature is utterly foreign to the fabric of reality. It has granted you magic that twists and distorts reality.",
+          "features": ["Awakened Mind", "Entropic Ward", "Thought Shield", "Create Thrall"]
+        }
+      ]
+    },
+    {
+      "id": "wizard",
+      "name": "Wizard",
+      "icon": "📚",
+      "hit_dice": "d6",
+      "primary_abilities": ["INT"],
+      "saving_throws": ["int", "wis"],
+      "description": "A scholarly magic-user capable of manipulating the structures of reality. Wizards are supreme magic-users, defined and united as a class by the spells they cast.",
+      "features": ["Spellcasting", "Arcane Recovery", "Spell Mastery", "Signature Spell"],
+      "subclasses": [
+        {
+          "id": "abjuration",
+          "name": "School of Abjuration",
+          "description": "The School of Abjuration emphasizes magic that blocks, banishes, or protects. Detractors of this school say that its tradition is about denial, negation rather than positive assertion.",
+          "features": ["Abjuration Savant", "Arcane Ward", "Projected Ward", "Improved Abjuration"]
+        },
+        {
+          "id": "conjuration",
+          "name": "School of Conjuration",
+          "description": "As a conjurer, you favor spells that produce objects and creatures out of thin air. You can conjure billowing clouds of daggers.",
+          "features": ["Conjuration Savant", "Minor Conjuration", "Benign Transposition", "Focused Conjuration"]
+        },
+        {
+          "id": "divination",
+          "name": "School of Divination",
+          "description": "The counsel of a diviner is sought by royalty and commoners alike, for all seek a clearer understanding of the past, present, and future.",
+          "features": ["Divination Savant", "Portent", "Expert Divination", "The Third Eye"]
+        },
+        {
+          "id": "enchantment",
+          "name": "School of Enchantment",
+          "description": "As a member of the School of Enchantment, you have honed your ability to magically entrance and beguile other people and monsters.",
+          "features": ["Enchantment Savant", "Hypnotic Gaze", "Instinctive Charm", "Alter Memories"]
+        },
+        {
+          "id": "evocation",
+          "name": "School of Evocation",
+          "description": "You focus your study on magic that creates powerful elemental effects such as bitter cold, searing flame, rolling thunder, crackling lightning, and burning acid.",
+          "features": ["Evocation Savant", "Sculpt Spells", "Potent Cantrip", "Empowered Evocation"]
+        },
+        {
+          "id": "illusion",
+          "name": "School of Illusion",
+          "description": "You focus your studies on magic that dazzles the senses, befuddles the mind, and tricks even the wisest folk.",
+          "features": ["Illusion Savant", "Improved Minor Illusion", "Malleable Illusions", "Illusory Self"]
+        },
+        {
+          "id": "necromancy",
+          "name": "School of Necromancy",
+          "description": "The School of Necromancy explores the cosmic forces of life, death, and undeath. As you focus your studies in this tradition, you learn to manipulate the energy that animates all living things.",
+          "features": ["Necromancy Savant", "Grim Harvest", "Undead Thralls", "Inured to Undeath"]
+        },
+        {
+          "id": "transmutation",
+          "name": "School of Transmutation",
+          "description": "You are a student of spells that modify energy and matter. To you, the world is not a fixed thing, but eminently mutable.",
+          "features": ["Transmutation Savant", "Minor Alchemy", "Transmuter's Stone", "Shapechanger"]
+        }
+      ]
+    }
+  ]
+}

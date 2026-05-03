@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D&D 5e Charakterbogen</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-emblem">⚔</div>
+      <h1 class="app-title">D&D 5e <span>Charakterbogen</span></h1>
+      <div class="header-actions">
+        <button id="btn-save" class="btn-icon" title="Speichern">💾</button>
+        <button id="btn-load" class="btn-icon" title="Laden">📂</button>
+        <button id="btn-import-api" class="btn-icon" title="API Import">🌐</button>
+      </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="character">🧙 Charakter</button>
+      <button class="tab-btn" data-tab="class">⚔ Klasse</button>
+      <button class="tab-btn" data-tab="spells">✨ Spells</button>
+      <button class="tab-btn" data-tab="items">🎒 Items</button>
+      <button class="tab-btn" data-tab="dice">🎲 Würfeln</button>
+    </nav>
+
+    <!-- Tab: Charakter -->
+    <section class="tab-content active" id="tab-character">
+      <div class="section-header">
+        <h2>Charakterinfo</h2>
+        <button class="btn-secondary" id="btn-new-char">Neuer Charakter</button>
+      </div>
+
+      <div class="char-grid">
+        <div class="card char-identity">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="char-name" placeholder="Charaktername..." />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Rasse</label>
+              <input type="text" id="char-race" placeholder="z.B. Elf" />
+            </div>
+            <div class="form-group">
+              <label>Hintergrund</label>
+              <input type="text" id="char-background" placeholder="z.B. Krimineller" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Level</label>
+              <input type="number" id="char-level" min="1" max="20" value="1" />
+            </div>
+            <div class="form-group">
+              <label>EP</label>
+              <input type="number" id="char-xp" min="0" value="0" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>HP (Aktuell)</label>
+              <input type="number" id="char-hp-current" min="0" value="10" />
+            </div>
+            <div class="form-group">
+              <label>HP (Max)</label>
+              <input type="number" id="char-hp-max" min="1" value="10" />
+            </div>
+            <div class="form-group">
+              <label>Rüstung (AC)</label>
+              <input type="number" id="char-ac" min="1" value="10" />
+            </div>
+          </div>
+          <div id="char-class-display" class="char-class-badge">Keine Klasse gewählt</div>
+        </div>
+
+        <!-- Ability Scores -->
+        <div class="card abilities-card">
+          <h3>Attribute</h3>
+          <div class="abilities-grid">
+            <div class="ability-block" data-ability="str">
+              <div class="ability-name">STR</div>
+              <input class="ability-score" type="number" min="1" max="30" value="10" />
+              <div class="ability-mod">+0</div>
+            </div>
+            <div class="ability-block" data-ability="dex">
+              <div class="ability-name">DEX</div>
+              <input class="ability-score" type="number" min="1" max="30" value="10" />
+              <div class="ability-mod">+0</div>
+            </div>
+            <div class="ability-block" data-ability="con">
+              <div class="ability-name">CON</div>
+              <input class="ability-score" type="number" min="1" max="30" value="10" />
+              <div class="ability-mod">+0</div>
+            </div>
+            <div class="ability-block" data-ability="int">
+              <div class="ability-name">INT</div>
+              <input class="ability-score" type="number" min="1" max="30" value="10" />
+              <div class="ability-mod">+0</div>
+            </div>
+            <div class="ability-block" data-ability="wis">
+              <div class="ability-name">WIS</div>
+              <input class="ability-score" type="number" min="1" max="30" value="10" />
+              <div class="ability-mod">+0</div>
+            </div>
+            <div class="ability-block" data-ability="cha">
+              <div class="ability-name">CHA</div>
+              <input class="ability-score" type="number" min="1" max="30" value="10" />
+              <div class="ability-mod">+0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saving Throws & Skills -->
+        <div class="card skills-card">
+          <h3>Rettungswürfe</h3>
+          <div id="saving-throws" class="skills-list"></div>
+          <h3>Fertigkeiten</h3>
+          <div id="skills-list" class="skills-list"></div>
+        </div>
+
+        <!-- Char Spells & Items Summary -->
+        <div class="card summary-card">
+          <h3>Bekannte Spells <span id="char-spell-count" class="badge">0</span></h3>
+          <div id="char-spells-summary" class="summary-list"></div>
+          <h3>Inventar <span id="char-item-count" class="badge">0</span></h3>
+          <div id="char-items-summary" class="summary-list"></div>
+        </div>
+
+        <!-- Notes -->
+        <div class="card notes-card">
+          <h3>Notizen</h3>
+          <textarea id="char-notes" placeholder="Persönlichkeit, Hintergrundgeschichte, Ziele..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: Klasse -->
+    <section class="tab-content" id="tab-class">
+      <div class="section-header">
+        <h2>Klasse & Subklasse</h2>
+      </div>
+      <div class="class-layout">
+        <div class="card class-list-card">
+          <h3>Klassen wählen</h3>
+          <div id="class-list" class="class-grid"></div>
+        </div>
+        <div class="card class-detail-card" id="class-detail">
+          <div class="empty-state">
+            <div class="empty-icon">⚔</div>
+            <p>Wähle eine Klasse aus</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: Spells -->
+    <section class="tab-content" id="tab-spells">
+      <div class="section-header">
+        <h2>Spells</h2>
+        <div class="search-bar">
+          <input type="text" id="spell-search" placeholder="🔍 Spell suchen..." />
+          <select id="spell-filter-level">
+            <option value="">Alle Level</option>
+            <option value="0">Cantrip</option>
+            <option value="1">Level 1</option>
+            <option value="2">Level 2</option>
+            <option value="3">Level 3</option>
+            <option value="4">Level 4</option>
+            <option value="5">Level 5</option>
+            <option value="6">Level 6</option>
+            <option value="7">Level 7</option>
+            <option value="8">Level 8</option>
+            <option value="9">Level 9</option>
+          </select>
+          <select id="spell-filter-school">
+            <option value="">Alle Schulen</option>
+          </select>
+        </div>
+      </div>
+      <div class="spell-layout">
+        <div class="card spell-list-card">
+          <div id="spell-list" class="item-list"></div>
+        </div>
+        <div class="card spell-detail-card" id="spell-detail">
+          <div class="empty-state">
+            <div class="empty-icon">✨</div>
+            <p>Wähle einen Spell aus</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: Items -->
+    <section class="tab-content" id="tab-items">
+      <div class="section-header">
+        <h2>Items</h2>
+        <div class="search-bar">
+          <input type="text" id="item-search" placeholder="🔍 Item suchen..." />
+          <select id="item-filter-type">
+            <option value="">Alle Typen</option>
+          </select>
+        </div>
+      </div>
+      <div class="item-layout">
+        <div class="card item-list-card">
+          <div id="item-list" class="item-list"></div>
+        </div>
+        <div class="card item-detail-card" id="item-detail">
+          <div class="empty-state">
+            <div class="empty-icon">🎒</div>
+            <p>Wähle ein Item aus</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: Würfeln -->
+    <section class="tab-content" id="tab-dice">
+      <div class="section-header">
+        <h2>Würfelturm</h2>
+      </div>
+      <div class="dice-layout">
+        <div class="card dice-standard-card">
+          <h3>Standard Würfel</h3>
+          <div class="dice-buttons">
+            <button class="dice-btn" data-dice="4">d4</button>
+            <button class="dice-btn" data-dice="6">d6</button>
+            <button class="dice-btn" data-dice="8">d8</button>
+            <button class="dice-btn" data-dice="10">d10</button>
+            <button class="dice-btn" data-dice="12">d12</button>
+            <button class="dice-btn" data-dice="20">d20</button>
+            <button class="dice-btn" data-dice="100">d100</button>
+          </div>
+          <div id="dice-result" class="dice-result">
+            <span class="dice-result-num">–</span>
+            <span class="dice-result-label">Würfel</span>
+          </div>
+        </div>
+
+        <div class="card dice-custom-card">
+          <h3>Eigene Formel</h3>
+          <div class="dice-formula-row">
+            <input type="number" id="dice-count" min="1" max="20" value="1" />
+            <span>d</span>
+            <input type="number" id="dice-sides" min="2" max="100" value="20" />
+            <span>+</span>
+            <input type="number" id="dice-modifier" min="-20" max="20" value="0" />
+          </div>
+          <button class="btn-primary" id="btn-roll-custom">Würfeln!</button>
+          <div id="dice-custom-result" class="dice-result">
+            <span class="dice-result-num">–</span>
+            <span class="dice-result-label">Custom</span>
+          </div>
+        </div>
+
+        <div class="card dice-history-card">
+          <h3>Verlauf</h3>
+          <div id="dice-history" class="dice-history-list"></div>
+          <button class="btn-secondary" id="btn-clear-history">Verlauf löschen</button>
+        </div>
+
+        <div class="card dice-ability-card">
+          <h3>Attributswurf</h3>
+          <p class="hint">4d6, niedrigste streichen × 6</p>
+          <button class="btn-primary" id="btn-roll-stats">Stats würfeln!</button>
+          <div id="rolled-stats" class="rolled-stats-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="modal-title">Import</h3>
+          <button id="modal-close" class="btn-icon">✕</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <!-- Service Worker -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/dnd/sw.js", { scope: "/dnd/" })
+        .then(() => console.log("[SW] Registriert für /dnd/"))
+        .catch(e => console.warn("[SW] Fehler:", e));
+    }
+  </script>
+  <script src="js/data.js"></script>
+  <script src="js/character.js"></script>
+  <script src="js/classes.js"></script>
+  <script src="js/spells.js"></script>
+  <script src="js/items.js"></script>
+  <script src="js/dice.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
