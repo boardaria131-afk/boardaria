@@ -21,6 +21,7 @@ const ASSETS = [
   `${BASE}/data/classes.json`,
   `${BASE}/data/spells.json`,
   `${BASE}/data/items.json`,
+  `${BASE}/data/races.json`,
   'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap',
 ];
 

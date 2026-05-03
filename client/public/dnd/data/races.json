@@ -1,0 +1,165 @@
+{
+  "races": [
+    {
+      "id": "human",
+      "name": "Human",
+      "icon": "👤",
+      "description": "Humans are the most adaptable and ambitious people among the common races. Whatever drives them, humans are the innovators, the achievers, and the pioneers of the worlds.",
+      "ability_bonuses": { "str": 1, "dex": 1, "con": 1, "int": 1, "wis": 1, "cha": 1 },
+      "speed": 30,
+      "size": "Medium",
+      "languages": ["Common", "one extra language"],
+      "traits": ["Extra Language", "Bonus Ability Score Increase"]
+    },
+    {
+      "id": "elf",
+      "name": "Elf",
+      "icon": "🧝",
+      "description": "Elves are a magical people of otherworldly grace, living in the world but not entirely part of it. They live in places of ethereal beauty, in the midst of ancient forests or in silvery spires glittering with faerie light.",
+      "ability_bonuses": { "dex": 2 },
+      "speed": 30,
+      "size": "Medium",
+      "languages": ["Common", "Elvish"],
+      "traits": ["Darkvision", "Keen Senses", "Fey Ancestry", "Trance"],
+      "subraces": [
+        {
+          "id": "high_elf",
+          "name": "High Elf",
+          "ability_bonuses": { "int": 1 },
+          "traits": ["Elf Weapon Training", "Cantrip", "Extra Language"]
+        },
+        {
+          "id": "wood_elf",
+          "name": "Wood Elf",
+          "ability_bonuses": { "wis": 1 },
+          "traits": ["Elf Weapon Training", "Fleet of Foot", "Mask of the Wild"]
+        },
+        {
+          "id": "drow",
+          "name": "Dark Elf (Drow)",
+          "ability_bonuses": { "cha": 1 },
+          "traits": ["Superior Darkvision", "Sunlight Sensitivity", "Drow Magic", "Drow Weapon Training"]
+        }
+      ]
+    },
+    {
+      "id": "dwarf",
+      "name": "Dwarf",
+      "icon": "⛏️",
+      "description": "Bold and hardy, dwarves are known as skilled warriors, miners, and workers of stone and metal. Though they stand well under 5 feet tall, dwarves are so broad and compact that they can weigh as much as a human.",
+      "ability_bonuses": { "con": 2 },
+      "speed": 25,
+      "size": "Medium",
+      "languages": ["Common", "Dwarvish"],
+      "traits": ["Darkvision", "Dwarven Resilience", "Dwarven Combat Training", "Stonecunning"],
+      "subraces": [
+        {
+          "id": "hill_dwarf",
+          "name": "Hill Dwarf",
+          "ability_bonuses": { "wis": 1 },
+          "traits": ["Dwarven Toughness"]
+        },
+        {
+          "id": "mountain_dwarf",
+          "name": "Mountain Dwarf",
+          "ability_bonuses": { "str": 2 },
+          "traits": ["Dwarven Armor Training"]
+        }
+      ]
+    },
+    {
+      "id": "halfling",
+      "name": "Halfling",
+      "icon": "🌿",
+      "description": "The comforts of home are the goals of most halflings' lives: a place to settle in peace and quiet, far from marauding monsters and clashing armies; a blazing fire and a generous meal.",
+      "ability_bonuses": { "dex": 2 },
+      "speed": 25,
+      "size": "Small",
+      "languages": ["Common", "Halfling"],
+      "traits": ["Lucky", "Brave", "Halfling Nimbleness"],
+      "subraces": [
+        {
+          "id": "lightfoot",
+          "name": "Lightfoot",
+          "ability_bonuses": { "cha": 1 },
+          "traits": ["Naturally Stealthy"]
+        },
+        {
+          "id": "stout",
+          "name": "Stout",
+          "ability_bonuses": { "con": 1 },
+          "traits": ["Stout Resilience"]
+        }
+      ]
+    },
+    {
+      "id": "dragonborn",
+      "name": "Dragonborn",
+      "icon": "🐉",
+      "description": "Born of dragons, as their name proclaims, the dragonborn walk proudly through a world that greets them with fearful incomprehension. Shaped by draconic gods or the dragons themselves, dragonborn originally hatched from dragon eggs.",
+      "ability_bonuses": { "str": 2, "cha": 1 },
+      "speed": 30,
+      "size": "Medium",
+      "languages": ["Common", "Draconic"],
+      "traits": ["Draconic Ancestry", "Breath Weapon", "Damage Resistance"]
+    },
+    {
+      "id": "gnome",
+      "name": "Gnome",
+      "icon": "🔬",
+      "description": "A gnome's energy and enthusiasm for living shines through every inch of his or her tiny body. Gnomes average slightly over 3 feet tall and weigh 40 to 45 pounds.",
+      "ability_bonuses": { "int": 2 },
+      "speed": 25,
+      "size": "Small",
+      "languages": ["Common", "Gnomish"],
+      "traits": ["Darkvision", "Gnome Cunning"],
+      "subraces": [
+        {
+          "id": "forest_gnome",
+          "name": "Forest Gnome",
+          "ability_bonuses": { "dex": 1 },
+          "traits": ["Natural Illusionist", "Speak with Small Beasts"]
+        },
+        {
+          "id": "rock_gnome",
+          "name": "Rock Gnome",
+          "ability_bonuses": { "con": 1 },
+          "traits": ["Artificer's Lore", "Tinker"]
+        }
+      ]
+    },
+    {
+      "id": "half_elf",
+      "name": "Half-Elf",
+      "icon": "🌙",
+      "description": "Walking in two worlds but truly belonging to neither, half-elves combine what some say are the best qualities of their elf and human parents.",
+      "ability_bonuses": { "cha": 2 },
+      "speed": 30,
+      "size": "Medium",
+      "languages": ["Common", "Elvish", "one extra language"],
+      "traits": ["Darkvision", "Fey Ancestry", "Skill Versatility"]
+    },
+    {
+      "id": "half_orc",
+      "name": "Half-Orc",
+      "icon": "⚔️",
+      "description": "Whether united under the leadership of a mighty warlock or having fought and survived on their own, half-orcs have a fearsome presence that they can use to their advantage.",
+      "ability_bonuses": { "str": 2, "con": 1 },
+      "speed": 30,
+      "size": "Medium",
+      "languages": ["Common", "Orc"],
+      "traits": ["Darkvision", "Menacing", "Relentless Endurance", "Savage Attacks"]
+    },
+    {
+      "id": "tiefling",
+      "name": "Tiefling",
+      "icon": "😈",
+      "description": "To be greeted with stares and whispers, to suffer violence and insult on the street, to see mistrust and fear in every eye: this is the lot of the tiefling.",
+      "ability_bonuses": { "int": 1, "cha": 2 },
+      "speed": 30,
+      "size": "Medium",
+      "languages": ["Common", "Infernal"],
+      "traits": ["Darkvision", "Hellish Resistance", "Infernal Legacy"]
+    }
+  ]
+}
