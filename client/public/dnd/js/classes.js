@@ -122,9 +122,13 @@ const ClassesUI = (() => {
           <div class="subclass-grid">
             ${cls.subclasses.map(sc => `
               <div class="subclass-card ${currentSub===sc.id?'selected':''}" data-subclass="${sc.id}">
-                <div class="subclass-name">${sc.name}</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                  <div class="subclass-name" style="flex:1;">${sc.name}</div>
+                  ${sc.tier ? `<span class="tier-badge tier-${sc.tier.replace(/[^A-Za-z]/g,'').toLowerCase()}">${sc.tier}</span>` : ''}
+                  ${sc.role ? `<span class="role-badge">${sc.role}</span>` : ''}
+                </div>
                 <div class="subclass-desc">${sc.description}</div>
-                ${sc.features?`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">${sc.features.map(f=>`<span style="background:rgba(201,150,42,0.15);border:1px solid rgba(201,150,42,0.3);border-radius:3px;padding:2px 7px;font-family:var(--font-title);font-size:10px;color:var(--ink-light);">${f}</span>`).join('')}</div>`:''}
+                ${sc.features?.length?`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">${sc.features.map(f=>`<span style="background:rgba(201,150,42,0.15);border:1px solid rgba(201,150,42,0.3);border-radius:3px;padding:2px 7px;font-family:var(--font-title);font-size:10px;color:var(--ink-light);">${f}</span>`).join('')}</div>`:''}
               </div>`).join('')}
           </div>
         </div>

@@ -12,6 +12,7 @@ const ASSETS = [
   `${BASE}/manifest.json`,
   `${BASE}/css/main.css`,
   `${BASE}/js/wiki_parser.js`,
+  `${BASE}/js/feats.js`,
   `${BASE}/js/data.js`,
   `${BASE}/js/character.js`,
   `${BASE}/js/classes.js`,
@@ -23,6 +24,7 @@ const ASSETS = [
   `${BASE}/data/spells.json`,
   `${BASE}/data/items.json`,
   `${BASE}/data/races.json`,
+  `${BASE}/data/feats.json`,
   'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap',
 ];
 

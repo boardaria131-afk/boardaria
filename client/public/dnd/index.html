@@ -28,6 +28,7 @@
       <button class="tab-btn" data-tab="class">⚔ Klasse</button>
       <button class="tab-btn" data-tab="spells">✨ Spells</button>
       <button class="tab-btn" data-tab="items">🎒 Items</button>
+      <button class="tab-btn" data-tab="feats">⭐ Feats</button>
       <button class="tab-btn" data-tab="dice">🎲 Würfeln</button>
     </nav>
 
@@ -134,6 +135,15 @@
           <div id="char-items-summary" class="summary-list"></div>
         </div>
 
+
+        <!-- Feats Summary -->
+        <div class="card" style="grid-column:1/-1;">
+          <h3>Feats <span id="char-feat-count" class="badge">0</span></h3>
+          <div id="char-feats-summary" class="summary-list">
+            <span style="font-style:italic;color:#8a7060;font-size:13px;">Noch keine Feats gewählt</span>
+          </div>
+        </div>
+
         <!-- Merkmale -->
         <div class="card" style="grid-column:1/-1;">
           <h3>Klassen- & Rassenmerkmale</h3>
@@ -230,6 +240,39 @@
       </div>
     </section>
 
+
+    <!-- Tab: Feats -->
+    <section class="tab-content" id="tab-feats">
+      <div class="section-header">
+        <h2>Feats</h2>
+        <div class="search-bar">
+          <input type="text" id="feat-search" placeholder="🔍 Feat suchen..." />
+          <select id="feat-filter-tier">
+            <option value="">Alle Tiers</option>
+            <option value="S">S – Essentiell</option>
+            <option value="A">A – Sehr stark</option>
+            <option value="B">B – Solide</option>
+            <option value="C">C – Situational</option>
+            <option value="D">D – Schwach</option>
+          </select>
+          <select id="feat-filter-tag">
+            <option value="">Alle Kategorien</option>
+          </select>
+        </div>
+      </div>
+      <div class="spell-layout">
+        <div class="card spell-list-card">
+          <div id="feat-list" class="item-list"></div>
+        </div>
+        <div class="card spell-detail-card" id="feat-detail">
+          <div class="empty-state">
+            <div class="empty-icon">⭐</div>
+            <p>Wähle einen Feat aus</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Tab: Würfeln -->
     <section class="tab-content" id="tab-dice">
       <div class="section-header">
@@ -313,6 +356,7 @@
   <script src="js/classes.js"></script>
   <script src="js/spells.js"></script>
   <script src="js/items.js"></script>
+  <script src="js/feats.js"></script>
   <script src="js/dice.js"></script>
   <script src="js/app.js"></script>
 </body>

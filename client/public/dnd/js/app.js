@@ -364,11 +364,13 @@ async function bootstrap() {
   ClassesUI.init();
   SpellsUI.init();
   ItemsUI.init();
+  FeatsUI.init();
   DiceUI.init();
 
   ClassesUI.restoreFromSave();
   SpellsUI.updateCharSummary();
   ItemsUI.updateCharSummary();
+  FeatsUI.updateCharSummary();
 
   initPersistence();
 
