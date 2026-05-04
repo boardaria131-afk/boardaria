@@ -70,8 +70,23 @@ const ItemsUI = (() => {
         ${rarityDot(item.rarity)}
         <span class="list-item-name">${item.name}</span>
         <span class="list-item-tag">${item.type}</span>
+        ${item._custom ? `<span class="list-delete-btn" title="Löschen">✕</span>` : ''}
       `;
-      div.addEventListener('click', () => {
+      div.addEventListener('click', e => {
+        if (e.target.classList.contains('list-delete-btn')) {
+          e.stopPropagation();
+          if (confirm(`"${item.name}" wirklich löschen?`)) {
+            DnDData.deleteEntry('item', item.id);
+            // Alle Instanzen aus Inventar entfernen
+            while (Character.data.itemIds.includes(item.id)) Character.removeItem(item.id);
+            _selected = null;
+            renderList();
+            document.getElementById('item-detail').innerHTML = '<div class="empty-state"><div class="empty-icon">🎒</div><p>Wähle ein Item aus</p></div>';
+            updateCharSummary();
+            showToast(`🗑 ${item.name} gelöscht`);
+          }
+          return;
+        }
         _selected = item.id;
         renderList();
         renderDetail(item);

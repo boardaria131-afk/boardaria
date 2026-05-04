@@ -36,6 +36,7 @@ const DnDData = (() => {
     let count = 0;
     const merge = (arr, list, key='id') => {
       (list||[]).forEach(item => {
+        item._custom = true; // Markierung: manuell importiert → löschbar
         const idx = arr.findIndex(x => x[key] === item[key]);
         idx >= 0 ? arr[idx] = item : arr.push(item);
         count++;
@@ -47,6 +48,17 @@ const DnDData = (() => {
     merge(_races,   json.races);
     console.log(`[DnDData] ${count} externe Einträge importiert`);
     return count;
+  }
+
+  function deleteEntry(type, id) {
+    const map = { class: _classes, spell: _spells, item: _items, race: _races };
+    const arr = map[type];
+    if (!arr) return false;
+    const idx = arr.findIndex(x => x.id === id);
+    if (idx < 0) return false;
+    arr.splice(idx, 1);
+    console.log(`[DnDData] ${type} "${id}" gelöscht`);
+    return true;
   }
 
   function normalizeApiSpell(s) {
@@ -65,7 +77,7 @@ const DnDData = (() => {
   }
 
   return {
-    init, importExternal, normalizeApiSpell,
+    init, importExternal, normalizeApiSpell, deleteEntry,
     get classes() { return _classes; },
     get spells()  { return _spells;  },
     get items()   { return _items;   },

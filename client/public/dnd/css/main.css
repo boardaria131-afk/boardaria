@@ -998,3 +998,35 @@ textarea {
 }
 .online-status.online { background: rgba(44,90,44,0.8); color: #a8d4a8; border: 1px solid #3d7a3d; }
 .online-status.offline { background: rgba(139,26,26,0.8); color: #f0a0a0; border: 1px solid var(--blood); }
+
+/* ======== LIST DELETE BUTTON ======== */
+.list-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(139,26,26,0.1);
+  color: var(--blood);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 2px;
+  transition: var(--transition);
+  line-height: 1;
+}
+.list-delete-btn:hover {
+  background: var(--blood);
+  color: var(--parchment);
+  box-shadow: var(--glow-red);
+}
+
+/* Klassen-Lösch-Button (größer, da in class-btn) */
+.class-btn .list-delete-btn {
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+  margin-left: auto;
+}

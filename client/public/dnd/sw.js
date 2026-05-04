@@ -11,6 +11,7 @@ const ASSETS = [
   `${BASE}/index.html`,
   `${BASE}/manifest.json`,
   `${BASE}/css/main.css`,
+  `${BASE}/js/wiki_parser.js`,
   `${BASE}/js/data.js`,
   `${BASE}/js/character.js`,
   `${BASE}/js/classes.js`,

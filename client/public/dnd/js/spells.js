@@ -62,8 +62,22 @@ const SpellsUI = (() => {
         <span class="list-item-name">${spell.name}</span>
         <span class="list-item-tag">${spell.school}</span>
         ${owned ? '<span style="color:#2c5a2c;font-size:12px;">✓</span>' : ''}
+        ${spell._custom ? `<span class="list-delete-btn" title="Löschen">✕</span>` : ''}
       `;
-      div.addEventListener('click', () => {
+      div.addEventListener('click', e => {
+        if (e.target.classList.contains('list-delete-btn')) {
+          e.stopPropagation();
+          if (confirm(`"${spell.name}" wirklich löschen?`)) {
+            DnDData.deleteEntry('spell', spell.id);
+            Character.removeSpell(spell.id);
+            _selected = null;
+            renderList();
+            document.getElementById('spell-detail').innerHTML = '<div class="empty-state"><div class="empty-icon">✨</div><p>Wähle einen Spell aus</p></div>';
+            updateCharSummary();
+            showToast(`🗑 ${spell.name} gelöscht`);
+          }
+          return;
+        }
         _selected = spell.id;
         renderList();
         renderDetail(spell);

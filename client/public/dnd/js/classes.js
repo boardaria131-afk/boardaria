@@ -59,8 +59,23 @@ const ClassesUI = (() => {
           <span class="class-btn-name">${cls.name}</span>
           <span class="class-btn-hit">Hit Dice: ${cls.hit_dice}</span>
         </span>
+        ${cls._custom ? `<span class="list-delete-btn" data-type="class" data-id="${cls.id}" title="Löschen">✕</span>` : ''}
       `;
-      btn.addEventListener('click', () => selectClass(cls.id));
+      btn.addEventListener('click', e => {
+        if (e.target.classList.contains('list-delete-btn')) return;
+        selectClass(cls.id);
+      });
+      const delBtn = btn.querySelector('.list-delete-btn');
+      if (delBtn) delBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (confirm(`"${cls.name}" wirklich löschen?`)) {
+          DnDData.deleteEntry('class', cls.id);
+          if (Character.data.classId === cls.id) Character.update({ classId: null, subclassId: null });
+          renderClassList();
+          document.getElementById('class-detail').innerHTML = '<div class="empty-state"><div class="empty-icon">⚔</div><p>Wähle eine Klasse aus</p></div>';
+          showToast(`🗑 ${cls.name} gelöscht`);
+        }
+      });
       container.appendChild(btn);
     });
   }
@@ -150,7 +165,7 @@ const ClassesUI = (() => {
     });
 
     detail.querySelector('#btn-wiki-class').addEventListener('click', () => {
-      showWikiImport('class', cls.name);
+      showWikiImport(cls.name);
     });
   }
 
@@ -169,8 +184,23 @@ const ClassesUI = (() => {
           <span class="class-btn-name">${race.name}</span>
           <span class="class-btn-hit">Tempo: ${race.speed} ft · ${race.size}</span>
         </span>
+        ${race._custom ? `<span class="list-delete-btn" data-type="race" data-id="${race.id}" title="Löschen">✕</span>` : ''}
       `;
-      btn.addEventListener('click', () => selectRace(race.id));
+      btn.addEventListener('click', e => {
+        if (e.target.classList.contains('list-delete-btn')) return;
+        selectRace(race.id);
+      });
+      const delBtnR = btn.querySelector('.list-delete-btn');
+      if (delBtnR) delBtnR.addEventListener('click', e => {
+        e.stopPropagation();
+        if (confirm(`"${race.name}" wirklich löschen?`)) {
+          DnDData.deleteEntry('race', race.id);
+          if (Character.data.raceId === race.id) Character.update({ raceId: null, race: '' });
+          renderRaceList();
+          document.getElementById('class-detail').innerHTML = '<div class="empty-state"><div class="empty-icon">🧝</div><p>Wähle eine Rasse aus</p></div>';
+          showToast(`🗑 ${race.name} gelöscht`);
+        }
+      });
       container.appendChild(btn);
     });
   }
@@ -254,59 +284,95 @@ const ClassesUI = (() => {
     });
 
     detail.querySelector('#btn-wiki-race').addEventListener('click', () => {
-      showWikiImport('race', race.name);
+      showWikiImport(race.name);
     });
   }
 
-  /* ── Wiki-Import Modal ────────────────────────────────────────────── */
-  function showWikiImport(type, name) {
-    const wikiSlug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g,'');
-    const wikiUrl  = `https://dnd5e.wikidot.com/${type==='class'?wikiSlug:'lineage:'+wikiSlug}`;
-
-    showModal(`📖 Wiki-Import: ${name}`, `
-      <p style="font-size:14px;margin-bottom:12px;color:var(--ink-light);">
-        Öffne das Wiki und kopiere die Eigenschaften als JSON in das Feld unten.<br>
-        Alternativ: direkt als JSON-Objekt einfügen.
+  /* ── Wiki-Import Modal (Paste-basiert) ───────────────────────────── */
+  function showWikiImport(hintName) {
+    showModal('📖 Wiki-Import', `
+      <p style="font-size:14px;margin-bottom:4px;color:var(--ink-light);">
+        <strong>Einfach kopieren &amp; einfügen:</strong><br>
+        Öffne die Wikidot-Seite, markiere den gesamten Artikel-Text (Strg+A im Textbereich)
+        und füge ihn unten ein. Die App erkennt automatisch ob es eine Klasse oder Rasse ist.
       </p>
-      <a href="${wikiUrl}" target="_blank" style="display:inline-block;margin-bottom:12px;padding:7px 14px;background:rgba(201,150,42,0.15);border:1px solid var(--gold);border-radius:4px;color:var(--gold);font-family:var(--font-title);font-size:12px;text-decoration:none;letter-spacing:1px;">
-        🌐 Wiki öffnen: ${name}
+      <a href="https://dnd5e.wikidot.com/" target="_blank"
+         style="display:inline-block;margin:8px 0 10px;padding:6px 14px;background:rgba(201,150,42,0.12);border:1px solid var(--gold);border-radius:4px;color:var(--gold);font-family:var(--font-title);font-size:11px;text-decoration:none;letter-spacing:1px;">
+        🌐 dnd5e.wikidot.com öffnen
       </a>
-      <div style="margin-bottom:10px;">
-        <label style="font-family:var(--font-title);font-size:11px;color:var(--blood);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;">
-          JSON einfügen (${type==='class'?'Klasse':'Rasse'}-Format)
-        </label>
-        <textarea id="wiki-import-json" style="width:100%;height:140px;font-size:12px;font-family:monospace;" placeholder='${type==='class'?
-          '{\n  "id": "artificer",\n  "name": "Artificer",\n  "icon": "⚙️",\n  "hit_dice": "d8",\n  "primary_abilities": ["INT"],\n  "saving_throws": ["con","int"],\n  "description": "...",\n  "features": ["Magical Tinkering"],\n  "subclasses": []\n}' :
-          '{\n  "id": "aasimar",\n  "name": "Aasimar",\n  "icon": "😇",\n  "speed": 30,\n  "size": "Medium",\n  "ability_bonuses": {"cha": 2},\n  "traits": ["Darkvision","Celestial Resistance"],\n  "description": "..."\n}'
-        }'></textarea>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn-primary" id="wiki-import-btn" style="flex:1;">✅ Importieren</button>
+      <textarea id="wiki-paste-area"
+        style="width:100%;height:180px;font-size:12px;font-family:monospace;margin-bottom:8px;resize:vertical;"
+        placeholder="Gesamten Wiki-Artikel-Text hier einfügen...&#10;&#10;Beispiel:&#10;Paladin&#10;Whether sworn before a god&#39;s altar...&#10;Hit Dice: 1d10&#10;Saving Throws: Wisdom, Charisma&#10;..."></textarea>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button class="btn-primary" id="wiki-parse-btn" style="flex:2;">🔍 Analysieren &amp; Importieren</button>
         <button class="btn-secondary" id="wiki-cancel-btn" style="flex:1;">Abbrechen</button>
       </div>
-      <div id="wiki-status" style="margin-top:10px;font-size:13px;"></div>
+      <div id="wiki-preview" style="display:none;margin-top:10px;padding:10px;background:rgba(255,255,255,0.5);border:1px solid rgba(200,165,90,0.4);border-radius:4px;font-size:13px;"></div>
+      <div id="wiki-status" style="margin-top:8px;font-size:13px;"></div>
     `);
 
-    document.getElementById('wiki-import-btn')?.addEventListener('click', () => {
-      const raw    = document.getElementById('wiki-import-json')?.value?.trim();
+    document.getElementById('wiki-parse-btn')?.addEventListener('click', () => {
+      const raw    = document.getElementById('wiki-paste-area')?.value?.trim();
       const status = document.getElementById('wiki-status');
-      if (!raw) { status.textContent = '❌ Kein JSON eingegeben'; return; }
+      const preview = document.getElementById('wiki-preview');
+      if (!raw || raw.length < 30) { status.textContent = '❌ Bitte Text einfügen'; return; }
+
+      status.textContent = '⏳ Analysiere...';
+      preview.style.display = 'none';
+
       try {
-        const data = JSON.parse(raw);
-        const count = DnDData.importExternal({
-          [type==='class'?'classes':'races']: [data]
+        const result = WikiParser.parse(raw);
+        if (result.error) { status.textContent = '❌ ' + result.error; return; }
+
+        const { type, data } = result;
+
+        // Preview anzeigen
+        preview.style.display = 'block';
+        preview.innerHTML = `
+          <div style="font-family:var(--font-title);font-size:12px;color:var(--blood);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">
+            Erkannt: ${type === 'class' ? '⚔ Klasse' : '🧝 Rasse'}
+          </div>
+          <div style="font-size:15px;font-weight:bold;margin-bottom:4px;">${data.icon} ${data.name}</div>
+          ${type === 'class' ? `
+            <div style="font-size:12px;color:#5a4f48;">
+              Hit Dice: ${data.hit_dice} · Saves: ${(data.saving_throws||[]).join(', ').toUpperCase()}
+            </div>
+            <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
+              ${(data.features||[]).map(f=>`<span style="background:rgba(139,26,26,0.08);border:1px solid rgba(139,26,26,0.2);border-radius:3px;padding:2px 7px;font-size:11px;font-family:var(--font-title);color:var(--blood);">${f}</span>`).join('')}
+            </div>
+            ${data.subclasses?.length ? `<div style="margin-top:6px;font-size:12px;color:#5a4f48;">Subklassen: ${data.subclasses.map(s=>s.name).join(', ')}</div>` : ''}
+          ` : `
+            <div style="font-size:12px;color:#5a4f48;">
+              Tempo: ${data.speed} ft · Größe: ${data.size}
+            </div>
+            <div style="font-size:12px;color:#5a4f48;margin-top:2px;">
+              Attributboni: ${Object.entries(data.ability_bonuses||{}).map(([k,v])=>k.toUpperCase()+'+'+v).join(', ')||'–'}
+            </div>
+            <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
+              ${(data.traits||[]).map(t=>`<span style="background:rgba(201,150,42,0.1);border:1px solid rgba(201,150,42,0.3);border-radius:3px;padding:2px 7px;font-size:11px;font-family:var(--font-title);color:#7a5c1a;">${t}</span>`).join('')}
+            </div>
+          `}
+          <button class="btn-primary" id="wiki-confirm-btn" style="width:100%;margin-top:10px;">
+            ✅ "${data.name}" importieren
+          </button>
+        `;
+
+        status.textContent = '';
+
+        document.getElementById('wiki-confirm-btn')?.addEventListener('click', () => {
+          DnDData.importExternal({ [type==='class'?'classes':'races']: [data] });
+          if (type === 'class') renderClassList();
+          else renderRaceList();
+          showToast(`✅ ${data.name} importiert!`);
+          setTimeout(closeModal, 800);
         });
-        if (type === 'class') renderClassList();
-        else renderRaceList();
-        status.style.color = 'green';
-        status.textContent = `✅ "${data.name}" importiert!`;
-        setTimeout(closeModal, 1500);
-        showToast(`✅ ${data.name} importiert!`);
+
       } catch(e) {
-        status.style.color = 'red';
-        status.textContent = '❌ Ungültiges JSON: ' + e.message;
+        status.textContent = '❌ Fehler: ' + e.message;
+        console.error('[WikiParser]', e);
       }
     });
+
     document.getElementById('wiki-cancel-btn')?.addEventListener('click', closeModal);
   }
 
