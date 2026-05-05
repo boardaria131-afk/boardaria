@@ -195,6 +195,43 @@ app.delete('/api/decks/:id', requireAuth, async (req, res) => {
   memDeckStore.delete(parseInt(req.params.id), req.userId);
   res.json({ ok: true });
 });
+// ── D&D Charakterbogen Auth ───────────────────────────────
+// Nutzt dieselben register/login/authFromToken wie HexForge.
+// hf_token ist kompatibel — D&D-App muss nichts extra speichern.
+
+app.get('/api/dnd/verify', async (req, res) => {
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
+  if (!token) return res.status(401).json({ error: 'Kein Token' });
+  const user = await authFromToken(token);
+  if (!user) return res.status(401).json({ error: 'Token ungültig oder abgelaufen' });
+  res.json({ user: { id: user.id, username: user.username, isGuest: !!user.isGuest } });
+});
+
+app.post('/api/dnd/login', async (req, res) => {
+  const { username, password } = req.body || {};
+  if (!username || !password)
+    return res.status(400).json({ error: 'Username und Passwort erforderlich' });
+  if (!rateLimiter(`${req.ip}:dnd_login`, 10, 60_000))
+    return res.status(429).json({ error: 'Zu viele Versuche. Bitte warte eine Minute.' });
+  const result = await login(username, password);
+  if (!result.ok) return res.status(401).json({ error: result.reason || 'Falsche Anmeldedaten' });
+  res.json({ user: { id: result.user.id, username: result.user.username, isGuest: false }, token: result.token });
+});
+
+app.post('/api/dnd/register', async (req, res) => {
+  const { username, password } = req.body || {};
+  if (!username || !password)
+    return res.status(400).json({ error: 'Username und Passwort erforderlich' });
+  if (password.length < 6)
+    return res.status(400).json({ error: 'Passwort mind. 6 Zeichen' });
+  if (!rateLimiter(`${req.ip}:dnd_register`, 5, 60_000))
+    return res.status(429).json({ error: 'Zu viele Versuche. Bitte warte eine Minute.' });
+  const result = await register(username, password);
+  if (!result.ok) return res.status(400).json({ error: result.reason || 'Registrierung fehlgeschlagen' });
+  res.json({ user: { id: result.user.id, username: result.user.username, isGuest: false }, token: result.token });
+});
+// ── Ende D&D Auth ─────────────────────────────────────────
+
 
 // ── Socket.IO ─────────────────────────────────────────────
 const io = new Server(server, {
