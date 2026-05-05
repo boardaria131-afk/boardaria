@@ -1,68 +1,113 @@
-# Server-Integration: D&D Auth
+# Server-Integration: D&D Auth-Endpunkte
 
-Die D&D-App nutzt **REST** für Login/Register/Verify.
-Folgende Endpunkte müssen in `server/index.js` ergänzt werden:
-
-## Was hinzufügen
+Füge diese ~30 Zeilen in `server/index.js` ein —
+direkt nach `app.use(express.json())`, vor deinen bestehenden Routes.
 
 ```js
-// ── D&D App Auth-Endpunkte ────────────────────────────────────────────────
-// Direkt nach deinen bestehenden app.use(cors(...)) / app.use(express.json()) Zeilen
-
-const jwt = require('jsonwebtoken');
+// ─── D&D Charakterbogen Auth ─────────────────────────────────────────────
+const jwt = require('jsonwebtoken');   // bereits installiert
+const bcrypt = require('bcryptjs');   // bereits installiert
 const JWT_SECRET = process.env.JWT_SECRET || 'hexforge-dev-secret-CHANGE-IN-PROD';
 
-// Token prüfen (GET /api/auth/verify)
-app.get('/api/auth/verify', (req, res) => {
-  const auth  = req.headers.authorization || '';
-  const token = auth.replace('Bearer ', '').trim();
+// Hilfsfunktion: DB-User suchen (passe Pool-Import an dein Projekt an)
+// const { pool } = require('./db');  // oder wie du pg nutzt
+
+// Token prüfen
+app.get('/api/dnd/verify', async (req, res) => {
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
   if (!token) return res.status(401).json({ error: 'Kein Token' });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    res.json({ id: decoded.userId, username: decoded.username, isGuest: false });
+    res.json({ user: { id: decoded.userId, username: decoded.username, isGuest: false } });
   } catch {
-    res.status(401).json({ error: 'Ungültiger Token' });
+    res.status(401).json({ error: 'Token ungültig oder abgelaufen' });
   }
 });
 
-// Login (POST /api/auth/login)  — nutzt dein bestehendes Auth-System
-app.post('/api/auth/login', async (req, res) => {
-  const { username, password } = req.body;
+// Login
+app.post('/api/dnd/login', async (req, res) => {
+  const { username, password } = req.body || {};
   if (!username || !password)
     return res.status(400).json({ error: 'Username und Passwort erforderlich' });
   try {
-    // authLogin kommt aus deinem auth/auth.js — passe den Pfad an
-    const { authLogin } = require('./auth/auth');
-    const result = await authLogin(username, password);
-    if (!result) return res.status(401).json({ error: 'Falsche Anmeldedaten' });
-    res.json({ user: { id: result.userId, username, isGuest: false }, token: result.token });
+    const result = await pool.query(
+      'SELECT * FROM users WHERE username = $1', [username]
+    );
+    const user = result.rows[0];
+    if (!user) return res.status(401).json({ error: 'Benutzer nicht gefunden' });
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) return res.status(401).json({ error: 'Falsches Passwort' });
+    const token = jwt.sign(
+      { userId: user.id, username: user.username },
+      JWT_SECRET, { expiresIn: '30d' }
+    );
+    res.json({ user: { id: user.id, username: user.username, isGuest: false }, token });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// Registrierung (POST /api/auth/register)
-app.post('/api/auth/register', async (req, res) => {
-  const { username, password } = req.body;
+// Registrierung
+app.post('/api/dnd/register', async (req, res) => {
+  const { username, password } = req.body || {};
   if (!username || !password)
     return res.status(400).json({ error: 'Username und Passwort erforderlich' });
+  if (password.length < 6)
+    return res.status(400).json({ error: 'Passwort mind. 6 Zeichen' });
   try {
-    const { authRegister } = require('./auth/auth');
-    const result = await authRegister(username, password);
-    res.status(201).json({ user: { id: result.userId, username, isGuest: false }, token: result.token });
+    const exists = await pool.query('SELECT id FROM users WHERE username=$1', [username]);
+    if (exists.rows.length) return res.status(409).json({ error: 'Username bereits vergeben' });
+    const hash = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id',
+      [username, hash]
+    );
+    const token = jwt.sign(
+      { userId: result.rows[0].id, username },
+      JWT_SECRET, { expiresIn: '30d' }
+    );
+    res.status(201).json({ user: { id: result.rows[0].id, username, isGuest: false }, token });
   } catch (e) {
-    res.status(400).json({ error: e.message });
+    res.status(500).json({ error: e.message });
   }
 });
+// ─── Ende D&D Auth ────────────────────────────────────────────────────────
 ```
 
-## Falls auth/auth.js andere Funktionsnamen hat
+## SSO: Automatisch eingeloggt wenn HexForge-Session aktiv
 
-Passe `authLogin` / `authRegister` an deine tatsächlichen Exports an.
-Die D&D-App erwartet als Antwort:
-```json
-{ "user": { "id": 42, "username": "Alice", "isGuest": false }, "token": "eyJ..." }
+Der `/api/dnd/verify`-Endpunkt akzeptiert **sowohl** den D&D-Token
+als auch den HexForge-Token (`hf_token`) — weil beide mit demselben
+`JWT_SECRET` signiert sind. Der Browser schaut beim Öffnen von `/dnd/`
+zuerst nach dem eigenen Token, dann nach `hf_token`.
+
+**Ergebnis:** Wer bei HexForge eingeloggt ist, ist automatisch auch
+in der D&D-App eingeloggt — ohne extra Login.
+
+## Wichtig: Tabellennamen anpassen
+
+Schau kurz wie deine Users-Tabelle heißt:
+- `users` → passt direkt
+- `dnd_users` → ersetze alle `users` durch `dnd_users`
+- Passwort-Feld heißt `password_hash`? → prüfen mit: `\d users` in psql
+
+## Pool-Import
+
+Ersetze `pool` mit deinem tatsächlichen DB-Client, z.B.:
+```js
+const { pool } = require('./db/pool');
+// oder wie du pg in deinem Projekt importierst
 ```
 
-## Kein Server nötig für Gast-Modus
-Ohne Login funktioniert die App vollständig als Gast (localStorage only).
+## Testen (lokal)
+
+```bash
+# Login testen
+curl -X POST http://localhost:3000/api/dnd/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test","password":"test123"}'
+
+# Verify testen
+curl http://localhost:3000/api/dnd/verify \
+  -H "Authorization: Bearer <token-von-oben>"
+```
