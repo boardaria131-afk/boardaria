@@ -113,7 +113,10 @@ const ClassesUI = (() => {
         <div style="margin-bottom:12px;">
           <h3 style="font-family:var(--font-title);font-size:12px;color:var(--blood);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(139,26,26,0.2);">Klassenmerkmale</h3>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            ${cls.features.map(f=>`<span class="detail-tag">${f}</span>`).join('')}
+            ${cls.features.map(f => {
+              const tip = window.getFeatureTooltip ? (getFeatureTooltip(f)||'') : '';
+              return `<span class="detail-tag" ${tip?`data-tooltip="${tip.replace(/"/g,"'")}"`:''} style="${tip?'cursor:help;border-bottom:1px dashed rgba(139,26,26,0.4);':''}">${f}</span>`;
+            }).join('')}
           </div>
         </div>
 
@@ -128,7 +131,7 @@ const ClassesUI = (() => {
                   ${sc.role ? `<span class="role-badge">${sc.role}</span>` : ''}
                 </div>
                 <div class="subclass-desc">${sc.description}</div>
-                ${sc.features?.length?`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">${sc.features.map(f=>`<span style="background:rgba(201,150,42,0.15);border:1px solid rgba(201,150,42,0.3);border-radius:3px;padding:2px 7px;font-family:var(--font-title);font-size:10px;color:var(--ink-light);">${f}</span>`).join('')}</div>`:''}
+                ${sc.features?.length?`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">${sc.features.map(f=>{const tip=window.getFeatureTooltip?(getFeatureTooltip(f)||''):'';return `<span style="background:rgba(201,150,42,0.15);border:1px solid rgba(201,150,42,0.3);border-radius:3px;padding:2px 7px;font-family:var(--font-title);font-size:10px;color:var(--ink-light);${tip?'cursor:help;':''}" ${tip?`data-tooltip="${tip.replace(/"/g,"'")}"`:''}>${f}</span>`;}).join('')}</div>`:''}
               </div>`).join('')}
           </div>
         </div>

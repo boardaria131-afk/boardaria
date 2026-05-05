@@ -28,6 +28,7 @@
       <button class="tab-btn" data-tab="class">⚔ Klasse</button>
       <button class="tab-btn" data-tab="spells">✨ Spells</button>
       <button class="tab-btn" data-tab="items">🎒 Items</button>
+      <button class="tab-btn" data-tab="journal">📜 Journal</button>
       <button class="tab-btn" data-tab="feats">⭐ Feats</button>
       <button class="tab-btn" data-tab="dice">🎲 Würfeln</button>
     </nav>
@@ -241,6 +242,11 @@
     </section>
 
 
+
+    <!-- Tab: Journal -->
+    <section class="tab-content" id="tab-journal">
+    </section>
+
     <!-- Tab: Feats -->
     <section class="tab-content" id="tab-feats">
       <div class="section-header">
@@ -350,12 +356,16 @@
         .catch(e => console.warn("[SW] Fehler:", e));
     }
   </script>
+  <script src="js/feature_descriptions.js"></script>
+  <script src="js/tooltip.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/wiki_parser.js"></script>
   <script src="js/data.js"></script>
   <script src="js/character.js"></script>
   <script src="js/classes.js"></script>
   <script src="js/spells.js"></script>
   <script src="js/items.js"></script>
+  <script src="js/journal.js"></script>
   <script src="js/feats.js"></script>
   <script src="js/dice.js"></script>
   <script src="js/app.js"></script>

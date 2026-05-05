@@ -159,15 +159,22 @@ const CharUI = (() => {
   function renderFeatures() {
     const container = document.getElementById('char-features-list');
     if (!container) return;
-    const clsFeatures  = Character.data.class_features || [];
-    const raceTraits   = Character.data.race_traits || [];
+    const clsFeatures = Character.data.class_features || [];
+    const raceTraits  = Character.data.race_traits || [];
     if (!clsFeatures.length && !raceTraits.length) {
       container.innerHTML = '<span style="font-style:italic;color:#8a7060;font-size:13px;">Noch keine Klasse/Rasse übernommen</span>';
       return;
     }
+    const mkTag = (icon, f, gold) => {
+      const tip = window.getFeatureTooltip ? (getFeatureTooltip(f) || '') : '';
+      const style = gold ? 'border-color:var(--gold);color:#7a5c1a;' : '';
+      const tipAttr = tip ? `data-tooltip="${tip.replace(/"/g,"'")}"` : '';
+      const cursor  = tip ? 'cursor:help;border-bottom:1px dashed rgba(139,26,26,0.3);' : '';
+      return `<span class="detail-tag" style="margin:2px;${style}${cursor}" ${tipAttr}>${icon} ${f}</span>`;
+    };
     container.innerHTML = [
-      ...clsFeatures.map(f => `<span class="detail-tag" style="margin:2px;">⚔ ${f}</span>`),
-      ...raceTraits.map(t  => `<span class="detail-tag" style="margin:2px;border-color:var(--gold);color:#7a5c1a;">🧝 ${t}</span>`),
+      ...clsFeatures.map(f => mkTag('⚔', f, false)),
+      ...raceTraits.map(t  => mkTag('🧝', t, true)),
     ].join('');
   }
 
@@ -355,16 +362,27 @@ function initOnlineStatus() {
 async function bootstrap() {
   await DnDData.init();
 
-  // Charakter laden — falls nichts da, bleibt Default
-  const loaded = Character.load();
-  console.log('[App] Charakter geladen:', loaded, Character.data.name || '(neu)');
+  // Auth initialisieren — App startet erst nach Login
+  Auth.init();
+  Auth.onReady(user => {
+    console.log('[App] Eingeloggt als:', user.username);
+    startApp(user);
+  });
+}
 
+function startApp(user) {
+  // Charakter laden (userId-gebunden)
+  Character.load();
+  console.log('[App] Charakter geladen:', Character.data.name || '(neu)');
+
+  Tooltip.init();
   initTabs();
   CharUI.init();
   ClassesUI.init();
   SpellsUI.init();
   ItemsUI.init();
   FeatsUI.init();
+  JournalUI.init();
   DiceUI.init();
 
   ClassesUI.restoreFromSave();
