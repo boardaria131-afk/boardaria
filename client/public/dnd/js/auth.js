@@ -1,22 +1,21 @@
 /**
- * auth.js v2 — HexForge-Auth für D&D-App
+ * auth.js v3 — D&D eigenständiger Auth-Server (Port 3001)
  *
- * Primär:  REST  POST /api/auth/login   { username, password }
- *                POST /api/auth/register { username, password }
- *                GET  /api/auth/verify   (Bearer token)
- * Fallback: Socket.IO (falls window.io verfügbar)
- * Offline:  Gast-Modus (localStorage only)
+ * Nutzt DndAuth aus dnd-auth.js (client/public/dnd/public/dnd-auth.js)
+ * Endpunkte: POST /api/auth/login, /api/auth/register, GET /api/auth/verify
+ *
+ * Fallback: Gast-Modus (localStorage only, kein Server nötig)
  */
 
 const Auth = (() => {
-  const TOKEN_KEY  = 'hf_token';
-  const USER_KEY   = 'dnd_user';
+  const TOKEN_KEY = 'dnd_token';   // eigener Key, kein Konflikt mit hf_token
+  const USER_KEY  = 'dnd_user';
 
-  const ENDPOINTS = {
-    verify:   '/api/auth/verify',
-    login:    '/api/auth/login',
-    register: '/api/auth/register',
-  };
+  // D&D-Server läuft auf Port 3001, Anfragen über relativen Pfad würden
+  // zum HexForge-Server gehen — deshalb explizit Port 3001
+  const API_BASE  = window.location.hostname === 'localhost'
+    ? 'http://localhost:3001/api/auth'
+    : `${window.location.protocol}//${window.location.hostname}:3001/api/auth`;
 
   let _user    = null;
   let _token   = null;
@@ -31,7 +30,7 @@ const Auth = (() => {
 
   // ── Init ──────────────────────────────────────────────────────────────────
   async function init() {
-    // Gecachten User laden (Schnellstart / Offline)
+    // Gecachten User laden
     try {
       const cached = localStorage.getItem(USER_KEY);
       if (cached) _user = JSON.parse(cached);
@@ -40,107 +39,66 @@ const Auth = (() => {
     _token = localStorage.getItem(TOKEN_KEY);
 
     if (_token) {
-      // Token validieren
       const ok = await verifyToken(_token);
       if (ok) { _fire(); return; }
-      // Token ungültig → löschen
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      _user = null; _token = null;
+      // Token abgelaufen
+      _clearLocal();
     }
 
-    // Kein gültiger Token → Login
     showLoginScreen();
   }
 
-  // ── REST-Verifikation ─────────────────────────────────────────────────────
+  // ── REST-Calls ────────────────────────────────────────────────────────────
+  async function apiCall(path, options = {}) {
+    const resp = await fetch(API_BASE + path, {
+      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+      ...options,
+    });
+    const text = await resp.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch { throw new Error(`Server-Fehler: ${resp.status}`); }
+    if (!resp.ok) throw new Error(data.error || data.message || `Fehler ${resp.status}`);
+    return data;
+  }
+
   async function verifyToken(token) {
     try {
-      const resp = await fetch(ENDPOINTS.verify, {
-        headers: { 'Authorization': 'Bearer ' + token }
+      const data = await apiCall('/verify', {
+        headers: { 'Authorization': 'Bearer ' + token },
       });
-      if (!resp.ok) return false;
-      const user = await resp.json();
-      _setUser(user, token);
+      _setUser(data.user || data, token);
       return true;
-    } catch {
-      // Server nicht erreichbar (offline) → gecachten User nehmen
-      if (_user) { console.warn('[Auth] Offline – nutze gecachten User'); return true; }
+    } catch (e) {
+      // Offline → gecachten User nutzen
+      if (_user && !navigator.onLine) {
+        console.warn('[Auth] Offline – nutze gecachten User');
+        return true;
+      }
       return false;
     }
   }
 
-  // ── REST-Login ────────────────────────────────────────────────────────────
   async function loginREST(username, password) {
-    const resp = await fetch(ENDPOINTS.login, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ username, password }),
+    const data = await apiCall('/login', {
+      method: 'POST',
+      body:   JSON.stringify({ username, password }),
     });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || data.message || 'Login fehlgeschlagen');
-    _setUser(data.user || { id: data.userId, username, isGuest: false }, data.token);
+    const user = data.user || { id: data.userId, username, isGuest: false };
+    _setUser(user, data.token);
     localStorage.setItem(TOKEN_KEY, data.token);
-    return _user;
+    return user;
   }
 
-  // ── REST-Registrierung ────────────────────────────────────────────────────
   async function registerREST(username, password) {
-    const resp = await fetch(ENDPOINTS.register, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ username, password }),
+    const data = await apiCall('/register', {
+      method: 'POST',
+      body:   JSON.stringify({ username, password }),
     });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || data.message || 'Registrierung fehlgeschlagen');
-    _setUser(data.user || { id: data.userId, username, isGuest: false }, data.token);
+    const user = data.user || { id: data.userId, username, isGuest: false };
+    _setUser(user, data.token);
     localStorage.setItem(TOKEN_KEY, data.token);
-    return _user;
-  }
-
-  // ── Socket.IO Login (Fallback wenn REST-Endpunkte fehlen) ─────────────────
-  function loginSocket(username, password, mode) {
-    return new Promise((resolve, reject) => {
-      if (!window.io) {
-        reject(new Error('Server nicht erreichbar. Bitte Seite neu laden oder als Gast fortfahren.'));
-        return;
-      }
-      const socket = window.io();
-      const timeout = setTimeout(() => {
-        socket.disconnect();
-        reject(new Error('Timeout – Server antwortet nicht'));
-      }, 6000);
-
-      socket.emit(mode === 'register' ? 'auth_register' : 'auth_login', { username, password });
-      socket.once('auth_ok', ({ user, token }) => {
-        clearTimeout(timeout);
-        socket.disconnect();
-        _setUser(user, token);
-        localStorage.setItem(TOKEN_KEY, token);
-        resolve(user);
-      });
-      socket.once('auth_err', err => {
-        clearTimeout(timeout);
-        socket.disconnect();
-        reject(new Error(err?.message || (mode === 'register' ? 'Registrierung fehlgeschlagen' : 'Login fehlgeschlagen')));
-      });
-    });
-  }
-
-  // ── Universeller Login (REST first, Socket.IO fallback) ───────────────────
-  async function login(username, password, mode = 'login') {
-    // 1. REST versuchen
-    try {
-      if (mode === 'register') return await registerREST(username, password);
-      return await loginREST(username, password);
-    } catch (e) {
-      // Wenn REST-Endpunkt nicht existiert (404/405) → Socket.IO probieren
-      if (e.message.includes('fetch') || e.message.includes('404') || e.message.includes('405')) {
-        console.warn('[Auth] REST nicht verfügbar, versuche Socket.IO…');
-        return await loginSocket(username, password, mode);
-      }
-      throw e; // Echter Fehler (falsches Passwort etc.)
-    }
+    return user;
   }
 
   // ── Gast ──────────────────────────────────────────────────────────────────
@@ -155,9 +113,7 @@ const Auth = (() => {
 
   // ── Logout ────────────────────────────────────────────────────────────────
   function logout() {
-    _user = null; _token = null;
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    _clearLocal();
     showLoginScreen();
   }
 
@@ -165,6 +121,12 @@ const Auth = (() => {
   function _setUser(user, token) {
     _user = user; _token = token;
     localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
+
+  function _clearLocal() {
+    _user = null; _token = null;
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
   }
 
   function _fire() {
@@ -184,8 +146,8 @@ const Auth = (() => {
     overlay.innerHTML = `
       <div class="auth-box">
         <span class="auth-emblem">⚔</span>
-        <h1 class="auth-title">D&D <span>Charakterbogen</span></h1>
-        <p class="auth-sub">Melde dich mit deinem HexForge-Konto an</p>
+        <h1 class="auth-title">D&amp;D <span>Charakterbogen</span></h1>
+        <p class="auth-sub">Melde dich an oder erstelle ein Konto</p>
 
         <div id="auth-error" class="auth-error hidden"></div>
 
@@ -196,7 +158,7 @@ const Auth = (() => {
 
         <div class="form-group">
           <label>Benutzername</label>
-          <input type="text" id="auth-username" placeholder="HexForge-Name"
+          <input type="text" id="auth-username" placeholder="Dein Name"
             autocomplete="username" />
         </div>
         <div class="form-group">
@@ -205,20 +167,18 @@ const Auth = (() => {
             autocomplete="current-password" />
         </div>
 
-        <button class="btn-primary" id="auth-submit" style="width:100%;margin-bottom:10px;">
-          Anmelden
-        </button>
-        <button class="btn-secondary" id="auth-guest" style="width:100%;">
-          👤 Ohne Konto weitermachen (Gast)
-        </button>
-        <p class="auth-note">Gäste speichern nur lokal · Kein Konto? Erst auf HexForge registrieren</p>
+        <button class="btn-primary" id="auth-submit"
+          style="width:100%;margin-bottom:10px;">Anmelden</button>
+        <button class="btn-secondary" id="auth-guest"
+          style="width:100%;">👤 Ohne Konto weitermachen (Gast)</button>
+
+        <p class="auth-note">Gäste speichern nur lokal im Browser</p>
       </div>
     `;
     document.body.appendChild(overlay);
 
     let _mode = 'login';
 
-    // Tab-Umschalter
     overlay.querySelectorAll('.auth-tab').forEach(btn => {
       btn.addEventListener('click', () => {
         _mode = btn.dataset.mode;
@@ -230,7 +190,6 @@ const Auth = (() => {
       });
     });
 
-    // Submit
     const doSubmit = async () => {
       const username = document.getElementById('auth-username').value.trim();
       const password = document.getElementById('auth-password').value;
@@ -241,7 +200,8 @@ const Auth = (() => {
       _hideErr();
 
       try {
-        await login(username, password, _mode);
+        if (_mode === 'login') await loginREST(username, password);
+        else                   await registerREST(username, password);
         _fire();
       } catch (e) {
         _showErr(e.message);
@@ -253,19 +213,16 @@ const Auth = (() => {
     document.getElementById('auth-submit').addEventListener('click', doSubmit);
     document.getElementById('auth-password').addEventListener('keydown',
       e => { if (e.key === 'Enter') doSubmit(); });
-    document.getElementById('auth-guest').addEventListener('click', () => {
-      const name = document.getElementById('auth-username').value.trim();
-      loginAsGuest(name);
-    });
+    document.getElementById('auth-guest').addEventListener('click', () =>
+      loginAsGuest(document.getElementById('auth-username').value));
   }
 
   function _showErr(msg) {
     const el = document.getElementById('auth-error');
-    if (el) { el.textContent = msg; el.classList.remove('hidden'); }
+    if (el) { el.textContent = '❌ ' + msg; el.classList.remove('hidden'); }
   }
   function _hideErr() {
-    const el = document.getElementById('auth-error');
-    if (el) el.classList.add('hidden');
+    document.getElementById('auth-error')?.classList.add('hidden');
   }
   function _resetForm() {
     _hideErr();
@@ -288,11 +245,15 @@ const Auth = (() => {
     }
     const u = _user;
     badge.innerHTML = `
-      <div style="background:rgba(26,18,8,0.92);border:1px solid var(--gold);border-radius:20px;padding:4px 12px;display:flex;align-items:center;gap:8px;">
-        <span style="font-family:var(--font-title);font-size:11px;color:var(--gold);letter-spacing:1px;">
+      <div style="background:rgba(26,18,8,0.92);border:1px solid var(--gold);
+        border-radius:20px;padding:4px 12px;display:flex;align-items:center;gap:8px;">
+        <span style="font-family:var(--font-title);font-size:11px;
+          color:var(--gold);letter-spacing:1px;">
           ${u?.isGuest ? '👤 ' + u.username : '⚔ ' + u?.username}
         </span>
-        <button id="btn-logout" style="background:none;border:none;color:#8a7060;cursor:pointer;font-size:12px;padding:0;" title="Abmelden">✕</button>
+        <button id="btn-logout"
+          style="background:none;border:none;color:#8a7060;cursor:pointer;
+            font-size:12px;padding:0;" title="Abmelden">✕</button>
       </div>`;
     document.getElementById('btn-logout')?.addEventListener('click', logout);
   }
