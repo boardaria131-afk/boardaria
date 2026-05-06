@@ -385,6 +385,9 @@ function startApp(user) {
   JournalUI.init();
   DiceUI.init();
 
+  // User-Badge im Header rendern
+  Auth.updateHeaderBadge();
+
   ClassesUI.restoreFromSave();
   SpellsUI.updateCharSummary();
   ItemsUI.updateCharSummary();

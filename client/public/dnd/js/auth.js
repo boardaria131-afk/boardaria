@@ -1,8 +1,5 @@
 /**
- * auth.js v6
- * HexForge speichert keinen Token in localStorage.
- * D&D-App hat eigenen Login — Token wird als 'dnd_token' gespeichert.
- * Nach Login einmal eingeloggt bis Token abläuft (30 Tage).
+ * auth.js v7 — robust, mit Debug-Info und prominentem User-Status
  */
 
 const Auth = (() => {
@@ -31,10 +28,8 @@ const Auth = (() => {
     _token = localStorage.getItem(TOKEN_KEY);
 
     if (_token) {
-      // Token vorhanden — kurz verifizieren
       const ok = await _verify(_token);
       if (ok) { _fire(); return; }
-      // abgelaufen
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
       _user = null; _token = null;
@@ -51,46 +46,63 @@ const Auth = (() => {
       });
       if (!resp.ok) return false;
       const data = await resp.json();
-      _setUser(data.user || data, token);
+      // Flexibel: { user: {...} } oder direkt { id, username }
+      const user = data.user || data;
+      if (!user.id && !user.username) return false;
+      _setUser(user, token);
       return true;
     } catch {
-      // Offline → gecachten User nehmen
-      const cached = localStorage.getItem(USER_KEY);
-      if (cached) { _user = JSON.parse(cached); return true; }
+      // Offline — gecachten User nehmen
+      try {
+        const cached = localStorage.getItem(USER_KEY);
+        if (cached) { _user = JSON.parse(cached); return true; }
+      } catch {}
       return false;
     }
   }
 
-  // ── REST ──────────────────────────────────────────────────
+  // ── REST mit vollem Error-Logging ─────────────────────────
   async function _post(url, body) {
-    const resp = await fetch(url, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(body),
-    });
+    let resp;
+    try {
+      resp = await fetch(url, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body),
+      });
+    } catch (e) {
+      throw new Error('Server nicht erreichbar. Bitte Seite neu laden.');
+    }
+
     const text = await resp.text();
+    console.log(`[Auth] ${url} → ${resp.status}:`, text.slice(0, 200));
+
     let data;
     try { data = JSON.parse(text); }
-    catch { throw new Error(`Server antwortet nicht korrekt (${resp.status})`); }
-    if (!resp.ok) throw new Error(data.error || data.reason || `Fehler ${resp.status}`);
+    catch {
+      // Server gibt HTML zurück (404-Seite etc.)
+      throw new Error(`Endpunkt nicht gefunden (${resp.status}). Server-Konfiguration prüfen.`);
+    }
+
+    if (!resp.ok) {
+      throw new Error(data.error || data.reason || data.message || `Fehler ${resp.status}`);
+    }
     return data;
   }
 
   async function _login(username, password) {
     const data = await _post(API.login, { username, password });
-    _setUser(
-      data.user || { id: data.id, username, isGuest: false },
-      data.token
-    );
+    if (!data.token) throw new Error('Kein Token vom Server erhalten.');
+    const user = data.user || { id: data.id || data.userId, username, isGuest: false };
+    _setUser(user, data.token);
     localStorage.setItem(TOKEN_KEY, data.token);
   }
 
   async function _register(username, password) {
     const data = await _post(API.register, { username, password });
-    _setUser(
-      data.user || { id: data.id, username, isGuest: false },
-      data.token
-    );
+    if (!data.token) throw new Error('Kein Token vom Server erhalten.');
+    const user = data.user || { id: data.id || data.userId, username, isGuest: false };
+    _setUser(user, data.token);
     localStorage.setItem(TOKEN_KEY, data.token);
   }
 
@@ -109,7 +121,7 @@ const Auth = (() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     _user = null; _token = null;
-    document.getElementById('user-badge')?.remove();
+    updateHeaderBadge();
     showLoginScreen();
   }
 
@@ -120,15 +132,71 @@ const Auth = (() => {
   }
 
   function _fire() {
-    _onReady.forEach(cb => { try { cb(_user); } catch(e) { console.error(e); } });
+    _onReady.forEach(cb => { try { cb(_user); } catch(e) { console.error('[Auth]', e); } });
     _onReady = [];
     hideLoginScreen();
-    _renderBadge();
+    updateHeaderBadge();
+  }
+
+  // ── Header-Badge (prominent in der App-Leiste) ────────────
+  function updateHeaderBadge() {
+    // Im App-Header einbauen
+    const headerActions = document.querySelector('.header-actions');
+    let badge = document.getElementById('user-badge');
+
+    if (!_user) {
+      badge?.remove();
+      return;
+    }
+
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.id = 'user-badge';
+      badge.style.cssText = 'display:flex;align-items:center;gap:6px;';
+      // Vor den anderen Header-Buttons einfügen
+      if (headerActions) headerActions.prepend(badge);
+    }
+
+    const u = _user;
+    badge.innerHTML = `
+      <div style="
+        background:rgba(201,150,42,0.15);
+        border:1px solid var(--gold);
+        border-radius:20px;
+        padding:4px 12px;
+        display:flex;
+        align-items:center;
+        gap:8px;
+      ">
+        <span style="
+          font-family:var(--font-title);
+          font-size:11px;
+          color:var(--gold);
+          letter-spacing:1px;
+          white-space:nowrap;
+        ">
+          ${u.isGuest ? '👤 ' + u.username : '⚔ ' + u.username}
+        </span>
+        <button id="btn-logout" style="
+          background:none;
+          border:none;
+          color:rgba(201,150,42,0.6);
+          cursor:pointer;
+          font-size:13px;
+          padding:0;
+          line-height:1;
+          transition:color 0.2s;
+        " title="Abmelden">✕</button>
+      </div>
+    `;
+
+    document.getElementById('btn-logout')?.addEventListener('click', () => {
+      if (confirm('Wirklich abmelden?')) logout();
+    });
   }
 
   // ── Login-Screen ──────────────────────────────────────────
   function showLoginScreen() {
-    // Alten Screen entfernen falls vorhanden (fix duplicate IDs)
     document.getElementById('auth-overlay')?.remove();
 
     const overlay = document.createElement('div');
@@ -149,17 +217,23 @@ const Auth = (() => {
 
         <div class="form-group">
           <label>Benutzername</label>
-          <input type="text" id="dnd-auth-username"
-            placeholder="Dein Name" autocomplete="username" />
+          <input type="text"
+            id="dnd-auth-username"
+            placeholder="Dein Name"
+            autocomplete="username" />
         </div>
         <div class="form-group">
           <label>Passwort</label>
-          <input type="password" id="dnd-auth-password"
-            placeholder="••••••••" autocomplete="current-password" />
+          <input type="password"
+            id="dnd-auth-password"
+            placeholder="••••••••"
+            autocomplete="current-password" />
         </div>
 
         <button class="btn-primary" id="dnd-auth-submit"
-          style="width:100%;margin-bottom:10px;">Anmelden</button>
+          style="width:100%;margin-bottom:10px;">
+          Anmelden
+        </button>
 
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
           <div style="flex:1;height:1px;background:rgba(200,165,90,0.3);"></div>
@@ -167,8 +241,9 @@ const Auth = (() => {
           <div style="flex:1;height:1px;background:rgba(200,165,90,0.3);"></div>
         </div>
 
-        <button class="btn-secondary" id="dnd-auth-guest"
-          style="width:100%;">👤 Als Gast weitermachen</button>
+        <button class="btn-secondary" id="dnd-auth-guest" style="width:100%;">
+          👤 Als Gast weitermachen
+        </button>
 
         <p class="auth-note">Gäste speichern nur lokal im Browser</p>
       </div>
@@ -205,9 +280,12 @@ const Auth = (() => {
       try {
         if (_mode === 'login') await _login(username, password);
         else                   await _register(username, password);
-        _showOk(`Willkommen, ${_user.username}!`);
-        setTimeout(() => _fire(), 600);
+
+        _showOk(`Willkommen, ${_user.username}! ✅`);
+        setTimeout(() => _fire(), 800);
+
       } catch (e) {
+        console.error('[Auth] Fehler:', e);
         _showErr(e.message);
         btn.textContent = _mode === 'login' ? 'Anmelden' : 'Registrieren';
         btn.disabled = false;
@@ -233,7 +311,7 @@ const Auth = (() => {
 
   function _showOk(msg) {
     const el = document.getElementById('dnd-auth-success');
-    if (el) { el.textContent = '✅ ' + msg; el.classList.remove('hidden'); }
+    if (el) { el.textContent = msg; el.classList.remove('hidden'); }
     document.getElementById('dnd-auth-error')?.classList.add('hidden');
   }
 
@@ -246,35 +324,7 @@ const Auth = (() => {
     document.getElementById('auth-overlay')?.remove();
   }
 
-  // ── User-Badge ────────────────────────────────────────────
-  function _renderBadge() {
-    document.getElementById('user-badge')?.remove();
-    const badge = document.createElement('div');
-    badge.id = 'user-badge';
-    badge.style.cssText = 'position:fixed;top:10px;right:56px;z-index:200;';
-    const u = _user;
-    badge.innerHTML = `
-      <div style="background:rgba(26,18,8,0.92);border:1px solid var(--gold);
-        border-radius:20px;padding:4px 14px;display:flex;align-items:center;
-        gap:10px;box-shadow:var(--glow-gold);">
-        <span style="font-family:var(--font-title);font-size:11px;
-          color:var(--gold);letter-spacing:1px;">
-          ${u?.isGuest ? '👤 ' + u.username : '⚔ ' + u?.username}
-        </span>
-        <button id="btn-logout"
-          style="background:rgba(139,26,26,0.2);border:1px solid
-            rgba(139,26,26,0.4);color:var(--blood-light);cursor:pointer;
-            font-size:10px;padding:2px 8px;border-radius:10px;
-            font-family:var(--font-title);letter-spacing:0.5px;"
-        >Abmelden</button>
-      </div>`;
-    document.body.appendChild(badge);
-    document.getElementById('btn-logout')?.addEventListener('click', () => {
-      if (confirm('Wirklich abmelden?')) logout();
-    });
-  }
-
-  return { init, onReady, getUser, getToken, isGuest, logout, loginAsGuest };
+  return { init, onReady, getUser, getToken, isGuest, logout, loginAsGuest, updateHeaderBadge };
 })();
 
 window.Auth = Auth;
