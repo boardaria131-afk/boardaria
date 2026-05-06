@@ -1,17 +1,12 @@
 /**
- * auth.js v5 — Nutzt ausschließlich den HexForge-Token (hf_token)
- *
- * Ablauf:
- *  1. hf_token in localStorage? → verify → eingeloggt
- *  2. Kein Token → Login (erstellt ebenfalls hf_token)
- *  3. Gast → kein Token, nur lokal
- *
- * Kein eigener dnd_token. Wer bei HexForge eingeloggt ist,
- * ist automatisch in der D&D-App eingeloggt.
+ * auth.js v6
+ * HexForge speichert keinen Token in localStorage.
+ * D&D-App hat eigenen Login — Token wird als 'dnd_token' gespeichert.
+ * Nach Login einmal eingeloggt bis Token abläuft (30 Tage).
  */
 
 const Auth = (() => {
-  const TOKEN_KEY = 'hf_token';   // derselbe wie HexForge
+  const TOKEN_KEY = 'dnd_token';
   const USER_KEY  = 'dnd_user';
 
   const API = {
@@ -31,20 +26,15 @@ const Auth = (() => {
   function getToken() { return _token; }
   function isGuest()  { return !_user || _user.isGuest; }
 
-  // ── Init ──────────────────────────────────────────────────────────────────
+  // ── Init ──────────────────────────────────────────────────
   async function init() {
-    // Gecachten User (Offline-Schnellstart)
-    try {
-      const cached = localStorage.getItem(USER_KEY);
-      if (cached) _user = JSON.parse(cached);
-    } catch {}
-
     _token = localStorage.getItem(TOKEN_KEY);
 
     if (_token) {
+      // Token vorhanden — kurz verifizieren
       const ok = await _verify(_token);
       if (ok) { _fire(); return; }
-      // Token abgelaufen
+      // abgelaufen
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
       _user = null; _token = null;
@@ -53,7 +43,7 @@ const Auth = (() => {
     showLoginScreen();
   }
 
-  // ── Verify ────────────────────────────────────────────────────────────────
+  // ── Verify ────────────────────────────────────────────────
   async function _verify(token) {
     try {
       const resp = await fetch(API.verify, {
@@ -64,42 +54,47 @@ const Auth = (() => {
       _setUser(data.user || data, token);
       return true;
     } catch {
-      // Offline → gecachten User verwenden
-      if (_user && !navigator.onLine) return true;
+      // Offline → gecachten User nehmen
+      const cached = localStorage.getItem(USER_KEY);
+      if (cached) { _user = JSON.parse(cached); return true; }
       return false;
     }
   }
 
-  // ── Login / Register ───────────────────────────────────────────────────────
+  // ── REST ──────────────────────────────────────────────────
   async function _post(url, body) {
     const resp = await fetch(url, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(body),
     });
+    const text = await resp.text();
     let data;
-    try { data = await resp.json(); }
-    catch { throw new Error(`Server-Fehler ${resp.status}`); }
-    if (!resp.ok) throw new Error(data.error || data.message || `Fehler ${resp.status}`);
+    try { data = JSON.parse(text); }
+    catch { throw new Error(`Server antwortet nicht korrekt (${resp.status})`); }
+    if (!resp.ok) throw new Error(data.error || data.reason || `Fehler ${resp.status}`);
     return data;
   }
 
   async function _login(username, password) {
     const data = await _post(API.login, { username, password });
-    const user = data.user || { id: data.userId, username, isGuest: false };
-    // Token als hf_token speichern → HexForge erkennt ihn auch
+    _setUser(
+      data.user || { id: data.id, username, isGuest: false },
+      data.token
+    );
     localStorage.setItem(TOKEN_KEY, data.token);
-    _setUser(user, data.token);
   }
 
   async function _register(username, password) {
     const data = await _post(API.register, { username, password });
-    const user = data.user || { id: data.userId, username, isGuest: false };
+    _setUser(
+      data.user || { id: data.id, username, isGuest: false },
+      data.token
+    );
     localStorage.setItem(TOKEN_KEY, data.token);
-    _setUser(user, data.token);
   }
 
-  // ── Gast ──────────────────────────────────────────────────────────────────
+  // ── Gast ──────────────────────────────────────────────────
   function loginAsGuest(name) {
     _setUser({
       id:       'guest_' + Date.now(),
@@ -109,9 +104,8 @@ const Auth = (() => {
     _fire();
   }
 
-  // ── Logout ────────────────────────────────────────────────────────────────
+  // ── Logout ────────────────────────────────────────────────
   function logout() {
-    // hf_token löschen → auch HexForge ausgeloggt
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     _user = null; _token = null;
@@ -119,52 +113,52 @@ const Auth = (() => {
     showLoginScreen();
   }
 
-  // ── Intern ────────────────────────────────────────────────────────────────
+  // ── Intern ────────────────────────────────────────────────
   function _setUser(user, token) {
     _user = user; _token = token;
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   }
 
   function _fire() {
-    _onReady.forEach(cb => { try { cb(_user); } catch {} });
+    _onReady.forEach(cb => { try { cb(_user); } catch(e) { console.error(e); } });
     _onReady = [];
     hideLoginScreen();
     _renderBadge();
   }
 
-  // ── Login-Screen ──────────────────────────────────────────────────────────
+  // ── Login-Screen ──────────────────────────────────────────
   function showLoginScreen() {
-    let overlay = document.getElementById('auth-overlay');
-    if (overlay) { overlay.style.display = 'flex'; _resetForm(); return; }
+    // Alten Screen entfernen falls vorhanden (fix duplicate IDs)
+    document.getElementById('auth-overlay')?.remove();
 
-    overlay = document.createElement('div');
+    const overlay = document.createElement('div');
     overlay.id = 'auth-overlay';
     overlay.innerHTML = `
       <div class="auth-box">
         <span class="auth-emblem">⚔</span>
         <h1 class="auth-title">D&amp;D <span>Charakterbogen</span></h1>
-        <p class="auth-sub">Melde dich mit deinem HexForge-Konto an</p>
+        <p class="auth-sub">Melde dich an oder erstelle ein Konto</p>
 
-        <div id="auth-error"   class="auth-error   hidden"></div>
-        <div id="auth-success" class="auth-success hidden"></div>
+        <div id="dnd-auth-error"   class="auth-error   hidden"></div>
+        <div id="dnd-auth-success" class="auth-success hidden"></div>
 
         <div class="auth-tabs">
           <button class="auth-tab active" data-mode="login">Anmelden</button>
-          <button class="auth-tab" data-mode="register">Registrieren</button>
+          <button class="auth-tab"        data-mode="register">Registrieren</button>
         </div>
 
         <div class="form-group">
           <label>Benutzername</label>
-          <input type="text" id="auth-username" placeholder="HexForge-Name"
-            autocomplete="username" />
+          <input type="text" id="dnd-auth-username"
+            placeholder="Dein Name" autocomplete="username" />
         </div>
         <div class="form-group">
           <label>Passwort</label>
-          <input type="password" id="auth-password" placeholder="••••••••"
-            autocomplete="current-password" />
+          <input type="password" id="dnd-auth-password"
+            placeholder="••••••••" autocomplete="current-password" />
         </div>
 
-        <button class="btn-primary" id="auth-submit"
+        <button class="btn-primary" id="dnd-auth-submit"
           style="width:100%;margin-bottom:10px;">Anmelden</button>
 
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
@@ -173,12 +167,10 @@ const Auth = (() => {
           <div style="flex:1;height:1px;background:rgba(200,165,90,0.3);"></div>
         </div>
 
-        <button class="btn-secondary" id="auth-guest"
+        <button class="btn-secondary" id="dnd-auth-guest"
           style="width:100%;">👤 Als Gast weitermachen</button>
 
-        <p class="auth-note">
-          Wer bei HexForge eingeloggt ist, wird automatisch erkannt
-        </p>
+        <p class="auth-note">Gäste speichern nur lokal im Browser</p>
       </div>
     `;
     document.body.appendChild(overlay);
@@ -190,26 +182,31 @@ const Auth = (() => {
         _mode = btn.dataset.mode;
         overlay.querySelectorAll('.auth-tab').forEach(b =>
           b.classList.toggle('active', b.dataset.mode === _mode));
-        document.getElementById('auth-submit').textContent =
+        document.getElementById('dnd-auth-submit').textContent =
           _mode === 'login' ? 'Anmelden' : 'Registrieren';
         _hideMsg();
       });
     });
 
     const doSubmit = async () => {
-      const username = document.getElementById('auth-username').value.trim();
-      const password = document.getElementById('auth-password').value;
-      if (!username || !password) { _showErr('Bitte Name und Passwort eingeben'); return; }
+      const username = document.getElementById('dnd-auth-username').value.trim();
+      const password = document.getElementById('dnd-auth-password').value;
 
-      const btn = document.getElementById('auth-submit');
-      btn.textContent = '⏳ …'; btn.disabled = true;
+      if (!username || !password) {
+        _showErr('Bitte Name und Passwort eingeben');
+        return;
+      }
+
+      const btn = document.getElementById('dnd-auth-submit');
+      btn.textContent = '⏳ …';
+      btn.disabled = true;
       _hideMsg();
 
       try {
         if (_mode === 'login') await _login(username, password);
         else                   await _register(username, password);
         _showOk(`Willkommen, ${_user.username}!`);
-        setTimeout(() => _fire(), 700);
+        setTimeout(() => _fire(), 600);
       } catch (e) {
         _showErr(e.message);
         btn.textContent = _mode === 'login' ? 'Anmelden' : 'Registrieren';
@@ -217,69 +214,63 @@ const Auth = (() => {
       }
     };
 
-    document.getElementById('auth-submit').addEventListener('click', doSubmit);
-    document.getElementById('auth-password').addEventListener('keydown',
-      e => { if (e.key === 'Enter') doSubmit(); });
-    document.getElementById('auth-guest').addEventListener('click', () =>
-      loginAsGuest(document.getElementById('auth-username').value));
+    document.getElementById('dnd-auth-submit')
+      .addEventListener('click', doSubmit);
+    document.getElementById('dnd-auth-password')
+      .addEventListener('keydown', e => { if (e.key === 'Enter') doSubmit(); });
+    document.getElementById('dnd-auth-guest')
+      .addEventListener('click', () =>
+        loginAsGuest(document.getElementById('dnd-auth-username').value));
 
-    setTimeout(() => document.getElementById('auth-username')?.focus(), 100);
+    setTimeout(() => document.getElementById('dnd-auth-username')?.focus(), 100);
   }
 
   function _showErr(msg) {
-    const el = document.getElementById('auth-error');
+    const el = document.getElementById('dnd-auth-error');
     if (el) { el.textContent = '❌ ' + msg; el.classList.remove('hidden'); }
-    document.getElementById('auth-success')?.classList.add('hidden');
+    document.getElementById('dnd-auth-success')?.classList.add('hidden');
   }
+
   function _showOk(msg) {
-    const el = document.getElementById('auth-success');
+    const el = document.getElementById('dnd-auth-success');
     if (el) { el.textContent = '✅ ' + msg; el.classList.remove('hidden'); }
-    document.getElementById('auth-error')?.classList.add('hidden');
+    document.getElementById('dnd-auth-error')?.classList.add('hidden');
   }
+
   function _hideMsg() {
-    document.getElementById('auth-error')?.classList.add('hidden');
-    document.getElementById('auth-success')?.classList.add('hidden');
-  }
-  function _resetForm() {
-    _hideMsg();
-    const btn = document.getElementById('auth-submit');
-    if (btn) { btn.textContent = 'Anmelden'; btn.disabled = false; }
-    setTimeout(() => document.getElementById('auth-username')?.focus(), 100);
+    document.getElementById('dnd-auth-error')?.classList.add('hidden');
+    document.getElementById('dnd-auth-success')?.classList.add('hidden');
   }
 
   function hideLoginScreen() {
-    const el = document.getElementById('auth-overlay');
-    if (el) el.style.display = 'none';
+    document.getElementById('auth-overlay')?.remove();
   }
 
+  // ── User-Badge ────────────────────────────────────────────
   function _renderBadge() {
-    let badge = document.getElementById('user-badge');
-    if (!badge) {
-      badge = document.createElement('div');
-      badge.id = 'user-badge';
-      badge.style.cssText = 'position:fixed;top:10px;right:56px;z-index:200;';
-      document.body.appendChild(badge);
-    }
+    document.getElementById('user-badge')?.remove();
+    const badge = document.createElement('div');
+    badge.id = 'user-badge';
+    badge.style.cssText = 'position:fixed;top:10px;right:56px;z-index:200;';
     const u = _user;
     badge.innerHTML = `
       <div style="background:rgba(26,18,8,0.92);border:1px solid var(--gold);
-        border-radius:20px;padding:4px 14px;display:flex;align-items:center;gap:10px;
-        box-shadow:var(--glow-gold);">
+        border-radius:20px;padding:4px 14px;display:flex;align-items:center;
+        gap:10px;box-shadow:var(--glow-gold);">
         <span style="font-family:var(--font-title);font-size:11px;
           color:var(--gold);letter-spacing:1px;">
           ${u?.isGuest ? '👤 ' + u.username : '⚔ ' + u?.username}
         </span>
         <button id="btn-logout"
-          style="background:rgba(139,26,26,0.2);border:1px solid rgba(139,26,26,0.4);
-            color:var(--blood-light);cursor:pointer;font-size:10px;padding:2px 8px;
-            border-radius:10px;font-family:var(--font-title);letter-spacing:0.5px;
-            transition:all 0.2s;"
-          onmouseover="this.style.background='rgba(139,26,26,0.5)'"
-          onmouseout="this.style.background='rgba(139,26,26,0.2)'"
+          style="background:rgba(139,26,26,0.2);border:1px solid
+            rgba(139,26,26,0.4);color:var(--blood-light);cursor:pointer;
+            font-size:10px;padding:2px 8px;border-radius:10px;
+            font-family:var(--font-title);letter-spacing:0.5px;"
         >Abmelden</button>
       </div>`;
+    document.body.appendChild(badge);
     document.getElementById('btn-logout')?.addEventListener('click', () => {
-      if (confirm('Wirklich abmelden? Du wirst auch bei HexForge ausgeloggt.')) logout();
+      if (confirm('Wirklich abmelden?')) logout();
     });
   }
 
