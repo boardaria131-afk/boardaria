@@ -3,8 +3,13 @@
  */
 
 const Character = (() => {
-  const STORAGE_KEY = 'dnd5e_character_active';
-  const ROSTER_KEY  = 'dnd5e_roster';
+  // Keys sind an die User-ID gebunden → jeder Spieler hat eigene Charaktere
+  function _uid() {
+    const u = window.Auth?.getUser();
+    return u ? (u.isGuest ? 'guest_' + u.id : 'u_' + u.id) : 'local';
+  }
+  const STORAGE_KEY = () => `dnd5e_active_${_uid()}`;
+  const ROSTER_KEY  = () => `dnd5e_roster_${_uid()}`;
 
   function createDefault() {
     return {
@@ -28,8 +33,9 @@ const Character = (() => {
       race_traits:    [],
       spellIds: [],
       itemIds:  [],
-      notes:    '',
-      created:  new Date().toISOString(),
+      notes:     '',
+      rulesetId: '5e',
+      created:   new Date().toISOString(),
     };
   }
 
@@ -37,29 +43,31 @@ const Character = (() => {
 
   /* ── Roster ─────────────────────────────────────────────────────────── */
   function getRoster() {
-    try { return JSON.parse(localStorage.getItem(ROSTER_KEY) || '[]'); }
+    try { return JSON.parse(localStorage.getItem(ROSTER_KEY()) || '[]'); }
     catch { return []; }
   }
 
   function saveToRoster() {
     const roster = getRoster().filter(c => c.id !== _char.id);
     roster.unshift({ ..._char });
-    localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
-    localStorage.setItem(STORAGE_KEY, _char.id);
+    localStorage.setItem(ROSTER_KEY(), JSON.stringify(roster));
+    localStorage.setItem(STORAGE_KEY(), _char.id);
+    // Server-Sync (non-blocking)
+    syncToServer().catch(() => {});
   }
 
   function loadFromRoster(id) {
     const found = getRoster().find(c => c.id === id);
     if (!found) return false;
     _char = { ...createDefault(), ...found };
-    localStorage.setItem(STORAGE_KEY, _char.id);
+    localStorage.setItem(STORAGE_KEY(), _char.id);
     return true;
   }
 
   function deleteFromRoster(id) {
     const roster = getRoster().filter(c => c.id !== id);
-    localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
-    if (_char.id === id) { _char = createDefault(); localStorage.removeItem(STORAGE_KEY); }
+    localStorage.setItem(ROSTER_KEY(), JSON.stringify(roster));
+    if (_char.id === id) { _char = createDefault(); localStorage.removeItem(STORAGE_KEY()); }
   }
 
   /* ── Persistenz ─────────────────────────────────────────────────────── */
@@ -70,7 +78,7 @@ const Character = (() => {
 
   function load() {
     try {
-      const activeId = localStorage.getItem(STORAGE_KEY);
+      const activeId = localStorage.getItem(STORAGE_KEY());
       if (!activeId) return false;
       return loadFromRoster(activeId);
     } catch(e) { return false; }
@@ -165,11 +173,88 @@ const Character = (() => {
   function toggleSavingThrow(ab)    { const a=_char.proficiencies.saving_throws,i=a.indexOf(ab); i>=0?a.splice(i,1):a.push(ab); saveToRoster(); }
   function toggleSkill(sk)          { const a=_char.proficiencies.skills,i=a.indexOf(sk); i>=0?a.splice(i,1):a.push(sk); saveToRoster(); }
 
+  // ── Server-Sync ──────────────────────────────────────────────────────────────
+  async function syncToServer() {
+    const token = window.Auth?.getToken();
+    if (!token || _char.id?.startsWith('guest')) return false;
+    try {
+      const resp = await fetch('/api/dnd/characters', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body:    JSON.stringify(_char),
+      });
+      return resp.ok;
+    } catch { return false; }
+  }
+
+  async function loadFromServer() {
+    const token = window.Auth?.getToken();
+    if (!token) return [];
+    try {
+      const resp = await fetch('/api/dnd/characters', {
+        headers: { 'Authorization': 'Bearer ' + token },
+      });
+      if (!resp.ok) return [];
+      const data = await resp.json();
+      return data.characters || [];
+    } catch { return []; }
+  }
+
+  async function deleteFromServer(id) {
+    const token = window.Auth?.getToken();
+    if (!token) return;
+    try {
+      await fetch('/api/dnd/characters/' + id, {
+        method:  'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token },
+      });
+    } catch {}
+  }
+
+  async function shareToServer(char) {
+    const token = window.Auth?.getToken();
+    if (!token) return false;
+    try {
+      const resp = await fetch('/api/dnd/shared', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body:    JSON.stringify(char),
+      });
+      return resp.ok;
+    } catch { return false; }
+  }
+
+  async function unshareFromServer(id) {
+    const token = window.Auth?.getToken();
+    if (!token) return;
+    try {
+      await fetch('/api/dnd/shared/' + id, {
+        method:  'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token },
+      });
+    } catch {}
+  }
+
+  async function getSharedFromServer() {
+    const token = window.Auth?.getToken();
+    if (!token) return [];
+    try {
+      const resp = await fetch('/api/dnd/shared', {
+        headers: { 'Authorization': 'Bearer ' + token },
+      });
+      if (!resp.ok) return [];
+      const data = await resp.json();
+      return data.characters || [];
+    } catch { return []; }
+  }
+
   return {
     get data()   { return _char; },
     get roster() { return getRoster(); },
     save, load, exportJSON, importJSON, reset,
     loadFromRoster, deleteFromRoster,
+    syncToServer, loadFromServer, deleteFromServer,
+    shareToServer, unshareFromServer, getSharedFromServer,
     getMod, getProficiencyBonus, getSavingThrowBonus, getSkillBonus,
     applyClass, applyRace, SKILL_MAP,
     addSpell, removeSpell, addItem, removeItem,
@@ -178,3 +263,54 @@ const Character = (() => {
 })();
 
 window.Character = Character;
+
+// ── Teilen-Funktion ───────────────────────────────────────────────────────────
+// Geteilte Charaktere: öffentlich lesbar für alle Spieler der Kampagne
+
+const SHARED_KEY = 'dnd5e_shared_chars'; // alle geteilten Charaktere aller User
+
+Character.share = function() {
+  const char = { ..._char, _sharedBy: _char.name, _sharedAt: new Date().toISOString() };
+  const user = window.Auth ? window.Auth.getUser() : null;
+  char._ownerName = user ? user.username : 'Unbekannt';
+  char._ownerId   = user ? user.id : null;
+
+  try {
+    const existing = JSON.parse(localStorage.getItem(SHARED_KEY) || '[]');
+    // Alten Eintrag dieses Charakters ersetzen
+    const filtered = existing.filter(c => c.id !== char.id);
+    filtered.unshift(char);
+    // Max 50 geteilte Charaktere speichern
+    localStorage.setItem(SHARED_KEY, JSON.stringify(filtered.slice(0, 50)));
+    return true;
+  } catch(e) {
+    console.error('[Character] Teilen fehlgeschlagen:', e);
+    return false;
+  }
+};
+
+Character.unshare = function() {
+  try {
+    const existing = JSON.parse(localStorage.getItem(SHARED_KEY) || '[]');
+    localStorage.setItem(SHARED_KEY, JSON.stringify(existing.filter(c => c.id !== _char.id)));
+    return true;
+  } catch { return false; }
+};
+
+Character.isShared = function() {
+  try {
+    const existing = JSON.parse(localStorage.getItem(SHARED_KEY) || '[]');
+    return existing.some(c => c.id === _char.id);
+  } catch { return false; }
+};
+
+Character.getSharedChars = function() {
+  try {
+    return JSON.parse(localStorage.getItem(SHARED_KEY) || '[]');
+  } catch { return []; }
+};
+
+Character.loadShared = function(charId) {
+  const chars = Character.getSharedChars();
+  return chars.find(c => c.id === charId) || null;
+};

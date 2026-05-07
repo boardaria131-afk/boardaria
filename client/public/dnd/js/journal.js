@@ -4,7 +4,11 @@
  */
 
 const JournalUI = (() => {
-  const STORE_KEY = () => `dnd_journal_${Character.data.id || 'default'}`;
+  const STORE_KEY = () => {
+    const u = window.Auth ? window.Auth.getUser() : null;
+    const uid = u ? (u.isGuest ? 'guest_' + u.id : 'u_' + u.id) : 'local';
+    return 'dnd_journal_' + uid + '_' + (Character.data.id || 'default');
+  };
 
   // Datenmodell
   function defaultJournal() {

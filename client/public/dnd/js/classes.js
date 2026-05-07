@@ -23,8 +23,9 @@ const ClassesUI = (() => {
       tabBar.id = 'class-race-tabs';
       tabBar.style.cssText = 'display:flex;gap:6px;margin-bottom:12px;';
       tabBar.innerHTML = `
-        <button class="btn-tab-cr active" data-cr="class" style="flex:1;padding:7px;font-family:var(--font-title);font-size:12px;font-weight:600;border-radius:4px;cursor:pointer;border:1px solid var(--blood);background:rgba(139,26,26,0.15);color:var(--blood);letter-spacing:1px;text-transform:uppercase;">⚔ Klasse</button>
-        <button class="btn-tab-cr" data-cr="race" style="flex:1;padding:7px;font-family:var(--font-title);font-size:12px;font-weight:600;border-radius:4px;cursor:pointer;border:1px solid #c8a55a;background:rgba(200,165,90,0.08);color:#8a7060;letter-spacing:1px;text-transform:uppercase;">🧝 Rasse</button>
+        <button class="btn-tab-cr active" data-cr="class" style="flex:1;padding:7px;font-family:var(--font-title);font-size:11px;font-weight:600;border-radius:4px;cursor:pointer;border:1px solid var(--blood);background:rgba(139,26,26,0.15);color:var(--blood);letter-spacing:1px;text-transform:uppercase;">⚔ Klasse</button>
+        <button class="btn-tab-cr" data-cr="race" style="flex:1;padding:7px;font-family:var(--font-title);font-size:11px;font-weight:600;border-radius:4px;cursor:pointer;border:1px solid #c8a55a;background:rgba(200,165,90,0.08);color:#8a7060;letter-spacing:1px;text-transform:uppercase;">🧝 Rasse</button>
+        <button class="btn-tab-cr" data-cr="background" style="flex:1;padding:7px;font-family:var(--font-title);font-size:11px;font-weight:600;border-radius:4px;cursor:pointer;border:1px solid #c8a55a;background:rgba(200,165,90,0.08);color:#8a7060;letter-spacing:1px;text-transform:uppercase;">📖 Hintergrund</button>
       `;
       list.parentElement.insertBefore(tabBar, list);
       tabBar.querySelectorAll('.btn-tab-cr').forEach(btn => {
@@ -37,8 +38,11 @@ const ClassesUI = (() => {
             b.style.color = active ? 'var(--blood)' : '#8a7060';
           });
           if (_activeTab === 'class') renderClassList();
-          else renderRaceList();
-          if (detail) detail.innerHTML = `<div class="empty-state"><div class="empty-icon">${_activeTab==='class'?'⚔':'🧝'}</div><p>Wähle eine ${_activeTab==='class'?'Klasse':'Rasse'} aus</p></div>`;
+          else if (_activeTab === 'race') renderRaceList();
+          else renderBackgroundList();
+          const icons = {class:'⚔',race:'🧝',background:'📖'};
+          const labels = {class:'Klasse',race:'Rasse',background:'Hintergrund'};
+          if (detail) detail.innerHTML = `<div class="empty-state"><div class="empty-icon">${icons[_activeTab]||'⚔'}</div><p>Wähle ${_activeTab==='background'?'einen':'eine'} ${labels[_activeTab]||'Klasse'} aus</p></div>`;
         });
       });
     }

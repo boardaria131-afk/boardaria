@@ -1,0 +1,89 @@
+{
+  "rulesets": [
+    {
+      "id": "5e",
+      "name": "D&D 5e (2014)",
+      "short": "5e SRD",
+      "color": "#c9962a",
+      "description": "Das klassische 5th Edition Regelwerk (2014). SRD-kompatibel.",
+      "conflicts": []
+    },
+    {
+      "id": "5e5",
+      "name": "D&D 5.5e (2024)",
+      "short": "5.5e",
+      "color": "#3b82f6",
+      "description": "Das überarbeitete 2024er Regelwerk (One D&D). Viele Klassen und Regeln wurden angepasst.",
+      "conflicts": [
+        {
+          "area": "Subklassen",
+          "detail": "Subklassen werden jetzt früher gewählt (Level 3 bei allen Klassen). Barbarian: Level 3 statt Level 1.",
+          "severity": "major"
+        },
+        {
+          "area": "Waffeneigenschaften",
+          "detail": "Neue Eigenschaften: Nick, Vex, Graze, Cleave, Push, Slow, Topple. Alte Eigenschaften teilweise geändert.",
+          "severity": "major"
+        },
+        {
+          "area": "Crafting",
+          "detail": "Neues Crafting-System. Werkzeugproben sind nicht mehr an Fertigkeiten gebunden.",
+          "severity": "minor"
+        },
+        {
+          "area": "Inspiration",
+          "detail": "Inspiration wird automatisch bei Long Rest vergeben und kann nur einmal gehalten werden.",
+          "severity": "minor"
+        },
+        {
+          "area": "Grappling",
+          "detail": "Grappling ist jetzt ein Angriff statt einer Aktion. Größenbeschränkung aufgehoben.",
+          "severity": "minor"
+        },
+        {
+          "area": "Spellcasting",
+          "detail": "Bonuszauber aus Subklassen können nicht mehr durch Magical Secrets ersetzt werden. Concentration-Regeln angepasst.",
+          "severity": "major"
+        },
+        {
+          "area": "Barbarian",
+          "detail": "Rage-Schaden geändert. Brutal Critical entfernt. Neue Features: Weapon Mastery.",
+          "severity": "major"
+        },
+        {
+          "area": "Fighter",
+          "detail": "Action Surge und Second Wind leicht angepasst. Weapon Mastery neu.",
+          "severity": "minor"
+        },
+        {
+          "area": "Rogue",
+          "detail": "Cunning Strike ersetzt einige Sneak Attack-Optionen. Reliable Talent bleibt.",
+          "severity": "minor"
+        },
+        {
+          "area": "Hintergründe",
+          "detail": "Hintergründe geben jetzt ein Origin Feat + Attribut-Boni statt fester Profizienz-Listen.",
+          "severity": "major"
+        },
+        {
+          "area": "Rassen (Species)",
+          "detail": "Rassen heißen jetzt 'Species'. Feste Attribut-Boni entfernt — stattdessen +2/+1 frei wählbar.",
+          "severity": "major"
+        },
+        {
+          "area": "Exhaustion",
+          "detail": "Exhaustion-Stufen angepasst: jede Stufe gibt -2 auf alle d20-Würfe. Vereinfacht.",
+          "severity": "minor"
+        }
+      ]
+    },
+    {
+      "id": "homebrew",
+      "name": "Hausregeln",
+      "short": "Homebrew",
+      "color": "#22c55e",
+      "description": "Eigene Hausregeln. Keine automatischen Konflikte — alles ist erlaubt.",
+      "conflicts": []
+    }
+  ]
+}

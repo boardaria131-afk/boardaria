@@ -18,6 +18,7 @@
       <div class="header-actions">
         <button id="btn-save" class="btn-icon" title="Speichern">💾</button>
         <button id="btn-load" class="btn-icon" title="Laden">📂</button>
+        <button id="btn-export-pdf" class="btn-icon" title="Als PDF exportieren">📄</button>
         <button id="btn-import-api" class="btn-icon" title="API Import">🌐</button>
       </div>
     </header>
@@ -28,6 +29,7 @@
       <button class="tab-btn" data-tab="class">⚔ Klasse</button>
       <button class="tab-btn" data-tab="spells">✨ Spells</button>
       <button class="tab-btn" data-tab="items">🎒 Items</button>
+      <button class="tab-btn" data-tab="campaign">⚔ Kampagne</button>
       <button class="tab-btn" data-tab="journal">📜 Journal</button>
       <button class="tab-btn" data-tab="feats">⭐ Feats</button>
       <button class="tab-btn" data-tab="dice">🎲 Würfeln</button>
@@ -79,6 +81,10 @@
               <label>Rüstung (AC)</label>
               <input type="number" id="char-ac" min="1" value="10" />
             </div>
+          </div>
+          <div class="form-group" style="margin-top:8px;">
+            <label>Regelwerk</label>
+            <select id="char-ruleset"></select>
           </div>
           <div id="char-class-display" class="char-class-badge">Keine Klasse gewählt</div>
         </div>
@@ -142,6 +148,14 @@
           <h3>Feats <span id="char-feat-count" class="badge">0</span></h3>
           <div id="char-feats-summary" class="summary-list">
             <span style="font-style:italic;color:#8a7060;font-size:13px;">Noch keine Feats gewählt</span>
+          </div>
+        </div>
+
+        <!-- Spell Slots -->
+        <div class="card" style="grid-column:1/-1;" id="spell-slots-card">
+          <h3>Spell Slots <span id="char-ruleset-badge" class="ruleset-badge">5e SRD</span></h3>
+          <div id="char-spell-slots" style="min-height:30px;">
+            <span style="font-style:italic;color:#8a7060;font-size:13px;">Wähle eine Klasse um Spell Slots zu sehen</span>
           </div>
         </div>
 
@@ -242,6 +256,11 @@
     </section>
 
 
+
+
+    <!-- Tab: Kampagne -->
+    <section class="tab-content" id="tab-campaign">
+    </section>
 
     <!-- Tab: Journal -->
     <section class="tab-content" id="tab-journal">
@@ -365,9 +384,12 @@
   <script src="js/classes.js"></script>
   <script src="js/spells.js"></script>
   <script src="js/items.js"></script>
+  <script src="js/spellslots.js"></script>
+  <script src="js/campaign.js"></script>
   <script src="js/journal.js"></script>
   <script src="js/feats.js"></script>
   <script src="js/dice.js"></script>
+  <script src="js/pdf_export.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

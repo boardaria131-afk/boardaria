@@ -1366,3 +1366,166 @@ textarea {
   color: #15803d;
   margin-bottom: 12px;
 }
+
+/* ======== KAMPAGNE ======== */
+.campaign-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 750px) {
+  .campaign-layout { grid-template-columns: 1fr; }
+}
+
+.party-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.party-card {
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(200,165,90,0.3);
+  border-radius: 6px;
+  padding: 14px;
+  transition: var(--transition);
+}
+
+.party-card.my-card {
+  border-color: var(--gold);
+  background: rgba(201,150,42,0.05);
+}
+
+.party-card:hover { border-color: rgba(139,26,26,0.4); }
+
+.party-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.party-card-icon { font-size: 28px; flex-shrink: 0; }
+
+.party-card-info { flex: 1; }
+
+.party-card-name {
+  font-family: var(--font-title);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--blood);
+  margin-bottom: 2px;
+}
+
+.party-card-meta {
+  font-size: 13px;
+  color: var(--ink-light);
+}
+
+.party-card-stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.party-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(139,26,26,0.06);
+  border: 1px solid rgba(139,26,26,0.15);
+  border-radius: 4px;
+  padding: 5px 10px;
+  min-width: 48px;
+}
+
+.party-stat-label {
+  font-family: var(--font-title);
+  font-size: 9px;
+  color: #8a7060;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.party-stat-val {
+  font-family: var(--font-title);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--blood);
+}
+
+.party-attr-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.party-attr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(200,165,90,0.25);
+  border-radius: 3px;
+  padding: 4px 2px;
+}
+
+.party-attr-label {
+  font-family: var(--font-title);
+  font-size: 8px;
+  color: #8a7060;
+  letter-spacing: 0.5px;
+}
+
+.party-attr-val {
+  font-family: var(--font-title);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.party-attr-mod {
+  font-family: var(--font-title);
+  font-size: 10px;
+  color: var(--blood);
+}
+
+/* ======== SPELL SLOT BUBBLES ======== */
+.slot-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(139,26,26,0.1);
+  border: 1.5px solid var(--blood);
+  color: var(--blood);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+}
+.slot-bubble:hover { background: rgba(139,26,26,0.2); transform: scale(1.1); }
+.slot-bubble.used {
+  background: var(--blood);
+  color: var(--parchment);
+  opacity: 0.5;
+}
+
+/* ======== RULESET BADGE ======== */
+.ruleset-badge {
+  font-family: var(--font-title);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--gold);
+  background: rgba(201,150,42,0.12);
+  color: var(--gold);
+  margin-left: 8px;
+  letter-spacing: 0.5px;
+}

@@ -28,6 +28,11 @@ const ASSETS = [
   `${BASE}/data/spells.json`,
   `${BASE}/data/items.json`,
   `${BASE}/data/races.json`,
+  `${BASE}/data/rulesets.json`,
+  `${BASE}/data/backgrounds.json`,
+  `${BASE}/data/spell_slots.json`,
+  `${BASE}/js/spellslots.js`,
+  `${BASE}/js/pdf_export.js`,
   `${BASE}/data/feats.json`,
   'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap',
 ];

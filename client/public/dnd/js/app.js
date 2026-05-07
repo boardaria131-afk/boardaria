@@ -74,10 +74,30 @@ const CharUI = (() => {
     bindText('char-race',       'race');
     bindText('char-background', 'background');
     bindNum('char-level',       'level');
+    document.getElementById('char-level')?.addEventListener('change', () => SpellSlotUI.renderSpellSlots());
     bindNum('char-xp',          'xp');
     bindNum('char-hp-current',  'hp_current');
     bindNum('char-hp-max',      'hp_max');
     bindNum('char-ac',          'ac');
+
+    // Regelwerk-Auswahl
+    const rulesetSelect = document.getElementById('char-ruleset');
+    if (rulesetSelect) {
+      // Optionen befüllen
+      DnDData.rulesets.forEach(rs => {
+        const opt = document.createElement('option');
+        opt.value = rs.id;
+        opt.textContent = rs.short;
+        rulesetSelect.appendChild(opt);
+      });
+      rulesetSelect.value = Character.data.rulesetId || '5e';
+      rulesetSelect.addEventListener('change', () => {
+        Character.update({ rulesetId: rulesetSelect.value });
+        updateRulesetBadge();
+        showRulesetConflicts(rulesetSelect.value);
+      });
+      updateRulesetBadge();
+    }
 
     const notes = document.getElementById('char-notes');
     if (notes) {
@@ -156,6 +176,49 @@ const CharUI = (() => {
   }
 
   /* Features-Panel (Klasse + Rasse) */
+  function updateRulesetBadge() {
+    const rsId  = Character.data.rulesetId || '5e';
+    const rs    = DnDData.getRulesetById(rsId);
+    const badge = document.getElementById('char-ruleset-badge');
+    if (badge && rs) {
+      badge.textContent = rs.short;
+      badge.style.background = rs.color + '22';
+      badge.style.borderColor = rs.color;
+      badge.style.color = rs.color;
+    }
+  }
+
+  function showRulesetConflicts(rulesetId) {
+    const rs = DnDData.getRulesetById(rulesetId);
+    if (!rs || !rs.conflicts?.length) {
+      document.getElementById('ruleset-conflicts')?.remove();
+      return;
+    }
+    let panel = document.getElementById('ruleset-conflicts');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'ruleset-conflicts';
+      panel.className = 'card';
+      panel.style.cssText = 'grid-column:1/-1;border-color:' + rs.color + ';';
+      const spellSlotCard = document.getElementById('spell-slots-card');
+      spellSlotCard?.after(panel);
+    }
+    panel.innerHTML = `
+      <h3 style="color:${rs.color};">⚠ ${rs.name} — Regelunterschiede zu 5e SRD</h3>
+      <p style="font-size:13px;color:var(--ink-light);margin-bottom:10px;">${rs.description}</p>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${rs.conflicts.map(c => `
+          <div style="display:flex;gap:10px;padding:8px 10px;background:rgba(255,255,255,0.5);border-radius:4px;border-left:3px solid ${c.severity==='major'?'#ef4444':'#f59e0b'};">
+            <span style="font-size:16px;flex-shrink:0;">${c.severity==='major'?'🔴':'🟡'}</span>
+            <div>
+              <div style="font-family:var(--font-title);font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px;">${c.area}</div>
+              <div style="font-size:13px;color:var(--ink-light);">${c.detail}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    `;
+  }
+
   function renderFeatures() {
     const container = document.getElementById('char-features-list');
     if (!container) return;
@@ -216,6 +279,9 @@ function initTabs() {
       content.forEach(c => c.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById(`tab-${btn.dataset.tab}`)?.classList.add('active');
+      // Kampagnen-Tab: immer neu rendern (aktueller Share-Status)
+      if (btn.dataset.tab === 'campaign') CampaignUI.renderCampaign();
+      if (btn.dataset.tab === 'journal')  JournalUI.init();
     });
   });
 }
@@ -235,6 +301,10 @@ function initPersistence() {
   });
 
   /* 🌐 Daten-Import (Spells API) */
+  document.getElementById('btn-export-pdf')?.addEventListener('click', () => {
+    PdfExport.generate();
+  });
+
   document.getElementById('btn-import-api')?.addEventListener('click', () => {
     showModal('Online-Daten importieren', `
       <p style="font-size:14px;margin-bottom:12px;">Lade Spells aus der öffentlichen D&D 5e SRD API.</p>
@@ -265,6 +335,11 @@ function renderRosterModal() {
                 </div>
               </div>
               ${!isActive?`<button class="btn-secondary" data-load="${c.id}" style="padding:4px 10px;font-size:11px;">Laden</button>`:''}
+              <button class="btn-share ${Character.isShared()&&isActive?'btn-shared':''}" data-share="${c.id}"
+                style="padding:4px 10px;font-size:11px;background:${Character.isShared()&&isActive?'rgba(34,197,94,0.15)':'rgba(201,150,42,0.1)'};border:1px solid ${Character.isShared()&&isActive?'#22c55e':'var(--gold)'};color:${Character.isShared()&&isActive?'#15803d':'var(--gold)'};border-radius:4px;cursor:pointer;font-family:var(--font-title);letter-spacing:0.5px;"
+                title="${Character.isShared()&&isActive?'Teilen aufheben':'Mit Kampagne teilen'}">
+                ${Character.isShared()&&isActive?'🌐 Geteilt':'🔒 Privat'}
+              </button>
               <button class="btn-remove" data-delete="${c.id}" title="Löschen" style="font-size:16px;opacity:0.5;">🗑</button>
             </div>`;
         }).join('')}
@@ -315,7 +390,32 @@ function renderRosterModal() {
     btn.addEventListener('click', () => {
       if (confirm('Charakter wirklich löschen?')) {
         Character.deleteFromRoster(btn.dataset.delete);
-        renderRosterModal(); // Modal neu rendern
+        Character.unshare();
+        renderRosterModal();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-share]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.share;
+      // Nur eigene aktive Chars teilen
+      if (id !== Character.data.id) {
+        showToast('💡 Lade den Charakter zuerst, um ihn zu teilen');
+        return;
+      }
+      if (Character.isShared()) {
+        if (confirm('Teilen aufheben? Der Charakter wird für andere nicht mehr sichtbar.')) {
+          Character.unshare();
+          await Character.unshareFromServer(Character.data.id);
+          showToast('🔒 Charakter ist jetzt privat');
+          renderRosterModal();
+        }
+      } else {
+        Character.share();
+        await Character.shareToServer(Character.data);
+        showToast('🌐 Charakter wird mit der Kampagne geteilt!');
+        renderRosterModal();
       }
     });
   });
@@ -371,9 +471,30 @@ async function bootstrap() {
 }
 
 function startApp(user) {
-  // Charakter laden (userId-gebunden)
+  // Charakter laden: zuerst localStorage, dann Server-Sync
   Character.load();
   console.log('[App] Charakter geladen:', Character.data.name || '(neu)');
+
+  // Server-Roster laden und mit lokalem mergen
+  Character.loadFromServer().then(serverChars => {
+    if (!serverChars.length) return;
+    const localRoster = Character.roster;
+    const localIds    = new Set(localRoster.map(c => c.id));
+    // Neue Chars vom Server in localStorage einpflegen
+    serverChars.forEach(c => {
+      if (!localIds.has(c.id)) {
+        const roster = JSON.parse(localStorage.getItem(
+          'dnd5e_roster_' + (window.Auth?.getUser()?.id ? 'u_' + window.Auth.getUser().id : 'local')
+        ) || '[]');
+        roster.push(c);
+        localStorage.setItem(
+          'dnd5e_roster_' + (window.Auth?.getUser()?.id ? 'u_' + window.Auth.getUser().id : 'local'),
+          JSON.stringify(roster)
+        );
+      }
+    });
+    console.log('[App] Server-Sync:', serverChars.length, 'Charaktere');
+  }).catch(() => {});
 
   Tooltip.init();
   initTabs();
@@ -382,11 +503,32 @@ function startApp(user) {
   SpellsUI.init();
   ItemsUI.init();
   FeatsUI.init();
+  SpellSlotUI.init();
+  CampaignUI.init();
   JournalUI.init();
   DiceUI.init();
 
   // User-Badge im Header rendern
   Auth.updateHeaderBadge();
+
+  // Share-Toggle im Kampagnen-Tab (delegated)
+  document.getElementById('tab-campaign')?.addEventListener('click', async e => {
+    if (e.target.id === 'btn-toggle-share' || e.target.closest('#btn-toggle-share')) {
+      if (Character.isShared()) {
+        if (confirm('Teilen aufheben?')) {
+          Character.unshare();
+          await Character.unshareFromServer(Character.data.id);
+          showToast('🔒 Charakter ist jetzt privat');
+          CampaignUI.renderCampaign();
+        }
+      } else {
+        Character.share();
+        await Character.shareToServer(Character.data);
+        showToast('🌐 Charakter geteilt!');
+        CampaignUI.renderCampaign();
+      }
+    }
+  });
 
   ClassesUI.restoreFromSave();
   SpellsUI.updateCharSummary();
