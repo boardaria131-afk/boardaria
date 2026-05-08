@@ -188,7 +188,7 @@ const Character = (() => {
   }
 
   async function loadFromServer() {
-    const token = window.Auth?.getToken();
+    const token = window.Auth ? window.Auth.getToken() : null;
     if (!token) return [];
     try {
       const resp = await fetch('/api/dnd/characters', {
@@ -196,8 +196,23 @@ const Character = (() => {
       });
       if (!resp.ok) return [];
       const data = await resp.json();
-      return data.characters || [];
-    } catch { return []; }
+      const chars = data.characters || [];
+      // Direkt in lokalen Roster mergen
+      if (chars.length) {
+        const existing = new Set(getRoster().map(c => c.id));
+        chars.forEach(c => {
+          if (!existing.has(c.id)) {
+            const roster = getRoster();
+            roster.push(c);
+            localStorage.setItem(ROSTER_KEY(), JSON.stringify(roster));
+          }
+        });
+      }
+      return chars;
+    } catch (e) {
+      console.warn('[Character] Server-Sync fehlgeschlagen:', e.message);
+      return [];
+    }
   }
 
   async function deleteFromServer(id) {

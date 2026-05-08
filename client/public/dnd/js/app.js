@@ -475,27 +475,6 @@ function startApp(user) {
   Character.load();
   console.log('[App] Charakter geladen:', Character.data.name || '(neu)');
 
-  // Server-Roster laden und mit lokalem mergen
-  Character.loadFromServer().then(serverChars => {
-    if (!serverChars.length) return;
-    const localRoster = Character.roster;
-    const localIds    = new Set(localRoster.map(c => c.id));
-    // Neue Chars vom Server in localStorage einpflegen
-    serverChars.forEach(c => {
-      if (!localIds.has(c.id)) {
-        const roster = JSON.parse(localStorage.getItem(
-          'dnd5e_roster_' + (window.Auth?.getUser()?.id ? 'u_' + window.Auth.getUser().id : 'local')
-        ) || '[]');
-        roster.push(c);
-        localStorage.setItem(
-          'dnd5e_roster_' + (window.Auth?.getUser()?.id ? 'u_' + window.Auth.getUser().id : 'local'),
-          JSON.stringify(roster)
-        );
-      }
-    });
-    console.log('[App] Server-Sync:', serverChars.length, 'Charaktere');
-  }).catch(() => {});
-
   Tooltip.init();
   initTabs();
   CharUI.init();
@@ -531,6 +510,20 @@ function startApp(user) {
   });
 
   ClassesUI.restoreFromSave();
+
+  // Server-Sync im Hintergrund (non-blocking, nach UI-Init)
+  if (!Auth.isGuest()) {
+    setTimeout(() => {
+      Character.loadFromServer()
+        .then(chars => {
+          if (chars.length > 0) {
+            console.log('[App] Server-Sync:', chars.length, 'Charaktere geladen');
+            showToast('☁ ' + chars.length + ' Charakter(e) vom Server synchronisiert');
+          }
+        })
+        .catch(e => console.warn('[App] Server-Sync fehlgeschlagen:', e.message));
+    }, 1500); // kurze Verzögerung damit UI fertig gerendert ist
+  }
   SpellsUI.updateCharSummary();
   ItemsUI.updateCharSummary();
   FeatsUI.updateCharSummary();
@@ -545,8 +538,9 @@ function startApp(user) {
   // Auto-Save alle 30s
   setInterval(() => Character.save(), 30000);
 
+  AppVersion.init();
   initOnlineStatus();
-  console.log('[App] Bereit ⚔');
+  console.log('[App] Bereit ⚔ v' + AppVersion.version);
 }
 
 document.addEventListener('DOMContentLoaded', bootstrap);

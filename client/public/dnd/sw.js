@@ -3,7 +3,7 @@
  * Cache-First Strategie für vollständige Offline-Nutzung.
  */
 
-const CACHE_NAME = 'dnd5e-v1';
+const CACHE_NAME = 'dnd5e-v15';
 const BASE = '/dnd';
 
 const ASSETS = [
@@ -14,26 +14,28 @@ const ASSETS = [
   `${BASE}/js/feature_descriptions.js`,
   `${BASE}/js/tooltip.js`,
   `${BASE}/js/auth.js`,
-  `${BASE}/js/journal.js`,
   `${BASE}/js/wiki_parser.js`,
-  `${BASE}/js/feats.js`,
   `${BASE}/js/data.js`,
   `${BASE}/js/character.js`,
   `${BASE}/js/classes.js`,
   `${BASE}/js/spells.js`,
   `${BASE}/js/items.js`,
+  `${BASE}/js/spellslots.js`,
+  `${BASE}/js/campaign.js`,
+  `${BASE}/js/journal.js`,
+  `${BASE}/js/feats.js`,
   `${BASE}/js/dice.js`,
+  `${BASE}/js/version.js`,
+  `${BASE}/js/pdf_export.js`,
   `${BASE}/js/app.js`,
   `${BASE}/data/classes.json`,
   `${BASE}/data/spells.json`,
   `${BASE}/data/items.json`,
   `${BASE}/data/races.json`,
-  `${BASE}/data/rulesets.json`,
+  `${BASE}/data/feats.json`,
   `${BASE}/data/backgrounds.json`,
   `${BASE}/data/spell_slots.json`,
-  `${BASE}/js/spellslots.js`,
-  `${BASE}/js/pdf_export.js`,
-  `${BASE}/data/feats.json`,
+  `${BASE}/data/rulesets.json`,
   'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap',
 ];
 
