@@ -52,8 +52,8 @@ const Character = (() => {
     roster.unshift({ ..._char });
     localStorage.setItem(ROSTER_KEY(), JSON.stringify(roster));
     localStorage.setItem(STORAGE_KEY(), _char.id);
-    // Server-Sync (non-blocking)
-    syncToServer().catch(() => {});
+    // Server-Sync (non-blocking, nach kurzem Delay damit Auth fertig ist)
+    setTimeout(() => syncToServer().catch(() => {}), 500);
   }
 
   function loadFromRoster(id) {

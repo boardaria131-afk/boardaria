@@ -33,48 +33,8 @@ const AppVersion = (() => {
   const STORE_KEY = 'dnd_version_seen';
 
   function init() {
-    _renderBadge();
-    _checkFirstRun();
-  }
-
-  function _renderBadge() {
-    // Kleines Versions-Badge unten links
-    let badge = document.getElementById('version-badge');
-    if (!badge) {
-      badge = document.createElement('div');
-      badge.id = 'version-badge';
-      badge.style.cssText = `
-        position: fixed;
-        bottom: 10px;
-        left: 10px;
-        z-index: 100;
-        font-family: var(--font-title);
-        font-size: 9px;
-        color: rgba(201,150,42,0.5);
-        cursor: pointer;
-        letter-spacing: 1px;
-        padding: 3px 8px;
-        border: 1px solid rgba(201,150,42,0.2);
-        border-radius: 10px;
-        background: rgba(26,18,8,0.6);
-        transition: all 0.2s;
-      `;
-      badge.onmouseover = () => badge.style.color = 'var(--gold)';
-      badge.onmouseout  = () => badge.style.color = 'rgba(201,150,42,0.5)';
-      badge.addEventListener('click', showChangelog);
-      document.body.appendChild(badge);
-    }
-    badge.textContent = `v${CURRENT.version} · ${CURRENT.codename}`;
-  }
-
-  function _checkFirstRun() {
-    const seen = localStorage.getItem(STORE_KEY);
-    if (seen !== CURRENT.version) {
-      setTimeout(() => {
-        showChangelog(true); // true = "Neu in dieser Version"
-        localStorage.setItem(STORE_KEY, CURRENT.version);
-      }, 2000);
-    }
+    // Nur kleine unsichtbare Meta-Info — Badge auf /dnd/version.html
+    console.log(`[App] v${CURRENT.version} · ${CURRENT.codename}`);
   }
 
   function showChangelog(isNew = false) {

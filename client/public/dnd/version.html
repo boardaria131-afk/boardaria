@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D&D App – Versionshistorie</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --parchment: #f5e6c8;
+      --blood: #8b1a1a;
+      --ink: #2c1810;
+      --gold: #c9962a;
+      --stone: #3d3530;
+      --font-title: 'Cinzel', serif;
+      --font-body: 'Crimson Text', serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: radial-gradient(ellipse at top, #2c1c0a 0%, #0d0a06 100%);
+      min-height: 100vh;
+      color: var(--ink);
+      padding: 40px 20px 60px;
+    }
+    .container { max-width: 760px; margin: 0 auto; }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(201,150,42,0.3);
+    }
+    .emblem { font-size: 40px; color: var(--gold); display: block; margin-bottom: 10px; }
+    h1 {
+      font-family: var(--font-title);
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--parchment);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    h1 span { color: var(--gold); }
+    .subtitle { font-size: 14px; color: #8a7060; }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 30px;
+      font-family: var(--font-title);
+      font-size: 12px;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: 1px;
+      border: 1px solid rgba(201,150,42,0.3);
+      border-radius: 20px;
+      padding: 5px 16px;
+      transition: all 0.2s;
+    }
+    .back-link:hover { background: rgba(201,150,42,0.1); }
+
+    .current-card {
+      background: linear-gradient(135deg, #f5e6c8, #ead4a0);
+      border: 2px solid var(--gold);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    .version-badge {
+      display: inline-block;
+      background: var(--blood);
+      color: var(--parchment);
+      font-family: var(--font-title);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 12px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    .codename {
+      font-family: var(--font-title);
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--blood);
+      margin-bottom: 6px;
+    }
+    .release-date { font-size: 13px; color: #8a7060; margin-bottom: 16px; }
+
+    .features-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .features-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 15px;
+      color: var(--ink);
+      padding: 5px 8px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 4px;
+    }
+
+    .section-title {
+      font-family: var(--font-title);
+      font-size: 14px;
+      color: var(--parchment);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(201,150,42,0.3);
+    }
+
+    .changelog { display: flex; flex-direction: column; gap: 12px; }
+    .changelog-item {
+      background: rgba(245,230,200,0.08);
+      border: 1px solid rgba(201,150,42,0.2);
+      border-radius: 6px;
+      padding: 14px 18px;
+    }
+    .changelog-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .changelog-version {
+      font-family: var(--font-title);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .changelog-date { font-size: 12px; color: #8a7060; }
+    .changelog-note { font-size: 14px; color: var(--parchment); }
+    .changelog-features {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .changelog-tag {
+      background: rgba(139,26,26,0.2);
+      border: 1px solid rgba(139,26,26,0.3);
+      color: #f0b0b0;
+      font-family: var(--font-title);
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .tech-info {
+      margin-top: 40px;
+      padding: 20px;
+      background: rgba(245,230,200,0.05);
+      border: 1px solid rgba(201,150,42,0.15);
+      border-radius: 6px;
+    }
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .tech-item { font-size: 13px; color: #a09080; }
+    .tech-item strong { color: var(--parchment); display: block; font-family: var(--font-title); font-size: 11px; letter-spacing: 1px; }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      color: #5a4f48;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="emblem">⚔</span>
+      <h1>D&D <span>Charakterbogen</span></h1>
+      <p class="subtitle">Versionshistorie &amp; technische Details</p>
+    </header>
+
+    <a href="/dnd/" class="back-link">← Zurück zur App</a>
+
+    <!-- Aktuelle Version -->
+    <div class="current-card">
+      <div class="version-badge">AKTUELLE VERSION</div>
+      <div class="codename">v1.16.0 · Arcane Forge</div>
+      <div class="release-date">Mai 2025</div>
+      <ul class="features-list">
+        <li>📄 PDF-Export — vollständiger Charakterbogen mit Spell Slots, Fertigkeiten, Features</li>
+        <li>✨ Spell Slot Tracker — automatisch aus Klasse &amp; Level berechnet, mit Rast-Buttons</li>
+        <li>📖 12 SRD-Hintergründe — mit Skill-Boni, Features, Ausrüstung wählbar</li>
+        <li>📜 Regelwerk-Auswahl — 5e SRD / 5.5e (2024) / Hausregeln</li>
+        <li>⚠ 5e↔5.5e Konflikte — automatisch rot/gelb markiert</li>
+        <li>☁ Cross-Device Sync — Charaktere werden auf dem Server gespeichert</li>
+        <li>⚔ Kampagnen-Tab — Gruppen-Übersicht aller geteilten Charaktere</li>
+        <li>🌐 Teilen-Funktion — Charakter für Mitspieler freigeben</li>
+        <li>💬 Hover-Tooltips — offizielle SRD-Kurzbeschreibungen für alle Features</li>
+        <li>🔐 HexForge-Auth — Login/Logout, User-gebundene Charaktere</li>
+        <li>🎲 Würfeln mit Modifier-Aufschlüsselung — Würfelergebnis + Mod + Prof separat</li>
+        <li>📜 Abenteuer-Journal — mehrere Abenteuer, Hooks, NSCs, Sitzungsnotizen</li>
+      </ul>
+    </div>
+
+    <!-- Changelog -->
+    <div class="section-title">Versionshistorie</div>
+    <div class="changelog">
+
+      <div class="changelog-item">
+        <div class="changelog-header">
+          <span class="changelog-version">v1.16.0</span>
+          <span class="changelog-date">Mai 2025</span>
+        </div>
+        <div class="changelog-note">Background-Fix, Subklassen-Tooltips, Server-Sync robust, Versionsseite</div>
+        <div class="changelog-features">
+          <span class="changelog-tag">Bugfix</span>
+          <span class="changelog-tag">Tooltips</span>
+          <span class="changelog-tag">Server-Sync</span>
+        </div>
+      </div>
+
+      <div class="changelog-item">
+        <div class="changelog-header">
+          <span class="changelog-version">v1.15.0</span>
+          <span class="changelog-date">Mai 2025</span>
+        </div>
+        <div class="changelog-note">PDF-Export, Spell Slots Tracker, Hintergründe, Regelwerke, Cross-Device Sync</div>
+        <div class="changelog-features">
+          <span class="changelog-tag">PDF</span>
+          <span class="changelog-tag">Spell Slots</span>
+          <span class="changelog-tag">Backgrounds</span>
+          <span class="changelog-tag">Rulesets</span>
+        </div>
+      </div>
+
+      <div class="changelog-item">
+        <div class="changelog-header">
+          <span class="changelog-version">v1.14.0</span>
+          <span class="changelog-date">Mai 2025</span>
+        </div>
+        <div class="changelog-note">Kampagnen-Tab, Teilen-Funktion, User-gebundene Charakterspeicherung</div>
+        <div class="changelog-features">
+          <span class="changelog-tag">Kampagne</span>
+          <span class="changelog-tag">Sharing</span>
+          <span class="changelog-tag">User-Binding</span>
+        </div>
+      </div>
+
+      <div class="changelog-item">
+        <div class="changelog-header">
+          <span class="changelog-version">v1.13.0</span>
+          <span class="changelog-date">Mai 2025</span>
+        </div>
+        <div class="changelog-note">Auth komplett überarbeitet — REST-Login, Logout-Button, Duplicate-ID-Fix</div>
+        <div class="changelog-features">
+          <span class="changelog-tag">Auth</span>
+          <span class="changelog-tag">Bugfix</span>
+        </div>
+      </div>
+
+      <div class="changelog-item">
+        <div class="changelog-header">
+          <span class="changelog-version">v1.12.0</span>
+          <span class="changelog-date">Mai 2025</span>
+        </div>
+        <div class="changelog-note">118 Subklassen, 28 Feats, Wiki-Paste-Import (Text → automatisch geparst)</div>
+        <div class="changelog-features">
+          <span class="changelog-tag">Subklassen</span>
+          <span class="changelog-tag">Feats</span>
+          <span class="changelog-tag">Wiki-Import</span>
+        </div>
+      </div>
+
+      <div class="changelog-item">
+        <div class="changelog-header">
+          <span class="changelog-version">v1.10.0</span>
+          <span class="changelog-date">Mai 2025</span>
+        </div>
+        <div class="changelog-note">Journal, Würfeln mit vollständiger Modifier-Aufschlüsselung, Hover-Tooltips</div>
+        <div class="changelog-features">
+          <span class="changelog-tag">Journal</span>
+          <span class="changelog-tag">Würfeln</span>
+          <span class="changelog-tag">Tooltips</span>
+        </div>
+      </div>
+
+      <div class="changelog-item">
+        <div class="changelog-header">
+          <span class="changelog-version">v1.0.0</span>
+          <span class="changelog-date">Mai 2025</span>
+        </div>
+        <div class="changelog-note">Erste Version — Klassen, Subklassen, Spells, Items, Würfeln, Offline-Support</div>
+        <div class="changelog-features">
+          <span class="changelog-tag">Initial Release</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Technische Details -->
+    <div class="tech-info">
+      <div class="section-title" style="margin-top:0;">Technische Details</div>
+      <div class="tech-grid">
+        <div class="tech-item"><strong>Frontend</strong>Vanilla JS, kein Framework</div>
+        <div class="tech-item"><strong>Daten</strong>SRD 5.1 (CC BY 4.0)</div>
+        <div class="tech-item"><strong>Auth</strong>HexForge JWT (30 Tage)</div>
+        <div class="tech-item"><strong>Speicherung</strong>localStorage + Server-Sync</div>
+        <div class="tech-item"><strong>PDF</strong>jsPDF (CDN, on-demand)</div>
+        <div class="tech-item"><strong>Offline</strong>Service Worker (Cache v15)</div>
+        <div class="tech-item"><strong>Server</strong>Express 4 / Node.js</div>
+        <div class="tech-item"><strong>DB</strong>PostgreSQL (optional)</div>
+      </div>
+    </div>
+
+    <footer>
+      D&amp;D 5e Charakterbogen · SRD 5.1 (CC BY 4.0) · HexForge-Integration<br>
+      <a href="/dnd/" style="color:var(--gold);text-decoration:none;">← Zurück zur App</a>
+    </footer>
+  </div>
+</body>
+</html>

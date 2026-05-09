@@ -128,7 +128,8 @@ const ClassesUI = (() => {
           <h3>Subklassen</h3>
           <div class="subclass-grid">
             ${cls.subclasses.map(sc => `
-              <div class="subclass-card ${currentSub===sc.id?'selected':''}" data-subclass="${sc.id}">
+              <div class="subclass-card ${currentSub===sc.id?'selected':''}" data-subclass="${sc.id}"
+                   data-tooltip="${sc.description ? sc.description.replace(/"/g,"'").slice(0,280) : ''}">
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
                   <div class="subclass-name" style="flex:1;">${sc.name}</div>
                   ${sc.tier ? `<span class="tier-badge tier-${sc.tier.replace(/[^A-Za-z]/g,'').toLowerCase()}">${sc.tier}</span>` : ''}
