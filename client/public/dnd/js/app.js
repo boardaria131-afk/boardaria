@@ -471,6 +471,9 @@ async function bootstrap() {
 }
 
 function startApp(user) {
+  // User-Kontext setzen BEVOR Charaktere geladen werden
+  Character.setUserContext(user);
+
   // Charakter laden: zuerst localStorage, dann Server-Sync
   Character.load();
   console.log('[App] Charakter geladen:', Character.data.name || '(neu)');

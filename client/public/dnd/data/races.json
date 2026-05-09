@@ -5,127 +5,71 @@
       "name": "Human",
       "icon": "👤",
       "description": "Humans are the most adaptable and ambitious people among the common races. Whatever drives them, humans are the innovators, the achievers, and the pioneers of the worlds.",
-      "ability_bonuses": { "str": 1, "dex": 1, "con": 1, "int": 1, "wis": 1, "cha": 1 },
-      "speed": 30,
-      "size": "Medium",
-      "languages": ["Common", "one extra language"],
-      "traits": ["Extra Language", "Bonus Ability Score Increase"]
+      "ability_bonuses": {"str":1,"dex":1,"con":1,"int":1,"wis":1,"cha":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common", "one extra"],
+      "traits": ["Extra Language", "Versatile"],
+      "subraces": []
     },
     {
       "id": "elf",
       "name": "Elf",
       "icon": "🧝",
-      "description": "Elves are a magical people of otherworldly grace, living in the world but not entirely part of it. They live in places of ethereal beauty, in the midst of ancient forests or in silvery spires glittering with faerie light.",
-      "ability_bonuses": { "dex": 2 },
-      "speed": 30,
-      "size": "Medium",
-      "languages": ["Common", "Elvish"],
-      "traits": ["Darkvision", "Keen Senses", "Fey Ancestry", "Trance"],
+      "description": "Elves are a magical people of otherworldly grace, living in the world but not entirely part of it.",
+      "ability_bonuses": {"dex":2},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Elvish"],
+      "traits": ["Darkvision","Keen Senses","Fey Ancestry","Trance"],
       "subraces": [
-        {
-          "id": "high_elf",
-          "name": "High Elf",
-          "ability_bonuses": { "int": 1 },
-          "traits": ["Elf Weapon Training", "Cantrip", "Extra Language"]
-        },
-        {
-          "id": "wood_elf",
-          "name": "Wood Elf",
-          "ability_bonuses": { "wis": 1 },
-          "traits": ["Elf Weapon Training", "Fleet of Foot", "Mask of the Wild"]
-        },
-        {
-          "id": "drow",
-          "name": "Dark Elf (Drow)",
-          "ability_bonuses": { "cha": 1 },
-          "traits": ["Superior Darkvision", "Sunlight Sensitivity", "Drow Magic", "Drow Weapon Training"]
-        }
+        {"id":"high_elf","name":"High Elf","ability_bonuses":{"int":1},"traits":["Elf Weapon Training","Cantrip","Extra Language"]},
+        {"id":"wood_elf","name":"Wood Elf","ability_bonuses":{"wis":1},"traits":["Elf Weapon Training","Fleet of Foot","Mask of the Wild"]},
+        {"id":"drow","name":"Dark Elf (Drow)","ability_bonuses":{"cha":1},"traits":["Superior Darkvision","Sunlight Sensitivity","Drow Magic","Drow Weapon Training"]},
+        {"id":"eladrin","name":"Eladrin","ability_bonuses":{"int":1},"traits":["Fey Step (teleport 30 ft, 1/short rest)"]}
       ]
     },
     {
       "id": "dwarf",
       "name": "Dwarf",
       "icon": "⛏️",
-      "description": "Bold and hardy, dwarves are known as skilled warriors, miners, and workers of stone and metal. Though they stand well under 5 feet tall, dwarves are so broad and compact that they can weigh as much as a human.",
-      "ability_bonuses": { "con": 2 },
-      "speed": 25,
-      "size": "Medium",
-      "languages": ["Common", "Dwarvish"],
-      "traits": ["Darkvision", "Dwarven Resilience", "Dwarven Combat Training", "Stonecunning"],
+      "description": "Bold and hardy, dwarves are known as skilled warriors, miners, and workers of stone and metal.",
+      "ability_bonuses": {"con":2},
+      "speed": 25, "size": "Medium",
+      "languages": ["Common","Dwarvish"],
+      "traits": ["Darkvision","Dwarven Resilience","Dwarven Combat Training","Stonecunning"],
       "subraces": [
-        {
-          "id": "hill_dwarf",
-          "name": "Hill Dwarf",
-          "ability_bonuses": { "wis": 1 },
-          "traits": ["Dwarven Toughness"]
-        },
-        {
-          "id": "mountain_dwarf",
-          "name": "Mountain Dwarf",
-          "ability_bonuses": { "str": 2 },
-          "traits": ["Dwarven Armor Training"]
-        }
+        {"id":"hill_dwarf","name":"Hill Dwarf","ability_bonuses":{"wis":1},"traits":["Dwarven Toughness (+1 HP/level)"]},
+        {"id":"mountain_dwarf","name":"Mountain Dwarf","ability_bonuses":{"str":2},"traits":["Dwarven Armor Training"]},
+        {"id":"duergar","name":"Duergar","ability_bonuses":{"str":1},"traits":["Superior Darkvision","Duergar Magic","Sunlight Sensitivity"]}
       ]
     },
     {
       "id": "halfling",
       "name": "Halfling",
       "icon": "🌿",
-      "description": "The comforts of home are the goals of most halflings' lives: a place to settle in peace and quiet, far from marauding monsters and clashing armies; a blazing fire and a generous meal.",
-      "ability_bonuses": { "dex": 2 },
-      "speed": 25,
-      "size": "Small",
-      "languages": ["Common", "Halfling"],
-      "traits": ["Lucky", "Brave", "Halfling Nimbleness"],
+      "description": "The comforts of home are the goals of most halflings' lives: a place to settle in peace and quiet, far from marauding monsters and clashing armies.",
+      "ability_bonuses": {"dex":2},
+      "speed": 25, "size": "Small",
+      "languages": ["Common","Halfling"],
+      "traits": ["Lucky","Brave","Halfling Nimbleness"],
       "subraces": [
-        {
-          "id": "lightfoot",
-          "name": "Lightfoot",
-          "ability_bonuses": { "cha": 1 },
-          "traits": ["Naturally Stealthy"]
-        },
-        {
-          "id": "stout",
-          "name": "Stout",
-          "ability_bonuses": { "con": 1 },
-          "traits": ["Stout Resilience"]
-        }
+        {"id":"lightfoot","name":"Lightfoot","ability_bonuses":{"cha":1},"traits":["Naturally Stealthy"]},
+        {"id":"stout","name":"Stout","ability_bonuses":{"con":1},"traits":["Stout Resilience (poison resist)"]},
+        {"id":"ghostwise","name":"Ghostwise","ability_bonuses":{"wis":1},"traits":["Silent Speech (telepathy 30 ft)"]}
       ]
-    },
-    {
-      "id": "dragonborn",
-      "name": "Dragonborn",
-      "icon": "🐉",
-      "description": "Born of dragons, as their name proclaims, the dragonborn walk proudly through a world that greets them with fearful incomprehension. Shaped by draconic gods or the dragons themselves, dragonborn originally hatched from dragon eggs.",
-      "ability_bonuses": { "str": 2, "cha": 1 },
-      "speed": 30,
-      "size": "Medium",
-      "languages": ["Common", "Draconic"],
-      "traits": ["Draconic Ancestry", "Breath Weapon", "Damage Resistance"]
     },
     {
       "id": "gnome",
       "name": "Gnome",
       "icon": "🔬",
-      "description": "A gnome's energy and enthusiasm for living shines through every inch of his or her tiny body. Gnomes average slightly over 3 feet tall and weigh 40 to 45 pounds.",
-      "ability_bonuses": { "int": 2 },
-      "speed": 25,
-      "size": "Small",
-      "languages": ["Common", "Gnomish"],
-      "traits": ["Darkvision", "Gnome Cunning"],
+      "description": "A gnome's energy and enthusiasm for living shines through every inch of his or her tiny body.",
+      "ability_bonuses": {"int":2},
+      "speed": 25, "size": "Small",
+      "languages": ["Common","Gnomish"],
+      "traits": ["Darkvision","Gnome Cunning"],
       "subraces": [
-        {
-          "id": "forest_gnome",
-          "name": "Forest Gnome",
-          "ability_bonuses": { "dex": 1 },
-          "traits": ["Natural Illusionist", "Speak with Small Beasts"]
-        },
-        {
-          "id": "rock_gnome",
-          "name": "Rock Gnome",
-          "ability_bonuses": { "con": 1 },
-          "traits": ["Artificer's Lore", "Tinker"]
-        }
+        {"id":"forest_gnome","name":"Forest Gnome","ability_bonuses":{"dex":1},"traits":["Natural Illusionist","Speak with Small Beasts"]},
+        {"id":"rock_gnome","name":"Rock Gnome","ability_bonuses":{"con":1},"traits":["Artificer's Lore","Tinker"]},
+        {"id":"deep_gnome","name":"Deep Gnome (Svirfneblin)","ability_bonuses":{"dex":1},"traits":["Superior Darkvision","Stone Camouflage"]}
       ]
     },
     {
@@ -133,33 +77,445 @@
       "name": "Half-Elf",
       "icon": "🌙",
       "description": "Walking in two worlds but truly belonging to neither, half-elves combine what some say are the best qualities of their elf and human parents.",
-      "ability_bonuses": { "cha": 2 },
-      "speed": 30,
-      "size": "Medium",
-      "languages": ["Common", "Elvish", "one extra language"],
-      "traits": ["Darkvision", "Fey Ancestry", "Skill Versatility"]
+      "ability_bonuses": {"cha":2},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Elvish","one extra"],
+      "traits": ["Darkvision","Fey Ancestry","Skill Versatility (+2 skills)"],
+      "subraces": []
     },
     {
       "id": "half_orc",
       "name": "Half-Orc",
       "icon": "⚔️",
-      "description": "Whether united under the leadership of a mighty warlock or having fought and survived on their own, half-orcs have a fearsome presence that they can use to their advantage.",
-      "ability_bonuses": { "str": 2, "con": 1 },
-      "speed": 30,
-      "size": "Medium",
-      "languages": ["Common", "Orc"],
-      "traits": ["Darkvision", "Menacing", "Relentless Endurance", "Savage Attacks"]
+      "description": "Whether united under the leadership of a mighty warlock or having fought and survived on their own, half-orcs have a fearsome presence.",
+      "ability_bonuses": {"str":2,"con":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Orc"],
+      "traits": ["Darkvision","Menacing","Relentless Endurance","Savage Attacks"],
+      "subraces": []
     },
     {
       "id": "tiefling",
       "name": "Tiefling",
       "icon": "😈",
       "description": "To be greeted with stares and whispers, to suffer violence and insult on the street, to see mistrust and fear in every eye: this is the lot of the tiefling.",
-      "ability_bonuses": { "int": 1, "cha": 2 },
-      "speed": 30,
-      "size": "Medium",
-      "languages": ["Common", "Infernal"],
-      "traits": ["Darkvision", "Hellish Resistance", "Infernal Legacy"]
+      "ability_bonuses": {"int":1,"cha":2},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Infernal"],
+      "traits": ["Darkvision","Hellish Resistance (fire)","Infernal Legacy"],
+      "subraces": [
+        {"id":"asmodeus","name":"Asmodeus Tiefling","ability_bonuses":{},"traits":["Thaumaturgy, Hellish Rebuke, Darkness (default)"]},
+        {"id":"zariel","name":"Zariel Tiefling","ability_bonuses":{"str":1,"cha":1},"traits":["Searing Smite, Branding Smite, Blinding Smite"]},
+        {"id":"glasya","name":"Glasya Tiefling","ability_bonuses":{"dex":1,"cha":1},"traits":["Minor Illusion, Disguise Self, Invisibility"]}
+      ]
+    },
+    {
+      "id": "dragonborn",
+      "name": "Dragonborn",
+      "icon": "🐉",
+      "description": "Born of dragons, as their name proclaims, the dragonborn walk proudly through a world that greets them with fearful incomprehension.",
+      "ability_bonuses": {"str":2,"cha":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Draconic"],
+      "traits": ["Draconic Ancestry","Breath Weapon","Damage Resistance"],
+      "subraces": []
+    },
+    {
+      "id": "aasimar",
+      "name": "Aasimar",
+      "icon": "😇",
+      "description": "Aasimar bear within their souls the light of the heavens. They are descended from beings with a touch of the power of Mount Celestia.",
+      "ability_bonuses": {"cha":2},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Celestial"],
+      "traits": ["Darkvision","Celestial Resistance","Healing Hands","Light Bearer"],
+      "subraces": [
+        {"id":"protector","name":"Protector Aasimar","ability_bonuses":{"wis":1},"traits":["Radiant Soul: sprout wings, fly speed = movement, +radiant dmg"]},
+        {"id":"scourge","name":"Scourge Aasimar","ability_bonuses":{"con":1},"traits":["Radiant Consumption: radiant dmg aura, self-dmg, bright light"]},
+        {"id":"fallen","name":"Fallen Aasimar","ability_bonuses":{"str":1},"traits":["Necrotic Shroud: frighten nearby, +necrotic dmg"]}
+      ]
+    },
+    {
+      "id": "goliath",
+      "name": "Goliath",
+      "icon": "🏔️",
+      "description": "At the highest mountain peaks dwell the goliaths, massive creatures who have built a nomadic society on the edge of constant struggle for survival.",
+      "ability_bonuses": {"str":2,"con":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Giant"],
+      "traits": ["Natural Athlete","Stone's Endurance (1/short rest reduce dmg)","Powerful Build","Mountain Born"],
+      "subraces": []
+    },
+    {
+      "id": "firbolg",
+      "name": "Firbolg",
+      "icon": "🌲",
+      "description": "Firbolg tribes cloister in remote forest strongholds, preferring to spend their days in quiet harmony with the woods. Their supernatural gifts, lovingly given by their fey ancestors, make them well suited to speak for the trees.",
+      "ability_bonuses": {"wis":2,"str":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Elvish","Giant"],
+      "traits": ["Firbolg Magic (Detect Magic, Disguise Self 1/rest)","Hidden Step (invisible bonus action 1/rest)","Powerful Build","Speech of Beast and Leaf"],
+      "subraces": []
+    },
+    {
+      "id": "kenku",
+      "name": "Kenku",
+      "icon": "🦅",
+      "description": "Haunted by an ancient crime that robbed them of their wings, the kenku wander the world as vagabonds and criminals.",
+      "ability_bonuses": {"dex":2,"wis":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Auran (understand only)"],
+      "traits": ["Expert Forgery","Kenku Training (+2 skills)","Mimicry (copy sounds perfectly)"],
+      "subraces": []
+    },
+    {
+      "id": "lizardfolk",
+      "name": "Lizardfolk",
+      "icon": "🦎",
+      "description": "The lizardfolk see the world through ancient, reptilian eyes. Their dispassion grants them a pragmatic wisdom.",
+      "ability_bonuses": {"con":2,"wis":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Draconic"],
+      "traits": ["Bite (1d6 natural weapon)","Cunning Artisan","Hold Breath (15 min)","Hunter's Lore (+2 skills)","Natural Armor (AC 13+DEX)","Hungry Jaws (bonus bite, gain temp HP)"],
+      "subraces": []
+    },
+    {
+      "id": "tabaxi",
+      "name": "Tabaxi",
+      "icon": "🐱",
+      "description": "Hailing from a distant land of jungles and mountains, tabaxi are feline humanoids driven by curiosity to collect interesting artifacts, gather tales, and lay eyes on all the world's wonders.",
+      "ability_bonuses": {"dex":2,"cha":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","one extra"],
+      "traits": ["Darkvision","Feline Agility (double speed 1/turn until rest)","Cat's Claws (climb 20 ft, 1d4 slashing)","Cat's Talent (+2 skills)"],
+      "subraces": []
+    },
+    {
+      "id": "triton",
+      "name": "Triton",
+      "icon": "🔱",
+      "description": "Tritons guard the ocean depths, building small settlements beside deep trenches, volcanoes, and other dangerous spots far from the land-bound folk's eye.",
+      "ability_bonuses": {"str":1,"con":1,"cha":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Primordial"],
+      "traits": ["Amphibious","Control Air and Water (Fog Cloud, Gust of Wind, Wall of Water 1/rest)","Darkvision","Emissary of the Sea","Guardians of the Depths"],
+      "subraces": []
+    },
+    {
+      "id": "bugbear",
+      "name": "Bugbear",
+      "icon": "👹",
+      "description": "Neither bugs nor bears, bugbears are the hulking cousins of goblins and hobgoblins. With their intimidating builds and predatory instincts, bugbears are naturally suited for violence.",
+      "ability_bonuses": {"str":2,"dex":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Goblin"],
+      "traits": ["Darkvision","Long-Limbed (reach +5 ft)","Powerful Build","Sneaky (Stealth proficiency)","Surprise Attack (+2d6 first round)"],
+      "subraces": []
+    },
+    {
+      "id": "goblin",
+      "name": "Goblin",
+      "icon": "👺",
+      "description": "Goblins are small, black-hearted humanoids that lair in despoiled dungeons and other dismal settings. They squabble constantly.",
+      "ability_bonuses": {"dex":2,"con":1},
+      "speed": 30, "size": "Small",
+      "languages": ["Common","Goblin"],
+      "traits": ["Darkvision","Fury of the Small (bonus dmg 1/rest)","Nimble Escape (Disengage or Hide as bonus action)"],
+      "subraces": []
+    },
+    {
+      "id": "hobgoblin",
+      "name": "Hobgoblin",
+      "icon": "⚔️",
+      "description": "War is the lifeblood of hobgoblins. Its glorious objectives, its smooth functioning, and the utter destruction of its enemies are the hobgoblin ideal.",
+      "ability_bonuses": {"con":2,"int":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Goblin"],
+      "traits": ["Darkvision","Martial Training (light armor, 2 martial weapons)","Saving Face (bonus on failed roll if ally nearby, 1/rest)"],
+      "subraces": []
+    },
+    {
+      "id": "kobold",
+      "name": "Kobold",
+      "icon": "🐊",
+      "description": "Kobolds are craven reptilian humanoids that commonly infest dungeons. They worship evil dragons as demigods.",
+      "ability_bonuses": {"dex":2},
+      "speed": 30, "size": "Small",
+      "languages": ["Common","Draconic"],
+      "traits": ["Darkvision","Grovel Cower and Beg (allies get advantage vs. target)","Pack Tactics (advantage when ally adjacent)","Sunlight Sensitivity"],
+      "subraces": []
+    },
+    {
+      "id": "orc",
+      "name": "Orc",
+      "icon": "💪",
+      "description": "Orcs are one of Exandria's youngest races, and are said to have been born from elves seared by the light of the Founding.",
+      "ability_bonuses": {"str":2,"con":1,"int":-2},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Orc"],
+      "traits": ["Darkvision","Aggressive (bonus action move toward enemy)","Menacing (Intimidation proficiency)","Powerful Build"],
+      "subraces": []
+    },
+    {
+      "id": "yuan_ti",
+      "name": "Yuan-ti Pureblood",
+      "icon": "🐍",
+      "description": "Yuan-ti purebloods are the most human-seeming of yuan-ti, whose snake-bloodline grants magical resistance and fear immunity.",
+      "ability_bonuses": {"cha":2,"int":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Abyssal","Draconic"],
+      "traits": ["Darkvision","Innate Spellcasting (Poison Spray, Animal Friendship, Suggestion 1/rest)","Magic Resistance (advantage on magic saves)","Poison Immunity"],
+      "subraces": []
+    },
+    {
+      "id": "genasi_air",
+      "name": "Genasi (Air)",
+      "icon": "💨",
+      "description": "Air genasi are quick of thought and light on their feet, having inherited the windswept nature of the elemental plane of air.",
+      "ability_bonuses": {"dex":2,"con":1},
+      "speed": 35, "size": "Medium",
+      "languages": ["Common","Primordial"],
+      "traits": ["Unending Breath (hold breath indefinitely)","Mingle with the Wind (Levitate 1/rest)"],
+      "subraces": []
+    },
+    {
+      "id": "genasi_earth",
+      "name": "Genasi (Earth)",
+      "icon": "🪨",
+      "description": "As an earth genasi, you are stolid and unshakeable, possessing the strength and endurance of the earth itself.",
+      "ability_bonuses": {"str":1,"con":2},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Primordial"],
+      "traits": ["Earth Walk (difficult terrain of earth/stone costs no extra)","Merge with Stone (Pass without Trace 1/rest)"],
+      "subraces": []
+    },
+    {
+      "id": "genasi_fire",
+      "name": "Genasi (Fire)",
+      "icon": "🔥",
+      "description": "As a fire genasi, you have inherited the volatile nature of fire. You are tempestuous and unpredictable, tending toward swift, decisive action.",
+      "ability_bonuses": {"int":1,"con":2},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Primordial"],
+      "traits": ["Darkvision","Fire Resistance","Reach to the Blaze (Produce Flame cantrip, Burning Hands 1/rest)"],
+      "subraces": []
+    },
+    {
+      "id": "genasi_water",
+      "name": "Genasi (Water)",
+      "icon": "🌊",
+      "description": "The seas change and can be tempestuous. Those with a gift for water share this duality of tranquility and power.",
+      "ability_bonuses": {"wis":1,"con":2},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Primordial"],
+      "traits": ["Acid Resistance","Amphibious","Swim speed 30 ft","Call to the Wave (Shape Water cantrip, Create Water 1/rest)"],
+      "subraces": []
+    },
+    {
+      "id": "fairy",
+      "name": "Fairy",
+      "icon": "🧚",
+      "description": "The Feywild is home to many fantastic peoples, including fairies. Fairies are a wee folk, but not nearly as much so as their pixie and sprite friends.",
+      "ability_bonuses": {"dex":1,"wis":1},
+      "speed": 30, "size": "Small",
+      "languages": ["Common","Elvish","Sylvan"],
+      "traits": ["Flight (fly speed = walking, medium armor or less)","Fairy Magic (Druidcraft cantrip, Faerie Fire 1/rest, Enlarge/Reduce 1/rest)"],
+      "subraces": []
+    },
+    {
+      "id": "harengon",
+      "name": "Harengon",
+      "icon": "🐰",
+      "description": "Harengons originated in the Feywild, where they spoke the languages of the fey and were blessed with that realm's magic. Despite resembling bipedal rabbits, harengons are quick-witted and inquisitive.",
+      "ability_bonuses": {"dex":2},
+      "speed": 30, "size": "Small or Medium",
+      "languages": ["Common","one extra"],
+      "traits": ["Hare-Trigger (+PB to initiative)","Leporine Senses (Perception proficiency)","Lucky Footwork (reaction: add d4 to DEX save vs. 0)","Rabbit Hop (jump bonus action 1/rest)"],
+      "subraces": []
+    },
+    {
+      "id": "loxodon",
+      "name": "Loxodon",
+      "icon": "🐘",
+      "description": "The humanoid elephants known as loxodons are a calm and patients people, renowned for their exceptional memories and their efforts to remain at peace.",
+      "ability_bonuses": {"con":2,"wis":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Loxodon"],
+      "traits": ["Powerful Build","Loxodon Serenity (advantage vs. charmed/frightened)","Natural Armor (AC 12+CON, no armor)","Trunk (shove, grab, hold one item, smell 30 ft)","Keen Smell (advantage Perception with smell)"],
+      "subraces": []
+    },
+    {
+      "id": "minotaur",
+      "name": "Minotaur",
+      "icon": "🐂",
+      "description": "The minotaurs of Krynn differ from their counterparts elsewhere in the multiverse. They are not the servants of Baphomet, but a proud seafaring people.",
+      "ability_bonuses": {"str":2,"con":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common"],
+      "traits": ["Horns (1d6 piercing natural weapon)","Goring Rush (bonus Dash then attack with horns)","Hammering Horns (push enemy 10 ft after attack)","Imposing Presence (Intimidation or Persuasion proficiency)"],
+      "subraces": []
+    },
+    {
+      "id": "simic_hybrid",
+      "name": "Simic Hybrid",
+      "icon": "🧬",
+      "description": "The Simic Combine has worked for years to humanize various animals, creating hybrids to serve various purposes.",
+      "ability_bonuses": {"con":2,"dex":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","one extra"],
+      "traits": ["Darkvision","Animal Enhancement (choose 2: manta glide, nimble climber, underwater adaptation, grappling appendages, carapace, acid spit)"],
+      "subraces": []
+    },
+    {
+      "id": "vedalken",
+      "name": "Vedalken",
+      "icon": "🔵",
+      "description": "Vedalken are tall, slender, blue-skinned humanoids who prize perfection above all things.",
+      "ability_bonuses": {"int":2,"wis":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Vedalken","two extra"],
+      "traits": ["Tireless Precision (+2 skills/tools, can't roll below 10 on chosen)","Partially Amphibious (hold breath 1 hour)"],
+      "subraces": []
+    },
+    {
+      "id": "aarakocra",
+      "name": "Aarakocra",
+      "icon": "🦜",
+      "description": "Sequestered in high mountains atop tall trees, the aarakocra are avian humanoids who soar through the sky.",
+      "ability_bonuses": {"dex":2,"wis":1},
+      "speed": 25, "size": "Medium",
+      "languages": ["Common","Aarakocra","Auran"],
+      "traits": ["Flight (fly speed 50 ft, no medium/heavy armor)","Talons (1d4 slashing natural weapon)"],
+      "subraces": []
+    },
+    {
+      "id": "centaur",
+      "name": "Centaur",
+      "icon": "🐴",
+      "description": "Centaurs gallop throughout the multiverse. They tend to have the lower body of a horse and the upper body of a human.",
+      "ability_bonuses": {"str":2,"wis":1},
+      "speed": 40, "size": "Medium",
+      "languages": ["Common","Sylvan"],
+      "traits": ["Charge (move 30 ft then attack: bonus 3d6 dmg)","Hooves (1d4+STR bludgeoning)","Equine Build (counts as Large for carrying)","Survivor (Survival proficiency)","Natural Affinity (Arcana or Nature)"],
+      "subraces": []
+    },
+    {
+      "id": "gith",
+      "name": "Gith",
+      "icon": "🔮",
+      "description": "The gith are humanoids who long ago were enslaved by the mind flayers and psychically enhanced through centuries of captivity.",
+      "ability_bonuses": {"int":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Gith"],
+      "traits": ["Psionic abilities vary by subrace"],
+      "subraces": [
+        {"id":"githyanki","name":"Githyanki","ability_bonuses":{"str":2},"traits":["Medium Armor Proficiency","Martial Prodigy (shortswords/longswords/greatswords)","Githyanki Psionics (Mage Hand, Jump/Misty Step 1/rest, Plane Shift 1/rest)"]},
+        {"id":"githzerai","name":"Githzerai","ability_bonuses":{"wis":2},"traits":["Mental Discipline (advantage vs. charmed/frightened)","Githzerai Psionics (Mage Hand, Shield/Detect Thoughts 1/rest)"]}
+      ]
+    },
+    {
+      "id": "changeling",
+      "name": "Changeling",
+      "icon": "🎭",
+      "description": "Changelings can assume the appearance of any humanoid of similar size. Some work as spies, thieves, or assassins. Others use their gifts for performance.",
+      "ability_bonuses": {"cha":2},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","two extra"],
+      "traits": ["Shapechanger (alter appearance action, any humanoid size)","Changeling Instincts (+2 from: Deception, Insight, Intimidation, Persuasion)"],
+      "subraces": []
+    },
+    {
+      "id": "kalashtar",
+      "name": "Kalashtar",
+      "icon": "💫",
+      "description": "The kalashtar are a compound people: humans who merged with the spirits of a extraplanar world of dreams.",
+      "ability_bonuses": {"wis":2,"cha":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Quori","one extra"],
+      "traits": ["Dual Mind (advantage on WIS saves)","Mental Discipline (immunity to dream/nightmare effects)","Mind Link (telepathy 60 ft)","Severed from Dreams (immune to magic sleep)"],
+      "subraces": []
+    },
+    {
+      "id": "shifter",
+      "name": "Shifter",
+      "icon": "🐺",
+      "description": "Shifters are sometimes called the weretouched. Descended from humans and lycanthropes, they can briefly enhance their animalistic features.",
+      "ability_bonuses": {"dex":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common"],
+      "traits": ["Shifting (bonus action: gain temp HP + subrace bonus for 1 minute, 1/short rest)"],
+      "subraces": [
+        {"id":"beasthide","name":"Beasthide Shifter","ability_bonuses":{"con":2},"traits":["Shifting: +1 AC, +1d6+CON temp HP, Athletics proficiency"]},
+        {"id":"longtooth","name":"Longtooth Shifter","ability_bonuses":{"str":2},"traits":["Shifting: bonus action bite (1d6+STR)"]},
+        {"id":"swiftstride","name":"Swiftstride Shifter","ability_bonuses":{"dex":1,"cha":1},"traits":["Shifting: +10 ft speed, reaction move when enemy ends adjacent"]},
+        {"id":"wildhunt","name":"Wildhunt Shifter","ability_bonuses":{"wis":2},"traits":["Shifting: can't be surprised, advantage on WIS checks, scent 30 ft"]}
+      ]
+    },
+    {
+      "id": "warforged",
+      "name": "Warforged",
+      "icon": "🤖",
+      "description": "The warforged were built to fight in the Last War. Although they were fashioned from wood and metal, they are alive.",
+      "ability_bonuses": {"con":2},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","one extra"],
+      "traits": ["Constructed Resilience (advantage vs. poison, no food/water/sleep needed)","Sentry's Rest (6h inactive, still conscious)","Integrated Protection (+1 AC, armor integrates)","Specialized Design (+1 skill, +1 tool proficiency)"],
+      "subraces": []
+    },
+    {
+      "id": "tortle",
+      "name": "Tortle",
+      "icon": "🐢",
+      "description": "What is it about being a tortle that makes other folk so curious about them? A tortle's shell is a part of their body, growing with them and providing natural armor.",
+      "ability_bonuses": {"str":2,"wis":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Aquan"],
+      "traits": ["Claws (1d4 slashing)","Hold Breath (1 hour)","Natural Armor (AC 17, no DEX mod, no armor)","Shell Defense (withdraw: +4 AC, can't move/use hands, prone)","Survival Instinct (Survival proficiency)"],
+      "subraces": []
+    },
+    {
+      "id": "hadozee",
+      "name": "Hadozee",
+      "icon": "🐒",
+      "description": "Hadozees evolved on a tropical world and were brought into Wildspace by explorers. Their gliding membranes let them sail through the air.",
+      "ability_bonuses": {"dex":2,"int":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common"],
+      "traits": ["Simian Climb (climb = walking speed)","Glide Skin (wings reduce falling dmg to 0, glide 5:1 ratio)"],
+      "subraces": []
+    },
+    {
+      "id": "plasmoid",
+      "name": "Plasmoid",
+      "icon": "🫧",
+      "description": "Plasmoids are amorphous beings that first appeared in the Astral Sea. They have no fixed form, instead flowing and reforming at will.",
+      "ability_bonuses": {"dex":1,"con":1},
+      "speed": 30, "size": "Medium or Small",
+      "languages": ["Common"],
+      "traits": ["Amorphous (squeeze through 1-inch space)","Darkvision","Hold Breath (1 hour)","Natural Resilience (acid and poison resistance)","Shape Self (alter form freely)"],
+      "subraces": []
+    },
+    {
+      "id": "autognome",
+      "name": "Autognome",
+      "icon": "⚙️",
+      "description": "Autognomes are mechanical beings built by rock gnomes. Though built as constructs, they gained sentience and are now recognized as a people.",
+      "ability_bonuses": {"con":2,"int":1},
+      "speed": 30, "size": "Small",
+      "languages": ["Common","Gnomish"],
+      "traits": ["Armored Casing (natural AC 13+DEX)","Built for Success (1/rest add d4 to roll)","Healing Machine (repair yourself with healer's kit)","Mechanical Nature (no food/water/air, immune to sleep)","Sentry's Rest","True Life (advantage vs. death saves)"],
+      "subraces": []
+    },
+    {
+      "id": "thri_kreen",
+      "name": "Thri-kreen",
+      "icon": "🦗",
+      "description": "Thri-kreen are insectoid beings that roam the deserts and savannas of the multiverse. They are tireless hunters.",
+      "ability_bonuses": {"dex":1,"con":1},
+      "speed": 30, "size": "Medium",
+      "languages": ["Common","Thri-kreen"],
+      "traits": ["Chameleon Carapace (advantage Stealth, natural AC 13+DEX)","Darkvision","Multiple Arms (4 arms: hold multiple items, no free hand penalty)","Secondary Arms (2 extra bonus limbs, can't wield weapons)","Sleepless (no sleep needed, still rest)","Thri-kreen Telepathy (transmit images/emotions, 120 ft)"],
+      "subraces": []
     }
   ]
 }

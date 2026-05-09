@@ -4,12 +4,27 @@
 
 const Character = (() => {
   // Keys sind an die User-ID gebunden → jeder Spieler hat eigene Charaktere
+  // uid wird gecacht damit er sich nach Login nicht ändert
+  let _cachedUid = null;
+
   function _uid() {
-    const u = window.Auth?.getUser();
-    return u ? (u.isGuest ? 'guest_' + u.id : 'u_' + u.id) : 'local';
+    if (_cachedUid) return _cachedUid;
+    const u = window.Auth ? window.Auth.getUser() : null;
+    if (u) {
+      _cachedUid = u.isGuest ? 'guest_' + u.id : 'u_' + u.id;
+      return _cachedUid;
+    }
+    return 'local'; // noch kein Login — temporär
   }
-  const STORAGE_KEY = () => `dnd5e_active_${_uid()}`;
-  const ROSTER_KEY  = () => `dnd5e_roster_${_uid()}`;
+
+  // Wird von Auth nach erfolgreichem Login aufgerufen
+  function setUserContext(user) {
+    _cachedUid = user.isGuest ? 'guest_' + user.id : 'u_' + user.id;
+    console.log('[Character] User-Kontext:', _cachedUid);
+  }
+
+  const STORAGE_KEY = () => 'dnd5e_active_' + _uid();
+  const ROSTER_KEY  = () => 'dnd5e_roster_' + _uid();
 
   function createDefault() {
     return {
@@ -266,7 +281,7 @@ const Character = (() => {
   return {
     get data()   { return _char; },
     get roster() { return getRoster(); },
-    save, load, exportJSON, importJSON, reset,
+    save, load, exportJSON, importJSON, reset, setUserContext,
     loadFromRoster, deleteFromRoster,
     syncToServer, loadFromServer, deleteFromServer,
     shareToServer, unshareFromServer, getSharedFromServer,
