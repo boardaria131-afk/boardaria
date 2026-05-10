@@ -5,8 +5,8 @@
 
 const AppVersion = (() => {
   const CURRENT = {
-    version:   '1.15.0',
-    date:      '2025-05-08',
+    version:   '1.20.0',
+    date:      '2025-05-10',
     codename:  'Arcane Forge',
     features: [
       '📄 PDF-Export (vollständiger Charakterbogen)',
@@ -21,6 +21,9 @@ const AppVersion = (() => {
       '🔐 Login / Logout (HexForge-Auth)',
     ],
     changelog: [
+      { v:'1.20.0', date:'2025-05-10', note:'Schnell-Würfe, Unterrassen-Tooltips, DB-Sync, Hintergrund-Fix, PDF-Fix' },
+      { v:'1.19.0', date:'2025-05-09', note:'Cross-Device Sync mit eigenem pg Pool, Sync-UI im Roster' },
+      { v:'1.18.0', date:'2025-05-09', note:'44 Rassen, Background-Fix, uid-Timing-Fix' },
       { v:'1.15.0', date:'2025-05-08', note:'PDF-Export, Spell Slots, Regelwerke, Cross-Device' },
       { v:'1.14.0', date:'2025-05-07', note:'Kampagne, Teilen-Funktion, User-Binding' },
       { v:'1.13.0', date:'2025-05-07', note:'Auth-Fix: REST-Login, Logout-Button' },

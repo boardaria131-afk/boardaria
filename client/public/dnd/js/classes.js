@@ -389,7 +389,106 @@ const ClassesUI = (() => {
     document.getElementById('wiki-cancel-btn')?.addEventListener('click', closeModal);
   }
 
-  /* ── Restore on load ──────────────────────────────────────────────── */
+  /* ── Hintergründe ─────────────────────────────────────────────────── */
+  function renderBackgroundList() {
+    const container = document.getElementById('class-list');
+    if (!container) return;
+    container.innerHTML = '';
+    const bgs = DnDData.backgrounds || [];
+    if (!bgs.length) {
+      container.innerHTML = '<div style="padding:20px;color:#8a7060;font-style:italic;font-size:13px;">Keine Hintergründe geladen</div>';
+      return;
+    }
+    bgs.forEach(bg => {
+      const btn = document.createElement('button');
+      btn.className = 'class-btn' + (Character.data.background === bg.name ? ' selected' : '');
+      btn.dataset.id = bg.id;
+      btn.innerHTML = `
+        <span class="class-btn-icon">${bg.icon}</span>
+        <span class="class-btn-info">
+          <span class="class-btn-name">${bg.name}</span>
+          <span class="class-btn-hit">${(bg.skill_proficiencies||[]).map(s=>s.replace(/_/g,' ')).join(', ')}</span>
+        </span>
+      `;
+      btn.addEventListener('click', () => selectBackground(bg.id));
+      container.appendChild(btn);
+    });
+  }
+
+  function selectBackground(bgId) {
+    document.querySelectorAll('.class-btn').forEach(b =>
+      b.classList.toggle('selected', b.dataset.id === bgId));
+    const bg = DnDData.getBackgroundById(bgId);
+    if (!bg) return;
+    renderBackgroundDetail(bg);
+  }
+
+  function renderBackgroundDetail(bg) {
+    const detail = document.getElementById('class-detail');
+    if (!detail) return;
+
+    detail.innerHTML = `
+      <div class="class-detail-content">
+        <h2>${bg.icon} ${bg.name}</h2>
+        <div class="class-meta">
+          <span class="class-meta-item">Fertigkeiten: ${(bg.skill_proficiencies||[]).map(s=>s.replace(/_/g,' ')).join(', ')}</span>
+          ${(bg.tool_proficiencies||[]).length ? `<span class="class-meta-item">Werkzeuge: ${bg.tool_proficiencies.join(', ')}</span>` : ''}
+          ${bg.languages ? `<span class="class-meta-item">Sprachen: +${bg.languages}</span>` : ''}
+        </div>
+        <p class="class-desc">${bg.description}</p>
+
+        <div style="margin-bottom:12px;">
+          <h3 style="font-family:var(--font-title);font-size:12px;color:var(--blood);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid rgba(139,26,26,0.2);">
+            Merkmal: ${bg.feature}
+          </h3>
+          <p style="font-size:14px;color:var(--ink-light);line-height:1.6;">${bg.feature_desc}</p>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <h3 style="font-family:var(--font-title);font-size:12px;color:var(--blood);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid rgba(139,26,26,0.2);">Ausrüstung</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            ${(bg.equipment||[]).map(e => `<span class="detail-tag" style="font-size:11px;">${e}</span>`).join('')}
+          </div>
+        </div>
+
+        ${(bg.personality_traits||[]).length ? `
+        <div style="margin-bottom:10px;">
+          <h3 style="font-family:var(--font-title);font-size:12px;color:var(--blood);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid rgba(139,26,26,0.2);">Persönlichkeit</h3>
+          ${bg.personality_traits.map(t => `<p style="font-size:13px;color:var(--ink-light);margin-bottom:3px;">• ${t}</p>`).join('')}
+        </div>` : ''}
+
+        ${(bg.ideals||[]).length ? `
+        <div style="margin-bottom:10px;">
+          <h3 style="font-family:var(--font-title);font-size:12px;color:var(--blood);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid rgba(139,26,26,0.2);">Ideale</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            ${bg.ideals.map(i => `<span class="detail-tag" style="font-size:11px;">${i}</span>`).join('')}
+          </div>
+        </div>` : ''}
+
+        <button class="btn-primary" id="btn-apply-bg" style="width:100%;margin-top:8px;">
+          ✅ Hintergrund übernehmen
+        </button>
+      </div>
+    `;
+
+    detail.querySelector('#btn-apply-bg')?.addEventListener('click', () => {
+      const skillProfs = [...(Character.data.proficiencies?.skills || [])];
+      (bg.skill_proficiencies||[]).forEach(sk => {
+        if (!skillProfs.includes(sk)) skillProfs.push(sk);
+      });
+      Character.update({
+        background: bg.name,
+        proficiencies: { ...Character.data.proficiencies, skills: skillProfs },
+      });
+      const bgInput = document.getElementById('char-background');
+      if (bgInput) bgInput.value = bg.name;
+      if (typeof CharUI !== 'undefined') CharUI.renderSkills();
+      showToast('✅ Hintergrund "' + bg.name + '" übernommen!');
+      renderBackgroundList();
+    });
+  }
+
+    /* ── Restore on load ──────────────────────────────────────────────── */
   function restoreFromSave() {
     const { classId } = Character.data;
     if (!classId) return;
