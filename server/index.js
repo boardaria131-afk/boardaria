@@ -231,6 +231,175 @@ app.post('/api/dnd/register', async (req, res) => {
   res.json({ user: { id: result.user.id, username: result.user.username, isGuest: false }, token: result.token });
 });
 // ── Ende D&D Auth ─────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
+// D&D Character CRUD — Cross-Device Sync
+// Eigener pg.Pool aus DATABASE_URL — Tabelle wird automatisch angelegt.
+// Fallback: In-Memory (nur für die laufende Server-Session).
+// ════════════════════════════════════════════════════════════════════════════
+
+let dndPool = null;
+let dndDbReady = false;
+
+(async () => {
+  if (!process.env.DATABASE_URL) {
+    console.log('[DnD] Kein DATABASE_URL — In-Memory Fallback aktiv');
+    return;
+  }
+  try {
+    const { Pool } = require('pg');
+    dndPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    });
+    await dndPool.query(`
+      CREATE TABLE IF NOT EXISTS dnd_characters (
+        id          TEXT        NOT NULL,
+        user_id     INTEGER     NOT NULL,
+        data        JSONB       NOT NULL,
+        is_shared   BOOLEAN     DEFAULT false,
+        shared_at   TIMESTAMPTZ,
+        updated_at  TIMESTAMPTZ DEFAULT NOW(),
+        PRIMARY KEY (id, user_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_dnd_chars_user
+        ON dnd_characters (user_id);
+      CREATE INDEX IF NOT EXISTS idx_dnd_chars_shared
+        ON dnd_characters (is_shared) WHERE is_shared = true;
+    `);
+    dndDbReady = true;
+    console.log('[DnD] Datenbank bereit ✅');
+  } catch(e) {
+    console.error('[DnD] DB-Init fehlgeschlagen, nutze In-Memory:', e.message);
+  }
+})();
+
+const dndCharStore   = new Map(); // userId → [chars]  (Fallback)
+const dndSharedStore = new Map(); // charId → char      (Fallback)
+
+const JWT_SECRET_DND = process.env.JWT_SECRET || 'hexforge-dev-secret-CHANGE-IN-PROD';
+const jwt = require('jsonwebtoken');
+
+function requireDndAuth(req, res, next) {
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
+  if (!token) return res.status(401).json({ error: 'Nicht eingeloggt' });
+  try {
+    const d = jwt.verify(token, JWT_SECRET_DND);
+    req.userId   = d.userId || d.id;
+    req.username = d.username;
+    next();
+  } catch { res.status(401).json({ error: 'Token ungültig' }); }
+}
+
+// GET /api/dnd/characters — alle eigenen Charaktere
+app.get('/api/dnd/characters', requireDndAuth, async (req, res) => {
+  if (dndDbReady) {
+    try {
+      const r = await dndPool.query(
+        'SELECT data FROM dnd_characters WHERE user_id=$1 ORDER BY updated_at DESC',
+        [req.userId]
+      );
+      return res.json({ characters: r.rows.map(x => x.data) });
+    } catch(e) { console.error('[DnD] GET characters:', e.message); }
+  }
+  res.json({ characters: dndCharStore.get(String(req.userId)) || [] });
+});
+
+// POST /api/dnd/characters — speichern / updaten
+app.post('/api/dnd/characters', requireDndAuth, async (req, res) => {
+  const char = req.body;
+  if (!char?.id) return res.status(400).json({ error: 'Ungültige Daten' });
+  char._userId    = req.userId;
+  char._updatedAt = new Date().toISOString();
+  if (dndDbReady) {
+    try {
+      await dndPool.query(`
+        INSERT INTO dnd_characters (id, user_id, data, updated_at)
+        VALUES ($1, $2, $3, NOW())
+        ON CONFLICT (id, user_id)
+        DO UPDATE SET data = $3, updated_at = NOW()
+      `, [char.id, req.userId, JSON.stringify(char)]);
+      return res.json({ ok: true, storage: 'db' });
+    } catch(e) { console.error('[DnD] POST characters:', e.message); }
+  }
+  const uid = String(req.userId);
+  const roster = (dndCharStore.get(uid) || []).filter(c => c.id !== char.id);
+  roster.unshift(char);
+  dndCharStore.set(uid, roster.slice(0, 30));
+  res.json({ ok: true, storage: 'memory' });
+});
+
+// DELETE /api/dnd/characters/:id
+app.delete('/api/dnd/characters/:id', requireDndAuth, async (req, res) => {
+  if (dndDbReady) {
+    try {
+      await dndPool.query(
+        'DELETE FROM dnd_characters WHERE id=$1 AND user_id=$2',
+        [req.params.id, req.userId]
+      );
+      return res.json({ ok: true });
+    } catch(e) { console.error('[DnD] DELETE characters:', e.message); }
+  }
+  const uid = String(req.userId);
+  dndCharStore.set(uid, (dndCharStore.get(uid) || []).filter(c => c.id !== req.params.id));
+  res.json({ ok: true });
+});
+
+// GET /api/dnd/shared — geteilte Charaktere (Kampagne)
+app.get('/api/dnd/shared', requireDndAuth, async (req, res) => {
+  if (dndDbReady) {
+    try {
+      const r = await dndPool.query(
+        'SELECT data FROM dnd_characters WHERE is_shared=true ORDER BY shared_at DESC LIMIT 50'
+      );
+      return res.json({ characters: r.rows.map(x => x.data) });
+    } catch(e) { console.error('[DnD] GET shared:', e.message); }
+  }
+  res.json({ characters: [...dndSharedStore.values()] });
+});
+
+// POST /api/dnd/shared — Charakter teilen
+app.post('/api/dnd/shared', requireDndAuth, async (req, res) => {
+  const char = req.body;
+  if (!char?.id) return res.status(400).json({ error: 'Ungültige Daten' });
+  char._ownerId   = req.userId;
+  char._ownerName = req.username;
+  char._sharedAt  = new Date().toISOString();
+  if (dndDbReady) {
+    try {
+      await dndPool.query(`
+        INSERT INTO dnd_characters (id, user_id, data, is_shared, shared_at, updated_at)
+        VALUES ($1, $2, $3, true, NOW(), NOW())
+        ON CONFLICT (id, user_id)
+        DO UPDATE SET data=$3, is_shared=true, shared_at=NOW(), updated_at=NOW()
+      `, [char.id, req.userId, JSON.stringify(char)]);
+      return res.json({ ok: true });
+    } catch(e) { console.error('[DnD] POST shared:', e.message); }
+  }
+  dndSharedStore.set(char.id, char);
+  res.json({ ok: true });
+});
+
+// DELETE /api/dnd/shared/:id — Teilen aufheben
+app.delete('/api/dnd/shared/:id', requireDndAuth, async (req, res) => {
+  if (dndDbReady) {
+    try {
+      await dndPool.query(
+        'UPDATE dnd_characters SET is_shared=false WHERE id=$1 AND user_id=$2',
+        [req.params.id, req.userId]
+      );
+      return res.json({ ok: true });
+    } catch(e) { console.error('[DnD] DELETE shared:', e.message); }
+  }
+  dndSharedStore.delete(req.params.id);
+  res.json({ ok: true });
+});
+
+// GET /api/dnd/status — Debug
+app.get('/api/dnd/status', (req, res) => {
+  res.json({ db: dndDbReady ? 'postgresql' : 'in-memory', version: '1.21.0' });
+});
+// ══ Ende D&D Character Sync ══════════════════════════════════════════════════
+
 
 
 // ── Socket.IO ─────────────────────────────────────────────
