@@ -203,29 +203,52 @@ const Character = (() => {
   }
 
   async function loadFromServer() {
-    const token = window.Auth ? window.Auth.getToken() : null;
-    if (!token) return [];
+    const auth = window.Auth;
+    const token = auth ? auth.getToken() : null;
+    if (!token) {
+      console.log('[Char] loadFromServer: kein Token');
+      return [];
+    }
     try {
       const resp = await fetch('/api/dnd/characters', {
         headers: { 'Authorization': 'Bearer ' + token },
       });
-      if (!resp.ok) return [];
+      if (!resp.ok) {
+        console.warn('[Char] loadFromServer fehlgeschlagen:', resp.status);
+        return [];
+      }
       const data = await resp.json();
       const chars = data.characters || [];
-      // Direkt in lokalen Roster mergen
-      if (chars.length) {
-        const existing = new Set(getRoster().map(c => c.id));
-        chars.forEach(c => {
-          if (!existing.has(c.id)) {
-            const roster = getRoster();
-            roster.push(c);
-            localStorage.setItem(ROSTER_KEY(), JSON.stringify(roster));
+      console.log('[Char] Server: ' + chars.length + ' Charaktere geladen');
+
+      // Merge: Server-Chars in lokalen Roster einpflegen (Server hat Vorrang)
+      if (chars.length > 0) {
+        const roster = getRoster();
+        const localIds = new Set(roster.map(c => c.id));
+        let added = 0;
+        chars.forEach(serverChar => {
+          const localIdx = roster.findIndex(c => c.id === serverChar.id);
+          if (localIdx >= 0) {
+            // Server-Version ist neuer? Überschreiben
+            const serverTime = new Date(serverChar._updatedAt || 0).getTime();
+            const localTime  = new Date(roster[localIdx]._updatedAt || 0).getTime();
+            if (serverTime > localTime) {
+              roster[localIdx] = serverChar;
+              added++;
+            }
+          } else {
+            roster.unshift(serverChar);
+            added++;
           }
         });
+        if (added > 0) {
+          localStorage.setItem(ROSTER_KEY(), JSON.stringify(roster));
+          console.log('[Char] ' + added + ' Charaktere vom Server in localStorage gemergt');
+        }
       }
       return chars;
-    } catch (e) {
-      console.warn('[Character] Server-Sync fehlgeschlagen:', e.message);
+    } catch(e) {
+      console.warn('[Char] loadFromServer Fehler:', e.message);
       return [];
     }
   }

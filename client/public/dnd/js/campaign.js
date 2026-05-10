@@ -5,8 +5,16 @@
 
 const CampaignUI = (() => {
 
+  let _refreshInterval = null;
+
   function init() {
     renderCampaign();
+    // Auto-Refresh alle 30 Sekunden
+    if (_refreshInterval) clearInterval(_refreshInterval);
+    _refreshInterval = setInterval(() => {
+      const tab = document.getElementById('tab-campaign');
+      if (tab?.classList.contains('active')) renderCampaign();
+    }, 30000);
   }
 
   async function renderCampaign() {
@@ -49,9 +57,12 @@ const CampaignUI = (() => {
       </div>
     `;
 
-    document.getElementById('btn-refresh-campaign')?.addEventListener('click', () => {
-      renderCampaign();
-      showToast('🔄 Aktualisiert');
+    document.getElementById('btn-refresh-campaign')?.addEventListener('click', async () => {
+      const btn = document.getElementById('btn-refresh-campaign');
+      if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+      await renderCampaign();
+      if (btn) { btn.textContent = '🔄 Aktualisieren'; btn.disabled = false; }
+      showToast('🔄 Kampagne aktualisiert');
     });
 
     // Detail-Ansicht bei Klick

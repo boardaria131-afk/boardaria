@@ -172,6 +172,25 @@ const DiceUI = (() => {
 
     tab.innerHTML = `
       <div class="section-header"><h2>Würfelturm</h2></div>
+
+      <!-- Schnell-Aktionen -->
+      <div class="card" style="margin-bottom:16px;">
+        <h3>⚡ Schnell-Würfe</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <button class="btn-quick" data-quick="initiative">🎯 Initiative</button>
+          <button class="btn-quick" data-quick="perception">👁 Wahrnehmung</button>
+          <button class="btn-quick" data-quick="stealth">🌑 Heimlichkeit</button>
+          <button class="btn-quick" data-quick="insight">💡 Einsicht</button>
+          <button class="btn-quick" data-quick="persuasion">🗣 Überzeugung</button>
+          <button class="btn-quick" data-quick="athletics">💪 Athletik</button>
+          <button class="btn-quick" data-quick="arcana">✨ Arkanes</button>
+          <button class="btn-quick" data-quick="investigation">🔍 Nachforschung</button>
+          <button class="btn-quick" data-quick="deception">🎭 Täuschung</button>
+          <button class="btn-quick" data-quick="concentration">🧠 Konz.-Rettung</button>
+        </div>
+        <div id="quick-result" class="dice-detail-panel hidden" style="margin-top:10px;"></div>
+      </div>
+
       <div class="dice-layout">
 
         <!-- Standard-Würfel -->
@@ -252,6 +271,80 @@ const DiceUI = (() => {
 
       </div>
     `;
+
+    // Schnell-Würfe
+    tab.querySelectorAll('.btn-quick').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const type = btn.dataset.quick;
+        const d20  = roll(20);
+        let result;
+
+        if (type === 'initiative') {
+          // DEX-Mod + evtl. Alert feat (+5)
+          const dexMod  = Character.getMod(Character.data.abilities?.dex || 10);
+          const hasAlert = (Character.data.featIds || []).some(id => id === 'alert');
+          const bonus    = dexMod + (hasAlert ? 5 : 0);
+          const total    = d20 + bonus;
+          result = {
+            roll: d20, abilityMod: dexMod,
+            profAdd: hasAlert ? 5 : 0,
+            total, label: hasAlert ? 'Initiative (Alert!)' : 'Initiative',
+            isCrit: d20 === 20, isFumble: d20 === 1,
+            breakdown: 'W20: ' + d20 + '  +  DEX-Mod: ' + (dexMod>=0?'+':'') + dexMod + (hasAlert?' + Alert: +5':'') + '  =  ' + total,
+          };
+        } else if (type === 'concentration') {
+          // CON-Rettungswurf
+          const conMod = Character.getMod(Character.data.abilities?.con || 10);
+          const prof   = (Character.data.proficiencies?.saving_throws||[]).includes('con') ? Character.getProficiencyBonus() : 0;
+          const warcaster = (Character.data.featIds||[]).some(id=>id==='warcaster');
+          const bonus  = conMod + prof;
+          const total  = d20 + bonus;
+          result = {
+            roll: d20, abilityMod: conMod, profAdd: prof,
+            total, label: 'Konzentrations-Rettungswurf' + (warcaster?' (War Caster: Vorteil)':''),
+            isCrit: d20 === 20, isFumble: d20 === 1,
+            breakdown: 'W20: ' + d20 + '  +  CON: ' + (conMod>=0?'+':'') + conMod + (prof?' + Prof: +' + prof:'') + '  =  ' + total,
+          };
+        } else {
+          // Skill-Check
+          const SKILL_MAP_Q = {
+            perception:'wis', stealth:'dex', insight:'wis', persuasion:'cha',
+            athletics:'str', arcana:'int', investigation:'int', deception:'cha',
+          };
+          const SKILL_LABELS = {
+            perception:'Wahrnehmung', stealth:'Heimlichkeit', insight:'Einsicht',
+            persuasion:'Überzeugung', athletics:'Athletik', arcana:'Arkanes Wissen',
+            investigation:'Nachforschung', deception:'Täuschung',
+          };
+          const ability  = SKILL_MAP_Q[type] || 'dex';
+          const abilMod  = Character.getMod(Character.data.abilities?.[ability] || 10);
+          const isPro    = (Character.data.proficiencies?.skills||[]).includes(type);
+          const prof     = isPro ? Character.getProficiencyBonus() : 0;
+          const total    = d20 + abilMod + prof;
+          result = {
+            roll: d20, abilityMod: abilMod, profAdd: prof,
+            total, label: SKILL_LABELS[type] || type,
+            isCrit: d20 === 20, isFumble: d20 === 1,
+            breakdown: 'W20: ' + d20 + '  +  ' + ability.toUpperCase() + '-Mod: ' + (abilMod>=0?'+':'') + abilMod + (prof?' + Prof: +'+prof:'') + '  =  ' + total,
+          };
+        }
+
+        // Quick-Result Panel anzeigen
+        const panel = tab.querySelector('#quick-result');
+        if (panel) {
+          panel.classList.remove('hidden');
+          panel.className = 'dice-detail-panel ' + (result.isCrit?'crit':result.isFumble?'fumble':'');
+          panel.innerHTML = `
+            <div class="dice-detail-label">${result.label}</div>
+            <div class="dice-detail-total ${result.isCrit?'crit':result.isFumble?'fumble':''}">${result.total}</div>
+            <div style="font-size:12px;color:#8a7060;margin-top:4px;">${result.breakdown}</div>
+            ${result.isCrit ? '<div class="dice-crit-banner">⚡ KRITISCH!</div>' : ''}
+            ${result.isFumble ? '<div class="dice-fumble-banner">💀 PATZER!</div>' : ''}
+          `;
+        }
+        addToHistory(result.label, result.total, result.breakdown);
+      });
+    });
 
     // Standard-Würfel
     tab.querySelectorAll('.dice-btn').forEach(btn => {

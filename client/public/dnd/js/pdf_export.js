@@ -315,7 +315,8 @@ const PdfExport = (() => {
     doc.text('D&D 5e SRD · System Reference Document 5.1 (CC BY 4.0) · Nur SRD-Inhalte', W / 2, H - 3, { align: 'center' });
 
     // ── Speichern ─────────────────────────────────────────────
-    const filename = `${(char.name || 'Charakter').replace(/\s+/g, '_')}_${char.rulesetId || '5e'}.pdf`;
+    const safeName = (char.name || 'Charakter').replace(/[^a-zA-Z0-9_\-äöüÄÖÜß ]/g, '').replace(/\s+/g, '_') || 'Charakter';
+    const filename = safeName + '_' + (char.rulesetId || '5e') + '.pdf';
     doc.save(filename);
     showToast('✅ PDF gespeichert: ' + filename);
   }

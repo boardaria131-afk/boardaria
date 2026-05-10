@@ -348,6 +348,21 @@ function renderRosterModal() {
   showModal('📂 Charaktere', `
     ${rosterHTML}
     <div style="border-top:1px solid rgba(200,165,90,0.3);padding-top:12px;margin-top:4px;">
+
+      <!-- Server-Sync Status -->
+      <div id="sync-status" style="font-size:11px;color:#8a7060;margin-bottom:8px;font-style:italic;">
+        ⏳ Prüfe Server-Verbindung…
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="btn-primary" id="modal-sync-btn" style="flex:1;font-size:11px;padding:6px;">
+          ☁ Vom Server laden
+        </button>
+        <button class="btn-secondary" id="modal-push-btn" style="flex:1;font-size:11px;padding:6px;">
+          ⬆ Auf Server sichern
+        </button>
+      </div>
+
       <div style="font-family:var(--font-title);font-size:11px;color:var(--blood);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">JSON Export / Import</div>
       <div style="display:flex;gap:8px;margin-bottom:8px;">
         <button class="btn-secondary" id="modal-export-btn" style="flex:1;">📋 Aktuell exportieren</button>
@@ -361,6 +376,43 @@ function renderRosterModal() {
   `);
 
   // Events
+  // Server-Status prüfen
+  fetch('/api/dnd/status')
+    .then(r => r.json())
+    .then(d => {
+      const el = document.getElementById('sync-status');
+      if (el) el.textContent = '☁ Speicherung: ' + (d.db === 'postgresql' ? '✅ PostgreSQL (persistent)' : '⚠ In-Memory (nicht persistent)');
+    })
+    .catch(() => {
+      const el = document.getElementById('sync-status');
+      if (el) el.textContent = '❌ Server nicht erreichbar — nur lokale Speicherung';
+    });
+
+  // Vom Server laden
+  document.getElementById('modal-sync-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('modal-sync-btn');
+    btn.textContent = '⏳ Lade…'; btn.disabled = true;
+    const chars = await Character.loadFromServer();
+    btn.textContent = '☁ Vom Server laden'; btn.disabled = false;
+    if (chars.length > 0) {
+      showToast('✅ ' + chars.length + ' Charakter(e) vom Server geladen!');
+      closeModal();
+      renderRosterModal(); // neu öffnen mit aktualisierten Daten
+    } else {
+      showToast('⚠ Keine Charaktere auf dem Server gefunden');
+    }
+  });
+
+  // Aktuellen Charakter auf Server sichern
+  document.getElementById('modal-push-btn')?.addEventListener('click', async () => {
+    if (!Character.data.name) { showToast('⚠ Kein Charakter geladen'); return; }
+    const btn = document.getElementById('modal-push-btn');
+    btn.textContent = '⏳ Sende…'; btn.disabled = true;
+    const ok = await Character.syncToServer();
+    btn.textContent = '⬆ Auf Server sichern'; btn.disabled = false;
+    showToast(ok ? '✅ Charakter auf Server gesichert!' : '❌ Server-Sync fehlgeschlagen — Console prüfen');
+  });
+
   document.getElementById('modal-export-btn')?.addEventListener('click', () => {
     navigator.clipboard?.writeText(Character.exportJSON());
     showToast('📋 JSON kopiert!');

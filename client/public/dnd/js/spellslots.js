@@ -48,15 +48,21 @@ const SpellSlotUI = (() => {
     const container = document.getElementById('char-spell-slots');
     if (!container) return;
 
-    const char      = Character.data;
-    const classId   = char.classId;
+    const char       = Character.data;
+    const classId    = char.classId;
     const subclassId = char.subclassId;
-    const level     = char.level || 1;
+    const level      = parseInt(char.level) || 1;
 
+    if (!classId) {
+      container.innerHTML = '<span style="font-style:italic;color:#8a7060;font-size:13px;">Noch keine Klasse gewählt</span>';
+      return;
+    }
+
+    const cls = window.DnDData ? DnDData.getClassById(classId) : null;
     const slotData = getSlots(classId, subclassId, level);
 
     if (!slotData) {
-      container.innerHTML = '<span style="font-style:italic;color:#8a7060;font-size:13px;">Diese Klasse hat keine Spell Slots</span>';
+      container.innerHTML = `<span style="font-style:italic;color:#8a7060;font-size:13px;">${cls?.name || classId} hat keine Spell Slots (nicht-magische Klasse)</span>`;
       return;
     }
 

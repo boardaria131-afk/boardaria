@@ -257,10 +257,11 @@ const ClassesUI = (() => {
               ${race.subraces.map(sub => {
                 const subBonus = Object.entries(sub.ability_bonuses||{}).map(([k,v])=>`${k.toUpperCase()}+${v}`).join(' ');
                 return `
-                  <div class="subclass-card ${currentSub===sub.id?'selected':''}" data-subrace="${sub.id}">
+                  <div class="subclass-card ${currentSub===sub.id?'selected':''}" data-subrace="${sub.id}"
+                       data-tooltip="${[subBonus, ...(sub.traits||[])].filter(Boolean).join(' · ').replace(/"/g,"'")}">
                     <div class="subclass-name">${sub.name} <span style="color:#8a7060;font-size:11px;">${subBonus}</span></div>
                     <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
-                      ${(sub.traits||[]).map(t=>`<span style="background:rgba(201,150,42,0.15);border:1px solid rgba(201,150,42,0.3);border-radius:3px;padding:2px 7px;font-family:var(--font-title);font-size:10px;color:var(--ink-light);">${t}</span>`).join('')}
+                      ${(sub.traits||[]).map(t=>`<span style="background:rgba(201,150,42,0.15);border:1px solid rgba(201,150,42,0.3);border-radius:3px;padding:2px 7px;font-family:var(--font-title);font-size:10px;color:var(--ink-light);" data-tooltip="${t.replace(/"/g,"'")}">${t}</span>`).join('')}
                     </div>
                   </div>`;
               }).join('')}

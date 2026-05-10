@@ -1529,3 +1529,24 @@ textarea {
   margin-left: 8px;
   letter-spacing: 0.5px;
 }
+
+/* ======== QUICK ROLL BUTTONS ======== */
+.btn-quick {
+  background: linear-gradient(135deg, rgba(139,26,26,0.1), rgba(139,26,26,0.05));
+  border: 1px solid rgba(139,26,26,0.25);
+  color: var(--blood);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.btn-quick:hover {
+  background: rgba(139,26,26,0.15);
+  border-color: var(--blood);
+  box-shadow: var(--glow-red);
+  transform: translateY(-1px);
+}
+.btn-quick:active { transform: translateY(0); }
