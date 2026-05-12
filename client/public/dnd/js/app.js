@@ -318,29 +318,46 @@ function initPersistence() {
 function renderRosterModal() {
   const roster = Character.roster;
 
+  // Eigene Chars + geteilte getrennt anzeigen
+  const myId = Character.data.id;
+
   const rosterHTML = roster.length === 0
-    ? '<p style="color:#8a7060;font-style:italic;font-size:13px;">Keine gespeicherten Charaktere.</p>'
-    : `<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+    ? '<p style="color:#8a7060;font-style:italic;font-size:13px;">Keine gespeicherten Charaktere.<br><small>Erstelle einen Charakter und speichere ihn.</small></p>'
+    : `<div style="font-family:var(--font-title);font-size:10px;color:var(--blood);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Meine Charaktere</div>
+       <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
         ${roster.map(c => {
-          const cls  = DnDData.getClassById(c.classId);
-          const isActive = c.id === Character.data.id;
+          const cls      = DnDData.getClassById(c.classId);
+          const isActive = c.id === myId;
+          const isShared = Character.isShared() && isActive;
           return `
-            <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:${isActive?'rgba(139,26,26,0.1)':'rgba(255,255,255,0.5)'};border:1px solid ${isActive?'var(--blood)':'rgba(200,165,90,0.3)'};border-radius:4px;">
+            <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;
+              background:${isActive?'rgba(139,26,26,0.1)':'rgba(255,255,255,0.5)'};
+              border:1px solid ${isActive?'var(--blood)':'rgba(200,165,90,0.3)'};
+              border-radius:4px;">
               <div style="flex:1;">
                 <div style="font-family:var(--font-title);font-size:13px;font-weight:600;color:var(--ink);">
-                  ${isActive?'▶ ':''}${c.name||'Unbenannt'} ${isActive?'<span style="font-size:10px;color:var(--blood);">(aktiv)</span>':''}
+                  ${isActive?'▶ ':''}${c.name||'Unbenannt'}
+                  ${isActive?'<span style="font-size:10px;color:var(--blood);"> (aktiv)</span>':''}
+                  ${isShared?'<span style="font-size:10px;color:#15803d;"> · 🌐</span>':''}
                 </div>
                 <div style="font-size:12px;color:#8a7060;">
-                  ${cls?cls.icon+' '+cls.name:'–'} · Level ${c.level} · ${c.race||'Keine Rasse'}
+                  ${cls?cls.icon+' '+cls.name:'–'} · Level ${c.level||1} · ${c.race||'–'}
+                  · <span style="font-size:10px;">${c.rulesetId||'5e'}</span>
                 </div>
               </div>
-              ${!isActive?`<button class="btn-secondary" data-load="${c.id}" style="padding:4px 10px;font-size:11px;">Laden</button>`:''}
-              <button class="btn-share ${Character.isShared()&&isActive?'btn-shared':''}" data-share="${c.id}"
-                style="padding:4px 10px;font-size:11px;background:${Character.isShared()&&isActive?'rgba(34,197,94,0.15)':'rgba(201,150,42,0.1)'};border:1px solid ${Character.isShared()&&isActive?'#22c55e':'var(--gold)'};color:${Character.isShared()&&isActive?'#15803d':'var(--gold)'};border-radius:4px;cursor:pointer;font-family:var(--font-title);letter-spacing:0.5px;"
-                title="${Character.isShared()&&isActive?'Teilen aufheben':'Mit Kampagne teilen'}">
-                ${Character.isShared()&&isActive?'🌐 Geteilt':'🔒 Privat'}
-              </button>
-              <button class="btn-remove" data-delete="${c.id}" title="Löschen" style="font-size:16px;opacity:0.5;">🗑</button>
+              <div style="display:flex;gap:4px;flex-shrink:0;">
+                ${!isActive?`<button class="btn-secondary" data-load="${c.id}" style="padding:4px 10px;font-size:11px;">Laden</button>`:''}
+                <button data-share="${c.id}"
+                  style="padding:4px 8px;font-size:10px;
+                    background:${isShared?'rgba(34,197,94,0.15)':'rgba(201,150,42,0.08)'};
+                    border:1px solid ${isShared?'#22c55e':'rgba(201,150,42,0.4)'};
+                    color:${isShared?'#15803d':'var(--gold)'};
+                    border-radius:4px;cursor:pointer;font-family:var(--font-title);"
+                  title="${isShared?'Teilen aufheben':'Teilen'}">
+                  ${isShared?'🌐':'🔒'}
+                </button>
+                <button class="btn-remove" data-delete="${c.id}" title="Löschen" style="font-size:14px;opacity:0.5;">🗑</button>
+              </div>
             </div>`;
         }).join('')}
       </div>`;

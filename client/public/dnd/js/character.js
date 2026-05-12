@@ -21,6 +21,25 @@ const Character = (() => {
   function setUserContext(user) {
     _cachedUid = user.isGuest ? 'guest_' + user.id : 'u_' + user.id;
     console.log('[Character] User-Kontext:', _cachedUid);
+
+    // Migration: alte 'local' Chars in user-spezifischen Key verschieben
+    try {
+      const localRoster = JSON.parse(localStorage.getItem('dnd5e_roster_local') || '[]');
+      const localActive = localStorage.getItem('dnd5e_active_local');
+      if (localRoster.length > 0) {
+        const userRoster = JSON.parse(localStorage.getItem(ROSTER_KEY()) || '[]');
+        const userIds = new Set(userRoster.map(c => c.id));
+        localRoster.forEach(c => { if (!userIds.has(c.id)) userRoster.push(c); });
+        localStorage.setItem(ROSTER_KEY(), JSON.stringify(userRoster));
+        if (localActive && !localStorage.getItem(STORAGE_KEY())) {
+          localStorage.setItem(STORAGE_KEY(), localActive);
+        }
+        // Alte 'local' Keys löschen
+        localStorage.removeItem('dnd5e_roster_local');
+        localStorage.removeItem('dnd5e_active_local');
+        console.log('[Character] Lokale Chars migriert:', localRoster.length);
+      }
+    } catch(e) { console.warn('[Character] Migration fehlgeschlagen:', e.message); }
   }
 
   const STORAGE_KEY = () => 'dnd5e_active_' + _uid();
