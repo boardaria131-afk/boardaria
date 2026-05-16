@@ -301,6 +301,12 @@ function initPersistence() {
   });
 
   /* 🌐 Daten-Import (Spells API) */
+  document.getElementById('btn-custom-item')?.addEventListener('click', () => {
+    if (typeof ItemsUI !== 'undefined' && ItemsUI.showCustomItemCreator) {
+      ItemsUI.showCustomItemCreator();
+    }
+  });
+
   document.getElementById('btn-export-pdf')?.addEventListener('click', () => {
     PdfExport.generate();
   });
@@ -555,6 +561,7 @@ function startApp(user) {
   ItemsUI.init();
   FeatsUI.init();
   SpellSlotUI.init();
+  ConditionsUI.init();
   CampaignUI.init();
   JournalUI.init();
   DiceUI.init();
@@ -594,7 +601,14 @@ function startApp(user) {
           }
         })
         .catch(e => console.warn('[App] Server-Sync fehlgeschlagen:', e.message));
-    }, 1500); // kurze Verzögerung damit UI fertig gerendert ist
+    }, 1500);
+
+    // Journal vom Server laden
+    setTimeout(() => {
+      JournalUI.loadFromServer()
+        .then(ok => { if (ok) JournalUI.init(); })
+        .catch(() => {});
+    }, 2500); // kurze Verzögerung damit UI fertig gerendert ist
   }
   SpellsUI.updateCharSummary();
   ItemsUI.updateCharSummary();

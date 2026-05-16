@@ -180,3 +180,93 @@ const ItemsUI = (() => {
 })();
 
 window.ItemsUI = ItemsUI;
+
+// ── Custom Item Creator ───────────────────────────────────────────────────────
+function showCustomItemCreator() {
+  showModal('✨ Eigenes Item erstellen', `
+    <div class="form-group">
+      <label>Name *</label>
+      <input type="text" id="ci-name" placeholder="z.B. Schwert der Ahnen" />
+    </div>
+    <div style="display:flex;gap:8px;">
+      <div class="form-group" style="flex:1;">
+        <label>Typ</label>
+        <select id="ci-type">
+          <option>Weapon</option><option>Armor</option><option>Wondrous Item</option>
+          <option>Potion</option><option>Ring</option><option>Rod</option>
+          <option>Staff</option><option>Wand</option><option>Adventuring Gear</option>
+          <option>Tool</option><option>Homebrew</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label>Seltenheit</label>
+        <select id="ci-rarity">
+          <option>Common</option><option>Uncommon</option><option>Rare</option>
+          <option>Very Rare</option><option>Legendary</option><option>Artifact</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <div class="form-group" style="flex:1;">
+        <label>Schaden / AC / Effekt</label>
+        <input type="text" id="ci-effect" placeholder="z.B. 1d8+2 slashing" />
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label>Gewicht / Kosten</label>
+        <input type="text" id="ci-weight" placeholder="z.B. 3 lb." />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Eigenschaften</label>
+      <input type="text" id="ci-props" placeholder="z.B. Requires Attunement, Magical" />
+    </div>
+    <div class="form-group">
+      <label>Beschreibung *</label>
+      <textarea id="ci-desc" placeholder="Was macht dieses Item besonders?" style="min-height:80px;"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn-primary" id="ci-save" style="flex:1;">✅ Erstellen & hinzufügen</button>
+      <button class="btn-secondary" id="ci-cancel" style="flex:1;">Abbrechen</button>
+    </div>
+    <div id="ci-error" style="color:var(--blood);font-size:13px;margin-top:8px;"></div>
+  `);
+
+  document.getElementById('ci-save')?.addEventListener('click', () => {
+    const name = document.getElementById('ci-name')?.value.trim();
+    const desc = document.getElementById('ci-desc')?.value.trim();
+    const errEl = document.getElementById('ci-error');
+
+    if (!name || !desc) { errEl.textContent = '❌ Name und Beschreibung sind Pflichtfelder'; return; }
+
+    const props = document.getElementById('ci-props')?.value
+      .split(',').map(p => p.trim()).filter(Boolean);
+
+    const customItem = {
+      id:          'custom_' + Date.now().toString(36),
+      name,
+      type:        document.getElementById('ci-type')?.value || 'Homebrew',
+      rarity:      document.getElementById('ci-rarity')?.value || 'Common',
+      weight:      document.getElementById('ci-weight')?.value || '—',
+      cost:        '—',
+      effect:      document.getElementById('ci-effect')?.value || '',
+      damage:      document.getElementById('ci-effect')?.value || '',
+      properties:  props,
+      description: desc,
+      _custom:     true,
+    };
+
+    DnDData.importExternal({ items: [customItem] });
+    Character.addItem(customItem.id);
+    renderList();
+    updateCharSummary();
+    closeModal();
+    showToast('✨ "' + name + '" erstellt und hinzugefügt!');
+  });
+
+  document.getElementById('ci-cancel')?.addEventListener('click', closeModal);
+  setTimeout(() => document.getElementById('ci-name')?.focus(), 100);
+}
+
+// Custom Item Button im Items-Tab verdrahten
+// Wird von app.js nach init() aufgerufen
+ItemsUI.showCustomItemCreator = showCustomItemCreator;

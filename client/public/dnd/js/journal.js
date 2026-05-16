@@ -405,6 +405,54 @@ const JournalUI = (() => {
     });
   }
 
-  return { init };
+  // ── Server-Sync ────────────────────────────────────────────────────────────
+  async function syncToServer() {
+    const token = window.Auth ? window.Auth.getToken() : null;
+    if (!token) return false;
+    try {
+      const all = {};
+      // Alle Adventure-Keys sammeln
+      const prefix = 'dnd_journal_';
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(prefix)) {
+          try { all[k] = JSON.parse(localStorage.getItem(k)); } catch {}
+        }
+      }
+      const resp = await fetch('/api/dnd/journal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ data: all }),
+      });
+      return resp.ok;
+    } catch(e) {
+      console.warn('[Journal] Server-Sync fehlgeschlagen:', e.message);
+      return false;
+    }
+  }
+
+  async function loadFromServer() {
+    const token = window.Auth ? window.Auth.getToken() : null;
+    if (!token) return false;
+    try {
+      const resp = await fetch('/api/dnd/journal', {
+        headers: { 'Authorization': 'Bearer ' + token },
+      });
+      if (!resp.ok) return false;
+      const data = await resp.json();
+      if (data.journal) {
+        Object.entries(data.journal).forEach(([k, v]) => {
+          localStorage.setItem(k, JSON.stringify(v));
+        });
+        console.log('[Journal] Vom Server geladen:', Object.keys(data.journal).length, 'Einträge');
+        return true;
+      }
+    } catch(e) {
+      console.warn('[Journal] Load fehlgeschlagen:', e.message);
+    }
+    return false;
+  }
+
+  return { init, syncToServer, loadFromServer };
 })();
 window.JournalUI = JournalUI;
