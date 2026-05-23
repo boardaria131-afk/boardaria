@@ -3,7 +3,7 @@
  * Cache-First Strategie für vollständige Offline-Nutzung.
  */
 
-const CACHE_NAME = 'dnd5e-v26';
+const CACHE_NAME = 'dnd5e-v27';
 const BASE = '/dnd';
 
 const ASSETS = [
@@ -25,6 +25,7 @@ const ASSETS = [
   `${BASE}/js/journal.js`,
   `${BASE}/js/feats.js`,
   `${BASE}/js/dice.js`,
+  `${BASE}/js/summary.js`,
   `${BASE}/js/attack.js`,
   `${BASE}/js/levelup.js`,
   `${BASE}/js/combat.js`,

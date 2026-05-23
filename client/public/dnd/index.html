@@ -36,6 +36,10 @@
       <button class="tab-btn" data-tab="dice">🎲 Würfeln</button>
     </nav>
 
+    <!-- Tab: Zusammenfassung -->
+    <section class="tab-content" id="tab-summary">
+    </section>
+
     <!-- Tab: Charakter -->
     <section class="tab-content active" id="tab-character">
       <div class="section-header">
@@ -164,6 +168,14 @@
         <div class="card" style="grid-column:1/-1;">
           <h3>⚡ Zustände (Conditions)</h3>
           <div id="conditions-panel" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        </div>
+
+        <!-- Passive Werte -->
+        <div class="card">
+          <h3>Passive Werte</h3>
+          <div id="passive-stats-display">
+            <div style="color:#8a7060;font-style:italic;font-size:13px;">Wird berechnet…</div>
+          </div>
         </div>
 
         <!-- Merkmale -->
@@ -397,6 +409,7 @@
   <script src="js/journal.js"></script>
   <script src="js/feats.js"></script>
   <script src="js/dice.js"></script>
+  <script src="js/summary.js"></script>
   <script src="js/attack.js"></script>
   <script src="js/levelup.js"></script>
   <script src="js/combat.js"></script>

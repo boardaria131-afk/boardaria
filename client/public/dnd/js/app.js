@@ -219,6 +219,37 @@ const CharUI = (() => {
     `;
   }
 
+  function updatePassiveStats() {
+    const char   = Character.data;
+    const ab     = char.abilities || {};
+    const skills = char.proficiencies?.skills || [];
+    const prof   = Character.getProficiencyBonus();
+
+    const wisMod  = Character.getMod(ab.wis || 10);
+    const intMod  = Character.getMod(ab.int || 10);
+
+    const passPerc    = 10 + wisMod + (skills.includes('perception')    ? prof : 0);
+    const passInsight = 10 + wisMod + (skills.includes('insight')       ? prof : 0);
+    const passInvest  = 10 + intMod + (skills.includes('investigation') ? prof : 0);
+
+    const el = document.getElementById('passive-stats-display');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="passive-stat-item" title="10 + WIS-Mod${skills.includes('perception') ? ' + Prof' : ''}">
+        <span class="passive-label">👁 Passive Wahrnehmung</span>
+        <span class="passive-value">${passPerc}</span>
+      </div>
+      <div class="passive-stat-item" title="10 + WIS-Mod${skills.includes('insight') ? ' + Prof' : ''}">
+        <span class="passive-label">💡 Passive Einsicht</span>
+        <span class="passive-value">${passInsight}</span>
+      </div>
+      <div class="passive-stat-item" title="10 + INT-Mod${skills.includes('investigation') ? ' + Prof' : ''}">
+        <span class="passive-label">🔍 Passive Nachforschung</span>
+        <span class="passive-value">${passInvest}</span>
+      </div>
+    `;
+  }
+
   function renderFeatures() {
     const container = document.getElementById('char-features-list');
     if (!container) return;
@@ -281,6 +312,7 @@ function initTabs() {
       document.getElementById(`tab-${btn.dataset.tab}`)?.classList.add('active');
       // Kampagnen-Tab: immer neu rendern (aktueller Share-Status)
       if (btn.dataset.tab === 'campaign') CampaignUI.renderCampaign();
+      if (btn.dataset.tab === 'summary')  SummaryUI.render();
       if (btn.dataset.tab === 'journal')  JournalUI.init();
     });
   });
@@ -563,7 +595,9 @@ function startApp(user) {
   FeatsUI.init();
   SpellSlotUI.init();
   CombatUI.init();
+  updatePassiveStats();
   ConditionsUI.init();
+  SummaryUI.init();
   AttackUI.init();
   LevelUpUI.init();
   CampaignUI.init();
