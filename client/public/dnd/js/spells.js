@@ -193,7 +193,10 @@ const SpellsUI = (() => {
   function renderDetail(spell) {
     const container = document.getElementById('spell-detail');
     if (!container) return;
-    const owned = Character.data.spellIds.includes(spell.id);
+    const owned    = (Character.data.spellIds || []).includes(spell.id);
+    const prepared = (Character.data.preparedSpellIds || []).includes(spell.id);
+    const isConc   = (spell.duration || '').includes('Concentration');
+    const comp     = spell.components || [];
 
     container.innerHTML = `
       <div class="detail-content">
@@ -201,31 +204,43 @@ const SpellsUI = (() => {
         <div class="detail-tags">
           <span class="detail-tag">${spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`}</span>
           <span class="detail-tag">${spell.school}</span>
-          ${spell.components.map(c => `<span class="detail-tag">${c}</span>`).join('')}
+          ${owned ? `<span class="detail-tag" style="background:rgba(34,197,94,0.15);border-color:#22c55e;color:#15803d;">✅ Bekannt</span>` : ''}
+          ${prepared ? `<span class="detail-tag" style="background:rgba(59,130,246,0.15);border-color:#3b82f6;color:#1d4ed8;">📖 Vorbereitet</span>` : ''}
+          ${isConc ? `<span class="detail-tag" style="background:rgba(139,26,26,0.15);border-color:var(--blood);color:var(--blood);">⚠ Konzentration</span>` : ''}
         </div>
-        <div class="detail-stats">
-          <div class="detail-stat">
-            <div class="detail-stat-label">Wirkzeit</div>
-            <div class="detail-stat-value">${spell.casting_time}</div>
+
+        <!-- Verbesserte Info-Tabelle mit spell-info-row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:10px 0;">
+          <div class="spell-info-row">
+            <span class="spell-info-label">⏱ Zauberzeit</span>
+            <span class="spell-info-val">${spell.casting_time}</span>
           </div>
-          <div class="detail-stat">
-            <div class="detail-stat-label">Reichweite</div>
-            <div class="detail-stat-value">${spell.range}</div>
+          <div class="spell-info-row">
+            <span class="spell-info-label">📏 Reichweite</span>
+            <span class="spell-info-val">${spell.range}</span>
           </div>
-          <div class="detail-stat">
-            <div class="detail-stat-label">Dauer</div>
-            <div class="detail-stat-value">${spell.duration}</div>
+          <div class="spell-info-row">
+            <span class="spell-info-label">⏳ Dauer</span>
+            <span class="spell-info-val">${spell.duration}</span>
           </div>
-          <div class="detail-stat">
-            <div class="detail-stat-label">Klassen</div>
-            <div class="detail-stat-value">${(spell.classes || []).join(', ')}</div>
+          <div class="spell-info-row">
+            <span class="spell-info-label">🔮 Komp.</span>
+            <span class="spell-info-val">${comp.join(', ')}</span>
           </div>
         </div>
+
         <p class="detail-desc">${spell.description}</p>
-        <button class="btn-add" id="btn-add-spell" ${owned ? 'disabled' : ''}>
-          ${owned ? '✓ Bereits bekannt' : '+ Zum Charakter hinzufügen'}
-        </button>
-        ${owned ? `<button class="btn-secondary" id="btn-remove-spell" style="width:100%;margin-top:6px;">Entfernen</button>` : ''}
+
+        <div style="margin-top:8px;font-size:12px;color:#8a7060;">
+          Klassen: ${(spell.classes||[]).map(c=>c.charAt(0).toUpperCase()+c.slice(1)).join(', ')}
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;">
+          <button class="btn-add" id="btn-add-spell" ${owned ? 'disabled' : ''}>
+            ${owned ? '✓ Bereits bekannt' : '+ Zum Charakter hinzufügen'}
+          </button>
+          ${owned ? `<button class="btn-secondary" id="btn-remove-spell" style="width:100%;">Entfernen</button>` : ''}
+        </div>
       </div>
     `;
 

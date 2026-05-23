@@ -20,6 +20,41 @@
       "type": "image/png"
     }
   ],
-  "categories": ["games", "entertainment"],
-  "lang": "de"
+  "categories": [
+    "games",
+    "entertainment"
+  ],
+  "lang": "de",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "shortcuts": [
+    {
+      "name": "Würfeln",
+      "short_name": "Würfeln",
+      "description": "Direkt zum Würfelturm",
+      "url": "/dnd/?tab=dice",
+      "icons": [
+        {
+          "src": "/dnd/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Kampagne",
+      "short_name": "Kampagne",
+      "description": "Kampagnen-Übersicht",
+      "url": "/dnd/?tab=campaign",
+      "icons": [
+        {
+          "src": "/dnd/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
 }

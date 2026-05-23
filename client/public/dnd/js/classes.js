@@ -488,7 +488,19 @@ const ClassesUI = (() => {
     });
   }
 
-    /* ── Restore on load ──────────────────────────────────────────────── */
+    // features_detail aus subclass JSON anzeigen
+  function renderSubclassFeatureDetail(sc) {
+    if (!sc.features_detail || !sc.features_detail.length) return "";
+    const charLevel = parseInt(Character.data.level) || 1;
+    return sc.features_detail.map(f => {
+      const unlocked = charLevel >= f.level;
+      return `<div style="opacity:${unlocked?1:0.5};">
+        <strong>Lv.${f.level} ${f.name}</strong>: ${f.desc}
+      </div>`;
+    }).join("");
+  }
+
+  /* ── Restore on load ──────────────────────────────────────────────── */
   function restoreFromSave() {
     const { classId } = Character.data;
     if (!classId) return;

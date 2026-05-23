@@ -6,6 +6,7 @@
 const LevelUpUI = (() => {
 
   function getProfBonus(level) { return Math.ceil(level / 4) + 1; }
+  function getProficiencyBonus() { return getProfBonus(parseInt(Character.data.level)||1); }
 
   function getMod(score) { return Math.floor(((score||10)-10)/2); }
 

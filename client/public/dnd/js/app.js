@@ -588,6 +588,13 @@ function startApp(user) {
 
   Tooltip.init();
   initTabs();
+
+  // URL-Parameter: ?tab=dice öffnet direkt den richtigen Tab (PWA Shortcuts)
+  const urlTab = new URLSearchParams(window.location.search).get('tab');
+  if (urlTab) {
+    const btn = document.querySelector(`.tab-btn[data-tab="${urlTab}"]`);
+    if (btn) btn.click();
+  }
   CharUI.init();
   ClassesUI.init();
   SpellsUI.init();
