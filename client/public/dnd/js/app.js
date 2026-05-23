@@ -548,6 +548,7 @@ async function bootstrap() {
 function startApp(user) {
   // User-Kontext setzen BEVOR Charaktere geladen werden
   Character.setUserContext(user);
+  hookCharacterSave();
 
   // Charakter laden: zuerst localStorage, dann Server-Sync
   Character.load();
@@ -561,7 +562,10 @@ function startApp(user) {
   ItemsUI.init();
   FeatsUI.init();
   SpellSlotUI.init();
+  CombatUI.init();
   ConditionsUI.init();
+  AttackUI.init();
+  LevelUpUI.init();
   CampaignUI.init();
   JournalUI.init();
   DiceUI.init();

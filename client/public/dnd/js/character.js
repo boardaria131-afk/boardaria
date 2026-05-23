@@ -323,6 +323,8 @@ const Character = (() => {
   return {
     get data()   { return _char; },
     get roster() { return getRoster(); },
+    getProficiencyBonus: () => Math.ceil((parseInt(Character.data.level)||1)/4)+1,
+    getMod: score => Math.floor(((score||10)-10)/2),
     save, load, exportJSON, importJSON, reset, setUserContext,
     loadFromRoster, deleteFromRoster,
     syncToServer, loadFromServer, deleteFromServer,
