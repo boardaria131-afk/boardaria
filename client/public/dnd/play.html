@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>D&D — Spielansicht</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0d0a06;
+      --card:     rgba(255,255,255,0.06);
+      --border:   rgba(201,150,42,0.25);
+      --gold:     #c9962a;
+      --blood:    #8b1a1a;
+      --blood-l:  #c13030;
+      --parch:    #f5e6c8;
+      --ink:      #e8d5b0;
+      --ink-d:    #a09070;
+      --green:    #4ade80;
+      --yellow:   #fbbf24;
+      --red:      #f87171;
+      --blue:     #60a5fa;
+      --ft:       'Cinzel', serif;
+      --fb:       'Crimson Text', serif;
+      --r:        10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; background: var(--bg); color: var(--ink); font-family: var(--fb); }
+
+    /* ── HEADER ── */
+    .play-header {
+      position: sticky; top: 0; z-index: 100;
+      background: linear-gradient(135deg, #1a1208, #0d0a06);
+      border-bottom: 1px solid var(--gold);
+      padding: 10px 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .play-char-icon { font-size: 26px; }
+    .play-char-info { flex: 1; min-width: 0; }
+    .play-char-name {
+      font-family: var(--ft); font-size: 15px; font-weight: 700;
+      color: var(--parch); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .play-char-sub { font-size: 11px; color: var(--ink-d); }
+    .play-back {
+      font-family: var(--ft); font-size: 10px; color: var(--gold);
+      letter-spacing: 1px; border: 1px solid var(--border);
+      border-radius: 20px; padding: 5px 12px; background: none; cursor: pointer;
+      text-decoration: none; display: flex; align-items: center; gap: 4px;
+      white-space: nowrap;
+    }
+
+    /* ── COMBAT BAR ── */
+    .combat-bar {
+      display: flex; gap: 6px; padding: 10px 12px;
+      background: rgba(139,26,26,0.08);
+      border-bottom: 1px solid rgba(139,26,26,0.2);
+      flex-wrap: wrap;
+    }
+    .cb-block {
+      display: flex; flex-direction: column; align-items: center;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 6px 10px; min-width: 58px; gap: 2px;
+    }
+    .cb-label { font-family: var(--ft); font-size: 8px; color: var(--ink-d); text-transform: uppercase; letter-spacing: 1px; }
+    .cb-val { font-family: var(--ft); font-size: 20px; font-weight: 800; line-height: 1; }
+    .cb-hp  .cb-val { color: var(--green); }
+    .cb-hp.warn  .cb-val { color: var(--yellow); }
+    .cb-hp.dang  .cb-val { color: var(--red); }
+    .cb-ac  .cb-val { color: var(--gold); }
+    .cb-init .cb-val { color: var(--blue); }
+    .cb-speed .cb-val { color: var(--parch); font-size: 14px; }
+    .cb-passive .cb-val { color: var(--parch); font-size: 14px; }
+    .cb-hp { cursor: pointer; position: relative; }
+    .cb-hp-sub { font-family: var(--ft); font-size: 10px; color: var(--ink-d); }
+
+    /* ── SECTIONS ── */
+    .play-body { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+
+    .play-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+    .play-section-title {
+      font-family: var(--ft); font-size: 11px; font-weight: 600;
+      color: var(--gold); text-transform: uppercase; letter-spacing: 1.5px;
+      padding: 8px 12px; background: rgba(201,150,42,0.08);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .play-section-body { padding: 10px 12px; }
+
+    /* ── HP POPUP ── */
+    .hp-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      z-index: 200; display: flex; align-items: center; justify-content: center;
+    }
+    .hp-popup {
+      background: #1a1208; border: 1px solid var(--gold); border-radius: var(--r);
+      padding: 20px; min-width: 260px; box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+    .hp-popup h3 { font-family: var(--ft); font-size: 14px; color: var(--gold); margin-bottom: 12px; text-align: center; }
+    .hp-number-row { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 12px; }
+    .hp-big-btn {
+      width: 50px; height: 50px; border-radius: 50%; border: none;
+      font-size: 28px; font-weight: 700; cursor: pointer; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hp-big-btn.minus { background: rgba(248,113,113,0.2); color: var(--red); border: 1px solid var(--red); }
+    .hp-big-btn.plus  { background: rgba(74,222,128,0.2); color: var(--green); border: 1px solid var(--green); }
+    .hp-number-display {
+      font-family: var(--ft); font-size: 42px; font-weight: 800;
+      color: var(--parch); min-width: 80px; text-align: center;
+    }
+    .hp-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .hp-input-row input {
+      flex: 1; background: rgba(255,255,255,0.08); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--parch); font-family: var(--ft); font-size: 18px;
+      padding: 8px; text-align: center;
+    }
+    .hp-quick-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .hp-quick { flex: 1; min-width: 48px; padding: 6px; font-family: var(--ft); font-size: 11px;
+      border-radius: 6px; border: 1px solid var(--border); background: var(--card);
+      color: var(--ink); cursor: pointer; text-align: center; }
+    .hp-apply-dmg { width: 100%; padding: 10px; background: rgba(139,26,26,0.3); border: 1px solid var(--blood-l); border-radius: 6px; color: var(--red); font-family: var(--ft); font-size: 13px; cursor: pointer; margin-bottom: 6px; }
+    .hp-apply-heal { width: 100%; padding: 10px; background: rgba(74,222,128,0.15); border: 1px solid var(--green); border-radius: 6px; color: var(--green); font-family: var(--ft); font-size: 13px; cursor: pointer; }
+
+    /* ── CONDITIONS ── */
+    .cond-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cond-pill {
+      display: flex; align-items: center; gap: 4px;
+      padding: 5px 10px; border-radius: 20px; font-family: var(--ft); font-size: 10px;
+      letter-spacing: 0.5px; border: 1px solid; cursor: pointer;
+      transition: all 0.15s; user-select: none;
+    }
+    .cond-pill.inactive { border-color: rgba(200,165,90,0.2); color: var(--ink-d); background: transparent; }
+    .cond-pill.active { background: rgba(139,26,26,0.2); border-color: var(--blood-l); color: #f0a0a0; }
+    .cond-pill.active.good { background: rgba(74,222,128,0.15); border-color: var(--green); color: var(--green); }
+
+    /* ── SPELL SLOTS ── */
+    .slot-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .slot-level { font-family: var(--ft); font-size: 10px; color: var(--blood-l); width: 50px; }
+    .slot-bubbles { display: flex; gap: 5px; flex: 1; }
+    .slot-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1.5px solid var(--blood-l); background: transparent;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; transition: all 0.15s; color: var(--blood-l);
+    }
+    .slot-dot.used { background: rgba(139,26,26,0.3); color: rgba(248,113,113,0.4); }
+    .slot-dot:hover { transform: scale(1.1); }
+    .slot-count { font-family: var(--ft); font-size: 11px; color: var(--ink-d); }
+
+    /* ── SPELLS LIST ── */
+    .spell-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 0; border-bottom: 1px solid rgba(200,165,90,0.1);
+      font-size: 14px;
+    }
+    .spell-row:last-child { border-bottom: none; }
+    .spell-lvl-badge {
+      font-family: var(--ft); font-size: 10px; min-width: 22px; height: 22px;
+      border-radius: 50%; background: rgba(139,26,26,0.2);
+      border: 1px solid rgba(139,26,26,0.4); color: var(--blood-l);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .spell-name { flex: 1; color: var(--ink); }
+    .spell-school { font-size: 11px; color: var(--ink-d); }
+
+    /* ── STATS GRID ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .stat-cell { text-align: center; padding: 6px 4px; }
+    .stat-label { font-family: var(--ft); font-size: 9px; color: var(--ink-d); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-val { font-family: var(--ft); font-size: 20px; font-weight: 700; color: var(--parch); }
+    .stat-mod { font-family: var(--ft); font-size: 13px; color: var(--blood-l); }
+
+    /* ── SKILLS ── */
+    .skill-row { display: flex; align-items: center; gap: 6px; padding: 4px 0; font-size: 13px; }
+    .skill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .skill-dot.prof { background: var(--green); }
+    .skill-dot.none { background: var(--ink-d); opacity: 0.3; }
+    .skill-name { flex: 1; color: var(--ink); }
+    .skill-ability { font-size: 10px; color: var(--ink-d); }
+    .skill-bonus { font-family: var(--ft); font-size: 13px; font-weight: 700; color: var(--gold); }
+
+    /* ── RAST BUTTONS ── */
+    .rest-row { display: flex; gap: 8px; }
+    .rest-btn {
+      flex: 1; padding: 10px; border-radius: 8px; font-family: var(--ft);
+      font-size: 12px; letter-spacing: 0.5px; cursor: pointer; border: 1px solid;
+      transition: all 0.2s;
+    }
+    .rest-short { background: rgba(201,150,42,0.1); border-color: var(--gold); color: var(--gold); }
+    .rest-long  { background: rgba(139,26,26,0.1); border-color: var(--blood-l); color: #f0a0a0; }
+
+    /* ── TOAST ── */
+    .play-toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(26,18,8,0.95); border: 1px solid var(--gold);
+      border-radius: 20px; padding: 8px 20px; font-family: var(--ft);
+      font-size: 12px; color: var(--gold); z-index: 300;
+      animation: toastIn 0.3s ease; white-space: nowrap;
+    }
+    @keyframes toastIn { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+    /* ── COLLAPSIBLE ── */
+    .play-section.collapsed .play-section-body { display: none; }
+    .collapse-arrow { font-size: 12px; transition: transform 0.2s; cursor: pointer; }
+    .play-section.collapsed .collapse-arrow { transform: rotate(-90deg); }
+
+    /* ── OFFLINE BANNER ── */
+    .offline-banner {
+      background: rgba(248,113,113,0.1); border-bottom: 1px solid var(--red);
+      padding: 6px 12px; font-size: 11px; color: var(--red); text-align: center;
+      font-family: var(--ft); letter-spacing: 0.5px; display: none;
+    }
+
+    /* ── MOBILE OPTIMIERUNGEN ── */
+
+    /* Safe Area für iPhone Notch + Home-Bar */
+    body {
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+    .play-header {
+      padding-top: max(10px, env(safe-area-inset-top));
+    }
+
+    /* Combat Bar: scrollbar statt umbrechen auf kleinen Screens */
+    .combat-bar {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .combat-bar::-webkit-scrollbar { display: none; }
+    .cb-block { flex-shrink: 0; }
+
+    /* Section-Title: großes Touch-Target */
+    .play-section-title {
+      min-height: 48px;
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* HP-Popup: volle Breite auf Mobilgeräten */
+    .hp-popup {
+      min-width: min(280px, 92vw);
+      max-width: 92vw;
+      width: 92vw;
+    }
+    .hp-big-btn { width: 56px; height: 56px; font-size: 32px; }
+    .hp-number-display { font-size: 48px; }
+
+    /* Conditions: gleichmäßige Breite auf Mobile */
+    .cond-pill { flex: 1 0 calc(33% - 6px); justify-content: center; text-align: center; }
+
+    /* Spell-Row: Wrappt Casting-Info auf eigen Zeile */
+    @media (max-width: 380px) {
+      .spell-row { flex-wrap: wrap; }
+      .spell-school { width: 100%; padding-left: 30px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .cb-val { font-size: 18px; }
+    }
+
+    /* Touch-Feedback */
+    .cond-pill:active, .slot-dot:active, .rest-btn:active,
+    .hp-quick:active, .hp-apply-dmg:active, .hp-apply-heal:active {
+      opacity: 0.7;
+      transform: scale(0.97);
+    }
+
+    /* Slot-Dots größer für Touch */
+    .slot-dot { width: 34px; height: 34px; font-size: 16px; }
+
+    /* Kein Text-Select überall */
+    * { -webkit-user-select: none; user-select: none; }
+    input { -webkit-user-select: text; user-select: text; }
+
+    /* Smooth Scroll */
+    html { scroll-behavior: smooth; }
+
+    /* Landscape: zwei Spalten */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .play-body { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      #sec-conditions { grid-column: 1/-1; }
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="offline-banner" id="offline-banner">📵 Offline — Änderungen werden lokal gespeichert</div>
+
+<!-- HEADER -->
+<div class="play-header">
+  <div class="play-char-icon" id="play-icon">⚔</div>
+  <div class="play-char-info">
+    <div class="play-char-name" id="play-name">Lade Charakter…</div>
+    <div class="play-char-sub" id="play-sub">–</div>
+  </div>
+  <a href="/dnd/" class="play-back">← Builder</a>
+</div>
+
+<!-- COMBAT BAR -->
+<div class="combat-bar" id="combat-bar">
+  <div class="cb-block cb-hp" id="cb-hp" onclick="showHPPopup()">
+    <div class="cb-label">HP</div>
+    <div class="cb-val" id="cb-hp-val">–</div>
+    <div class="cb-hp-sub" id="cb-hp-sub">/ –</div>
+  </div>
+  <div class="cb-block cb-ac">
+    <div class="cb-label">AC</div>
+    <div class="cb-val" id="cb-ac-val">–</div>
+  </div>
+  <div class="cb-block cb-init">
+    <div class="cb-label">Init</div>
+    <div class="cb-val" id="cb-init-val">–</div>
+  </div>
+  <div class="cb-block cb-speed">
+    <div class="cb-label">Speed</div>
+    <div class="cb-val" id="cb-speed-val">–</div>
+  </div>
+  <div class="cb-block cb-passive">
+    <div class="cb-label">Pass. WN</div>
+    <div class="cb-val" id="cb-passive-val">–</div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="play-body">
+
+  <!-- Conditions -->
+  <div class="play-section" id="sec-conditions">
+    <div class="play-section-title" onclick="toggleSection('sec-conditions')">
+      ⚡ Zustände
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="play-section-body">
+      <div class="cond-grid" id="play-cond-grid"></div>
+    </div>
+  </div>
+
+  <!-- Rasten -->
+  <div class="play-section">
+    <div class="play-section-title">☕ Rasten</div>
+    <div class="play-section-body">
+      <div class="rest-row">
+        <button class="rest-btn rest-short" onclick="shortRest()">☕ Kurze Rast</button>
+        <button class="rest-btn rest-long"  onclick="longRest()">🌙 Lange Rast</button>
+      </div>
+      <div id="rest-info" style="font-size:11px;color:var(--ink-d);margin-top:8px;text-align:center;"></div>
+    </div>
+  </div>
+
+  <!-- Spell Slots -->
+  <div class="play-section" id="sec-slots">
+    <div class="play-section-title" onclick="toggleSection('sec-slots')">
+      ✨ Spell Slots
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="play-section-body" id="play-slots-body">
+      <div style="color:var(--ink-d);font-style:italic;font-size:13px;">Keine Spell Slots</div>
+    </div>
+  </div>
+
+  <!-- Vorbereitete Spells -->
+  <div class="play-section" id="sec-spells">
+    <div class="play-section-title" onclick="toggleSection('sec-spells')">
+      📖 Vorbereitete Spells
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="play-section-body" id="play-spells-body">
+      <div style="color:var(--ink-d);font-style:italic;font-size:13px;">Keine vorbereiteten Spells</div>
+    </div>
+  </div>
+
+  <!-- Attribute -->
+  <div class="play-section" id="sec-attrs">
+    <div class="play-section-title" onclick="toggleSection('sec-attrs')">
+      💪 Attribute & Saves
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="play-section-body">
+      <div class="stats-grid" id="play-attrs"></div>
+      <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">
+        <div style="font-family:var(--ft);font-size:9px;color:var(--ink-d);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Rettungswürfe</div>
+        <div id="play-saves" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fertigkeiten -->
+  <div class="play-section collapsed" id="sec-skills">
+    <div class="play-section-title" onclick="toggleSection('sec-skills')">
+      🎯 Fertigkeiten
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="play-section-body" id="play-skills-body"></div>
+  </div>
+
+  <!-- Klassenmerkmale -->
+  <div class="play-section collapsed" id="sec-features">
+    <div class="play-section-title" onclick="toggleSection('sec-features')">
+      ⚔ Klassenmerkmale
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="play-section-body" id="play-features-body"></div>
+  </div>
+
+</div><!-- /play-body -->
+
+<!-- HP POPUP -->
+<div class="hp-overlay" id="hp-overlay" style="display:none;" onclick="closeHPPopup(event)">
+  <div class="hp-popup" onclick="event.stopPropagation()">
+    <h3>HP ändern</h3>
+    <div class="hp-number-row">
+      <button class="hp-big-btn minus" onclick="adjustHP(-1)">−</button>
+      <div class="hp-number-display" id="hp-popup-current">10</div>
+      <button class="hp-big-btn plus"  onclick="adjustHP(+1)">+</button>
+    </div>
+    <div class="hp-input-row">
+      <input type="number" id="hp-amount" placeholder="Menge" min="1" max="999" />
+    </div>
+    <div class="hp-quick-btns">
+      <div class="hp-quick" onclick="quickAmount(1)">1</div>
+      <div class="hp-quick" onclick="quickAmount(3)">3</div>
+      <div class="hp-quick" onclick="quickAmount(5)">5</div>
+      <div class="hp-quick" onclick="quickAmount(10)">10</div>
+      <div class="hp-quick" onclick="quickAmount(20)">20</div>
+    </div>
+    <button class="hp-apply-dmg"  onclick="applyHP(-1)">⚔ Schaden nehmen</button>
+    <button class="hp-apply-heal" onclick="applyHP(+1)">💚 Heilen</button>
+  </div>
+</div>
+
+<script>
+// ── Daten laden ───────────────────────────────────────────────────────────────
+let char = null;
+let spellsData = {};
+let classesData = {};
+let slotConfig = {};
+
+async function loadAll() {
+  // Charakter aus localStorage
+  const token = localStorage.getItem('dnd_token');
+  const userRaw = localStorage.getItem('dnd_user');
+  const user = userRaw ? JSON.parse(userRaw) : null;
+  const uid = user ? (user.isGuest ? 'guest_'+user.id : 'u_'+user.id) : 'local';
+  const activeId = localStorage.getItem('dnd5e_active_'+uid);
+  const roster = JSON.parse(localStorage.getItem('dnd5e_roster_'+uid) || '[]');
+  char = roster.find(c => c.id === activeId) || roster[0] || null;
+
+  if (!char) {
+    document.getElementById('play-name').textContent = 'Kein Charakter geladen';
+    document.getElementById('play-sub').textContent = 'Gehe zum Builder und lade einen Charakter';
+    return;
+  }
+
+  // Daten laden
+  try {
+    const [spellsResp, classesResp, slotsResp] = await Promise.all([
+      fetch('/dnd/data/spells.json'),
+      fetch('/dnd/data/classes.json'),
+      fetch('/dnd/data/spell_slots.json'),
+    ]);
+    const sd = await spellsResp.json();
+    const cd = await classesResp.json();
+    slotConfig = await slotsResp.json();
+
+    sd.spells.forEach(s => spellsData[s.id] = s);
+    cd.classes.forEach(c => { classesData[c.id] = c; });
+  } catch(e) { console.warn('Daten-Ladefehler:', e); }
+
+  render();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function fmtMod(n) { return (n >= 0 ? '+' : '') + n; }
+function getMod(score) { return Math.floor(((score || 10) - 10) / 2); }
+function getProfBonus() { return Math.ceil((char.level||1)/4)+1; }
+
+function render() {
+  const ab    = char.abilities || {};
+  const prof  = getProfBonus();
+  const cls   = classesData[char.classId];
+  const skills = char.proficiencies?.skills || [];
+  const saves  = char.proficiencies?.saving_throws || [];
+
+  // Header
+  document.getElementById('play-icon').textContent = cls?.icon || '⚔';
+  document.getElementById('play-name').textContent = char.name || 'Unbenannt';
+  document.getElementById('play-sub').textContent =
+    `${cls?.name||'–'} ${char.level||1} · ${char.race||'–'} · Prof +${prof}`;
+
+  // Combat Bar
+  const hp    = parseInt(char.hp_current) || 0;
+  const hpMax = parseInt(char.hp_max) || 1;
+  const ratio = hp / hpMax;
+  const hpEl  = document.getElementById('cb-hp');
+  hpEl.className = 'cb-block cb-hp' + (ratio<=0.25?' dang':ratio<=0.5?' warn':'');
+  document.getElementById('cb-hp-val').textContent  = hp;
+  document.getElementById('cb-hp-sub').textContent  = '/ ' + hpMax;
+  document.getElementById('cb-ac-val').textContent  = char.ac || 10;
+  document.getElementById('cb-init-val').textContent = fmtMod(getMod(ab.dex));
+  document.getElementById('cb-speed-val').textContent = (char.speed||30)+'ft';
+  const passPerc = 10 + getMod(ab.wis) + (skills.includes('perception') ? prof : 0);
+  document.getElementById('cb-passive-val').textContent = passPerc;
+
+  // Rest Info
+  document.getElementById('rest-info').textContent =
+    `1d${cls?.hit_die||8} + CON ${fmtMod(getMod(ab.con))} bei kurzer Rast`;
+
+  // Conditions
+  renderConditions();
+
+  // Spell Slots
+  renderSlots();
+
+  // Vorbereitete Spells
+  renderPreparedSpells();
+
+  // Attribute
+  const ATTRS = ['str','dex','con','int','wis','cha'];
+  const ALBL  = {str:'STR',dex:'DEX',con:'CON',int:'INT',wis:'WIS',cha:'CHA'};
+  document.getElementById('play-attrs').innerHTML = ATTRS.map(a => `
+    <div class="stat-cell">
+      <div class="stat-label">${ALBL[a]}</div>
+      <div class="stat-val">${ab[a]||10}</div>
+      <div class="stat-mod">${fmtMod(getMod(ab[a]||10))}</div>
+    </div>
+  `).join('');
+
+  // Saves
+  document.getElementById('play-saves').innerHTML = ATTRS.map(a => {
+    const isPro = saves.includes(a);
+    const total = getMod(ab[a]||10) + (isPro ? prof : 0);
+    return `<div style="font-family:var(--ft);font-size:11px;padding:3px 8px;border-radius:10px;
+      background:${isPro?'rgba(74,222,128,0.1)':'var(--card)'};
+      border:1px solid ${isPro?'var(--green)':'var(--border)'};
+      color:${isPro?'var(--green)':'var(--ink-d)'};">
+      ${ALBL[a]} ${fmtMod(total)}
+    </div>`;
+  }).join('');
+
+  // Fertigkeiten
+  const SKILL_MAP = {
+    acrobatics:'dex',animal_handling:'wis',arcana:'int',athletics:'str',
+    deception:'cha',history:'int',insight:'wis',intimidation:'cha',
+    investigation:'int',medicine:'wis',nature:'int',perception:'wis',
+    performance:'cha',persuasion:'cha',religion:'int',sleight_of_hand:'dex',
+    stealth:'dex',survival:'wis',
+  };
+  const SLBL = {
+    acrobatics:'Akrobatik',animal_handling:'Mit Tieren',arcana:'Arkanes',
+    athletics:'Athletik',deception:'Täuschung',history:'Geschichte',
+    insight:'Einsicht',intimidation:'Einschüchtern',investigation:'Nachforschung',
+    medicine:'Medizin',nature:'Naturkunde',perception:'Wahrnehmung',
+    performance:'Aufführung',persuasion:'Überzeugung',religion:'Religion',
+    sleight_of_hand:'Taschenspielerei',stealth:'Heimlichkeit',survival:'Überleben',
+  };
+  // Sortiert: erst profizient
+  const sorted = Object.keys(SKILL_MAP).sort((a,b) => {
+    const ap = skills.includes(a), bp = skills.includes(b);
+    return ap === bp ? 0 : ap ? -1 : 1;
+  });
+  document.getElementById('play-skills-body').innerHTML = sorted.map(sk => {
+    const isPro  = skills.includes(sk);
+    const total  = getMod(ab[SKILL_MAP[sk]]||10) + (isPro ? prof : 0);
+    return `<div class="skill-row">
+      <div class="skill-dot ${isPro?'prof':'none'}"></div>
+      <div class="skill-name">${SLBL[sk]}</div>
+      <div class="skill-ability">${SKILL_MAP[sk].toUpperCase()}</div>
+      <div class="skill-bonus">${fmtMod(total)}</div>
+    </div>`;
+  }).join('');
+
+  // Klassenmerkmale
+  const features = [...(char.class_features||[]), ...(char.race_traits||[])];
+  document.getElementById('play-features-body').innerHTML = features.length
+    ? features.map(f => `<div style="padding:5px 0;border-bottom:1px solid rgba(200,165,90,0.1);font-size:13px;">${f}</div>`).join('')
+    : '<div style="color:var(--ink-d);font-style:italic;font-size:13px;">Keine Merkmale eingetragen</div>';
+}
+
+// ── Conditions ────────────────────────────────────────────────────────────────
+const ALL_CONDITIONS = [
+  {id:'concentration',name:'Konzentration',icon:'🧠',good:true},
+  {id:'inspiration',  name:'Inspiration',  icon:'⭐',good:true},
+  {id:'raging',       name:'Wütend',       icon:'🔥',good:true},
+  {id:'hidden',       name:'Versteckt',    icon:'🫥',good:true},
+  {id:'blinded',      name:'Blind',        icon:'👁️'},
+  {id:'charmed',      name:'Bezaubert',    icon:'💕'},
+  {id:'deafened',     name:'Taub',         icon:'🔇'},
+  {id:'frightened',   name:'Verängstigt',  icon:'😱'},
+  {id:'grappled',     name:'Gegriffen',    icon:'🤼'},
+  {id:'invisible',    name:'Unsichtbar',   icon:'👻',good:true},
+  {id:'paralyzed',    name:'Gelähmt',      icon:'⚡'},
+  {id:'poisoned',     name:'Vergiftet',    icon:'🤢'},
+  {id:'prone',        name:'Liegend',      icon:'⬇️'},
+  {id:'restrained',   name:'Festgehalten', icon:'🔒'},
+  {id:'stunned',      name:'Betäubt',      icon:'💥'},
+  {id:'exhaustion_1', name:'Erschöpf.1',   icon:'😓'},
+  {id:'exhaustion_2', name:'Erschöpf.2',   icon:'😫'},
+  {id:'exhaustion_3', name:'Erschöpf.3',   icon:'🥵'},
+  {id:'death_save_1', name:'Tod-Save ✓',   icon:'💔'},
+  {id:'death_save_2', name:'Tod-Save ✓✓',  icon:'💔'},
+];
+
+function renderConditions() {
+  const active = char.conditions || [];
+  const grid = document.getElementById('play-cond-grid');
+  grid.innerHTML = ALL_CONDITIONS.map(c => {
+    const isActive = active.includes(c.id);
+    return `<div class="cond-pill ${isActive?'active'+(c.good?' good':''):'inactive'}"
+      onclick="toggleCondition('${c.id}')">
+      ${c.icon} ${c.name}
+    </div>`;
+  }).join('');
+}
+
+function toggleCondition(id) {
+  haptic();
+  const active = [...(char.conditions || [])];
+  const idx    = active.indexOf(id);
+  if (idx >= 0) active.splice(idx, 1); else active.push(id);
+  char.conditions = active;
+  saveChar();
+  renderConditions();
+}
+
+// ── Spell Slots ───────────────────────────────────────────────────────────────
+const CASTER_TYPE = {
+  bard:'full_caster',cleric:'full_caster',druid:'full_caster',
+  sorcerer:'full_caster',wizard:'full_caster',
+  paladin:'half_caster',ranger:'half_caster',
+  artificer:'artificer',warlock:'warlock',
+};
+
+function renderSlots() {
+  const body  = document.getElementById('play-slots-body');
+  const cType = CASTER_TYPE[char.classId];
+  if (!cType || !slotConfig[cType]) {
+    body.innerHTML = '<div style="color:var(--ink-d);font-style:italic;font-size:13px;">Kein Zauberer</div>';
+    return;
+  }
+
+  const lvl  = String(char.level || 1);
+  const row  = slotConfig[cType][lvl];
+  if (!row) { body.innerHTML = '<div style="color:var(--ink-d);font-size:13px;">Keine Slots auf Level '+char.level+'</div>'; return; }
+
+  if (cType === 'warlock') {
+    const used   = char.pactSlotsUsed || 0;
+    const total  = row.slots;
+    body.innerHTML = `
+      <div style="font-size:12px;color:var(--ink-d);margin-bottom:8px;">Pakt Magic · Level ${row.level} · Kurze Rast</div>
+      <div class="slot-row">
+        <div class="slot-level">Pakt</div>
+        <div class="slot-bubbles">
+          ${Array.from({length:total},(_,i)=>`
+            <div class="slot-dot ${i<used?'used':''}" onclick="togglePactSlot(${i})">${i<used?'○':'●'}</div>
+          `).join('')}
+        </div>
+        <div class="slot-count">${total-used}/${total}</div>
+      </div>`;
+    return;
+  }
+
+  const used = char.spellSlotsUsed || [0,0,0,0,0,0,0,0,0];
+  const active = row.map((n,i) => ({n,i,u:used[i]||0})).filter(s=>s.n>0);
+  body.innerHTML = active.map(s => `
+    <div class="slot-row">
+      <div class="slot-level">${s.i+1}. Grad</div>
+      <div class="slot-bubbles">
+        ${Array.from({length:s.n},(_,j)=>`
+          <div class="slot-dot ${j<s.u?'used':''}" onclick="toggleSlot(${s.i},${j})">${j<s.u?'○':'●'}</div>
+        `).join('')}
+      </div>
+      <div class="slot-count">${s.n-s.u}/${s.n}</div>
+    </div>
+  `).join('');
+}
+
+function toggleSlot(level, idx) {
+  haptic();
+  const used = [...(char.spellSlotsUsed || [0,0,0,0,0,0,0,0,0])];
+  const max  = (slotConfig[CASTER_TYPE[char.classId]] || {})[String(char.level||1)]?.[level] || 0;
+  used[level] = used[level] >= max ? 0 : (used[level]||0)+1;
+  char.spellSlotsUsed = used;
+  saveChar();
+  renderSlots();
+}
+
+function togglePactSlot(i) {
+  const max  = (slotConfig.warlock || {})[String(char.level||1)]?.slots || 0;
+  const used = char.pactSlotsUsed || 0;
+  char.pactSlotsUsed = used >= max ? 0 : used + 1;
+  saveChar();
+  renderSlots();
+}
+
+// ── Vorbereitete Spells ───────────────────────────────────────────────────────
+function renderPreparedSpells() {
+  const body    = document.getElementById('play-spells-body');
+  const prepIds = char.preparedSpellIds || [];
+  const allIds  = char.spellIds || [];
+
+  // Für Nicht-Vorbereiter: alle bekannten Spells
+  const showIds = prepIds.length > 0 ? prepIds : allIds;
+  const spells  = showIds.map(id => spellsData[id]).filter(Boolean)
+    .sort((a,b) => a.level - b.level || a.name.localeCompare(b.name));
+
+  if (!spells.length) {
+    body.innerHTML = '<div style="color:var(--ink-d);font-style:italic;font-size:13px;">Keine Spells bekannt</div>';
+    return;
+  }
+
+  body.innerHTML = spells.map(s => `
+    <div class="spell-row">
+      <div class="spell-lvl-badge">${s.level===0?'C':s.level}</div>
+      <div>
+        <div class="spell-name">${s.name}</div>
+        <div class="spell-school">${s.casting_time} · ${s.range} · ${s.duration}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── HP System ─────────────────────────────────────────────────────────────────
+function showHPPopup() {
+  document.getElementById('hp-popup-current').textContent = char.hp_current || 0;
+  document.getElementById('hp-overlay').style.display = 'flex';
+  document.getElementById('hp-amount').value = '';
+  document.getElementById('hp-amount').focus();
+}
+function closeHPPopup(e) {
+  if (!e || e.target === document.getElementById('hp-overlay'))
+    document.getElementById('hp-overlay').style.display = 'none';
+}
+function adjustHP(delta) {
+  const cur = parseInt(document.getElementById('hp-popup-current').textContent) || 0;
+  document.getElementById('hp-popup-current').textContent = Math.max(0, Math.min(char.hp_max, cur + delta));
+}
+function quickAmount(n) { document.getElementById('hp-amount').value = n; }
+function applyHP(sign) {
+  haptic("medium");
+  const amount = parseInt(document.getElementById('hp-amount').value) || 1;
+  const delta  = sign * amount;
+  const temp   = parseInt(char.hp_temp) || 0;
+  let   cur    = parseInt(char.hp_current) || 0;
+
+  if (delta < 0 && temp > 0) {
+    const absorbed  = Math.min(temp, Math.abs(delta));
+    char.hp_temp    = temp - absorbed;
+    cur            += delta + absorbed;
+  } else {
+    cur += delta;
+  }
+  char.hp_current = Math.max(0, Math.min(char.hp_max, cur));
+  saveChar();
+  render();
+  closeHPPopup();
+  toast(delta < 0 ? `⚔ ${amount} Schaden · HP: ${char.hp_current}` : `💚 ${amount} geheilt · HP: ${char.hp_current}`);
+}
+
+// ── Rasten ───────────────────────────────────────────────────────────────────
+function shortRest() {
+  if (!confirm('Kurze Rast einlegen?')) return;
+  const hitDie = classesData[char.classId]?.hit_die || 8;
+  const conMod = getMod(char.abilities?.con);
+  const rolled = Math.floor(Math.random() * hitDie) + 1;
+  const healed = Math.max(1, rolled + conMod);
+  char.hp_current = Math.min(char.hp_max, (char.hp_current||0) + healed);
+  char.pactSlotsUsed = 0;
+  saveChar();
+  render();
+  toast(`☕ Kurze Rast · 1d${hitDie}: ${rolled} + ${conMod} = +${healed} HP`);
+}
+
+function longRest() {
+  if (!confirm('Lange Rast einlegen? (Alle HP + Spell Slots zurück)')) return;
+  char.hp_current     = char.hp_max;
+  char.hp_temp        = 0;
+  char.spellSlotsUsed = [0,0,0,0,0,0,0,0,0];
+  char.pactSlotsUsed  = 0;
+  // Erschöpfung reduzieren
+  char.conditions = (char.conditions||[]).map(c => {
+    const map = {exhaustion_5:'exhaustion_4',exhaustion_4:'exhaustion_3',exhaustion_3:'exhaustion_2',exhaustion_2:'exhaustion_1',exhaustion_1:null};
+    return map[c] !== undefined ? map[c] : c;
+  }).filter(Boolean);
+  saveChar();
+  render();
+  renderConditions();
+  toast('🌙 Lange Rast · Alle HP & Slots wiederhergestellt!');
+}
+
+// ── Speichern ─────────────────────────────────────────────────────────────────
+function saveChar() {
+  const userRaw = localStorage.getItem('dnd_user');
+  const user    = userRaw ? JSON.parse(userRaw) : null;
+  const uid     = user ? (user.isGuest ? 'guest_'+user.id : 'u_'+user.id) : 'local';
+  const roster  = JSON.parse(localStorage.getItem('dnd5e_roster_'+uid) || '[]');
+  const idx     = roster.findIndex(c => c.id === char.id);
+  if (idx >= 0) roster[idx] = char; else roster.unshift(char);
+  localStorage.setItem('dnd5e_roster_'+uid, JSON.stringify(roster));
+
+  // Server-Sync (non-blocking)
+  const token = localStorage.getItem('dnd_token');
+  if (token) {
+    fetch('/api/dnd/characters', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify(char),
+    }).catch(() => {});
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+function toast(msg) {
+  document.querySelectorAll('.play-toast').forEach(e => e.remove());
+  const el = document.createElement('div');
+  el.className = 'play-toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+}
+
+// Offline-Erkennung
+window.addEventListener('online',  () => document.getElementById('offline-banner').style.display = 'none');
+window.addEventListener('offline', () => document.getElementById('offline-banner').style.display = 'block');
+if (!navigator.onLine) document.getElementById('offline-banner').style.display = 'block';
+
+// Haptic Feedback Helper
+function haptic(type = 'light') {
+  if (navigator.vibrate) {
+    navigator.vibrate(type === 'light' ? 10 : type === 'medium' ? 25 : 50);
+  }
+}
+
+// Install-Hinweis beim ersten Besuch
+if (!localStorage.getItem('play_visited')) {
+  localStorage.setItem('play_visited', '1');
+  setTimeout(() => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    if (!isStandalone && (isIOS || isAndroid)) {
+      toast(isIOS
+        ? '💡 Tipp: Teilen → "Zum Home-Bildschirm" für App-Erlebnis'
+        : '💡 Tipp: Menü → "App installieren" für App-Erlebnis'
+      );
+    }
+  }, 2000);
+}
+
+// Start
+loadAll();
+</script>
+</body>
+</html>
