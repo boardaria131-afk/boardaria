@@ -399,6 +399,153 @@ app.get('/api/dnd/status', (req, res) => {
   res.json({ db: dndDbReady ? 'postgresql' : 'in-memory', version: '1.21.0' });
 });
 // ══ Ende D&D Character Sync ══════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
+// D&D Kampagnen-System — Erstellen, Beitreten, Code-basiert
+// ════════════════════════════════════════════════════════════════════════════
+
+const dndCampaignStore = new Map(); // code → campaign (In-Memory Fallback)
+
+// Auto-Migration: Kampagnen-Tabelle anlegen
+(async () => {
+  if (!dndDbReady) return;
+  try {
+    await dndPool.query(`
+      CREATE TABLE IF NOT EXISTS dnd_campaigns (
+        id          SERIAL PRIMARY KEY,
+        name        TEXT NOT NULL,
+        code        TEXT NOT NULL UNIQUE,
+        owner_id    INTEGER NOT NULL,
+        created_at  TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE TABLE IF NOT EXISTS dnd_campaign_members (
+        campaign_id INTEGER NOT NULL REFERENCES dnd_campaigns(id) ON DELETE CASCADE,
+        user_id     INTEGER NOT NULL,
+        joined_at   TIMESTAMPTZ DEFAULT NOW(),
+        PRIMARY KEY (campaign_id, user_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_dnd_camp_code ON dnd_campaigns (code);
+      CREATE INDEX IF NOT EXISTS idx_dnd_camp_members ON dnd_campaign_members (campaign_id);
+    `);
+    console.log('[DnD] Kampagnen-Tabellen bereit ✅');
+  } catch(e) { console.error('[DnD] Kampagnen-Migration:', e.message); }
+})();
+
+function generateCampCode() {
+  const words = ['DRACH','MAGUS','ROGUE','BARDE','PALAD','KLERP','MONCH','JAGER'];
+  return words[Math.floor(Math.random() * words.length)] + '-' + (Math.floor(Math.random() * 9000) + 1000);
+}
+
+// POST /api/dnd/campaigns — Kampagne erstellen
+app.post('/api/dnd/campaigns', requireDndAuth, async (req, res) => {
+  const { name } = req.body || {};
+  if (!name) return res.status(400).json({ error: 'Name erforderlich' });
+  const code = generateCampCode();
+
+  if (dndDbReady) {
+    try {
+      const r = await dndPool.query(
+        'INSERT INTO dnd_campaigns (name, code, owner_id) VALUES ($1, $2, $3) RETURNING id, name, code',
+        [name.trim(), code, req.userId]
+      );
+      await dndPool.query(
+        'INSERT INTO dnd_campaign_members (campaign_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        [r.rows[0].id, req.userId]
+      );
+      return res.json(r.rows[0]);
+    } catch(e) { console.error('[DnD] Kampagne erstellen:', e.message); }
+  }
+
+  // In-Memory Fallback
+  const camp = { id: Date.now(), name: name.trim(), code, owner_id: req.userId };
+  dndCampaignStore.set(code, camp);
+  res.json(camp);
+});
+
+// POST /api/dnd/campaigns/join — Kampagne beitreten
+app.post('/api/dnd/campaigns/join', requireDndAuth, async (req, res) => {
+  const { code } = req.body || {};
+  if (!code) return res.status(400).json({ error: 'Code erforderlich' });
+
+  if (dndDbReady) {
+    try {
+      const r = await dndPool.query('SELECT * FROM dnd_campaigns WHERE code=$1', [code.toUpperCase()]);
+      if (!r.rows.length) return res.status(404).json({ error: 'Kampagne nicht gefunden' });
+      const camp = r.rows[0];
+      await dndPool.query(
+        'INSERT INTO dnd_campaign_members (campaign_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        [camp.id, req.userId]
+      );
+      return res.json({ id: camp.id, name: camp.name, code: camp.code });
+    } catch(e) { console.error('[DnD] Kampagne beitreten:', e.message); }
+  }
+
+  // In-Memory Fallback
+  const camp = dndCampaignStore.get(code.toUpperCase());
+  if (!camp) return res.status(404).json({ error: 'Kampagne nicht gefunden' });
+  res.json(camp);
+});
+
+// GET /api/dnd/campaigns — eigene Kampagnen
+app.get('/api/dnd/campaigns', requireDndAuth, async (req, res) => {
+  if (dndDbReady) {
+    try {
+      const r = await dndPool.query(`
+        SELECT c.id, c.name, c.code, c.owner_id,
+               (c.owner_id = $1) AS is_owner
+        FROM dnd_campaigns c
+        JOIN dnd_campaign_members m ON m.campaign_id = c.id
+        WHERE m.user_id = $1
+        ORDER BY c.created_at DESC
+      `, [req.userId]);
+      return res.json({ campaigns: r.rows });
+    } catch(e) { console.error('[DnD] Kampagnen laden:', e.message); }
+  }
+  res.json({ campaigns: [] });
+});
+// ══ Ende D&D Kampagnen ═══════════════════════════════════════════════════════
+// ── D&D Journal Sync ─────────────────────────────────────────────────────────
+(async () => {
+  if (!dndDbReady) return;
+  try {
+    await dndPool.query(`
+      CREATE TABLE IF NOT EXISTS dnd_journals (
+        user_id    INTEGER NOT NULL PRIMARY KEY,
+        data       JSONB NOT NULL DEFAULT '{}',
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+    console.log('[DnD] Journal-Tabelle bereit ✅');
+  } catch(e) { console.error('[DnD] Journal-Migration:', e.message); }
+})();
+
+app.get('/api/dnd/journal', requireDndAuth, async (req, res) => {
+  if (dndDbReady) {
+    try {
+      const r = await dndPool.query('SELECT data FROM dnd_journals WHERE user_id=$1', [req.userId]);
+      return res.json({ journal: r.rows[0]?.data || {} });
+    } catch(e) { console.error('[DnD] Journal laden:', e.message); }
+  }
+  res.json({ journal: {} });
+});
+
+app.post('/api/dnd/journal', requireDndAuth, async (req, res) => {
+  const { data } = req.body || {};
+  if (!data) return res.status(400).json({ error: 'Keine Daten' });
+  if (dndDbReady) {
+    try {
+      await dndPool.query(`
+        INSERT INTO dnd_journals (user_id, data, updated_at)
+        VALUES ($1, $2, NOW())
+        ON CONFLICT (user_id) DO UPDATE SET data=$2, updated_at=NOW()
+      `, [req.userId, JSON.stringify(data)]);
+      return res.json({ ok: true });
+    } catch(e) { console.error('[DnD] Journal speichern:', e.message); }
+  }
+  res.json({ ok: true });
+});
+// ── Ende Journal Sync ─────────────────────────────────────────────────────────
+
+
 
 
 
