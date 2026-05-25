@@ -580,7 +580,14 @@ async function bootstrap() {
 function startApp(user) {
   // User-Kontext setzen BEVOR Charaktere geladen werden
   Character.setUserContext(user);
-  hookCharacterSave();
+
+  // Combat Strip nach jedem Character.save() aktualisieren
+  const _origCharSave = Character.save;
+  Character.save = function() {
+    _origCharSave.call(this);
+    if (typeof CombatUI !== 'undefined') CombatUI.update();
+    if (typeof updatePassiveStats !== 'undefined') updatePassiveStats();
+  };
 
   // Charakter laden: zuerst localStorage, dann Server-Sync
   Character.load();
