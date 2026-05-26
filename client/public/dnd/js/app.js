@@ -219,36 +219,7 @@ const CharUI = (() => {
     `;
   }
 
-  function updatePassiveStats() {
-    const char   = Character.data;
-    const ab     = char.abilities || {};
-    const skills = char.proficiencies?.skills || [];
-    const prof   = Character.getProficiencyBonus();
 
-    const wisMod  = Character.getMod(ab.wis || 10);
-    const intMod  = Character.getMod(ab.int || 10);
-
-    const passPerc    = 10 + wisMod + (skills.includes('perception')    ? prof : 0);
-    const passInsight = 10 + wisMod + (skills.includes('insight')       ? prof : 0);
-    const passInvest  = 10 + intMod + (skills.includes('investigation') ? prof : 0);
-
-    const el = document.getElementById('passive-stats-display');
-    if (!el) return;
-    el.innerHTML = `
-      <div class="passive-stat-item" title="10 + WIS-Mod${skills.includes('perception') ? ' + Prof' : ''}">
-        <span class="passive-label">👁 Passive Wahrnehmung</span>
-        <span class="passive-value">${passPerc}</span>
-      </div>
-      <div class="passive-stat-item" title="10 + WIS-Mod${skills.includes('insight') ? ' + Prof' : ''}">
-        <span class="passive-label">💡 Passive Einsicht</span>
-        <span class="passive-value">${passInsight}</span>
-      </div>
-      <div class="passive-stat-item" title="10 + INT-Mod${skills.includes('investigation') ? ' + Prof' : ''}">
-        <span class="passive-label">🔍 Passive Nachforschung</span>
-        <span class="passive-value">${passInvest}</span>
-      </div>
-    `;
-  }
 
   function renderFeatures() {
     const container = document.getElementById('char-features-list');
@@ -576,6 +547,37 @@ async function bootstrap() {
     startApp(user);
   });
 }
+
+function updatePassiveStats() {
+    const char   = Character.data;
+    const ab     = char.abilities || {};
+    const skills = char.proficiencies?.skills || [];
+    const prof   = Character.getProficiencyBonus();
+
+    const wisMod  = Character.getMod(ab.wis || 10);
+    const intMod  = Character.getMod(ab.int || 10);
+
+    const passPerc    = 10 + wisMod + (skills.includes('perception')    ? prof : 0);
+    const passInsight = 10 + wisMod + (skills.includes('insight')       ? prof : 0);
+    const passInvest  = 10 + intMod + (skills.includes('investigation') ? prof : 0);
+
+    const el = document.getElementById('passive-stats-display');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="passive-stat-item" title="10 + WIS-Mod${skills.includes('perception') ? ' + Prof' : ''}">
+        <span class="passive-label">👁 Passive Wahrnehmung</span>
+        <span class="passive-value">${passPerc}</span>
+      </div>
+      <div class="passive-stat-item" title="10 + WIS-Mod${skills.includes('insight') ? ' + Prof' : ''}">
+        <span class="passive-label">💡 Passive Einsicht</span>
+        <span class="passive-value">${passInsight}</span>
+      </div>
+      <div class="passive-stat-item" title="10 + INT-Mod${skills.includes('investigation') ? ' + Prof' : ''}">
+        <span class="passive-label">🔍 Passive Nachforschung</span>
+        <span class="passive-value">${passInvest}</span>
+      </div>
+    `;
+  }
 
 function startApp(user) {
   // User-Kontext setzen BEVOR Charaktere geladen werden
