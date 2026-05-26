@@ -581,12 +581,12 @@ function startApp(user) {
   // User-Kontext setzen BEVOR Charaktere geladen werden
   Character.setUserContext(user);
 
-  // Combat Strip nach jedem Character.save() aktualisieren
+  // Combat Strip + Passive Werte nach jedem Save aktualisieren
   const _origCharSave = Character.save;
   Character.save = function() {
     _origCharSave.call(this);
     if (typeof CombatUI !== 'undefined') CombatUI.update();
-    if (typeof updatePassiveStats !== 'undefined') updatePassiveStats();
+    if (typeof updatePassiveStats === 'function') updatePassiveStats();
   };
 
   // Charakter laden: zuerst localStorage, dann Server-Sync
@@ -595,13 +595,6 @@ function startApp(user) {
 
   Tooltip.init();
   initTabs();
-
-  // URL-Parameter: ?tab=dice öffnet direkt den richtigen Tab (PWA Shortcuts)
-  const urlTab = new URLSearchParams(window.location.search).get('tab');
-  if (urlTab) {
-    const btn = document.querySelector(`.tab-btn[data-tab="${urlTab}"]`);
-    if (btn) btn.click();
-  }
   CharUI.init();
   ClassesUI.init();
   SpellsUI.init();
