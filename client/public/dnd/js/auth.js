@@ -121,8 +121,14 @@ const Auth = (() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     _user = null; _token = null;
-    updateHeaderBadge();
-    showLoginScreen();
+    _onReady = [];
+    // Character-Cache zurücksetzen
+    if (window.Character && Character.setUserContext) {
+      Character.setUserContext({ id: null, username: 'logout', isGuest: true });
+    }
+    // Sauberster Weg: Seite neu laden zeigt Login-Screen
+    // (verhindert doppelte Initialisierung und veraltete Daten)
+    window.location.href = '/dnd/';
   }
 
   // ── Intern ────────────────────────────────────────────────

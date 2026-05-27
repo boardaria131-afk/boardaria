@@ -19,6 +19,10 @@ const Character = (() => {
 
   // Wird von Auth nach erfolgreichem Login aufgerufen
   function setUserContext(user) {
+    if (!user || !user.id) {
+      _cachedUid = null; // Reset bei Logout
+      return;
+    }
     _cachedUid = user.isGuest ? 'guest_' + user.id : 'u_' + user.id;
     console.log('[Character] User-Kontext:', _cachedUid);
 
