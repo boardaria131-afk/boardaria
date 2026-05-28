@@ -293,9 +293,29 @@ function initTabs() {
 function initPersistence() {
 
   /* 💾 Speichern */
-  document.getElementById('btn-save')?.addEventListener('click', () => {
-    if (Character.save()) showToast('💾 Gespeichert!');
-    else showToast('❌ Speichern fehlgeschlagen');
+  document.getElementById('btn-save')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btn-save');
+    if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+
+    const localOk = Character.save();
+    if (!localOk) {
+      showToast('❌ Lokales Speichern fehlgeschlagen');
+      if (btn) { btn.textContent = '💾'; btn.disabled = false; }
+      return;
+    }
+
+    // Direkt auf Server sichern (nicht nur im Hintergrund)
+    const serverOk = await Character.syncToServer();
+
+    if (btn) { btn.textContent = '💾'; btn.disabled = false; }
+
+    if (serverOk) {
+      showToast('✅ Gespeichert & auf Server gesichert!');
+    } else if (Auth.isGuest()) {
+      showToast('💾 Lokal gespeichert (Gast — kein Server-Sync)');
+    } else {
+      showToast('💾 Lokal gespeichert (Server nicht erreichbar)');
+    }
   });
 
   /* 📂 Laden — zeigt Roster + JSON-Import */
