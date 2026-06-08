@@ -630,6 +630,7 @@ function startApp(user) {
   AttackUI.init();
   LevelUpUI.init();
   CampaignUI.init();
+  if (typeof InitiativeUI !== 'undefined') InitiativeUI.init();
   JournalUI.init();
   DiceUI.init();
 

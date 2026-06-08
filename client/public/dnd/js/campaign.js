@@ -84,6 +84,16 @@ const CampaignUI = (() => {
         <button class="btn-secondary" id="btn-refresh-campaign" style="font-size:11px;">🔄 Aktualisieren</button>
       </div>
 
+      <!-- Initiative Tracker -->
+      <div class="card" style="grid-column:1/-1;margin-bottom:0;">
+        <div id="initiative-tracker"></div>
+      </div>
+
+      <!-- Battlemap -->
+      <div class="card" style="grid-column:1/-1;">
+        <div id="battlemap-container" data-dm="false"></div>
+      </div>
+
       <!-- Kampagnen-Panel -->
       <div class="campaign-layout">
 
@@ -114,6 +124,17 @@ const CampaignUI = (() => {
     `;
 
     // Events
+    // Initiative Tracker rendern
+    if (typeof InitiativeUI !== 'undefined') InitiativeUI.render();
+
+    // Battlemap initialisieren/aktualisieren
+    const campData = JSON.parse(localStorage.getItem('dnd_campaign') || 'null');
+    if (campData && typeof BattleMap !== 'undefined') {
+      if (!document.getElementById('battlemap-canvas')) {
+        BattleMap.init(false); // false = Spieler-Modus
+      }
+    }
+
     document.getElementById('btn-refresh-campaign')?.addEventListener('click', async () => {
       const btn = document.getElementById('btn-refresh-campaign');
       if (btn) { btn.textContent = '⏳'; btn.disabled = true; }

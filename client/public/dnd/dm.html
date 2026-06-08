@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D&D — DM-Ansicht</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0a06; --card: rgba(255,255,255,0.06); --border: rgba(201,150,42,0.25);
+      --gold: #c9962a; --blood: #8b1a1a; --blood-l: #c13030;
+      --parch: #f5e6c8; --ink: #e8d5b0; --ink-d: #a09070;
+      --green: #4ade80; --yellow: #fbbf24; --red: #f87171; --blue: #60a5fa;
+      --ft: 'Cinzel', serif; --fb: 'Crimson Text', serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--ink); font-family: var(--fb); min-height: 100vh; }
+
+    .dm-header {
+      background: linear-gradient(135deg, #1a0a0a, #0d0a06);
+      border-bottom: 2px solid var(--blood);
+      padding: 10px 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .dm-title { font-family: var(--ft); font-size: 18px; font-weight: 800; color: #f0a0a0; letter-spacing: 2px; flex: 1; }
+    .dm-back { font-family: var(--ft); font-size: 11px; color: var(--gold); text-decoration: none;
+      border: 1px solid var(--border); border-radius: 20px; padding: 5px 14px; }
+
+    .dm-body { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px; }
+    @media (max-width: 900px) { .dm-body { grid-template-columns: 1fr; } }
+
+    .dm-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .dm-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; background: rgba(139,26,26,0.1);
+      border-bottom: 1px solid rgba(139,26,26,0.2);
+      font-family: var(--ft); font-size: 12px; color: #f0a0a0;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .dm-card-body { padding: 12px 14px; }
+
+    /* Initiative */
+    .init-entry {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      border-radius: 6px; margin-bottom: 5px; transition: all 0.2s;
+      border: 1px solid rgba(200,165,90,0.2); background: rgba(255,255,255,0.04);
+    }
+    .init-entry.active {
+      background: rgba(139,26,26,0.2); border-color: var(--blood-l);
+      box-shadow: 0 0 10px rgba(139,26,26,0.3);
+    }
+    .init-badge {
+      min-width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--ft); font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
+    .hp-bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); margin-top: 3px; }
+    .hp-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+    /* Monster HP Tracker */
+    .monster-row {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(200,165,90,0.15);
+      border-radius: 6px; margin-bottom: 6px;
+    }
+    .monster-hp-input {
+      width: 48px; text-align: center; background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(200,165,90,0.3); border-radius: 4px;
+      color: var(--ink); font-family: var(--ft); font-size: 14px; font-weight: 700;
+      padding: 3px;
+    }
+    .btn-sm {
+      padding: 4px 8px; font-family: var(--ft); font-size: 10px; letter-spacing: 0.5px;
+      border-radius: 4px; cursor: pointer; border: 1px solid; transition: all 0.15s;
+    }
+    .btn-blood { background: rgba(139,26,26,0.2); border-color: var(--blood-l); color: #f0a0a0; }
+    .btn-gold  { background: rgba(201,150,42,0.15); border-color: var(--gold); color: var(--gold); }
+    .btn-green { background: rgba(74,222,128,0.15); border-color: var(--green); color: var(--green); }
+
+    /* Notes */
+    .dm-notes {
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--ink); font-family: var(--fb); font-size: 14px;
+      padding: 10px; resize: vertical; min-height: 120px; line-height: 1.6;
+    }
+
+    /* Conditions auf Monster */
+    .cond-mini { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+    .cond-mini-tag {
+      font-size: 10px; padding: 1px 6px; border-radius: 10px;
+      border: 1px solid rgba(248,113,113,0.4); background: rgba(248,113,113,0.1);
+      color: #f0a0a0; cursor: pointer; font-family: var(--ft);
+    }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .status-dot.offline { background: var(--red); }
+
+    /* Spieler-Status */
+    .player-status-row {
+      display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(200,165,90,0.15);
+      border-radius: 6px; margin-bottom: 5px; font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="dm-header">
+  <span style="font-size:24px;">🎲</span>
+  <div class="dm-title">DM-Ansicht</div>
+  <span id="dm-camp-name" style="font-family:var(--ft);font-size:12px;color:#8a7060;"></span>
+  <a href="/dnd/" class="dm-back">← Builder</a>
+</div>
+
+<div class="dm-body">
+
+  <!-- Initiative Tracker -->
+  <div class="dm-card" style="grid-column:1/-1;">
+    <div class="dm-card-header">
+      ⚔ Initiative Tracker
+      <div style="display:flex;gap:6px;">
+        <button class="btn-sm btn-blood" id="btn-dm-start">▶ Start</button>
+        <button class="btn-sm btn-gold"  id="btn-dm-next">▶▶ Nächster</button>
+        <button class="btn-sm btn-gold"  id="btn-dm-refresh">📡 Sync</button>
+        <button class="btn-sm btn-blood" id="btn-dm-reset">🔄 Reset</button>
+      </div>
+    </div>
+    <div class="dm-card-body">
+      <div id="dm-round-info" style="font-family:var(--ft);font-size:11px;color:#8a7060;margin-bottom:8px;"></div>
+      <div id="dm-init-list"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button class="btn-sm btn-gold" id="btn-dm-add-monster">👹 Monster hinzufügen</button>
+        <button class="btn-sm btn-gold" id="btn-dm-add-custom">➕ Manuell</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Battlemap -->
+  <div class="dm-card" style="grid-column:1/-1;">
+    <div class="dm-card-header">
+      🗺 Battlemap
+      <span style="font-size:10px;color:#8a7060;">DM kann Karte hochladen & Figuren platzieren</span>
+    </div>
+    <div class="dm-card-body">
+      <div id="battlemap-container" data-dm="true"></div>
+    </div>
+  </div>
+
+  <!-- Spieler-Übersicht -->
+  <div class="dm-card">
+    <div class="dm-card-header">
+      👥 Spieler
+      <button class="btn-sm btn-gold" id="btn-dm-refresh-players">🔄</button>
+    </div>
+    <div class="dm-card-body" id="dm-players"></div>
+  </div>
+
+  <!-- Monster HP Tracker -->
+  <div class="dm-card">
+    <div class="dm-card-header">
+      👹 Monster im Kampf
+      <button class="btn-sm btn-blood" id="btn-clear-monsters">Alle entfernen</button>
+    </div>
+    <div class="dm-card-body" id="dm-monsters">
+      <div style="color:#8a7060;font-style:italic;font-size:13px;">
+        Monster über Initiative Tracker hinzufügen
+      </div>
+    </div>
+  </div>
+
+  <!-- DM Notizen -->
+  <div class="dm-card" style="grid-column:1/-1;">
+    <div class="dm-card-header">
+      📝 DM-Notizen (nur du siehst das)
+    </div>
+    <div class="dm-card-body">
+      <textarea class="dm-notes" id="dm-notes" placeholder="Notizen, Geheimnisse, Pläne…"></textarea>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Stubs damit map.js funktioniert ohne die volle App
+const Character = { data: { name: '', classId: null } };
+const DnDData = { getClassById: () => null };
+function showToast(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1208;border:1px solid #c9962a;border-radius:20px;padding:8px 20px;font-family:Cinzel,serif;font-size:12px;color:#c9962a;z-index:300;';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+}
+// Auth-Stub
+const Auth = {
+  getToken: () => localStorage.getItem('dnd_token'),
+  getUser:  () => { try { return JSON.parse(localStorage.getItem('dnd_user')); } catch { return null; } }
+};
+window.Auth = Auth;
+</script>
+<script src="/dnd/js/map.js"></script>
+<script>
+// DM-Modus initialisieren
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('battlemap-container')) {
+    BattleMap.init(true); // true = DM-Modus
+  }
+});
+</script>
+<script>
+// ── Daten laden ───────────────────────────────────────────────────────────────
+const TOKEN = localStorage.getItem('dnd_token');
+const CAMP  = JSON.parse(localStorage.getItem('dnd_campaign') || 'null');
+
+if (CAMP) document.getElementById('dm-camp-name').textContent = '⚔ ' + CAMP.name;
+
+// DM-Notizen
+const notesEl = document.getElementById('dm-notes');
+const NOTES_KEY = 'dnd_dm_notes' + (CAMP ? '_' + CAMP.code : '');
+notesEl.value = localStorage.getItem(NOTES_KEY) || '';
+notesEl.addEventListener('input', () => localStorage.setItem(NOTES_KEY, notesEl.value));
+
+// ── Initiative Daten ──────────────────────────────────────────────────────────
+let _entries = [], _activeIdx = 0, _round = 1;
+
+const INIT_KEY = 'dnd_initiative_' + (CAMP?.code || 'local');
+
+function loadLocal() {
+  try {
+    const d = JSON.parse(localStorage.getItem(INIT_KEY) || 'null');
+    if (d) { _entries = d.entries || []; _activeIdx = d.activeIdx || 0; _round = d.round || 1; }
+  } catch {}
+}
+
+function saveLocal() {
+  localStorage.setItem(INIT_KEY, JSON.stringify({ entries: _entries, activeIdx: _activeIdx, round: _round }));
+}
+
+async function syncServer(push = true) {
+  if (!TOKEN || !CAMP) return;
+  if (push) {
+    await fetch('/api/dnd/initiative', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+      body: JSON.stringify({ campaignCode: CAMP.code, entries: _entries, activeIdx: _activeIdx, round: _round }),
+    }).catch(() => {});
+  } else {
+    const r = await fetch('/api/dnd/initiative?code=' + encodeURIComponent(CAMP.code), {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    }).catch(() => null);
+    if (r?.ok) {
+      const d = await r.json();
+      if (d.entries) { _entries = d.entries; _activeIdx = d.activeIdx || 0; _round = d.round || 1; }
+    }
+  }
+}
+
+function fmtMod(n) { return (n >= 0 ? '+' : '') + n; }
+
+// ── Initiative Render ─────────────────────────────────────────────────────────
+function renderInit() {
+  const list = document.getElementById('dm-init-list');
+  const info = document.getElementById('dm-round-info');
+
+  if (_entries.some(e => e.active)) {
+    info.textContent = `Runde ${_round} — ${_entries[_activeIdx]?.name || '?'} ist dran`;
+  } else {
+    info.textContent = _entries.length ? `${_entries.length} Teilnehmer bereit` : '';
+  }
+
+  list.innerHTML = _entries.map((e, i) => {
+    const hpPct   = e.maxHp ? Math.max(0, e.hp / e.maxHp) : 1;
+    const hpColor = hpPct <= 0.25 ? '#f87171' : hpPct <= 0.5 ? '#fbbf24' : '#4ade80';
+    return `
+      <div class="init-entry ${e.active ? 'active' : ''}">
+        <div class="init-badge" style="background:${e.active?'var(--blood)':'rgba(200,165,90,0.15)'};
+          color:${e.active?'#fff':'var(--gold)'};">${e.initiative}</div>
+        <div style="font-size:18px;">${e.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:var(--ft);font-size:12px;color:${e.active?'#f0a0a0':'var(--ink)'};
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            ${e.active ? '▶ ' : ''}${e.name}
+          </div>
+          ${e.maxHp ? `
+          <div class="hp-bar"><div class="hp-bar-fill"
+            style="width:${Math.round(hpPct*100)}%;background:${hpColor};"></div></div>` : ''}
+        </div>
+        ${e.maxHp ? `
+        <div style="display:flex;align-items:center;gap:4px;">
+          <button onclick="changeHP(${i},-1)" style="width:22px;height:22px;border-radius:50%;border:1px solid rgba(248,113,113,0.4);background:rgba(248,113,113,0.1);color:#f87171;cursor:pointer;font-size:12px;">−</button>
+          <span style="font-family:var(--ft);font-size:13px;font-weight:700;color:${hpColor};min-width:32px;text-align:center;">${e.hp}</span>
+          <button onclick="changeHP(${i},+1)" style="width:22px;height:22px;border-radius:50%;border:1px solid rgba(74,222,128,0.4);background:rgba(74,222,128,0.1);color:#4ade80;cursor:pointer;font-size:12px;">+</button>
+          <span style="font-size:10px;color:#8a7060;">/${e.maxHp}</span>
+        </div>` : ''}
+        <span style="font-size:11px;color:#8a7060;min-width:32px;">AC ${e.ac}</span>
+        <button onclick="removeEntry(${i})" style="background:none;border:none;color:rgba(139,26,26,0.4);cursor:pointer;font-size:14px;">✕</button>
+      </div>`;
+  }).join('') || '<div style="color:#8a7060;font-style:italic;font-size:13px;">Noch keine Teilnehmer</div>';
+
+  renderMonsters();
+}
+
+function changeHP(idx, delta) {
+  const e = _entries[idx];
+  if (!e) return;
+  // Damage-Input für größere Änderungen
+  const amt = delta < 0
+    ? parseInt(prompt('Schaden:', '5') || '0')
+    : parseInt(prompt('Heilung:', '5') || '0');
+  if (!amt) return;
+  e.hp = Math.max(0, Math.min(e.maxHp || 999, e.hp + (delta > 0 ? amt : -amt)));
+  saveLocal();
+  syncServer(true);
+  renderInit();
+}
+
+function removeEntry(idx) {
+  _entries.splice(idx, 1);
+  _activeIdx = Math.min(_activeIdx, Math.max(0, _entries.length - 1));
+  saveLocal();
+  syncServer(true);
+  renderInit();
+}
+
+// ── Initiative Controls ───────────────────────────────────────────────────────
+document.getElementById('btn-dm-start')?.addEventListener('click', () => {
+  if (!_entries.length) return alert('Erst Teilnehmer hinzufügen');
+  _entries.sort((a, b) => b.initiative - a.initiative);
+  _activeIdx = 0; _round = 1;
+  _entries.forEach((e, i) => e.active = i === 0);
+  saveLocal(); syncServer(true); renderInit();
+});
+
+document.getElementById('btn-dm-next')?.addEventListener('click', () => {
+  if (!_entries.length) return;
+  _entries.forEach(e => e.active = false);
+  _activeIdx = (_activeIdx + 1) % _entries.length;
+  if (_activeIdx === 0) _round++;
+  _entries[_activeIdx].active = true;
+  saveLocal(); syncServer(true); renderInit();
+});
+
+document.getElementById('btn-dm-reset')?.addEventListener('click', () => {
+  if (!confirm('Initiative zurücksetzen?')) return;
+  _entries = []; _activeIdx = 0; _round = 1;
+  saveLocal(); syncServer(true); renderInit();
+});
+
+document.getElementById('btn-dm-refresh')?.addEventListener('click', async () => {
+  await syncServer(false);
+  saveLocal(); renderInit();
+});
+
+// ── Monster hinzufügen ────────────────────────────────────────────────────────
+const MONSTERS = [
+  {name:'Goblin',cr:'1/4',hp:7,ac:15,icon:'👺'},{name:'Skeleton',cr:'1/4',hp:13,ac:13,icon:'💀'},
+  {name:'Zombie',cr:'1/4',hp:22,ac:8,icon:'🧟'},{name:'Wolf',cr:'1/4',hp:11,ac:13,icon:'🐺'},
+  {name:'Bandit',cr:'1/8',hp:11,ac:12,icon:'🗡️'},{name:'Orc',cr:'1/2',hp:15,ac:13,icon:'💪'},
+  {name:'Hobgoblin',cr:'1/2',hp:11,ac:18,icon:'⚔️'},{name:'Bugbear',cr:'1',hp:27,ac:16,icon:'👹'},
+  {name:'Ghoul',cr:'1',hp:22,ac:12,icon:'😱'},{name:'Ogre',cr:'2',hp:59,ac:11,icon:'🏔️'},
+  {name:'Troll',cr:'5',hp:84,ac:15,icon:'🌿'},{name:'Vampire Spawn',cr:'5',hp:82,ac:15,icon:'🧛'},
+  {name:'Young Dragon',cr:'7',hp:178,ac:18,icon:'🐉'},{name:'Beholder',cr:'13',hp:180,ac:18,icon:'👁'},
+  {name:'Lich',cr:'21',hp:135,ac:17,icon:'☠️'},{name:'Ancient Dragon',cr:'24',hp:546,ac:22,icon:'🐲'},
+];
+
+function showAddMonster() {
+  const name  = prompt('Monster wählen:\n' + MONSTERS.map((m,i) => `${i+1}. ${m.icon} ${m.name} (CR ${m.cr}, HP ${m.hp})`).join('\n') + '\n\nNummer eingeben:');
+  const idx   = parseInt(name) - 1;
+  const count = parseInt(prompt('Anzahl:', '1') || '1');
+  const m = MONSTERS[idx];
+  if (!m) return;
+  for (let i = 0; i < count; i++) {
+    _entries.push({
+      id: 'monster_' + Date.now() + '_' + i,
+      name: count > 1 ? m.name + ' ' + (i+1) : m.name,
+      initiative: Math.floor(Math.random() * 20) + 1,
+      hp: m.hp, maxHp: m.hp, ac: m.ac,
+      icon: m.icon, isPlayer: false,
+    });
+  }
+  _entries.sort((a,b) => b.initiative - a.initiative);
+  saveLocal(); syncServer(true); renderInit();
+}
+
+function showAddCustom() {
+  const name = prompt('Name:'); if (!name) return;
+  const init = parseInt(prompt('Initiative:', '10') || '10');
+  const hp   = parseInt(prompt('HP:', '20') || '20');
+  const ac   = parseInt(prompt('AC:', '12') || '12');
+  _entries.push({ id:'custom_'+Date.now(), name, initiative:init, hp, maxHp:hp, ac, icon:'⚔', isPlayer:false });
+  _entries.sort((a,b) => b.initiative - a.initiative);
+  saveLocal(); syncServer(true); renderInit();
+}
+
+document.getElementById('btn-dm-add-monster')?.addEventListener('click', showAddMonster);
+document.getElementById('btn-dm-add-custom')?.addEventListener('click', showAddCustom);
+document.getElementById('btn-clear-monsters')?.addEventListener('click', () => {
+  if (confirm('Alle Monster entfernen?')) {
+    _entries = _entries.filter(e => e.isPlayer);
+    saveLocal(); syncServer(true); renderInit();
+  }
+});
+
+// ── Monster-Details im Kampf ─────────────────────────────────────────────────
+function renderMonsters() {
+  const el = document.getElementById('dm-monsters');
+  const monsters = _entries.filter(e => !e.isPlayer);
+  if (!monsters.length) {
+    el.innerHTML = '<div style="color:#8a7060;font-style:italic;font-size:13px;">Keine Monster im Kampf</div>';
+    return;
+  }
+  el.innerHTML = monsters.map(m => {
+    const pct = m.maxHp ? Math.max(0, m.hp / m.maxHp) : 1;
+    const col = pct<=0.25?'#f87171':pct<=0.5?'#fbbf24':'#4ade80';
+    return `<div class="monster-row">
+      <span style="font-size:20px;">${m.icon}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:var(--ft);font-size:12px;color:var(--ink);">${m.name}</div>
+        <div style="height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:3px;">
+          <div style="height:100%;width:${Math.round(pct*100)}%;background:${col};border-radius:2px;"></div>
+        </div>
+      </div>
+      <span style="font-family:var(--ft);font-size:14px;font-weight:700;color:${col};">${m.hp}</span>
+      <span style="font-size:10px;color:#8a7060;">/${m.maxHp} · AC${m.ac}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Spieler-Status ───────────────────────────────────────────────────────────
+async function loadPlayers() {
+  const el = document.getElementById('dm-players');
+  if (!TOKEN) { el.innerHTML = '<div style="color:#8a7060;font-size:13px;">Nicht eingeloggt</div>'; return; }
+
+  const players = _entries.filter(e => e.isPlayer);
+  if (!players.length) {
+    // Aus geteilten Charakteren laden
+    try {
+      const r = await fetch('/api/dnd/shared', { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+      const d = await r.json();
+      const chars = d.characters || [];
+      el.innerHTML = chars.length
+        ? chars.map(c => {
+            const hpPct = c.hp_max ? c.hp_current / c.hp_max : 1;
+            const hpCol = hpPct<=0.25?'#f87171':hpPct<=0.5?'#fbbf24':'#4ade80';
+            return `<div class="player-status-row">
+              <div class="status-dot online"></div>
+              <span style="flex:1;font-family:var(--ft);font-size:12px;">${c.name}</span>
+              <span style="font-size:12px;color:${hpCol};font-family:var(--ft);font-weight:700;">${c.hp_current}/${c.hp_max}</span>
+              <span style="font-size:11px;color:#8a7060;">AC ${c.ac}</span>
+            </div>`;
+          }).join('')
+        : '<div style="color:#8a7060;font-size:13px;">Keine geteilten Charaktere</div>';
+    } catch { el.innerHTML = '<div style="color:#8a7060;font-size:13px;">Fehler beim Laden</div>'; }
+  } else {
+    el.innerHTML = players.map(p => {
+      const hpPct = p.maxHp ? p.hp / p.maxHp : 1;
+      const hpCol = hpPct<=0.25?'#f87171':hpPct<=0.5?'#fbbf24':'#4ade80';
+      return `<div class="player-status-row">
+        <div class="status-dot online"></div>
+        <span style="font-size:18px;">${p.icon}</span>
+        <span style="flex:1;font-family:var(--ft);font-size:12px;">${p.name}</span>
+        <span style="font-size:12px;color:${hpCol};font-family:var(--ft);font-weight:700;">${p.hp}/${p.maxHp||'?'}</span>
+        <span style="font-size:11px;color:#8a7060;">AC ${p.ac}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+document.getElementById('btn-dm-refresh-players')?.addEventListener('click', loadPlayers);
+
+// ── Auto-Refresh ──────────────────────────────────────────────────────────────
+setInterval(async () => {
+  await syncServer(false);
+  saveLocal();
+  renderInit();
+  loadPlayers();
+}, 10000);
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+loadLocal();
+renderInit();
+loadPlayers();
+</script>
+</body>
+</html>

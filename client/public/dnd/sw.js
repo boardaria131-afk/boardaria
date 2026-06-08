@@ -3,13 +3,14 @@
  * Cache-First Strategie für vollständige Offline-Nutzung.
  */
 
-const CACHE_NAME = 'dnd5e-v31';
+const CACHE_NAME = 'dnd5e-v34';
 const BASE = '/dnd';
 
 const ASSETS = [
   `${BASE}/`,
   `${BASE}/index.html`,
   `${BASE}/play.html`,
+  `${BASE}/dm.html`,
   `${BASE}/manifest.json`,
   `${BASE}/css/main.css`,
   `${BASE}/js/feature_descriptions.js`,
@@ -22,6 +23,8 @@ const ASSETS = [
   `${BASE}/js/spells.js`,
   `${BASE}/js/items.js`,
   `${BASE}/js/spellslots.js`,
+  `${BASE}/js/map.js`,
+  `${BASE}/js/initiative.js`,
   `${BASE}/js/campaign.js`,
   `${BASE}/js/journal.js`,
   `${BASE}/js/feats.js`,
