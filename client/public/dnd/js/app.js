@@ -330,6 +330,10 @@ function initPersistence() {
     }
   });
 
+  document.getElementById('btn-homebrew')?.addEventListener('click', () => {
+    if (typeof HomebrewUI !== 'undefined') HomebrewUI.showOverview();
+  });
+
   document.getElementById('btn-export-pdf')?.addEventListener('click', () => {
     PdfExport.generate();
   });
@@ -633,6 +637,7 @@ function startApp(user) {
   if (typeof InitiativeUI !== 'undefined') InitiativeUI.init();
   JournalUI.init();
   DiceUI.init();
+  if (typeof HomebrewUI !== 'undefined') HomebrewUI.init();
 
   // User-Badge im Header rendern
   Auth.updateHeaderBadge();
