@@ -4772,6 +4772,1468 @@
         "ranger"
       ],
       "description": "Your quiver produces an endless supply of ammunition. As a bonus action each turn, make two attacks with a weapon that uses ammunition from the quiver."
+    },
+    {
+      "id": "create_bonfire",
+      "name": "Create Bonfire",
+      "level": 0,
+      "school": "Conjuration",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "You create a bonfire on ground you can see within range. Until the spell ends, the magic bonfire fills a 5-foot cube. Any creature in the bonfire's space when you cast the spell must succeed on a DEX save or take 1d8 fire damage. A creature must also make the saving throw when it moves into the bonfire's space for the first time on a turn or ends its turn there."
+    },
+    {
+      "id": "encode_thoughts",
+      "name": "Encode Thoughts",
+      "level": 0,
+      "school": "Enchantment",
+      "casting_time": "1 action",
+      "range": "Self",
+      "components": [
+        "S"
+      ],
+      "duration": "8 hours",
+      "classes": [
+        "wizard"
+      ],
+      "description": "You pull a memory, an idea, or a message from your mind and transform it into a tangible string of glowing energy called a thought strand. The strand appears in an unoccupied space within 5 feet of you as a Tiny, weightless object that can be picked up and carried."
+    },
+    {
+      "id": "gust",
+      "name": "Gust",
+      "level": 0,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You seize the air and compel it to create one of the following effects at a point you can see within range: one Large or smaller creature must succeed on a STR save or be pushed up to 5 ft away; you create a small blast of air capable of moving one object that is neither held nor carried; or you create a harmless sensory affect using air."
+    },
+    {
+      "id": "magic_stone",
+      "name": "Magic Stone",
+      "level": 0,
+      "school": "Transmutation",
+      "casting_time": "1 bonus action",
+      "range": "Touch",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "1 minute",
+      "classes": [
+        "druid",
+        "warlock"
+      ],
+      "description": "You touch one to three pebbles and imbue them with magic. You or someone else can make a ranged spell attack with one of the pebbles by throwing it or hurling it with a sling. If thrown, a pebble has a range of 60 feet. On a hit, the target takes bludgeoning damage equal to 1d6 + your spellcasting ability modifier."
+    },
+    {
+      "id": "mold_earth",
+      "name": "Mold Earth",
+      "level": 0,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "S"
+      ],
+      "duration": "Instantaneous or 1 hour",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You choose a portion of dirt or stone that fits within a 5-foot cube within range and then do one of the following: excavate it, move it, cause it to rapidly become difficult terrain, or cause shapes, colors, or both to appear on the dirt or stone."
+    },
+    {
+      "id": "on_off",
+      "name": "On/Off",
+      "level": 0,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "artificer"
+      ],
+      "description": "This cantrip allows you to activate or deactivate any electronic or magical device within range, provided that the device has a clearly defined on or off function."
+    },
+    {
+      "id": "shape_water",
+      "name": "Shape Water",
+      "level": 0,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "S"
+      ],
+      "duration": "Instantaneous or 1 hour",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You choose an area of water that fits within a 5-foot cube within range. You manipulate it in one of the following ways: move or reshape it, make it flow in a direction, change its color or opacity, or freeze it (if no creature is in it)."
+    },
+    {
+      "id": "sword_burst",
+      "name": "Sword Burst",
+      "level": 0,
+      "school": "Conjuration",
+      "casting_time": "1 action",
+      "range": "Self (5-foot radius)",
+      "components": [
+        "V"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "artificer",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "You create a momentary circle of spectral blades that sweep around you. All other creatures within 5 feet of you must succeed on a DEX saving throw or take 1d6 force damage. This spell's damage increases by 1d6 at 5th, 11th, and 17th level."
+    },
+    {
+      "id": "control_flames",
+      "name": "Control Flames",
+      "level": 0,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "S"
+      ],
+      "duration": "Instantaneous or 1 hour",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You choose nonmagical flame that you can see within range and that fits within a 5-foot cube. You affect it in one of the following ways: expand or move it, extinguish it, double or halve its illuminated area, or cause simple shapes to appear in it."
+    },
+    {
+      "id": "absorb_elements",
+      "name": "Absorb Elements",
+      "level": 1,
+      "school": "Abjuration",
+      "casting_time": "1 reaction",
+      "range": "Self",
+      "components": [
+        "S"
+      ],
+      "duration": "1 round",
+      "classes": [
+        "druid",
+        "ranger",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "The spell captures some of the incoming energy, lessening its effect on you and storing it for your next melee attack. You have resistance to the triggering damage type until the start of your next turn. Also, the first time you hit with a melee attack on your next turn, the target takes an extra 1d6 damage of the triggering type."
+    },
+    {
+      "id": "catapult",
+      "name": "Catapult",
+      "level": 1,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "S"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "artificer",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "Choose one object weighing 1 to 5 pounds within range that isn't being worn or carried. The object flies in a straight line up to 90 feet in a direction you choose before falling to the ground, stopping early if it impacts against a solid surface. If the object would strike a creature, that creature must make a DEX saving throw. On a failed save, the object strikes the target and stops moving. When the object strikes something, the object and what it strikes each take 3d8 bludgeoning damage."
+    },
+    {
+      "id": "cause_fear",
+      "name": "Cause Fear",
+      "level": 1,
+      "school": "Necromancy",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "V"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "warlock",
+        "wizard"
+      ],
+      "description": "You awaken the sense of mortality in one creature you can see within range. A construct or an undead is immune to this effect. The target must succeed on a WIS saving throw or become frightened of you until the spell ends. The frightened target can repeat its saving throw at the end of each of its turns."
+    },
+    {
+      "id": "ceremony",
+      "name": "Ceremony",
+      "level": 1,
+      "school": "Abjuration",
+      "casting_time": "1 hour (ritual)",
+      "range": "Touch",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "cleric",
+        "paladin"
+      ],
+      "description": "You perform one of several religious ceremonies: Atonement, Bless Water, Coming of Age, Dedication, Funeral Rite, Investiture, or Wedding. Each has a unique effect lasting 24 hours or permanently."
+    },
+    {
+      "id": "chaos_bolt",
+      "name": "Chaos Bolt",
+      "level": 1,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "120 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "sorcerer"
+      ],
+      "description": "You hurl an undulating, warbling mass of chaotic energy at one creature in range. Make a ranged spell attack. On a hit, the target takes 2d8 + 1d6 damage. Choose two of the d8s. The number rolled on one of them determines the attack's damage type: 1 acid, 2 cold, 3 fire, 4 force, 5 lightning, 6 poison, 7 psychic, 8 thunder."
+    },
+    {
+      "id": "chromatic_orb",
+      "name": "Chromatic Orb",
+      "level": 1,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "90 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You hurl a 4-inch-diameter sphere of energy at a creature that you can see within range. You choose acid, cold, fire, lightning, poison, or thunder for the type of orb you create, and then make a ranged spell attack. On a hit, the creature takes 3d8 damage of the type you chose. +1d8 per slot above 1st."
+    },
+    {
+      "id": "gift_alacrity",
+      "name": "Gift of Alacrity",
+      "level": 1,
+      "school": "Divination",
+      "casting_time": "1 minute",
+      "range": "Touch",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "8 hours",
+      "classes": [
+        "wizard"
+      ],
+      "description": "You touch a willing creature. For the duration, the target can add 1d8 to its initiative rolls."
+    },
+    {
+      "id": "magnify_gravity",
+      "name": "Magnify Gravity",
+      "level": 1,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "1 round",
+      "classes": [
+        "wizard"
+      ],
+      "description": "The gravity in a 10-foot-radius sphere centered on a point you can see within range increases for a moment. Each creature in the sphere on the turn you cast this spell must make a CON saving throw. On a failed save, a creature takes 2d8 force damage, and its speed is halved until the end of its next turn."
+    },
+    {
+      "id": "searing_smite",
+      "name": "Searing Smite",
+      "level": 1,
+      "school": "Evocation",
+      "casting_time": "1 bonus action",
+      "range": "Self",
+      "components": [
+        "V"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "paladin"
+      ],
+      "description": "The next time you hit a creature with a melee weapon attack during the spell's duration, your weapon flares with white-hot intensity, and the attack deals an extra 1d6 fire damage to the target and causes the target to ignite in flames. At the start of each of its turns until the spell ends, the target must make a CON saving throw. On a failed save, it takes 1d6 fire damage."
+    },
+    {
+      "id": "snare",
+      "name": "Snare",
+      "level": 1,
+      "school": "Abjuration",
+      "casting_time": "1 minute",
+      "range": "Touch",
+      "components": [
+        "S",
+        "M"
+      ],
+      "duration": "8 hours",
+      "classes": [
+        "druid",
+        "ranger",
+        "wizard"
+      ],
+      "description": "While setting this snare, you use the rope to create a circle with a 5-foot radius on the ground or the floor. When you finish casting, the rope disappears and the snare becomes nearly invisible. The snare lasts for the duration or until triggered. The first creature of a chosen type that enters the area must succeed on a DEX saving throw. On a failed save, the creature is restrained until the snare is destroyed."
+    },
+    {
+      "id": "tasha_caustic_brew",
+      "name": "Tasha's Caustic Brew",
+      "level": 1,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "Self (30-foot line)",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "artificer",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "A stream of acid emanates from you in a line 30 feet long and 5 feet wide in a direction you choose. Each creature in the line must succeed on a DEX saving throw or be covered in acid for the spell's duration or until a creature uses its action to scrub the acid off. A creature covered in the acid takes 2d4 acid damage at the start of each of its turns."
+    },
+    {
+      "id": "aganazzar_scorcher",
+      "name": "Aganazzar's Scorcher",
+      "level": 2,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "A line of roaring flame 30 feet long and 5 feet wide emanates from you in a direction you choose. Each creature in the line must make a DEX saving throw. A creature takes 3d8 fire damage on a failed save, or half as much damage on a successful one. +1d8 per slot above 2nd."
+    },
+    {
+      "id": "aid",
+      "name": "Aid",
+      "level": 2,
+      "school": "Abjuration",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "8 hours",
+      "classes": [
+        "artificer",
+        "cleric",
+        "paladin"
+      ],
+      "description": "Your spell bolsters your allies with toughness and resolve. Choose up to three creatures within range. Each target's hit point maximum and current hit points increase by 5 for the duration. +5 HP per slot above 2nd."
+    },
+    {
+      "id": "borrowed_knowledge",
+      "name": "Borrowed Knowledge",
+      "level": 2,
+      "school": "Divination",
+      "casting_time": "1 action",
+      "range": "Self",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "1 hour",
+      "classes": [
+        "cleric",
+        "warlock",
+        "wizard"
+      ],
+      "description": "You draw on knowledge from spirits of the past. Choose one skill in which you lack proficiency. For the spell's duration, you have proficiency in the chosen skill. The spell's magic adjusts the spell when you cast it, choosing the most appropriate form of knowledge for the skill."
+    },
+    {
+      "id": "dust_dryness",
+      "name": "Dust Devil",
+      "level": 2,
+      "school": "Conjuration",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "Choose an unoccupied 5-foot cube of air that you can see within range. An elemental force that resembles a dust devil appears in the cube and lasts for the spell's duration. Each creature that enters the dust devil's space must make a STR saving throw. On a failed save, the creature takes 1d8 bludgeoning damage and is pushed 10 feet away."
+    },
+    {
+      "id": "earthbind",
+      "name": "Earthbind",
+      "level": 2,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "300 feet",
+      "components": [
+        "V"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "Choose one creature you can see within range. Yellow strips of magical energy loop around the creature. The target must succeed on a STR saving throw or its flying speed (if any) is reduced to 0 feet for the spell's duration. An airborne creature affected by this spell descends at 60 feet per round until it reaches the ground or the spell ends."
+    },
+    {
+      "id": "healing_spirit",
+      "name": "Healing Spirit",
+      "level": 2,
+      "school": "Conjuration",
+      "casting_time": "1 bonus action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "druid",
+        "ranger"
+      ],
+      "description": "You call forth a nature spirit to soothe the wounded. The intangible spirit appears in a space that is a 5-foot cube you can see within range. The spirit looks like a transparent beast or fey. Until the spell ends, whenever you or a creature you can see moves into the spirit's space for the first time on a turn or starts its turn there, you can cause the spirit to restore 1d6 hit points to that creature (no action required). The spirit can't heal constructs or undead."
+    },
+    {
+      "id": "mind_spike",
+      "name": "Mind Spike",
+      "level": 2,
+      "school": "Divination",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "S"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "You drive a disorienting spike of psychic energy into the mind of one creature you can see within range. The target must make a WIS saving throw. On a failed save, the target takes 3d8 psychic damage and you always know the target's location until the spell ends. +1d8 per slot above 2nd."
+    },
+    {
+      "id": "nathair_mischief",
+      "name": "Nathair's Mischief",
+      "level": 2,
+      "school": "Illusion",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "bard",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You fill a 20-foot cube you can see within range with fey and draconic magic. Roll on the Mischief table each round: 1-2 blinded, 3-4 prone, 5-6 invisible duplicate, 7-8 speed halved and disadvantage on attacks."
+    },
+    {
+      "id": "rime_frostbite",
+      "name": "Rime's Binding Ice",
+      "level": 2,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "Self (30-foot cone)",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "A burst of cold energy emanates from you in a 30-foot cone. Each creature in that area must make a CON saving throw. On a failed save, a creature takes 3d8 cold damage and is hindered by ice formations for 1 minute, or until it or another creature uses an action to break away the ice. +1d8 per slot above 2nd."
+    },
+    {
+      "id": "shadow_blade",
+      "name": "Shadow Blade",
+      "level": 2,
+      "school": "Illusion",
+      "casting_time": "1 bonus action",
+      "range": "Self",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "You weave together threads of shadow to create a sword of solidified gloom in your hand. This magic sword lasts until the spell ends. It counts as a simple melee weapon with which you are proficient. It deals 2d8 psychic damage on a hit and has the finesse, light, and thrown properties. In addition, when you use the sword to attack a target that is in dim light or darkness, you make the attack roll with advantage."
+    },
+    {
+      "id": "skywrite",
+      "name": "Skywrite",
+      "level": 2,
+      "school": "Transmutation",
+      "casting_time": "1 action (ritual)",
+      "range": "Sight",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "bard",
+        "druid",
+        "wizard"
+      ],
+      "description": "You cause up to ten words to form in a part of the sky you can see. The words appear to be made of cloud and remain in place for the spell's duration. The words dissipate when the spell ends. A strong wind can disperse the clouds and end the spell early."
+    },
+    {
+      "id": "snillocs_snowball",
+      "name": "Snilloc's Snowball Swarm",
+      "level": 2,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "90 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "A flurry of magic snowballs erupts from a point you choose within range. Each creature in a 5-foot-radius sphere centered on that point must make a DEX saving throw. A creature takes 3d6 cold damage on a failed save, or half as much damage on a successful one. +1d6 per slot above 2nd."
+    },
+    {
+      "id": "warding_wind",
+      "name": "Warding Wind",
+      "level": 2,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "Self",
+      "components": [
+        "V"
+      ],
+      "duration": "Concentration, up to 10 minutes",
+      "classes": [
+        "bard",
+        "druid",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "A strong wind (20 miles per hour) blows around you in a 10-foot radius and moves with you, remaining centered on you. The wind deafens you and other creatures in its area. It extinguishes unprotected flames in its area. The wind's area is difficult terrain for creatures other than you. Ranged weapon attack rolls against you have disadvantage."
+    },
+    {
+      "id": "ashardalons_stride",
+      "name": "Ashardalon's Stride",
+      "level": 3,
+      "school": "Transmutation",
+      "casting_time": "1 bonus action",
+      "range": "Self",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "artificer",
+        "ranger",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "The billowing flames of a dragon blast from your feet, granting you explosive speed. For the duration, your speed increases by 20 feet and moving doesn't provoke opportunity attacks. When you move within 5 feet of a creature or an object that isn't being worn or carried, it takes 1d6 fire damage from your trail."
+    },
+    {
+      "id": "catnap",
+      "name": "Catnap",
+      "level": 3,
+      "school": "Enchantment",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "S",
+        "M"
+      ],
+      "duration": "10 minutes",
+      "classes": [
+        "artificer",
+        "bard",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You make a calming gesture, and up to three willing creatures of your choice that you can see within range fall unconscious for the spell's duration. The spell ends on a target early if it takes damage or someone uses an action to shake or slap it awake. If a target remains unconscious for the full duration, that creature gains the benefit of a short rest."
+    },
+    {
+      "id": "enemies_abound",
+      "name": "Enemies Abound",
+      "level": 3,
+      "school": "Enchantment",
+      "casting_time": "1 action",
+      "range": "120 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "bard",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "You reach into the mind of one creature you can see and force it to make an INT saving throw. A creature automatically succeeds if it is immune to being frightened. On a failed save, the target loses the ability to distinguish friend from foe, regarding all creatures it can see as enemies until the spell ends."
+    },
+    {
+      "id": "erupting_earth",
+      "name": "Erupting Earth",
+      "level": 3,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "120 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "Choose a point you can see on the ground within range. A fountain of churned earth and stone erupts in a 20-foot cube centered on that point. Each creature in that area must make a DEX saving throw. A creature takes 3d12 bludgeoning damage on a failed save, or half as much damage on a successful one. Additionally, the ground in that area becomes difficult terrain until cleared."
+    },
+    {
+      "id": "flame_arrows",
+      "name": "Flame Arrows",
+      "level": 3,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "Touch",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "artificer",
+        "druid",
+        "ranger",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You touch a quiver containing arrows or bolts. When a target is hit by a ranged weapon attack using a piece of ammunition drawn from the quiver, the target takes an extra 1d6 fire damage. The spell's magic ends on a piece of ammunition when it hits or misses, and the spell ends when twelve pieces of ammunition have been drawn from the quiver."
+    },
+    {
+      "id": "intellect_fortress",
+      "name": "Intellect Fortress",
+      "level": 3,
+      "school": "Abjuration",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "V"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "artificer",
+        "bard",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "For the duration, you or one willing creature you can see within range has resistance to psychic damage and advantage on INT, WIS, and CHA saving throws. +1 target per slot above 3rd."
+    },
+    {
+      "id": "life_transference",
+      "name": "Life Transference",
+      "level": 3,
+      "school": "Necromancy",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "cleric",
+        "wizard"
+      ],
+      "description": "You sacrifice some of your health to mend another creature's injuries. You take 4d8 necrotic damage and one creature of your choice that you can see within range regains a number of hit points equal to twice the necrotic damage you take. +1d8 per slot above 3rd."
+    },
+    {
+      "id": "pulse_wave",
+      "name": "Pulse Wave",
+      "level": 3,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "Self (30-foot cone)",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "wizard"
+      ],
+      "description": "You create intense pressure, unleash it in a 30-foot cone, and decide which way the wave flows: away from you or toward you. Each creature in that cone must make a CON saving throw. On a failed save, the creature takes 6d6 force damage and is pushed 15 feet (away flow) or pulled 15 feet (toward flow). +1d6 per slot above 3rd."
+    },
+    {
+      "id": "summon_lesser_demons",
+      "name": "Summon Lesser Demons",
+      "level": 3,
+      "school": "Conjuration",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "warlock",
+        "wizard"
+      ],
+      "description": "You utter foul words, summoning demons from the chaos of the Abyss. Roll on the table to determine what appears: 1-2: two demons of CR 1 or lower, 3-4: four demons of CR 1/2 or lower, 5-6: eight demons of CR 1/4 or lower. The demons are hostile and attack the nearest non-demon each turn."
+    },
+    {
+      "id": "tidal_wave",
+      "name": "Tidal Wave",
+      "level": 3,
+      "school": "Conjuration",
+      "casting_time": "1 action",
+      "range": "120 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You conjure up a wave of water that crashes down on an area within range. The area can be up to 30 feet long, up to 10 feet wide, and up to 10 feet tall. Each creature in that area must make a DEX saving throw. On a failed save, a creature takes 4d8 bludgeoning damage and is knocked prone. On a successful save, a creature takes half as much damage and isn't knocked prone."
+    },
+    {
+      "id": "elemental_bane",
+      "name": "Elemental Bane",
+      "level": 4,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "90 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "artificer",
+        "druid",
+        "warlock",
+        "wizard"
+      ],
+      "description": "Choose one creature you can see within range, and choose one of the following damage types: acid, cold, fire, lightning, or thunder. The target must succeed on a CON saving throw or be affected by the spell for its duration. The first time each turn the affected target takes damage of the chosen type, the target takes an extra 2d6 damage of that type. +1 target per slot above 4th."
+    },
+    {
+      "id": "gravity_sinkhole",
+      "name": "Gravity Sinkhole",
+      "level": 4,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "120 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "wizard"
+      ],
+      "description": "A 20-foot-radius sphere of crushing force forms at a point you can see within range and then implodes in a flash. Each creature in the sphere must make a CON saving throw. On a failed save, the creature takes 5d10 force damage and is pulled toward the center of the sphere, ending in an unoccupied space as close to the center as possible. +1d10 per slot above 4th."
+    },
+    {
+      "id": "otilukes_resilient_sphere",
+      "name": "Otiluke's Resilient Sphere",
+      "level": 4,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "artificer",
+        "wizard"
+      ],
+      "description": "A sphere of shimmering force encloses a creature or object of Large size or smaller within range. An unwilling creature must make a DEX saving throw. On a failed save, the creature is enclosed for the duration. The sphere is weightless and just large enough to contain the creature or object inside. An enclosed creature can breathe normally. The creature is restrained and unable to be damaged by attacks or effects from outside the sphere."
+    },
+    {
+      "id": "storm_sphere",
+      "name": "Storm Sphere",
+      "level": 4,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "150 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "A 20-foot-radius sphere of whirling air springs into existence centered on a point you choose within range. Each creature in the sphere when it appears or that ends its turn there must succeed on a STR saving throw or take 2d6 bludgeoning damage. As a bonus action, you can hurl lightning: ranged spell attack on a creature within 60 feet of the sphere, 4d6 lightning damage on hit. +1d6 per slot above 4th."
+    },
+    {
+      "id": "summon_aberration",
+      "name": "Summon Aberration",
+      "level": 4,
+      "school": "Conjuration",
+      "casting_time": "1 action",
+      "range": "90 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "warlock",
+        "wizard"
+      ],
+      "description": "You call forth an aberrant spirit. It manifests in an unoccupied space that you can see within range. It uses the Aberrant Spirit stat block and disappears when it drops to 0 hit points or when the spell ends. The type of spirit can be Beholderkin, Mind Flayer, or Slaad."
+    },
+    {
+      "id": "summon_construct",
+      "name": "Summon Construct",
+      "level": 4,
+      "school": "Conjuration",
+      "casting_time": "1 action",
+      "range": "90 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "artificer",
+        "wizard"
+      ],
+      "description": "You call forth the spirit of a construct. It manifests in an unoccupied space that you can see within range. This corporeal form uses the Construct Spirit stat block. When you cast the spell, choose Clay, Metal, or Stone. The creature resembles a golem or automaton."
+    },
+    {
+      "id": "vitriolic_sphere",
+      "name": "Vitriolic Sphere",
+      "level": 4,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "150 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You point at a location within range, and a glowing, 1-foot-diameter ball of emerald acid streaks there and then detonates in a 20-foot-radius sphere. Each creature in that area must make a DEX saving throw. On a failed save, a creature takes 10d4 acid damage and another 5d4 acid damage at the end of its next turn. +2d4 per slot above 4th."
+    },
+    {
+      "id": "control_winds",
+      "name": "Control Winds",
+      "level": 5,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "300 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You take control of the air in a 100-foot cube that you can see within range. Choose one of the following effects when you cast the spell: Gusts, Downdraft, or Updraft. As a bonus action, you can change the effect to a different one."
+    },
+    {
+      "id": "dawn",
+      "name": "Dawn",
+      "level": 5,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "cleric",
+        "wizard"
+      ],
+      "description": "The light of dawn shines down on a location you specify within range. Until the spell ends, a 30-foot-radius, 40-foot-high cylinder of bright light glimmers there. This light is sunlight. When the cylinder appears, each creature in it must make a CON saving throw, taking 4d10 radiant damage on a failed save, or half as much damage on a successful one. A creature must also make this saving throw whenever it ends its turn in the cylinder."
+    },
+    {
+      "id": "enervation",
+      "name": "Enervation",
+      "level": 5,
+      "school": "Necromancy",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "A tendril of inky darkness reaches out from you, touching a creature you can see within range to drain life from it. The target must make a DEX saving throw. On a failed save, the target takes 4d8 necrotic damage, and you regain hit points equal to half the amount of necrotic damage dealt. On a successful save, the target takes half as much damage and you don't regain hit points. +1d8 per slot above 5th."
+    },
+    {
+      "id": "far_step",
+      "name": "Far Step",
+      "level": 5,
+      "school": "Conjuration",
+      "casting_time": "1 bonus action",
+      "range": "Self",
+      "components": [
+        "V"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "You teleport up to 60 feet to an unoccupied space you can see. On each of your turns before the spell ends, you can use a bonus action to teleport in this way again."
+    },
+    {
+      "id": "infernal_calling",
+      "name": "Infernal Calling",
+      "level": 5,
+      "school": "Conjuration",
+      "casting_time": "1 minute",
+      "range": "90 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "warlock",
+        "wizard"
+      ],
+      "description": "Uttering a dark incantation, you summon a devil from the Nine Hells. You choose the devil's type, which must be of CR 6 or lower. The devil disappears when it drops to 0 hit points or when the spell ends. The devil is hostile toward you but will obey if you succeed on a CHA check contested by its WIS."
+    },
+    {
+      "id": "skill_empowerment",
+      "name": "Skill Empowerment",
+      "level": 5,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "Touch",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "artificer",
+        "bard",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "Your magic deepens a creature's understanding of its own talent. You touch one willing creature and give it expertise in one skill of your choice that the creature is already proficient in. The spell ends early if you cast it again."
+    },
+    {
+      "id": "steel_wind_strike",
+      "name": "Steel Wind Strike",
+      "level": 5,
+      "school": "Conjuration",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "ranger",
+        "wizard"
+      ],
+      "description": "You flourish the weapon used in the casting and then vanish to strike like the wind. Choose up to five creatures you can see within range. Make a melee spell attack against each target. On a hit, a target takes 6d10 force damage. You can then teleport to an unoccupied space that you can see within 5 feet of one of the targets you hit or missed."
+    },
+    {
+      "id": "synaptic_static",
+      "name": "Synaptic Static",
+      "level": 5,
+      "school": "Enchantment",
+      "casting_time": "1 action",
+      "range": "120 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "bard",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "You choose a point within range and cause psychic energy to explode there. Each creature in a 20-foot-radius sphere centered on that point must make an INT saving throw. A creature with an INT score of 2 or lower can't be affected by this spell. A target takes 8d6 psychic damage on a failed save, or half as much damage on a successful one. On a failed save, the target also has muddled thoughts for 1 minute."
+    },
+    {
+      "id": "summon_draconic",
+      "name": "Summon Draconic Spirit",
+      "level": 5,
+      "school": "Conjuration",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You call forth a draconic spirit. It manifests in an unoccupied space that you can see within range. Choose a family of dragon: chromatic, gem, or metallic. The creature resembles a dragon of the chosen family. When you cast the spell, choose a damage type associated with the chosen dragon family."
+    },
+    {
+      "id": "wall_of_light",
+      "name": "Wall of Light",
+      "level": 5,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "120 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 10 minutes",
+      "classes": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "A shimmering wall of bright light appears at a point you choose within range. The wall appears in any orientation you choose: horizontally, vertically, or diagonally. It can be free floating or resting on a solid surface. Each creature that ends its turn within 10 feet of the wall on your side of it must make a CON saving throw, taking 4d8 radiant damage on a failed save."
+    },
+    {
+      "id": "bones_earth",
+      "name": "Bones of the Earth",
+      "level": 6,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "120 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "druid"
+      ],
+      "description": "You cause up to six pillars of stone to burst from places on the ground that you can see within range. Each pillar is a cylinder that has a diameter of 5 feet and a height of up to 30 feet. The ground where a pillar appears must be wide enough for its diameter, and you can target the ground under a creature if that creature is Medium or smaller. +2 pillars per slot above 6th."
+    },
+    {
+      "id": "fizban_platinum",
+      "name": "Fizban's Platinum Shield",
+      "level": 6,
+      "school": "Abjuration",
+      "casting_time": "1 bonus action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You create a field of silvery light that surrounds a creature of your choice within range. The field sheds dim light out to 5 feet. While surrounded by the field, a creature gains the following benefits: half cover, resistance to acid/cold/fire/lightning/poison damage, and if the creature is hit by an attack, the field flashes brightly."
+    },
+    {
+      "id": "flesh_to_stone",
+      "name": "Flesh to Stone",
+      "level": 6,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "warlock",
+        "wizard"
+      ],
+      "description": "You attempt to turn one creature that you can see within range into stone. If the target's body is made of flesh, the creature must make a CON saving throw. On a failed save, it is restrained as its flesh begins to harden. On a successful save, the creature isn't affected. A creature restrained by this spell must make another CON saving throw at the end of each of its turns."
+    },
+    {
+      "id": "investiture_flame",
+      "name": "Investiture of Flame",
+      "level": 6,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "Self",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 10 minutes",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "Flames race across your body, shedding bright light in a 30-foot radius. The flames don't harm you. Until the spell ends, you gain the following benefits: immunity to fire damage and resistance to cold damage; any creature that moves within 5 feet of you takes 4d6 fire damage; you can use your action to create a line of fire 15 feet long and 5 feet wide."
+    },
+    {
+      "id": "mental_prison",
+      "name": "Mental Prison",
+      "level": 6,
+      "school": "Illusion",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "You attempt to bind a creature within an illusory cell that only it perceives. One creature you can see within range must make an INT saving throw. The target succeeds automatically if it is immune to being charmed. On a successful save, the target takes 5d10 psychic damage, and the spell ends. On a failed save, the target takes 5d10 psychic damage, and you make the area immediately around the target's space appear dangerous to it in some way."
+    },
+    {
+      "id": "ottos_irresistible",
+      "name": "Otto's Irresistible Dance",
+      "level": 6,
+      "school": "Enchantment",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "V"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "bard",
+        "wizard"
+      ],
+      "description": "Choose one creature that you can see within range. The target begins a comic dance in place: shuffling, tapping its feet, and capering for the duration. Creatures that can't be charmed are immune to this spell. A dancing creature must use all its movement to dance without leaving its space and has disadvantage on DEX saving throws and attack rolls."
+    },
+    {
+      "id": "scatter",
+      "name": "Scatter",
+      "level": 6,
+      "school": "Conjuration",
+      "casting_time": "1 action",
+      "range": "30 feet",
+      "components": [
+        "V"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "The air quivers around up to five creatures of your choice that you can see within range. An unwilling creature must succeed on a WIS saving throw to resist this spell. You teleport each affected target to an unoccupied space that you can see within 120 feet of you. That space must be on the ground or on a floor."
+    },
+    {
+      "id": "dark_star",
+      "name": "Dark Star",
+      "level": 7,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "150 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "wizard"
+      ],
+      "description": "This spell creates a sphere centered on a point you choose within range. The sphere can have a radius of up to 40 feet. The area within this sphere is filled with magical darkness and crushing gravitational force. Nonmagical light, as well as light created by spells of 8th level or lower, can't illuminate the area. Each creature in the sphere when it appears must make a CON saving throw. On a failed save, a creature takes 8d10 force damage and is restrained until the spell ends."
+    },
+    {
+      "id": "dream_of_blue",
+      "name": "Dream of the Blue Veil",
+      "level": 7,
+      "school": "Conjuration",
+      "casting_time": "10 minutes",
+      "range": "20 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "6 hours",
+      "classes": [
+        "bard",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "You and up to eight willing creatures within range fall unconscious for the spell's duration and experience visions of another world on the Material Plane. You specify a location on another world. The sleepers mentally travel to that location. If you don't know anything about the location, they arrive in a random place on that world. They can explore as if physically present."
+    },
+    {
+      "id": "tether_essence",
+      "name": "Tether Essence",
+      "level": 7,
+      "school": "Necromancy",
+      "casting_time": "1 action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "druid",
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "Two creatures you can see within range must make a CON saving throw. On a failed save, both are linked to each other. Whenever a linked creature takes damage, the other linked creature takes the same amount of damage. If either of the tethered creatures drops to 0 hit points, the spell ends. The spell also ends if the two creatures ever end their turns more than 30 feet apart."
+    },
+    {
+      "id": "abi_dalzim",
+      "name": "Abi-Dalzim's Horrid Wilting",
+      "level": 8,
+      "school": "Necromancy",
+      "casting_time": "1 action",
+      "range": "150 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You draw the moisture from every creature in a 30-foot cube centered on a point you choose within range. Each creature in that area must make a CON saving throw. Constructs and undead aren't affected, and plants and water elementals make this saving throw with disadvantage. A creature takes 12d8 necrotic damage on a failed save, or half as much on a successful one. +2d8 per slot above 8th."
+    },
+    {
+      "id": "dark_star_lvl8",
+      "name": "Illusory Dragon",
+      "level": 8,
+      "school": "Illusion",
+      "casting_time": "1 action",
+      "range": "120 feet",
+      "components": [
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "wizard"
+      ],
+      "description": "By gathering threads of shadow material from the Shadowfell, you create a Huge shadowy dragon in an unoccupied space that you can see within range. The illusion lasts for the spell's duration and occupies its space, as if it were a creature. On each of your turns as a bonus action, you can move the illusion up to 60 feet."
+    },
+    {
+      "id": "maddening_darkness",
+      "name": "Maddening Darkness",
+      "level": 8,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "150 feet",
+      "components": [
+        "V",
+        "M"
+      ],
+      "duration": "Concentration, up to 10 minutes",
+      "classes": [
+        "warlock",
+        "wizard"
+      ],
+      "description": "Magical darkness spreads from a point you choose within range to fill a 60-foot-radius sphere until the spell ends. The darkness spreads around corners. A creature with darkvision can't see through this darkness. Any creature that starts its turn in the darkness must succeed on a WIS saving throw or take 8d8 psychic damage."
+    },
+    {
+      "id": "mighty_fortress",
+      "name": "Mighty Fortress",
+      "level": 8,
+      "school": "Conjuration",
+      "casting_time": "1 minute",
+      "range": "1 mile",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Instantaneous",
+      "classes": [
+        "wizard"
+      ],
+      "description": "A fortress of stone erupts from a square area of ground of your choice that you can see within range. The area is 120 feet on each side, and it must not overlap with any structures. Any creatures in the area are harmlessly lifted up as the fortress rises. The fortress has four turrets with square bases, each one 20 feet on a side and 30 feet tall, with one turret on each corner."
+    },
+    {
+      "id": "invulnerability",
+      "name": "Invulnerability",
+      "level": 9,
+      "school": "Abjuration",
+      "casting_time": "1 action",
+      "range": "Self",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 10 minutes",
+      "classes": [
+        "wizard"
+      ],
+      "description": "You are immune to all damage until the spell ends."
+    },
+    {
+      "id": "mass_polymorph",
+      "name": "Mass Polymorph",
+      "level": 9,
+      "school": "Transmutation",
+      "casting_time": "1 action",
+      "range": "120 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 hour",
+      "classes": [
+        "bard",
+        "sorcerer",
+        "wizard"
+      ],
+      "description": "You transform up to ten creatures of your choice that you can see within range. An unwilling target must succeed on a WIS saving throw to resist the transformation. An unwilling shapechanger automatically succeeds on the save. Each target assumes a beast form of your choice, and you can choose the same form or different ones for each target."
+    },
+    {
+      "id": "ravenous_void",
+      "name": "Ravenous Void",
+      "level": 9,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "1000 feet",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "wizard"
+      ],
+      "description": "You create a 20-foot-radius sphere of destructive gravitational force centered on a point you choose within range. For the duration, the sphere and the area within 100 feet of it are difficult terrain, and nonmagical objects in the sphere that aren't being worn or carried are destroyed at the start of each of your turns. Each creature that starts its turn in the sphere must succeed on a CON saving throw or take 5d10 force damage and be restrained until the end of its next turn."
+    },
+    {
+      "id": "blade_of_disaster",
+      "name": "Blade of Disaster",
+      "level": 9,
+      "school": "Conjuration",
+      "casting_time": "1 bonus action",
+      "range": "60 feet",
+      "components": [
+        "V",
+        "S"
+      ],
+      "duration": "Concentration, up to 1 minute",
+      "classes": [
+        "sorcerer",
+        "warlock",
+        "wizard"
+      ],
+      "description": "You create a blade-shaped planar rift about 3 feet long in an unoccupied space you can see within range. The blade lasts for the duration. When you cast this spell, you can make up to two melee spell attacks with the blade, each one against a creature, loose object, or structure within 5 feet of the blade. On a hit, the target takes 4d12 force damage. This attack scores a critical hit if the number on the d20 is 18 or higher."
     }
   ]
 }

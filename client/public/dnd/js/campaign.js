@@ -205,6 +205,10 @@ const CampaignUI = (() => {
         <p style="font-size:11px;color:#8a7060;margin-top:4px;text-align:center;">
           Teile diesen Code mit deinen Mitspielern
         </p>
+        <button id="btn-show-qr" class="btn-secondary" style="width:100%;margin-top:6px;font-size:11px;">
+          📱 QR-Code anzeigen
+        </button>
+        <div id="qr-container" style="display:none;text-align:center;margin-top:8px;"></div>
       </div>
       <div style="display:flex;gap:8px;margin-top:10px;">
         <button class="btn-secondary" id="btn-leave-campaign" style="flex:1;font-size:11px;">

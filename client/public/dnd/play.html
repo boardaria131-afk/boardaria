@@ -365,6 +365,64 @@
     </div>
   </div>
 
+  <!-- Würfeln -->
+  <div class="play-section" id="sec-dice">
+    <div class="play-section-title" onclick="toggleSection('sec-dice')">
+      🎲 Würfeln
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="play-section-body">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;" id="play-dice-grid"></div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+        <input type="number" id="play-dice-num" value="1" min="1" max="10"
+          style="width:44px;text-align:center;background:rgba(255,255,255,0.08);
+          border:1px solid var(--border);border-radius:4px;color:var(--parch);font-family:var(--ft);padding:4px;" />
+        <span style="color:var(--ink-d);font-family:var(--ft);font-size:12px;">×</span>
+        <select id="play-dice-type" style="flex:1;background:rgba(255,255,255,0.08);
+          border:1px solid var(--border);border-radius:4px;color:var(--parch);font-family:var(--ft);padding:5px;">
+          <option value="4">d4</option>
+          <option value="6">d6</option>
+          <option value="8">d8</option>
+          <option value="10">d10</option>
+          <option value="12">d12</option>
+          <option value="20" selected>d20</option>
+          <option value="100">d100</option>
+        </select>
+        <input type="number" id="play-dice-mod" value="0" style="width:50px;text-align:center;
+          background:rgba(255,255,255,0.08);border:1px solid var(--border);border-radius:4px;
+          color:var(--parch);font-family:var(--ft);padding:4px;" placeholder="+mod" />
+        <button onclick="rollCustom()" style="padding:6px 14px;background:rgba(139,26,26,0.3);
+          border:1px solid var(--blood-l);border-radius:6px;color:#f0a0a0;
+          font-family:var(--ft);font-size:12px;cursor:pointer;">Würfeln</button>
+      </div>
+      <div id="play-dice-log" style="display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- Angriffs-Rechner -->
+  <div class="play-section collapsed" id="sec-attack">
+    <div class="play-section-title" onclick="toggleSection('sec-attack')">
+      ⚔ Angriff
+      <span class="collapse-arrow">▾</span>
+    </div>
+    <div class="play-section-body">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+        <select id="play-atk-weapon" style="flex:2;background:rgba(255,255,255,0.08);
+          border:1px solid var(--border);border-radius:4px;color:var(--parch);font-family:var(--ft);padding:5px;"></select>
+        <select id="play-atk-magic" style="background:rgba(255,255,255,0.08);
+          border:1px solid var(--border);border-radius:4px;color:var(--parch);font-family:var(--ft);padding:5px;">
+          <option value="0">+0</option><option value="1">+1</option>
+          <option value="2">+2</option><option value="3">+3</option>
+        </select>
+      </div>
+      <div id="play-atk-stats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;"></div>
+      <button onclick="rollAttack()" style="width:100%;padding:10px;background:rgba(139,26,26,0.3);
+        border:1px solid var(--blood-l);border-radius:6px;color:#f0a0a0;
+        font-family:var(--ft);font-size:13px;cursor:pointer;">🎲 Angriff würfeln</button>
+      <div id="play-atk-log" style="margin-top:8px;display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto;"></div>
+    </div>
+  </div>
+
   <!-- Vorbereitete Spells -->
   <div class="play-section" id="sec-spells">
     <div class="play-section-title" onclick="toggleSection('sec-spells')">
@@ -716,12 +774,13 @@ function renderPreparedSpells() {
   }
 
   body.innerHTML = spells.map(s => `
-    <div class="spell-row">
+    <div class="spell-row" onclick="showSpellDetailById('${s.id}')" style="cursor:pointer;">
       <div class="spell-lvl-badge">${s.level===0?'C':s.level}</div>
-      <div>
+      <div style="flex:1;">
         <div class="spell-name">${s.name}</div>
-        <div class="spell-school">${s.casting_time} · ${s.range} · ${s.duration}</div>
+        <div class="spell-school">${s.casting_time} · ${s.range} · ${s.duration}${(s.duration||'').includes('Concentration')?' ⚠':''}</div>
       </div>
+      <span style="font-size:14px;color:rgba(201,150,42,0.4);">›</span>
     </div>
   `).join('');
 }
@@ -834,6 +893,246 @@ window.addEventListener('online',  () => document.getElementById('offline-banner
 window.addEventListener('offline', () => document.getElementById('offline-banner').style.display = 'block');
 if (!navigator.onLine) document.getElementById('offline-banner').style.display = 'block';
 
+
+// ── Würfeln ───────────────────────────────────────────────────────────────────
+const QUICK_DICE = [
+  {label:'Initiative', dice:'1d20', mod:() => getMod(char.abilities?.dex)},
+  {label:'Konz.Save',  dice:'1d20', mod:() => getMod(char.abilities?.con)},
+  {label:'d4',  dice:'1d4',  mod:()=>0},
+  {label:'d6',  dice:'1d6',  mod:()=>0},
+  {label:'d8',  dice:'1d8',  mod:()=>0},
+  {label:'d10', dice:'1d10', mod:()=>0},
+  {label:'d12', dice:'1d12', mod:()=>0},
+  {label:'d20', dice:'1d20', mod:()=>0},
+];
+
+function rollDiceStr(diceStr) {
+  const m = diceStr.match(/(\d+)d(\d+)/);
+  if (!m) return parseInt(diceStr) || 0;
+  let total = 0, rolls = [];
+  for (let i = 0; i < parseInt(m[1]); i++) {
+    const r = Math.floor(Math.random() * parseInt(m[2])) + 1;
+    rolls.push(r); total += r;
+  }
+  return { total, rolls, sides: parseInt(m[2]) };
+}
+
+function addDiceLog(container, label, result, mod, sides) {
+  const el = document.createElement('div');
+  const isCrit = sides === 20 && result.rolls?.[0] === 20;
+  const isFail = sides === 20 && result.rolls?.[0] === 1;
+  const total = result.total + mod;
+  el.style.cssText = `display:flex;align-items:center;gap:8px;padding:6px 10px;
+    background:${isCrit?'rgba(201,150,42,0.15)':isFail?'rgba(248,113,113,0.1)':'rgba(255,255,255,0.05)'};
+    border:1px solid ${isCrit?'var(--gold)':isFail?'var(--red)':'rgba(200,165,90,0.2)'};
+    border-radius:4px;font-family:var(--ft);font-size:12px;`;
+  el.innerHTML = `
+    <span style="color:var(--ink-d);flex:1;">${label}</span>
+    ${isCrit?'<span style="color:var(--gold);">⚡KRIT</span>':''}
+    ${isFail?'<span style="color:var(--red);">💀FAIL</span>':''}
+    <span style="color:var(--ink-d);font-size:10px;">(${result.rolls?.join('+')||result.total}${mod?'+'+mod:''})</span>
+    <strong style="color:${isCrit?'var(--gold)':isFail?'var(--red)':'var(--parch)'};font-size:16px;">${total}</strong>
+  `;
+  container.insertBefore(el, container.firstChild);
+  while (container.children.length > 6) container.removeChild(container.lastChild);
+  haptic();
+}
+
+function renderDiceGrid() {
+  const grid = document.getElementById('play-dice-grid');
+  if (!grid) return;
+  grid.innerHTML = QUICK_DICE.map(d => `
+    <button onclick="rollQuick('${d.label}','${d.dice}',${d.mod()})"
+      style="padding:6px 10px;background:rgba(139,26,26,0.2);border:1px solid rgba(139,26,26,0.4);
+      border-radius:6px;color:#f0a0a0;font-family:var(--ft);font-size:11px;cursor:pointer;
+      letter-spacing:0.5px;white-space:nowrap;">
+      ${d.label}
+    </button>
+  `).join('');
+}
+
+function rollQuick(label, diceStr, mod) {
+  const result = rollDiceStr(diceStr);
+  const log = document.getElementById('play-dice-log');
+  if (log) addDiceLog(log, label, result, mod, parseInt(diceStr.split('d')[1]));
+}
+
+function rollCustom() {
+  const num  = parseInt(document.getElementById('play-dice-num')?.value) || 1;
+  const type = parseInt(document.getElementById('play-dice-type')?.value) || 20;
+  const mod  = parseInt(document.getElementById('play-dice-mod')?.value) || 0;
+  const result = rollDiceStr(num + 'd' + type);
+  const log = document.getElementById('play-dice-log');
+  if (log) addDiceLog(log, num+'d'+type+(mod?'+'+mod:''), result, mod, type);
+}
+
+// ── Angriffs-Rechner ─────────────────────────────────────────────────────────
+const WEAPONS = [
+  {id:'longsword',  name:'Longsword',    die:'1d8',  ab:'str', finesse:false, versatile:'1d10'},
+  {id:'shortsword', name:'Shortsword',   die:'1d6',  ab:'dex', finesse:true},
+  {id:'greatsword', name:'Greatsword',   die:'2d6',  ab:'str'},
+  {id:'greataxe',   name:'Greataxe',     die:'1d12', ab:'str'},
+  {id:'dagger',     name:'Dagger',       die:'1d4',  ab:'str', finesse:true},
+  {id:'rapier',     name:'Rapier',       die:'1d8',  ab:'dex', finesse:true},
+  {id:'battleaxe',  name:'Battleaxe',    die:'1d8',  ab:'str', versatile:'1d10'},
+  {id:'warhammer',  name:'Warhammer',    die:'1d8',  ab:'str', versatile:'1d10'},
+  {id:'longbow',    name:'Longbow',      die:'1d8',  ab:'dex'},
+  {id:'shortbow',   name:'Shortbow',     die:'1d6',  ab:'dex'},
+  {id:'handcrossbow',name:'Hand Crossbow',die:'1d6', ab:'dex'},
+  {id:'unarmed',    name:'Unarmed',      die:'1',    ab:'str'},
+];
+
+function renderAttackSection() {
+  const sel = document.getElementById('play-atk-weapon');
+  if (sel && !sel.children.length) {
+    WEAPONS.forEach(w => {
+      const o = document.createElement('option');
+      o.value = w.id; o.textContent = w.name; sel.appendChild(o);
+    });
+    sel.addEventListener('change', updateAtkStats);
+    document.getElementById('play-atk-magic')?.addEventListener('change', updateAtkStats);
+    updateAtkStats();
+  }
+}
+
+function updateAtkStats() {
+  const wId    = document.getElementById('play-atk-weapon')?.value;
+  const magic  = parseInt(document.getElementById('play-atk-magic')?.value) || 0;
+  const weapon = WEAPONS.find(w => w.id === wId);
+  if (!weapon) return;
+  const ab    = char.abilities || {};
+  const prof  = getProfBonus();
+  const aMod  = weapon.finesse
+    ? Math.max(getMod(ab.str), getMod(ab.dex))
+    : getMod(ab[weapon.ab] || 10);
+  const atk = aMod + prof + magic;
+  const dmg = aMod + magic;
+
+  const el = document.getElementById('play-atk-stats');
+  if (el) el.innerHTML = `
+    <div style="text-align:center;padding:6px 12px;background:rgba(74,222,128,0.1);
+      border:1px solid rgba(74,222,128,0.3);border-radius:6px;">
+      <div style="font-family:var(--ft);font-size:9px;color:var(--ink-d);">ATK</div>
+      <div style="font-family:var(--ft);font-size:20px;font-weight:700;color:#4ade80;">${atk>=0?'+':''}${atk}</div>
+    </div>
+    <div style="text-align:center;padding:6px 12px;background:rgba(248,113,113,0.1);
+      border:1px solid rgba(248,113,113,0.3);border-radius:6px;">
+      <div style="font-family:var(--ft);font-size:9px;color:var(--ink-d);">SCHADEN</div>
+      <div style="font-family:var(--ft);font-size:14px;font-weight:700;color:#f87171;">
+        ${weapon.die}${dmg>=0?'+':''}${dmg}
+      </div>
+    </div>
+    <div style="text-align:center;padding:6px 12px;background:rgba(255,255,255,0.05);
+      border:1px solid var(--border);border-radius:6px;">
+      <div style="font-family:var(--ft);font-size:9px;color:var(--ink-d);">TYP</div>
+      <div style="font-size:11px;color:var(--ink-d);">${weapon.id==='longbow'||weapon.id==='shortbow'||weapon.id==='handcrossbow'?'piercing':'varies'}</div>
+    </div>
+  `;
+}
+
+function rollAttack() {
+  const wId    = document.getElementById('play-atk-weapon')?.value;
+  const magic  = parseInt(document.getElementById('play-atk-magic')?.value) || 0;
+  const weapon = WEAPONS.find(w => w.id === wId);
+  if (!weapon) return;
+  const ab   = char.abilities || {};
+  const prof = getProfBonus();
+  const aMod = weapon.finesse
+    ? Math.max(getMod(ab.str), getMod(ab.dex))
+    : getMod(ab[weapon.ab] || 10);
+  const atkBonus = aMod + prof + magic;
+  const dmgBonus = aMod + magic;
+
+  const d20    = Math.floor(Math.random() * 20) + 1;
+  const atkTot = d20 + atkBonus;
+  const isCrit = d20 === 20;
+  const isFail = d20 === 1;
+
+  const dmgResult = rollDiceStr(isCrit ? weapon.die.replace(/(\d+)d/, n => (parseInt(n)*2)+'d') : weapon.die);
+  const dmgTot = dmgResult.total + dmgBonus;
+
+  const log = document.getElementById('play-atk-log');
+  if (!log) return;
+  const el = document.createElement('div');
+  el.style.cssText = `display:flex;align-items:center;gap:8px;padding:7px 10px;
+    background:${isCrit?'rgba(201,150,42,0.15)':isFail?'rgba(248,113,113,0.08)':'rgba(255,255,255,0.05)'};
+    border:1px solid ${isCrit?'var(--gold)':isFail?'var(--red)':'rgba(200,165,90,0.2)'};
+    border-radius:4px;font-family:var(--ft);font-size:11px;`;
+  el.innerHTML = `
+    <span style="color:var(--ink-d);flex:1;">${weapon.name}${magic?'+'+magic:''}</span>
+    ${isCrit?'<span style="color:var(--gold);">⚡KRIT</span>':''}
+    ${isFail?'<span style="color:var(--red);">💀MISS</span>':''}
+    <span>ATK: <strong style="color:${isCrit?'var(--gold)':isFail?'var(--red)':'#4ade80'};">
+      ${isFail?'–':atkTot>=0?'+'+atkTot:atkTot}
+    </strong></span>
+    <span>DMG: <strong style="color:#f87171;">${isFail?'–':dmgTot}</strong></span>
+  `;
+  log.insertBefore(el, log.firstChild);
+  while (log.children.length > 6) log.removeChild(log.lastChild);
+  haptic('medium');
+}
+
+// ── Spell-Detail ─────────────────────────────────────────────────────────────
+function showSpellDetailById(id) {
+  const spell = spellsData[id];
+  if (spell) showSpellDetail(spell);
+}
+
+function showSpellDetail(spell) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0;';
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+
+  const isConc = (spell.duration||'').includes('Concentration');
+  const comp   = spell.components || [];
+
+  overlay.innerHTML = `
+    <div style="background:#1a1208;border:1px solid var(--gold);border-radius:12px 12px 0 0;
+      padding:20px;width:100%;max-width:500px;max-height:70vh;overflow-y:auto;">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+        <div style="flex:1;">
+          <div style="font-family:var(--ft);font-size:16px;font-weight:700;color:var(--parch);">${spell.name}</div>
+          <div style="font-size:12px;color:var(--ink-d);">${spell.level===0?'Cantrip':spell.level+'. Grad'} · ${spell.school}</div>
+        </div>
+        <button onclick="this.closest('.spell-sheet-overlay').remove()" 
+          style="background:none;border:none;color:var(--ink-d);font-size:20px;cursor:pointer;padding:0;">✕</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;">
+        <div style="padding:6px 8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;">
+          <div style="font-family:var(--ft);font-size:9px;color:var(--ink-d);text-transform:uppercase;letter-spacing:1px;">⏱ Zauberzeit</div>
+          <div style="font-size:13px;color:var(--parch);">${spell.casting_time}</div>
+        </div>
+        <div style="padding:6px 8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;">
+          <div style="font-family:var(--ft);font-size:9px;color:var(--ink-d);text-transform:uppercase;letter-spacing:1px;">📏 Reichweite</div>
+          <div style="font-size:13px;color:var(--parch);">${spell.range}</div>
+        </div>
+        <div style="padding:6px 8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;${isConc?'border-color:rgba(248,113,113,0.4);':''}">
+          <div style="font-family:var(--ft);font-size:9px;color:${isConc?'var(--red)':'var(--ink-d)'};text-transform:uppercase;letter-spacing:1px;">⏳ Dauer</div>
+          <div style="font-size:13px;color:${isConc?'#f0a0a0':'var(--parch)'};">${spell.duration}</div>
+        </div>
+        <div style="padding:6px 8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;">
+          <div style="font-family:var(--ft);font-size:9px;color:var(--ink-d);text-transform:uppercase;letter-spacing:1px;">🔮 Komponenten</div>
+          <div style="font-size:13px;color:var(--parch);">${comp.join(', ')}</div>
+        </div>
+      </div>
+
+      ${isConc?`<div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);
+        border-radius:4px;padding:6px 10px;margin-bottom:10px;font-family:var(--ft);font-size:11px;color:#f0a0a0;">
+        ⚠ KONZENTRATION — CON-Rettungswurf bei Schaden!
+      </div>`:''}
+
+      <p style="font-size:14px;color:var(--ink);line-height:1.6;margin-bottom:10px;">${spell.description}</p>
+
+      <div style="font-size:11px;color:var(--ink-d);">
+        Klassen: ${(spell.classes||[]).map(c=>c.charAt(0).toUpperCase()+c.slice(1)).join(', ')||'–'}
+      </div>
+    </div>
+  `;
+  overlay.firstElementChild.classList.add('spell-sheet-overlay');
+  document.body.appendChild(overlay);
+}
+
 // Haptic Feedback Helper
 function haptic(type = 'light') {
   if (navigator.vibrate) {
@@ -858,7 +1157,10 @@ if (!localStorage.getItem('play_visited')) {
 }
 
 // Start
-loadAll();
+loadAll().then(() => {
+  renderDiceGrid();
+  renderAttackSection();
+});
 </script>
 </body>
 </html>
