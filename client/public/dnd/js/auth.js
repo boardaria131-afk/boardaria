@@ -25,6 +25,13 @@ const Auth = (() => {
 
   // ── Init ──────────────────────────────────────────────────
   async function init() {
+    // Logout-Flag prüfen — nach Abmelden immer Login-Screen zeigen
+    if (sessionStorage.getItem('dnd_logged_out')) {
+      sessionStorage.removeItem('dnd_logged_out');
+      showLoginScreen();
+      return;
+    }
+
     _token = localStorage.getItem(TOKEN_KEY);
 
     if (_token) {
@@ -120,14 +127,19 @@ const Auth = (() => {
   function logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    // Alle dnd5e Einträge aus localStorage löschen (Charakter-Cache etc.)
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith('dnd5e_') || k.startsWith('dnd_initiative') || k === 'dnd_campaign')) {
+        keysToRemove.push(k);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    // Flag: beim nächsten Start Login-Screen zeigen
+    sessionStorage.setItem('dnd_logged_out', '1');
     _user = null; _token = null;
     _onReady = [];
-    // Character-Cache zurücksetzen
-    if (window.Character && Character.setUserContext) {
-      Character.setUserContext({ id: null, username: 'logout', isGuest: true });
-    }
-    // Sauberster Weg: Seite neu laden zeigt Login-Screen
-    // (verhindert doppelte Initialisierung und veraltete Daten)
     window.location.href = '/dnd/';
   }
 

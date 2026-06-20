@@ -1,3 +1,64 @@
+
+// ── Open5e Beschreibungen (Subklassen + Hintergründe) ────────────────────────
+const SC_DESC_CACHE_KEY = 'dnd5e_sc_descriptions';
+const BG_DESC_CACHE_KEY = 'dnd5e_bg_descriptions';
+
+async function fetchSubclassDesc(name) {
+  const cache = JSON.parse(localStorage.getItem(SC_DESC_CACHE_KEY) || '{}');
+  if (cache[name]) return cache[name];
+
+  try {
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const resp = await fetch(`https://www.dnd5eapi.co/api/subclasses/${slug}`);
+    if (resp.ok) {
+      const data = await resp.json();
+      const desc = data.desc || '';
+      if (desc) {
+        cache[name] = desc;
+        localStorage.setItem(SC_DESC_CACHE_KEY, JSON.stringify(cache));
+        return desc;
+      }
+    }
+  } catch {}
+
+  try {
+    const resp = await fetch(`https://api.open5e.com/v1/subclasses/?search=${encodeURIComponent(name)}&limit=1`);
+    if (resp.ok) {
+      const data = await resp.json();
+      const desc = data.results?.[0]?.desc || '';
+      if (desc) {
+        cache[name] = desc;
+        localStorage.setItem(SC_DESC_CACHE_KEY, JSON.stringify(cache));
+        return desc;
+      }
+    }
+  } catch {}
+
+  return null;
+}
+
+async function fetchBackgroundDesc(name) {
+  const cache = JSON.parse(localStorage.getItem(BG_DESC_CACHE_KEY) || '{}');
+  if (cache[name]) return cache[name];
+
+  // D&D 5e API: Hintergründe sind nicht direkt verfügbar, aber Open5e hat sie
+  try {
+    const resp = await fetch(`https://api.open5e.com/v1/backgrounds/?search=${encodeURIComponent(name)}&limit=1`);
+    if (resp.ok) {
+      const data = await resp.json();
+      const result = data.results?.[0];
+      if (result?.desc) {
+        const desc = result.desc;
+        cache[name] = desc;
+        localStorage.setItem(BG_DESC_CACHE_KEY, JSON.stringify(cache));
+        return desc;
+      }
+    }
+  } catch {}
+
+  return null;
+}
+
 /**
  * classes.js — v2: Klassen & Rassen UI, applyClass/applyRace, Wiki-Import
  */
@@ -132,7 +193,6 @@ const ClassesUI = (() => {
                    data-tooltip="${sc.description ? sc.description.replace(/"/g,"'").slice(0,280) : ''}">
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
                   <div class="subclass-name" style="flex:1;">${sc.name}</div>
-                  ${sc.tier ? `<span class="tier-badge tier-${sc.tier.replace(/[^A-Za-z]/g,'').toLowerCase()}">${sc.tier}</span>` : ''}
                   ${sc.role ? `<span class="role-badge">${sc.role}</span>` : ''}
                 </div>
                 <div class="subclass-desc">${sc.description}</div>
@@ -436,6 +496,7 @@ const ClassesUI = (() => {
           ${bg.languages ? `<span class="class-meta-item">Sprachen: +${bg.languages}</span>` : ''}
         </div>
         <p class="class-desc">${bg.description}</p>
+        <div id="bg-api-desc" style="min-height:10px;"></div>
 
         <div style="margin-bottom:12px;">
           <h3 style="font-family:var(--font-title);font-size:12px;color:var(--blood);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid rgba(139,26,26,0.2);">
@@ -470,6 +531,25 @@ const ClassesUI = (() => {
         </button>
       </div>
     `;
+
+    // Offizielle Beschreibung via API nachladen
+    (async () => {
+      const apiDescEl = detail.querySelector('#bg-api-desc');
+      if (!apiDescEl) return;
+      const apiDesc = await fetchBackgroundDesc(bg.name);
+      if (apiDesc) {
+        apiDescEl.innerHTML = `
+          <div style="margin-bottom:10px;padding:10px;
+            background:rgba(201,150,42,0.06);border:1px solid rgba(201,150,42,0.2);
+            border-radius:4px;">
+            <div style="font-family:var(--font-title);font-size:9px;color:#8a7060;
+              text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">
+              📖 Offizielle Beschreibung (SRD)
+            </div>
+            <p style="font-size:13px;color:var(--ink-light);line-height:1.6;">${apiDesc}</p>
+          </div>`;
+      }
+    })();
 
     detail.querySelector('#btn-apply-bg')?.addEventListener('click', () => {
       const skillProfs = [...(Character.data.proficiencies?.skills || [])];

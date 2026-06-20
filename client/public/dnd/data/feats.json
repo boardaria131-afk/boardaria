@@ -1,466 +1,890 @@
 {
   "feats": [
     {
-      "id": "actor", "name": "Actor", "tier": "Social", "category": "Social",
+      "id": "actor",
+      "name": "Actor",
+      "category": "Social",
       "prerequisites": "",
       "description": "Skilled at mimicry and dramatics. +1 CHA (max 20). Advantage on Deception and Performance when trying to pass as a different person. Mimic speech of a person or sounds of a creature (after 1 min listening). Listeners detect mimicry with Insight vs. Deception.",
-      "benefits": ["+1 Charisma", "Advantage on Deception/Performance to impersonate", "Mimic voices and creature sounds"]
+      "benefits": [
+        "+1 Charisma",
+        "Advantage on Deception/Performance to impersonate",
+        "Mimic voices and creature sounds"
+      ]
     },
     {
-      "id": "alert", "name": "Alert", "tier": "S", "category": "Combat",
+      "id": "alert",
+      "name": "Alert",
+      "category": "Combat",
       "prerequisites": "",
       "description": "Always on the lookout for danger. +5 to initiative rolls. Can't be surprised while conscious. Other creatures don't gain advantage on attack rolls against you from being hidden.",
-      "benefits": ["+5 Initiative", "Can't be surprised", "No advantage from hidden attackers"]
+      "benefits": [
+        "+5 Initiative",
+        "Can't be surprised",
+        "No advantage from hidden attackers"
+      ]
     },
     {
-      "id": "athlete", "name": "Athlete", "tier": "B", "category": "Utility",
+      "id": "athlete",
+      "name": "Athlete",
+      "category": "Utility",
       "prerequisites": "",
       "description": "+1 STR or DEX (max 20). Standing up costs only 5 ft of movement. Climbing doesn't cost extra movement. Running jump after 5 ft move instead of 10 ft.",
-      "benefits": ["+1 STR or DEX", "Stand up costs 5 ft", "No climbing penalty", "Jump from 5 ft run-up"]
+      "benefits": [
+        "+1 STR or DEX",
+        "Stand up costs 5 ft",
+        "No climbing penalty",
+        "Jump from 5 ft run-up"
+      ]
     },
     {
-      "id": "charger", "name": "Charger", "tier": "C", "category": "Combat",
+      "id": "charger",
+      "name": "Charger",
+      "category": "Combat",
       "prerequisites": "",
       "description": "When you use your action to Dash, you can use a bonus action to either make one melee weapon attack or shove a creature. +5 damage on the attack if you moved 10+ ft in a straight line before.",
-      "benefits": ["Bonus attack or shove after Dash", "+5 damage if moved 10 ft straight"]
+      "benefits": [
+        "Bonus attack or shove after Dash",
+        "+5 damage if moved 10 ft straight"
+      ]
     },
     {
-      "id": "crossbow_expert", "name": "Crossbow Expert", "tier": "A", "category": "Combat",
+      "id": "crossbow_expert",
+      "name": "Crossbow Expert",
+      "category": "Combat",
       "prerequisites": "",
       "description": "Ignore loading property of crossbows. No disadvantage when within 5 ft of hostile creature. When you use Attack action with one-handed weapon, bonus action attack with hand crossbow.",
-      "benefits": ["Ignore loading", "No disadvantage in melee range", "Bonus hand crossbow attack"]
+      "benefits": [
+        "Ignore loading",
+        "No disadvantage in melee range",
+        "Bonus hand crossbow attack"
+      ]
     },
     {
-      "id": "defensive_duelist", "name": "Defensive Duelist", "tier": "B", "category": "Combat",
+      "id": "defensive_duelist",
+      "name": "Defensive Duelist",
+      "category": "Combat",
       "prerequisites": "DEX 13+",
       "description": "When wielding a finesse weapon and attacked, use reaction to add proficiency bonus to AC for that attack.",
-      "benefits": ["Reaction: +PB to AC vs one attack (finesse weapon required)"]
+      "benefits": [
+        "Reaction: +PB to AC vs one attack (finesse weapon required)"
+      ]
     },
     {
-      "id": "dual_wielder", "name": "Dual Wielder", "tier": "B", "category": "Combat",
+      "id": "dual_wielder",
+      "name": "Dual Wielder",
+      "category": "Combat",
       "prerequisites": "",
       "description": "+1 AC while wielding melee weapons in both hands. Can use two-weapon fighting even when weapons aren't light. Draw or stow two weapons at once.",
-      "benefits": ["+1 AC with two weapons", "Two-weapon fighting with non-light weapons", "Draw two weapons at once"]
+      "benefits": [
+        "+1 AC with two weapons",
+        "Two-weapon fighting with non-light weapons",
+        "Draw two weapons at once"
+      ]
     },
     {
-      "id": "dungeon_delver", "name": "Dungeon Delver", "tier": "B", "category": "Exploration",
+      "id": "dungeon_delver",
+      "name": "Dungeon Delver",
+      "category": "Exploration",
       "prerequisites": "",
       "description": "Advantage on Perception and Investigation checks to detect secret doors. Advantage on saves vs. traps. Resistance to trap damage. Travel at normal pace while searching for traps.",
-      "benefits": ["Advantage on secret door detection", "Advantage on trap saves", "Trap damage resistance"]
+      "benefits": [
+        "Advantage on secret door detection",
+        "Advantage on trap saves",
+        "Trap damage resistance"
+      ]
     },
     {
-      "id": "durable", "name": "Durable", "tier": "B", "category": "Survival",
+      "id": "durable",
+      "name": "Durable",
+      "category": "Survival",
       "prerequisites": "",
       "description": "+1 CON (max 20). When rolling a Hit Die for HP recovery during short rest, minimum equals twice your CON modifier (minimum 2).",
-      "benefits": ["+1 Constitution", "Minimum Hit Die roll = 2×CON mod"]
+      "benefits": [
+        "+1 Constitution",
+        "Minimum Hit Die roll = 2×CON mod"
+      ]
     },
     {
-      "id": "elemental_adept_fire", "name": "Elemental Adept (Fire)", "tier": "B", "category": "Spellcasting",
+      "id": "elemental_adept_fire",
+      "name": "Elemental Adept (Fire)",
+      "category": "Spellcasting",
       "prerequisites": "Spellcasting or Pact Magic",
       "description": "Spells ignore resistance to fire damage. When you roll fire damage, treat 1s as 2s.",
-      "benefits": ["Ignore fire resistance", "Treat 1s as 2s on fire damage rolls"]
+      "benefits": [
+        "Ignore fire resistance",
+        "Treat 1s as 2s on fire damage rolls"
+      ]
     },
     {
-      "id": "elemental_adept_cold", "name": "Elemental Adept (Cold)", "tier": "B", "category": "Spellcasting",
+      "id": "elemental_adept_cold",
+      "name": "Elemental Adept (Cold)",
+      "category": "Spellcasting",
       "prerequisites": "Spellcasting or Pact Magic",
       "description": "Spells ignore resistance to cold damage. When you roll cold damage, treat 1s as 2s.",
-      "benefits": ["Ignore cold resistance", "Treat 1s as 2s on cold damage rolls"]
+      "benefits": [
+        "Ignore cold resistance",
+        "Treat 1s as 2s on cold damage rolls"
+      ]
     },
     {
-      "id": "elemental_adept_lightning", "name": "Elemental Adept (Lightning)", "tier": "B", "category": "Spellcasting",
+      "id": "elemental_adept_lightning",
+      "name": "Elemental Adept (Lightning)",
+      "category": "Spellcasting",
       "prerequisites": "Spellcasting or Pact Magic",
       "description": "Spells ignore resistance to lightning damage. When you roll lightning damage, treat 1s as 2s.",
-      "benefits": ["Ignore lightning resistance", "Treat 1s as 2s on lightning damage rolls"]
+      "benefits": [
+        "Ignore lightning resistance",
+        "Treat 1s as 2s on lightning damage rolls"
+      ]
     },
     {
-      "id": "elemental_adept_acid", "name": "Elemental Adept (Acid)", "tier": "B", "category": "Spellcasting",
+      "id": "elemental_adept_acid",
+      "name": "Elemental Adept (Acid)",
+      "category": "Spellcasting",
       "prerequisites": "Spellcasting or Pact Magic",
       "description": "Spells ignore resistance to acid damage. When you roll acid damage, treat 1s as 2s.",
-      "benefits": ["Ignore acid resistance", "Treat 1s as 2s on acid damage rolls"]
+      "benefits": [
+        "Ignore acid resistance",
+        "Treat 1s as 2s on acid damage rolls"
+      ]
     },
     {
-      "id": "grappler", "name": "Grappler", "tier": "C", "category": "Combat",
+      "id": "grappler",
+      "name": "Grappler",
+      "category": "Combat",
       "prerequisites": "STR 13+",
       "description": "Advantage on attack rolls against grappled creatures. Use action to try to pin a grappled creature (both restrained until escape).",
-      "benefits": ["Advantage vs grappled creatures", "Can pin grappled creatures (both restrained)"]
+      "benefits": [
+        "Advantage vs grappled creatures",
+        "Can pin grappled creatures (both restrained)"
+      ]
     },
     {
-      "id": "great_weapon_master", "name": "Great Weapon Master", "tier": "S", "category": "Combat",
+      "id": "great_weapon_master",
+      "name": "Great Weapon Master",
+      "category": "Combat",
       "prerequisites": "",
       "description": "On critical hit or reducing a creature to 0 HP with a melee weapon, bonus action attack. Before making a melee attack with heavy weapon: take -5 to hit for +10 damage.",
-      "benefits": ["Bonus attack on crit or kill", "-5 to hit for +10 damage option"]
+      "benefits": [
+        "Bonus attack on crit or kill",
+        "-5 to hit for +10 damage option"
+      ]
     },
     {
-      "id": "healer", "name": "Healer", "tier": "A", "category": "Support",
+      "id": "healer",
+      "name": "Healer",
+      "category": "Support",
       "prerequisites": "",
       "description": "Use Healer's Kit to stabilize a creature and restore 1 HP. Use Healer's Kit as action: creature regains 1d6+4+creature's max HD HP. Can't benefit from this until a short or long rest.",
-      "benefits": ["Stabilize = restore 1 HP", "Healer's Kit: 1d6+4+HD HP (once per rest per creature)"]
+      "benefits": [
+        "Stabilize = restore 1 HP",
+        "Healer's Kit: 1d6+4+HD HP (once per rest per creature)"
+      ]
     },
     {
-      "id": "heavily_armored", "name": "Heavily Armored", "tier": "B", "category": "Defense",
+      "id": "heavily_armored",
+      "name": "Heavily Armored",
+      "category": "Defense",
       "prerequisites": "Proficiency with medium armor",
       "description": "+1 STR (max 20). Gain proficiency with heavy armor.",
-      "benefits": ["+1 Strength", "Heavy armor proficiency"]
+      "benefits": [
+        "+1 Strength",
+        "Heavy armor proficiency"
+      ]
     },
     {
-      "id": "heavy_armor_master", "name": "Heavy Armor Master", "tier": "A", "category": "Defense",
+      "id": "heavy_armor_master",
+      "name": "Heavy Armor Master",
+      "category": "Defense",
       "prerequisites": "Proficiency with heavy armor",
       "description": "+1 STR (max 20). While wearing heavy armor, nonmagical bludgeoning, piercing, and slashing damage reduced by 3.",
-      "benefits": ["+1 Strength", "Reduce nonmagical weapon damage by 3 in heavy armor"]
+      "benefits": [
+        "+1 Strength",
+        "Reduce nonmagical weapon damage by 3 in heavy armor"
+      ]
     },
     {
-      "id": "inspiring_leader", "name": "Inspiring Leader", "tier": "A", "category": "Support",
+      "id": "inspiring_leader",
+      "name": "Inspiring Leader",
+      "category": "Support",
       "prerequisites": "CHA 13+",
       "description": "Spend 10 minutes inspiring up to 6 friendly creatures. Each gains temp HP equal to your level + CHA mod. Creatures can't benefit again until they finish a short or long rest.",
-      "benefits": ["10 min: up to 6 allies gain level+CHA temp HP (1/short rest per creature)"]
+      "benefits": [
+        "10 min: up to 6 allies gain level+CHA temp HP (1/short rest per creature)"
+      ]
     },
     {
-      "id": "keen_mind", "name": "Keen Mind", "tier": "B", "category": "Utility",
+      "id": "keen_mind",
+      "name": "Keen Mind",
+      "category": "Utility",
       "prerequisites": "",
       "description": "+1 INT (max 20). Always know which way is north, hours until sunrise/sunset. Recall anything seen/heard in last month perfectly.",
-      "benefits": ["+1 Intelligence", "Know north/time always", "Perfect recall of last month"]
+      "benefits": [
+        "+1 Intelligence",
+        "Know north/time always",
+        "Perfect recall of last month"
+      ]
     },
     {
-      "id": "lightly_armored", "name": "Lightly Armored", "tier": "C", "category": "Defense",
+      "id": "lightly_armored",
+      "name": "Lightly Armored",
+      "category": "Defense",
       "prerequisites": "",
       "description": "+1 STR or DEX (max 20). Gain proficiency with light armor.",
-      "benefits": ["+1 STR or DEX", "Light armor proficiency"]
+      "benefits": [
+        "+1 STR or DEX",
+        "Light armor proficiency"
+      ]
     },
     {
-      "id": "linguist", "name": "Linguist", "tier": "C", "category": "Utility",
+      "id": "linguist",
+      "name": "Linguist",
+      "category": "Utility",
       "prerequisites": "",
       "description": "+1 INT (max 20). Learn 3 languages of your choice. Create written ciphers. Others need INT check vs. DC (8+INT mod+PB) to understand.",
-      "benefits": ["+1 Intelligence", "+3 languages", "Create secret ciphers"]
+      "benefits": [
+        "+1 Intelligence",
+        "+3 languages",
+        "Create secret ciphers"
+      ]
     },
     {
-      "id": "lucky", "name": "Lucky", "tier": "S", "category": "Utility",
+      "id": "lucky",
+      "name": "Lucky",
+      "category": "Utility",
       "prerequisites": "",
       "description": "3 luck points per long rest. Spend to roll an extra d20 on attack, ability check, or save (before outcome known). Choose which d20 to use. Spend when attacked to force attacker to reroll.",
-      "benefits": ["3 luck points/long rest", "Reroll any d20 (attack/check/save/attack against you)"]
+      "benefits": [
+        "3 luck points/long rest",
+        "Reroll any d20 (attack/check/save/attack against you)"
+      ]
     },
     {
-      "id": "mage_slayer", "name": "Mage Slayer", "tier": "A", "category": "Combat",
+      "id": "mage_slayer",
+      "name": "Mage Slayer",
+      "category": "Combat",
       "prerequisites": "",
       "description": "When a creature within 5 ft casts a spell, reaction to make a melee weapon attack. When you damage a concentrating creature, it has disadvantage on the CON save. Advantage on saves vs. spells from creatures within 5 ft.",
-      "benefits": ["Reaction attack vs. nearby spellcaster", "Disadvantage on concentration saves after your hits", "Advantage on saves vs nearby casters"]
+      "benefits": [
+        "Reaction attack vs. nearby spellcaster",
+        "Disadvantage on concentration saves after your hits",
+        "Advantage on saves vs nearby casters"
+      ]
     },
     {
-      "id": "magic_initiate_wizard", "name": "Magic Initiate (Wizard)", "tier": "B", "category": "Spellcasting",
+      "id": "magic_initiate_wizard",
+      "name": "Magic Initiate (Wizard)",
+      "category": "Spellcasting",
       "prerequisites": "",
       "description": "Learn 2 cantrips and 1 first-level spell from the Wizard list. Cast the 1st-level spell once per long rest without a spell slot. INT is your spellcasting ability for these spells.",
-      "benefits": ["2 Wizard cantrips", "1 Wizard 1st-level spell (1/long rest)"]
+      "benefits": [
+        "2 Wizard cantrips",
+        "1 Wizard 1st-level spell (1/long rest)"
+      ]
     },
     {
-      "id": "magic_initiate_cleric", "name": "Magic Initiate (Cleric)", "tier": "B", "category": "Spellcasting",
+      "id": "magic_initiate_cleric",
+      "name": "Magic Initiate (Cleric)",
+      "category": "Spellcasting",
       "prerequisites": "",
       "description": "Learn 2 cantrips and 1 first-level spell from the Cleric list. Cast the 1st-level spell once per long rest without a slot. WIS is your spellcasting ability.",
-      "benefits": ["2 Cleric cantrips", "1 Cleric 1st-level spell (1/long rest)"]
+      "benefits": [
+        "2 Cleric cantrips",
+        "1 Cleric 1st-level spell (1/long rest)"
+      ]
     },
     {
-      "id": "magic_initiate_druid", "name": "Magic Initiate (Druid)", "tier": "B", "category": "Spellcasting",
+      "id": "magic_initiate_druid",
+      "name": "Magic Initiate (Druid)",
+      "category": "Spellcasting",
       "prerequisites": "",
       "description": "Learn 2 cantrips and 1 first-level spell from the Druid list. Cast the 1st-level spell once per long rest without a slot. WIS is your spellcasting ability.",
-      "benefits": ["2 Druid cantrips", "1 Druid 1st-level spell (1/long rest)"]
+      "benefits": [
+        "2 Druid cantrips",
+        "1 Druid 1st-level spell (1/long rest)"
+      ]
     },
     {
-      "id": "martial_adept", "name": "Martial Adept", "tier": "B", "category": "Combat",
+      "id": "martial_adept",
+      "name": "Martial Adept",
+      "category": "Combat",
       "prerequisites": "",
       "description": "Learn 2 maneuvers from the Battle Master archetype. Gain 1 superiority die (d6). Recover on short or long rest. Save DC = 8 + PB + STR or DEX mod.",
-      "benefits": ["2 Battle Master maneuvers", "1d6 superiority die (recover on rest)"]
+      "benefits": [
+        "2 Battle Master maneuvers",
+        "1d6 superiority die (recover on rest)"
+      ]
     },
     {
-      "id": "medium_armor_master", "name": "Medium Armor Master", "tier": "B", "category": "Defense",
+      "id": "medium_armor_master",
+      "name": "Medium Armor Master",
+      "category": "Defense",
       "prerequisites": "Proficiency with medium armor",
       "description": "No disadvantage on Stealth with medium armor. +3 DEX bonus to AC in medium armor (instead of +2).",
-      "benefits": ["No stealth disadvantage in medium armor", "+3 DEX to AC (instead of +2)"]
+      "benefits": [
+        "No stealth disadvantage in medium armor",
+        "+3 DEX to AC (instead of +2)"
+      ]
     },
     {
-      "id": "mobile", "name": "Mobile", "tier": "A", "category": "Combat",
+      "id": "mobile",
+      "name": "Mobile",
+      "category": "Combat",
       "prerequisites": "",
       "description": "Speed increases by 10 ft. Difficult terrain doesn't slow you when Dashing. When you make a melee attack, you don't provoke opportunity attacks from that creature for the rest of turn.",
-      "benefits": ["+10 ft speed", "No difficult terrain penalty when Dashing", "No OAs from attacked creatures"]
+      "benefits": [
+        "+10 ft speed",
+        "No difficult terrain penalty when Dashing",
+        "No OAs from attacked creatures"
+      ]
     },
     {
-      "id": "moderately_armored", "name": "Moderately Armored", "tier": "B", "category": "Defense",
+      "id": "moderately_armored",
+      "name": "Moderately Armored",
+      "category": "Defense",
       "prerequisites": "Proficiency with light armor",
       "description": "+1 STR or DEX (max 20). Gain proficiency with medium armor and shields.",
-      "benefits": ["+1 STR or DEX", "Medium armor and shield proficiency"]
+      "benefits": [
+        "+1 STR or DEX",
+        "Medium armor and shield proficiency"
+      ]
     },
     {
-      "id": "mounted_combatant", "name": "Mounted Combatant", "tier": "B", "category": "Combat",
+      "id": "mounted_combatant",
+      "name": "Mounted Combatant",
+      "category": "Combat",
       "prerequisites": "",
       "description": "Advantage on melee attacks against unmounted creatures smaller than your mount. Force an attack targeting your mount to target you instead. Your mount makes DEX saves with advantage; takes no damage on success.",
-      "benefits": ["Advantage vs smaller unmounted creatures", "Redirect attacks from mount to self", "Mount has advantage on DEX saves"]
+      "benefits": [
+        "Advantage vs smaller unmounted creatures",
+        "Redirect attacks from mount to self",
+        "Mount has advantage on DEX saves"
+      ]
     },
     {
-      "id": "observant", "name": "Observant", "tier": "B", "category": "Utility",
+      "id": "observant",
+      "name": "Observant",
+      "category": "Utility",
       "prerequisites": "",
       "description": "+1 INT or WIS (max 20). Read lips if you can see the mouth. +5 bonus to passive Perception and passive Investigation.",
-      "benefits": ["+1 INT or WIS", "Lip reading", "+5 passive Perception and Investigation"]
+      "benefits": [
+        "+1 INT or WIS",
+        "Lip reading",
+        "+5 passive Perception and Investigation"
+      ]
     },
     {
-      "id": "polearm_master", "name": "Polearm Master", "tier": "S", "category": "Combat",
+      "id": "polearm_master",
+      "name": "Polearm Master",
+      "category": "Combat",
       "prerequisites": "",
       "description": "Bonus action attack with butt of glaive/halberd/quarterstaff (1d4 bludgeoning). Creatures entering your reach provoke opportunity attacks.",
-      "benefits": ["Bonus butt-end attack (1d4 bludgeoning)", "OA when creatures enter reach"]
+      "benefits": [
+        "Bonus butt-end attack (1d4 bludgeoning)",
+        "OA when creatures enter reach"
+      ]
     },
     {
-      "id": "resilient_con", "name": "Resilient (Constitution)", "tier": "S", "category": "Defense",
+      "id": "resilient_con",
+      "name": "Resilient (Constitution)",
+      "category": "Defense",
       "prerequisites": "",
       "description": "+1 CON (max 20). Gain proficiency in CON saving throws (essential for concentration spells).",
-      "benefits": ["+1 Constitution", "CON saving throw proficiency"]
+      "benefits": [
+        "+1 Constitution",
+        "CON saving throw proficiency"
+      ]
     },
     {
-      "id": "resilient_wis", "name": "Resilient (Wisdom)", "tier": "A", "category": "Defense",
+      "id": "resilient_wis",
+      "name": "Resilient (Wisdom)",
+      "category": "Defense",
       "prerequisites": "",
       "description": "+1 WIS (max 20). Gain proficiency in WIS saving throws.",
-      "benefits": ["+1 Wisdom", "WIS saving throw proficiency"]
+      "benefits": [
+        "+1 Wisdom",
+        "WIS saving throw proficiency"
+      ]
     },
     {
-      "id": "resilient_dex", "name": "Resilient (Dexterity)", "tier": "A", "category": "Defense",
+      "id": "resilient_dex",
+      "name": "Resilient (Dexterity)",
+      "category": "Defense",
       "prerequisites": "",
       "description": "+1 DEX (max 20). Gain proficiency in DEX saving throws.",
-      "benefits": ["+1 Dexterity", "DEX saving throw proficiency"]
+      "benefits": [
+        "+1 Dexterity",
+        "DEX saving throw proficiency"
+      ]
     },
     {
-      "id": "ritual_caster_wizard", "name": "Ritual Caster (Wizard)", "tier": "B", "category": "Spellcasting",
+      "id": "ritual_caster_wizard",
+      "name": "Ritual Caster (Wizard)",
+      "category": "Spellcasting",
       "prerequisites": "INT or WIS 13+",
       "description": "Acquire a ritual book with 2 first-level ritual spells from the Wizard list. Add new rituals to book (spell level ≤ half your level rounded up). Cast rituals from book (10 min extra casting time, no slot).",
-      "benefits": ["Ritual book with 2 Wizard rituals", "Add new rituals", "Cast without spell slot (+10 min)"]
+      "benefits": [
+        "Ritual book with 2 Wizard rituals",
+        "Add new rituals",
+        "Cast without spell slot (+10 min)"
+      ]
     },
     {
-      "id": "savage_attacker", "name": "Savage Attacker", "tier": "C", "category": "Combat",
+      "id": "savage_attacker",
+      "name": "Savage Attacker",
+      "category": "Combat",
       "prerequisites": "",
       "description": "Once per turn when rolling melee weapon damage, reroll all damage dice and use either result.",
-      "benefits": ["1/turn: reroll melee damage dice, keep higher"]
+      "benefits": [
+        "1/turn: reroll melee damage dice, keep higher"
+      ]
     },
     {
-      "id": "sentinel", "name": "Sentinel", "tier": "S", "category": "Combat",
+      "id": "sentinel",
+      "name": "Sentinel",
+      "category": "Combat",
       "prerequisites": "",
       "description": "Opportunity attacks reduce creature speed to 0 for the turn. Creatures can't Disengage to avoid your OAs. When a creature attacks someone other than you within 5 ft, reaction to make a melee weapon attack.",
-      "benefits": ["OA reduces speed to 0", "Disengage doesn't work vs your OA", "Reaction attack when ally attacked nearby"]
+      "benefits": [
+        "OA reduces speed to 0",
+        "Disengage doesn't work vs your OA",
+        "Reaction attack when ally attacked nearby"
+      ]
     },
     {
-      "id": "sharpshooter", "name": "Sharpshooter", "tier": "S", "category": "Combat",
+      "id": "sharpshooter",
+      "name": "Sharpshooter",
+      "category": "Combat",
       "prerequisites": "",
       "description": "Ignore long range disadvantage. Ranged attacks ignore half and three-quarters cover. Before attack: take -5 to hit for +10 damage.",
-      "benefits": ["No long range disadvantage", "Ignore cover", "-5/+10 damage option"]
+      "benefits": [
+        "No long range disadvantage",
+        "Ignore cover",
+        "-5/+10 damage option"
+      ]
     },
     {
-      "id": "shield_master", "name": "Shield Master", "tier": "A", "category": "Combat",
+      "id": "shield_master",
+      "name": "Shield Master",
+      "category": "Combat",
       "prerequisites": "",
       "description": "If you take the Attack action, bonus action to shove with your shield. Add shield's AC to DEX saves vs effects targeting only you. Reaction: no damage instead of half on DEX save success (while carrying a shield).",
-      "benefits": ["Bonus shove with shield after Attack", "+2 to single-target DEX saves", "Reaction: avoid DEX save damage entirely"]
+      "benefits": [
+        "Bonus shove with shield after Attack",
+        "+2 to single-target DEX saves",
+        "Reaction: avoid DEX save damage entirely"
+      ]
     },
     {
-      "id": "skilled", "name": "Skilled", "tier": "B", "category": "Utility",
+      "id": "skilled",
+      "name": "Skilled",
+      "category": "Utility",
       "prerequisites": "",
       "description": "Gain proficiency in any combination of 3 skills or tools.",
-      "benefits": ["Proficiency in 3 skills or tools of your choice"]
+      "benefits": [
+        "Proficiency in 3 skills or tools of your choice"
+      ]
     },
     {
-      "id": "skulker", "name": "Skulker", "tier": "B", "category": "Stealth",
+      "id": "skulker",
+      "name": "Skulker",
+      "category": "Stealth",
       "prerequisites": "DEX 13+",
       "description": "Try to hide when lightly obscured. Ranged attacks don't reveal position when missing. Dim light doesn't impose disadvantage on Perception checks.",
-      "benefits": ["Hide in lightly obscured terrain", "Missed ranged attacks don't reveal position", "No perception penalty in dim light"]
+      "benefits": [
+        "Hide in lightly obscured terrain",
+        "Missed ranged attacks don't reveal position",
+        "No perception penalty in dim light"
+      ]
     },
     {
-      "id": "spell_sniper", "name": "Spell Sniper", "tier": "A", "category": "Spellcasting",
+      "id": "spell_sniper",
+      "name": "Spell Sniper",
+      "category": "Spellcasting",
       "prerequisites": "Spellcasting or Pact Magic",
       "description": "Double the range of spells requiring attack rolls. Ignore half and three-quarters cover for spell attacks. Learn one cantrip requiring an attack roll from any class list.",
-      "benefits": ["Double spell attack range", "Ignore cover for spell attacks", "+1 attack cantrip from any class"]
+      "benefits": [
+        "Double spell attack range",
+        "Ignore cover for spell attacks",
+        "+1 attack cantrip from any class"
+      ]
     },
     {
-      "id": "tavern_brawler", "name": "Tavern Brawler", "tier": "C", "category": "Combat",
+      "id": "tavern_brawler",
+      "name": "Tavern Brawler",
+      "category": "Combat",
       "prerequisites": "",
       "description": "+1 STR or CON (max 20). Proficiency with improvised weapons and unarmed strikes. Unarmed strike: 1d4 + STR. Bonus action to grapple after unarmed or improvised weapon hit.",
-      "benefits": ["+1 STR or CON", "Improvised weapon proficiency", "Unarmed 1d4", "Bonus grapple after unarmed hit"]
+      "benefits": [
+        "+1 STR or CON",
+        "Improvised weapon proficiency",
+        "Unarmed 1d4",
+        "Bonus grapple after unarmed hit"
+      ]
     },
     {
-      "id": "tough", "name": "Tough", "tier": "A", "category": "Defense",
+      "id": "tough",
+      "name": "Tough",
+      "category": "Defense",
       "prerequisites": "",
       "description": "HP maximum increases by 2 for each level (past and future). Essentially +2 HP per level.",
-      "benefits": ["+2 max HP per level (current and future)"]
+      "benefits": [
+        "+2 max HP per level (current and future)"
+      ]
     },
     {
-      "id": "war_caster", "name": "War Caster", "tier": "S", "category": "Spellcasting",
+      "id": "war_caster",
+      "name": "War Caster",
+      "category": "Spellcasting",
       "prerequisites": "Spellcasting or Pact Magic",
       "description": "Advantage on CON saves to maintain concentration. Perform somatic components with weapons/shield in hand. When creature triggers OA, cast a spell instead (one action spell, targeting only that creature).",
-      "benefits": ["Advantage on concentration saves", "Cast with full hands", "Cast spell as opportunity attack"]
+      "benefits": [
+        "Advantage on concentration saves",
+        "Cast with full hands",
+        "Cast spell as opportunity attack"
+      ]
     },
     {
-      "id": "weapon_master", "name": "Weapon Master", "tier": "C", "category": "Combat",
+      "id": "weapon_master",
+      "name": "Weapon Master",
+      "category": "Combat",
       "prerequisites": "",
       "description": "+1 STR or DEX (max 20). Gain proficiency with 4 weapons of your choice.",
-      "benefits": ["+1 STR or DEX", "Proficiency with 4 weapons of choice"]
+      "benefits": [
+        "+1 STR or DEX",
+        "Proficiency with 4 weapons of choice"
+      ]
     },
     {
-      "id": "aberrant_dragonmark", "name": "Aberrant Dragonmark", "tier": "B", "category": "Spellcasting",
+      "id": "aberrant_dragonmark",
+      "name": "Aberrant Dragonmark",
+      "category": "Spellcasting",
       "prerequisites": "No existing dragonmark",
       "description": "+1 CON (max 20). Learn a cantrip and 1st-level spell from the Sorcerer list. Cast 1st-level spell with this feat 1/long rest. At will: 1d4+CON damage to self for +1 spell level. Instability: 1/day disturbing manifestation.",
-      "benefits": ["+1 CON", "Sorcerer cantrip + 1st-level spell", "Risk higher spell level at HP cost"]
+      "benefits": [
+        "+1 CON",
+        "Sorcerer cantrip + 1st-level spell",
+        "Risk higher spell level at HP cost"
+      ]
     },
     {
-      "id": "artificer_initiate", "name": "Artificer Initiate", "tier": "B", "category": "Spellcasting",
+      "id": "artificer_initiate",
+      "name": "Artificer Initiate",
+      "category": "Spellcasting",
       "prerequisites": "",
       "description": "Learn a cantrip and 1st-level spell from the Artificer list. Cast 1st-level spell once per long rest. Gain proficiency with one type of artisan's tools. INT is your spellcasting ability.",
-      "benefits": ["Artificer cantrip + 1st-level spell (1/long rest)", "+1 artisan's tool proficiency"]
+      "benefits": [
+        "Artificer cantrip + 1st-level spell (1/long rest)",
+        "+1 artisan's tool proficiency"
+      ]
     },
     {
-      "id": "blade_mastery", "name": "Blade Mastery", "tier": "B", "category": "Combat",
+      "id": "blade_mastery",
+      "name": "Blade Mastery",
+      "category": "Combat",
       "prerequisites": "",
       "description": "+1 to attack rolls with swords, axes, and whips. When you use the Dodge action, +1 AC bonus if wielding a sword, axe, or whip. Opportunity attacks with these weapons have advantage.",
-      "benefits": ["+1 attack with blades/axes/whips", "+1 AC while Dodging with these weapons", "OA advantage with these weapons"]
+      "benefits": [
+        "+1 attack with blades/axes/whips",
+        "+1 AC while Dodging with these weapons",
+        "OA advantage with these weapons"
+      ]
     },
     {
-      "id": "bountiful_luck", "name": "Bountiful Luck", "tier": "A", "category": "Support",
+      "id": "bountiful_luck",
+      "name": "Bountiful Luck",
+      "category": "Support",
       "prerequisites": "Halfling",
       "description": "When an ally within 30 ft rolls a 1 on a d20, use your reaction to let them reroll and use the new result. Doesn't cost a Lucky feat point.",
-      "benefits": ["Reaction: ally rerolls 1s within 30 ft (free, unlimited)"]
+      "benefits": [
+        "Reaction: ally rerolls 1s within 30 ft (free, unlimited)"
+      ]
     },
     {
-      "id": "chef", "name": "Chef", "tier": "B", "category": "Support",
+      "id": "chef",
+      "name": "Chef",
+      "category": "Support",
       "prerequisites": "",
       "description": "+1 CON or WIS. Proficiency with cook's utensils. Short rest cooking: up to PB creatures each regain 1d8 extra HP from HD. After long rest: cook treats = PB (each grants 1d8 temp HP, last 8h).",
-      "benefits": ["+1 CON or WIS", "Cook's utensils proficiency", "Short rest: +1d8 HP from HD (allies)", "Long rest: temp HP treats"]
+      "benefits": [
+        "+1 CON or WIS",
+        "Cook's utensils proficiency",
+        "Short rest: +1d8 HP from HD (allies)",
+        "Long rest: temp HP treats"
+      ]
     },
     {
-      "id": "crusher", "name": "Crusher", "tier": "B", "category": "Combat",
+      "id": "crusher",
+      "name": "Crusher",
+      "category": "Combat",
       "prerequisites": "",
       "description": "+1 STR or CON. Once per turn on bludgeoning hit: push creature 5 ft. On critical bludgeoning hit: all attacks against that creature have advantage until start of your next turn.",
-      "benefits": ["+1 STR or CON", "Push 5 ft on bludgeoning hit (1/turn)", "Crit: grant advantage vs target"]
+      "benefits": [
+        "+1 STR or CON",
+        "Push 5 ft on bludgeoning hit (1/turn)",
+        "Crit: grant advantage vs target"
+      ]
     },
     {
-      "id": "elven_accuracy", "name": "Elven Accuracy", "tier": "S", "category": "Combat",
+      "id": "elven_accuracy",
+      "name": "Elven Accuracy",
+      "category": "Combat",
       "prerequisites": "Elf or half-elf",
       "description": "+1 DEX, INT, WIS, or CHA. When you have advantage on an attack roll using DEX, INT, WIS, or CHA, reroll one of the dice and use the highest of the three.",
-      "benefits": ["+1 to chosen ability", "Triple advantage on finesse/spell attacks"]
+      "benefits": [
+        "+1 to chosen ability",
+        "Triple advantage on finesse/spell attacks"
+      ]
     },
     {
-      "id": "fade_away", "name": "Fade Away", "tier": "A", "category": "Stealth",
+      "id": "fade_away",
+      "name": "Fade Away",
+      "category": "Stealth",
       "prerequisites": "Gnome",
       "description": "+1 INT or DEX. When you take damage, reaction to turn invisible until start of your next turn or until you attack/cast. 1/short rest.",
-      "benefits": ["+1 INT or DEX", "Reaction: turn invisible after taking damage (1/short rest)"]
+      "benefits": [
+        "+1 INT or DEX",
+        "Reaction: turn invisible after taking damage (1/short rest)"
+      ]
     },
     {
-      "id": "fey_teleportation", "name": "Fey Teleportation", "tier": "A", "category": "Spellcasting",
+      "id": "fey_teleportation",
+      "name": "Fey Teleportation",
+      "category": "Spellcasting",
       "prerequisites": "High elf",
       "description": "+1 INT or CHA. Learn Misty Step and Sylvan. Cast Misty Step once per short rest without a spell slot.",
-      "benefits": ["+1 INT or CHA", "Learn Sylvan", "Misty Step 1/short rest (free)"]
+      "benefits": [
+        "+1 INT or CHA",
+        "Learn Sylvan",
+        "Misty Step 1/short rest (free)"
+      ]
     },
     {
-      "id": "flames_phlegethos", "name": "Flames of Phlegethos", "tier": "B", "category": "Spellcasting",
+      "id": "flames_phlegethos",
+      "name": "Flames of Phlegethos",
+      "category": "Spellcasting",
       "prerequisites": "Tiefling",
       "description": "+1 INT or CHA. When casting fire spells, reroll any 1s. Bonus action: wreath yourself in flames (1 fire damage to those hitting you in melee, +10 ft dim light) until end of next turn.",
-      "benefits": ["+1 INT or CHA", "Reroll 1s on fire spells", "Bonus: flame wreath (1 fire dmg to melee attackers)"]
+      "benefits": [
+        "+1 INT or CHA",
+        "Reroll 1s on fire spells",
+        "Bonus: flame wreath (1 fire dmg to melee attackers)"
+      ]
     },
     {
-      "id": "gift_chromatic_dragon", "name": "Gift of the Chromatic Dragon", "tier": "B", "category": "Spellcasting",
+      "id": "gift_chromatic_dragon",
+      "name": "Gift of the Chromatic Dragon",
+      "category": "Spellcasting",
       "prerequisites": "",
       "description": "Chromatic Infusion: bonus action imbue a weapon for 1 min (+1d4 acid/cold/fire/lightning/poison). Reactive Resistance: reaction to resistance one damage type when taking acid/cold/fire/lightning/poison (1/long rest).",
-      "benefits": ["Bonus: imbue weapon +1d4 elemental damage (1 min)", "Reaction: resistance to elemental damage (1/long rest)"]
+      "benefits": [
+        "Bonus: imbue weapon +1d4 elemental damage (1 min)",
+        "Reaction: resistance to elemental damage (1/long rest)"
+      ]
     },
     {
-      "id": "gift_gem_dragon", "name": "Gift of the Gem Dragon", "tier": "B", "category": "Combat",
+      "id": "gift_gem_dragon",
+      "name": "Gift of the Gem Dragon",
+      "category": "Combat",
       "prerequisites": "",
       "description": "+1 INT, WIS, or CHA. Telekinetic Reprisal: reaction when hit to deal 2d8 force damage to attacker and push it 10 ft (STR save vs 8+PB+chosen ability). 1/long rest.",
-      "benefits": ["+1 INT/WIS/CHA", "Reaction: 2d8 force + push 10 ft when hit (1/long rest)"]
+      "benefits": [
+        "+1 INT/WIS/CHA",
+        "Reaction: 2d8 force + push 10 ft when hit (1/long rest)"
+      ]
     },
     {
-      "id": "gift_metallic_dragon", "name": "Gift of the Metallic Dragon", "tier": "A", "category": "Support",
+      "id": "gift_metallic_dragon",
+      "name": "Gift of the Metallic Dragon",
+      "category": "Support",
       "prerequisites": "",
       "description": "Learn Cure Wounds. Cast without slot 1/long rest. Use reaction to impose disadvantage on an attack roll against ally within 5 ft (once per long rest).",
-      "benefits": ["Cure Wounds 1/long rest (free)", "Reaction: disadvantage on ally attack (1/long rest)"]
+      "benefits": [
+        "Cure Wounds 1/long rest (free)",
+        "Reaction: disadvantage on ally attack (1/long rest)"
+      ]
     },
     {
-      "id": "gunner", "name": "Gunner", "tier": "B", "category": "Combat",
+      "id": "gunner",
+      "name": "Gunner",
+      "category": "Combat",
       "prerequisites": "",
       "description": "+1 DEX. Proficiency with firearms. Ignore loading for firearms. No disadvantage at 5 ft with ranged weapons.",
-      "benefits": ["+1 DEX", "Firearm proficiency", "Ignore loading", "No melee range disadvantage"]
+      "benefits": [
+        "+1 DEX",
+        "Firearm proficiency",
+        "Ignore loading",
+        "No melee range disadvantage"
+      ]
     },
     {
-      "id": "infernal_constitution", "name": "Infernal Constitution", "tier": "B", "category": "Defense",
+      "id": "infernal_constitution",
+      "name": "Infernal Constitution",
+      "category": "Defense",
       "prerequisites": "Tiefling",
       "description": "+1 CON. Resistance to cold and poison damage. Advantage on saves vs. being poisoned.",
-      "benefits": ["+1 CON", "Cold and poison resistance", "Advantage on poison saves"]
+      "benefits": [
+        "+1 CON",
+        "Cold and poison resistance",
+        "Advantage on poison saves"
+      ]
     },
     {
-      "id": "orcish_fury", "name": "Orcish Fury", "tier": "B", "category": "Combat",
+      "id": "orcish_fury",
+      "name": "Orcish Fury",
+      "category": "Combat",
       "prerequisites": "Half-orc",
       "description": "+1 STR or CON. Once per turn, extra weapon damage die on attack. When Relentless Endurance activates, bonus action attack as reaction.",
-      "benefits": ["+1 STR or CON", "+1 damage die on weapon attack (1/turn)", "Bonus attack when Relentless Endurance triggers"]
+      "benefits": [
+        "+1 STR or CON",
+        "+1 damage die on weapon attack (1/turn)",
+        "Bonus attack when Relentless Endurance triggers"
+      ]
     },
     {
-      "id": "piercer", "name": "Piercer", "tier": "B", "category": "Combat",
+      "id": "piercer",
+      "name": "Piercer",
+      "category": "Combat",
       "prerequisites": "",
       "description": "+1 STR or DEX. Once per turn on piercing hit: reroll one damage die, use either. On critical: one extra piercing damage die.",
-      "benefits": ["+1 STR or DEX", "Reroll 1 piercing damage die (1/turn)", "Extra damage die on critical"]
+      "benefits": [
+        "+1 STR or DEX",
+        "Reroll 1 piercing damage die (1/turn)",
+        "Extra damage die on critical"
+      ]
     },
     {
-      "id": "poisoner", "name": "Poisoner", "tier": "B", "category": "Combat",
+      "id": "poisoner",
+      "name": "Poisoner",
+      "category": "Combat",
       "prerequisites": "",
       "description": "Ignore poison resistance. Proficiency with poisoner's kit. Bonus action to coat weapon with poison (1d8 poison, CON save DC 14 or poisoned for 1 min). 1/short rest.",
-      "benefits": ["Ignore poison resistance", "Poisoner's kit proficiency", "Bonus: coat weapon (1d8 poison, poisoned condition)"]
+      "benefits": [
+        "Ignore poison resistance",
+        "Poisoner's kit proficiency",
+        "Bonus: coat weapon (1d8 poison, poisoned condition)"
+      ]
     },
     {
-      "id": "shadow_touched", "name": "Shadow Touched", "tier": "A", "category": "Spellcasting",
+      "id": "shadow_touched",
+      "name": "Shadow Touched",
+      "category": "Spellcasting",
       "prerequisites": "",
       "description": "+1 INT, WIS, or CHA. Learn Invisibility and one 1st-level Illusion or Necromancy spell. Cast each once per long rest for free.",
-      "benefits": ["+1 INT/WIS/CHA", "Invisibility (1/long rest)", "+1 Illusion or Necromancy spell (1/long rest)"]
+      "benefits": [
+        "+1 INT/WIS/CHA",
+        "Invisibility (1/long rest)",
+        "+1 Illusion or Necromancy spell (1/long rest)"
+      ]
     },
     {
-      "id": "silver_tongued", "name": "Silver-Tongued", "tier": "B", "category": "Social",
+      "id": "silver_tongued",
+      "name": "Silver-Tongued",
+      "category": "Social",
       "prerequisites": "",
       "description": "+1 CHA. Proficiency in Deception (or double if already proficient). When you make a Deception check, take a minimum of 10 on the roll.",
-      "benefits": ["+1 CHA", "Deception proficiency or expertise", "Minimum 10 on Deception checks"]
+      "benefits": [
+        "+1 CHA",
+        "Deception proficiency or expertise",
+        "Minimum 10 on Deception checks"
+      ]
     },
     {
-      "id": "slasher", "name": "Slasher", "tier": "B", "category": "Combat",
+      "id": "slasher",
+      "name": "Slasher",
+      "category": "Combat",
       "prerequisites": "",
       "description": "+1 STR or DEX. Once per turn on slashing hit: reduce speed by 10 ft until start of your next turn. On critical: disadvantage on all attacks until start of your next turn.",
-      "benefits": ["+1 STR or DEX", "-10 ft speed on slashing hit (1/turn)", "Crit: target has disadvantage on attacks"]
+      "benefits": [
+        "+1 STR or DEX",
+        "-10 ft speed on slashing hit (1/turn)",
+        "Crit: target has disadvantage on attacks"
+      ]
     },
     {
-      "id": "squat_nimbleness", "name": "Squat Nimbleness", "tier": "B", "category": "Utility",
+      "id": "squat_nimbleness",
+      "name": "Squat Nimbleness",
+      "category": "Utility",
       "prerequisites": "Dwarf or Small race",
       "description": "+1 STR or DEX. Speed increases by 5 ft. Proficiency in Athletics or Acrobatics. Advantage on checks to escape grapples.",
-      "benefits": ["+1 STR or DEX", "+5 ft speed", "Athletics or Acrobatics proficiency", "Advantage to escape grapples"]
+      "benefits": [
+        "+1 STR or DEX",
+        "+5 ft speed",
+        "Athletics or Acrobatics proficiency",
+        "Advantage to escape grapples"
+      ]
     },
     {
-      "id": "stealthy", "name": "Stealthy", "tier": "B", "category": "Stealth",
+      "id": "stealthy",
+      "name": "Stealthy",
+      "category": "Stealth",
       "prerequisites": "",
       "description": "+1 DEX. Proficiency in Stealth (or double if already proficient). When you make a Stealth check, take a minimum of 10 on the roll.",
-      "benefits": ["+1 DEX", "Stealth proficiency or expertise", "Minimum 10 on Stealth checks"]
+      "benefits": [
+        "+1 DEX",
+        "Stealth proficiency or expertise",
+        "Minimum 10 on Stealth checks"
+      ]
     },
     {
-      "id": "strike_the_giants", "name": "Strike of the Giants", "tier": "A", "category": "Combat",
+      "id": "strike_the_giants",
+      "name": "Strike of the Giants",
+      "category": "Combat",
       "prerequisites": "STR 15+",
       "description": "After hitting with melee weapon: invoke giant's power (PB uses/long rest). Hill: 1d6+STR push 15 ft. Frost: 1d6+CON slow (speed halved, no reactions). Stone: 1d6+CON blind until turn end. Storm: 1d6+STR fly 60 ft until turn end.",
-      "benefits": ["Choose giant power on melee hit", "Push/slow/blind/fly effects", "PB uses per long rest"]
+      "benefits": [
+        "Choose giant power on melee hit",
+        "Push/slow/blind/fly effects",
+        "PB uses per long rest"
+      ]
     },
     {
-      "id": "svirfneblin_magic", "name": "Svirfneblin Magic", "tier": "A", "category": "Spellcasting",
+      "id": "svirfneblin_magic",
+      "name": "Svirfneblin Magic",
+      "category": "Spellcasting",
       "prerequisites": "Deep gnome",
       "description": "Cast Nondetection on self at will without a spell slot. Also gain innate spellcasting: Blindness/Deafness, Blur, Disguise Self 1/day each.",
-      "benefits": ["Nondetection at will (self)", "Blindness/Deafness, Blur, Disguise Self 1/day each"]
+      "benefits": [
+        "Nondetection at will (self)",
+        "Blindness/Deafness, Blur, Disguise Self 1/day each"
+      ]
     },
     {
-      "id": "telekinetic", "name": "Telekinetic", "tier": "B", "category": "Utility",
+      "id": "telekinetic",
+      "name": "Telekinetic",
+      "category": "Utility",
       "prerequisites": "",
       "description": "+1 INT, WIS, or CHA. Learn Mage Hand (invisible hand). Bonus action to push/pull a creature 5 ft with telekinesis (STR save vs 8+PB+modifier to resist).",
-      "benefits": ["+1 INT/WIS/CHA", "Invisible Mage Hand", "Bonus: push/pull creature 5 ft (STR save)"]
+      "benefits": [
+        "+1 INT/WIS/CHA",
+        "Invisible Mage Hand",
+        "Bonus: push/pull creature 5 ft (STR save)"
+      ]
     },
     {
-      "id": "telepathic", "name": "Telepathic", "tier": "B", "category": "Utility",
+      "id": "telepathic",
+      "name": "Telepathic",
+      "category": "Utility",
       "prerequisites": "",
       "description": "+1 INT, WIS, or CHA. Telepathically speak with any creature you can see within 60 ft (they don't need to share a language). Cast Detect Thoughts 1/long rest for free.",
-      "benefits": ["+1 INT/WIS/CHA", "Telepathy 60 ft (any creature)", "Detect Thoughts 1/long rest"]
+      "benefits": [
+        "+1 INT/WIS/CHA",
+        "Telepathy 60 ft (any creature)",
+        "Detect Thoughts 1/long rest"
+      ]
     },
     {
-      "id": "wood_elf_magic", "name": "Wood Elf Magic", "tier": "B", "category": "Spellcasting",
+      "id": "wood_elf_magic",
+      "name": "Wood Elf Magic",
+      "category": "Spellcasting",
       "prerequisites": "Wood elf",
       "description": "Learn Longstrider and Pass Without Trace. Cast each once per long rest for free. Also learn one Druid cantrip.",
-      "benefits": ["Longstrider (1/long rest)", "Pass Without Trace (1/long rest)", "1 Druid cantrip"]
+      "benefits": [
+        "Longstrider (1/long rest)",
+        "Pass Without Trace (1/long rest)",
+        "1 Druid cantrip"
+      ]
     }
   ]
 }

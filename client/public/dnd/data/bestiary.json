@@ -1,0 +1,2478 @@
+{
+  "monsters": [
+    {
+      "id": "aboleth",
+      "name": "Aboleth",
+      "cr": "10",
+      "type": "Aberration",
+      "size": "Large",
+      "ac": 17,
+      "hp": 135,
+      "speed": "10 ft, swim 40 ft",
+      "str": 21,
+      "dex": 9,
+      "con": 15,
+      "int": 18,
+      "wis": 15,
+      "cha": 18,
+      "senses": "darkvision 120 ft",
+      "languages": "Deep Speech, telepathy 120 ft",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Three tentacle attacks."
+        },
+        {
+          "name": "Tentacle",
+          "desc": "+9 to hit, 10 ft. 2d6+5 bludgeoning + DC 14 CON save or diseased."
+        },
+        {
+          "name": "Tail",
+          "desc": "+9 to hit, 10 ft. 3d6+5 bludgeoning."
+        },
+        {
+          "name": "Enslave",
+          "desc": "DC 14 WIS save or charmed until aboleth dies."
+        }
+      ],
+      "legendary_actions": [
+        {
+          "name": "Detect",
+          "desc": "WIS (Perception) check."
+        },
+        {
+          "name": "Tail Swipe",
+          "desc": "One tail attack."
+        },
+        {
+          "name": "Psychic Drain",
+          "desc": "Charmed creature takes 3d6 psychic, aboleth regains equal HP."
+        }
+      ],
+      "description": "Ancient aberrations from beyond the Material Plane with perfect memory since creation. They enslave all they encounter."
+    },
+    {
+      "id": "air_elemental",
+      "name": "Air Elemental",
+      "cr": "5",
+      "type": "Elemental",
+      "size": "Large",
+      "ac": 15,
+      "hp": 90,
+      "speed": "fly 90 ft (hover)",
+      "str": 14,
+      "dex": 20,
+      "con": 14,
+      "int": 6,
+      "wis": 10,
+      "cha": 6,
+      "damage_immunities": "poison",
+      "condition_immunities": "exhaustion, grappled, paralyzed, petrified, poisoned, prone, restrained, unconscious",
+      "senses": "darkvision 60 ft",
+      "languages": "Auran",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two slam attacks."
+        },
+        {
+          "name": "Slam",
+          "desc": "+8 to hit. 2d8+5 bludgeoning."
+        },
+        {
+          "name": "Whirlwind (Recharge 4-6)",
+          "desc": "DC 13 STR save or 3d8+2 bludgeoning and flung 20 ft prone."
+        }
+      ],
+      "description": "Beings of elemental air appearing as cyclones."
+    },
+    {
+      "id": "bandit",
+      "name": "Bandit",
+      "cr": "1/8",
+      "type": "Humanoid",
+      "size": "Medium",
+      "ac": 12,
+      "hp": 11,
+      "speed": "30 ft",
+      "str": 11,
+      "dex": 12,
+      "con": 12,
+      "int": 10,
+      "wis": 10,
+      "cha": 10,
+      "senses": "passive Perception 10",
+      "languages": "Common",
+      "actions": [
+        {
+          "name": "Scimitar",
+          "desc": "+3, 1d6+1 slashing."
+        },
+        {
+          "name": "Crossbow",
+          "desc": "+3, 80/320 ft, 1d8+1 piercing."
+        }
+      ],
+      "description": "Criminals who roam in gangs."
+    },
+    {
+      "id": "bandit_captain",
+      "name": "Bandit Captain",
+      "cr": "2",
+      "type": "Humanoid",
+      "size": "Medium",
+      "ac": 15,
+      "hp": 65,
+      "speed": "30 ft",
+      "str": 15,
+      "dex": 16,
+      "con": 14,
+      "int": 14,
+      "wis": 11,
+      "cha": 14,
+      "senses": "passive Perception 10",
+      "languages": "any two",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two scimitar + one dagger."
+        },
+        {
+          "name": "Scimitar",
+          "desc": "+5, 1d6+3 slashing."
+        },
+        {
+          "name": "Dagger",
+          "desc": "+5, 1d4+3 piercing."
+        }
+      ],
+      "reactions": [
+        {
+          "name": "Parry",
+          "desc": "+2 AC against one melee attack."
+        }
+      ],
+      "description": "Skilled leader of a bandit gang."
+    },
+    {
+      "id": "basilisk",
+      "name": "Basilisk",
+      "cr": "3",
+      "type": "Monstrosity",
+      "size": "Medium",
+      "ac": 15,
+      "hp": 52,
+      "speed": "20 ft",
+      "str": 16,
+      "dex": 8,
+      "con": 15,
+      "int": 2,
+      "wis": 8,
+      "cha": 7,
+      "senses": "darkvision 60 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Petrifying Gaze",
+          "desc": "DC 12 CON save or restrained, second failure = petrified 24h."
+        },
+        {
+          "name": "Bite",
+          "desc": "+5, 2d6+3 piercing + 2d6 poison."
+        }
+      ],
+      "description": "Eight-legged reptile whose gaze petrifies victims."
+    },
+    {
+      "id": "beholder",
+      "name": "Beholder",
+      "cr": "13",
+      "type": "Aberration",
+      "size": "Large",
+      "ac": 18,
+      "hp": 180,
+      "speed": "fly 20 ft (hover)",
+      "str": 10,
+      "dex": 14,
+      "con": 18,
+      "int": 17,
+      "wis": 15,
+      "cha": 17,
+      "condition_immunities": "prone",
+      "senses": "darkvision 120 ft",
+      "languages": "Deep Speech, Undercommon",
+      "actions": [
+        {
+          "name": "Bite",
+          "desc": "+5, 4d6 piercing."
+        },
+        {
+          "name": "Eye Rays",
+          "desc": "Three random rays (DC 16): Charm, Paralyze, Fear, Slow, Enervation, Telekinesis, Sleep, Petrification, Disintegration, Death."
+        }
+      ],
+      "legendary_actions": [
+        {
+          "name": "Eye Ray",
+          "desc": "One random eye ray."
+        }
+      ],
+      "description": "Floating aberration with a central magic-suppressing eye and ten deadly eyestalks."
+    },
+    {
+      "id": "bugbear",
+      "name": "Bugbear",
+      "cr": "1",
+      "type": "Humanoid",
+      "size": "Medium",
+      "ac": 16,
+      "hp": 27,
+      "speed": "30 ft",
+      "str": 15,
+      "dex": 14,
+      "con": 13,
+      "int": 8,
+      "wis": 11,
+      "cha": 9,
+      "skills": {
+        "Stealth": "+6"
+      },
+      "senses": "darkvision 60 ft",
+      "languages": "Common, Goblin",
+      "actions": [
+        {
+          "name": "Morningstar",
+          "desc": "+4, 2d8+2 piercing."
+        },
+        {
+          "name": "Javelin",
+          "desc": "+4, 30/120 ft, 2d6+2 piercing."
+        }
+      ],
+      "description": "Hulking goblinoids who deal extra damage when surprising enemies."
+    },
+    {
+      "id": "bulette",
+      "name": "Bulette",
+      "cr": "5",
+      "type": "Monstrosity",
+      "size": "Large",
+      "ac": 17,
+      "hp": 94,
+      "speed": "40 ft, burrow 40 ft",
+      "str": 19,
+      "dex": 11,
+      "con": 21,
+      "int": 2,
+      "wis": 10,
+      "cha": 5,
+      "senses": "darkvision 60 ft, tremorsense 60 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Bite",
+          "desc": "+7, 4d12+4 piercing."
+        },
+        {
+          "name": "Deadly Leap",
+          "desc": "DC 16 DEX/STR save or 3d6+4 bludgeoning + 3d6+4 slashing and prone."
+        }
+      ],
+      "description": "Armored land shark that burrows through earth."
+    },
+    {
+      "id": "chimera",
+      "name": "Chimera",
+      "cr": "6",
+      "type": "Monstrosity",
+      "size": "Large",
+      "ac": 14,
+      "hp": 114,
+      "speed": "30 ft, fly 60 ft",
+      "str": 19,
+      "dex": 11,
+      "con": 19,
+      "int": 3,
+      "wis": 14,
+      "cha": 10,
+      "senses": "darkvision 60 ft",
+      "languages": "understands Draconic",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Bite + horns + claws."
+        },
+        {
+          "name": "Bite",
+          "desc": "+7, 2d6+4 piercing."
+        },
+        {
+          "name": "Horns",
+          "desc": "+7, 1d12+4 bludgeoning."
+        },
+        {
+          "name": "Claws",
+          "desc": "+7, 2d6+4 slashing."
+        },
+        {
+          "name": "Fire Breath (Recharge 5-6)",
+          "desc": "15-ft cone, DC 15 DEX, 7d8 fire."
+        }
+      ],
+      "description": "Hybrid of lion, goat, and dragon."
+    },
+    {
+      "id": "clay_golem",
+      "name": "Clay Golem",
+      "cr": "9",
+      "type": "Construct",
+      "size": "Large",
+      "ac": 14,
+      "hp": 133,
+      "speed": "20 ft",
+      "str": 20,
+      "dex": 9,
+      "con": 18,
+      "int": 3,
+      "wis": 8,
+      "cha": 1,
+      "damage_immunities": "acid, poison, psychic; nonmagical bludgeoning/piercing/slashing",
+      "condition_immunities": "charmed, exhaustion, frightened, paralyzed, petrified, poisoned",
+      "senses": "darkvision 60 ft",
+      "languages": "understands creator's languages",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two slam attacks."
+        },
+        {
+          "name": "Slam",
+          "desc": "+8, 2d10+5 bludgeoning + DC 15 CON or HP max reduced."
+        },
+        {
+          "name": "Haste (Recharge 5-6)",
+          "desc": "Hasted for 1 minute."
+        }
+      ],
+      "description": "Animated clay guardian healed by transmutation magic."
+    },
+    {
+      "id": "cloud_giant",
+      "name": "Cloud Giant",
+      "cr": "9",
+      "type": "Giant",
+      "size": "Huge",
+      "ac": 14,
+      "hp": 200,
+      "speed": "40 ft",
+      "str": 27,
+      "dex": 10,
+      "con": 22,
+      "int": 12,
+      "wis": 16,
+      "cha": 16,
+      "senses": "passive Perception 17",
+      "languages": "Common, Giant",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two morningstar attacks."
+        },
+        {
+          "name": "Morningstar",
+          "desc": "+12, 3d8+8 piercing."
+        },
+        {
+          "name": "Rock",
+          "desc": "+12, 60/240 ft, 4d10+8 bludgeoning."
+        }
+      ],
+      "description": "Aloof noble giants dwelling in cloud castles."
+    },
+    {
+      "id": "couatl",
+      "name": "Couatl",
+      "cr": "4",
+      "type": "Celestial",
+      "size": "Medium",
+      "ac": 19,
+      "hp": 97,
+      "speed": "30 ft, fly 90 ft",
+      "str": 16,
+      "dex": 20,
+      "con": 17,
+      "int": 18,
+      "wis": 20,
+      "cha": 18,
+      "damage_immunities": "psychic; nonmagical bludgeoning/piercing/slashing",
+      "senses": "truesight 120 ft",
+      "languages": "all, telepathy 120 ft",
+      "actions": [
+        {
+          "name": "Bite",
+          "desc": "+8, 1d6+5 piercing + DC 13 CON poison or unconscious 24h."
+        },
+        {
+          "name": "Constrict",
+          "desc": "+6, 2d6+3 bludgeoning, restrained."
+        },
+        {
+          "name": "Change Shape",
+          "desc": "Polymorph into humanoid or beast CR ≤ own."
+        }
+      ],
+      "description": "Benevolent winged serpent celestials serving the gods of good."
+    },
+    {
+      "id": "death_knight",
+      "name": "Death Knight",
+      "cr": "17",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 20,
+      "hp": 180,
+      "speed": "30 ft",
+      "str": 20,
+      "dex": 11,
+      "con": 20,
+      "int": 12,
+      "wis": 16,
+      "cha": 18,
+      "damage_immunities": "necrotic, poison",
+      "condition_immunities": "exhaustion, frightened, poisoned",
+      "senses": "darkvision 120 ft",
+      "languages": "Abyssal, Common",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Three longsword attacks."
+        },
+        {
+          "name": "Longsword",
+          "desc": "+11, 1d8+5 slashing + 4d8 necrotic."
+        },
+        {
+          "name": "Hellfire Orb (Recharge 5-6)",
+          "desc": "20-ft radius, DC 18 DEX, 10d6 fire + 10d6 necrotic."
+        }
+      ],
+      "description": "Fallen paladin serving dark powers, wielding unholy martial might."
+    },
+    {
+      "id": "deva",
+      "name": "Deva",
+      "cr": "10",
+      "type": "Celestial",
+      "size": "Medium",
+      "ac": 17,
+      "hp": 136,
+      "speed": "30 ft, fly 90 ft",
+      "str": 18,
+      "dex": 18,
+      "con": 18,
+      "int": 17,
+      "wis": 20,
+      "cha": 20,
+      "damage_immunities": "necrotic, poison",
+      "condition_immunities": "charmed, exhaustion, frightened, poisoned",
+      "senses": "darkvision 120 ft",
+      "languages": "all, telepathy 120 ft",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two mace attacks."
+        },
+        {
+          "name": "Mace",
+          "desc": "+8, 1d6+4 bludgeoning + 4d8 radiant."
+        },
+        {
+          "name": "Healing Touch (3/Day)",
+          "desc": "Touch heals 4d8+2 HP and removes curse/disease/poison."
+        },
+        {
+          "name": "Change Shape",
+          "desc": "Polymorph into humanoid or beast."
+        }
+      ],
+      "description": "Angels who serve the gods of good, often disguised as mortals."
+    },
+    {
+      "id": "dire_wolf",
+      "name": "Dire Wolf",
+      "cr": "1",
+      "type": "Beast",
+      "size": "Large",
+      "ac": 14,
+      "hp": 37,
+      "speed": "50 ft",
+      "str": 17,
+      "dex": 15,
+      "con": 15,
+      "int": 3,
+      "wis": 12,
+      "cha": 7,
+      "skills": {
+        "Perception": "+3",
+        "Stealth": "+4"
+      },
+      "senses": "passive Perception 13",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Bite",
+          "desc": "+5, 2d6+3 piercing. DC 13 STR or prone."
+        }
+      ],
+      "description": "Massive prehistoric wolves, dangerous pack hunters."
+    },
+    {
+      "id": "djinni",
+      "name": "Djinni",
+      "cr": "11",
+      "type": "Elemental",
+      "size": "Large",
+      "ac": 17,
+      "hp": 161,
+      "speed": "30 ft, fly 90 ft",
+      "str": 21,
+      "dex": 15,
+      "con": 22,
+      "int": 15,
+      "wis": 16,
+      "cha": 20,
+      "damage_immunities": "lightning, thunder",
+      "senses": "darkvision 120 ft",
+      "languages": "Auran",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Three scimitar attacks."
+        },
+        {
+          "name": "Scimitar",
+          "desc": "+9, 2d6+5 slashing + 1d6 lightning or thunder."
+        },
+        {
+          "name": "Create Whirlwind",
+          "desc": "DC 18 STR save or 2d8+2 bludgeoning."
+        }
+      ],
+      "description": "Noble genie of the Elemental Plane of Air."
+    },
+    {
+      "id": "doppelganger",
+      "name": "Doppelganger",
+      "cr": "3",
+      "type": "Monstrosity",
+      "size": "Medium",
+      "ac": 14,
+      "hp": 52,
+      "speed": "30 ft",
+      "str": 11,
+      "dex": 18,
+      "con": 14,
+      "int": 11,
+      "wis": 12,
+      "cha": 14,
+      "condition_immunities": "charmed",
+      "senses": "darkvision 60 ft",
+      "languages": "Common",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two melee attacks."
+        },
+        {
+          "name": "Slam",
+          "desc": "+6, 1d6+4 bludgeoning."
+        },
+        {
+          "name": "Read Thoughts",
+          "desc": "DC 11 WIS or telepathic mind reading for 1 min."
+        },
+        {
+          "name": "Shapechanger",
+          "desc": "Polymorph into Small or Medium humanoid."
+        }
+      ],
+      "description": "Shapechangers who can mimic any humanoid they've seen."
+    },
+    {
+      "id": "dragon_turtle",
+      "name": "Dragon Turtle",
+      "cr": "17",
+      "type": "Dragon",
+      "size": "Gargantuan",
+      "ac": 20,
+      "hp": 341,
+      "speed": "20 ft, swim 40 ft",
+      "str": 25,
+      "dex": 10,
+      "con": 20,
+      "int": 10,
+      "wis": 12,
+      "cha": 12,
+      "senses": "darkvision 120 ft",
+      "languages": "Aquan, Draconic",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Bite + two claws or tail + two claws."
+        },
+        {
+          "name": "Bite",
+          "desc": "+13, 3d12+7 piercing."
+        },
+        {
+          "name": "Claw",
+          "desc": "+13, 2d8+7 slashing."
+        },
+        {
+          "name": "Tail",
+          "desc": "+13, 3d12+7 bludgeoning. DC 20 STR or pushed prone."
+        },
+        {
+          "name": "Steam Breath (Recharge 5-6)",
+          "desc": "60-ft cone, DC 18 CON, 15d6 fire."
+        }
+      ],
+      "description": "Ancient sea creature resembling a massive dragon-turtle hybrid."
+    },
+    {
+      "id": "earth_elemental",
+      "name": "Earth Elemental",
+      "cr": "5",
+      "type": "Elemental",
+      "size": "Large",
+      "ac": 17,
+      "hp": 126,
+      "speed": "30 ft, burrow 30 ft",
+      "str": 20,
+      "dex": 8,
+      "con": 20,
+      "int": 5,
+      "wis": 10,
+      "cha": 5,
+      "damage_vulnerabilities": "thunder",
+      "damage_immunities": "poison",
+      "condition_immunities": "exhaustion, paralyzed, petrified, poisoned, unconscious",
+      "senses": "darkvision 60 ft, tremorsense 60 ft",
+      "languages": "Terran",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two slam attacks."
+        },
+        {
+          "name": "Slam",
+          "desc": "+8, 2d8+5 bludgeoning."
+        }
+      ],
+      "description": "Living stone that burrows through rock."
+    },
+    {
+      "id": "erinyes",
+      "name": "Erinyes",
+      "cr": "12",
+      "type": "Fiend",
+      "size": "Medium",
+      "ac": 18,
+      "hp": 153,
+      "speed": "30 ft, fly 60 ft",
+      "str": 18,
+      "dex": 16,
+      "con": 18,
+      "int": 14,
+      "wis": 14,
+      "cha": 18,
+      "damage_immunities": "fire, poison",
+      "condition_immunities": "poisoned",
+      "senses": "truesight 120 ft",
+      "languages": "Infernal, telepathy 120 ft",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Three attacks."
+        },
+        {
+          "name": "Longsword",
+          "desc": "+8, 1d8+4 slashing + 3d8 poison."
+        },
+        {
+          "name": "Longbow",
+          "desc": "+7, 150/600 ft, 1d8+3 piercing + 3d8 poison."
+        }
+      ],
+      "reactions": [
+        {
+          "name": "Parry",
+          "desc": "+4 AC vs one melee attack."
+        }
+      ],
+      "description": "Devil warriors who hunt escaped souls. They appear as beautiful winged warriors."
+    },
+    {
+      "id": "fire_elemental",
+      "name": "Fire Elemental",
+      "cr": "5",
+      "type": "Elemental",
+      "size": "Large",
+      "ac": 13,
+      "hp": 102,
+      "speed": "50 ft",
+      "str": 10,
+      "dex": 17,
+      "con": 16,
+      "int": 6,
+      "wis": 10,
+      "cha": 7,
+      "damage_immunities": "fire, poison",
+      "condition_immunities": "exhaustion, grappled, paralyzed, petrified, poisoned, prone, restrained, unconscious",
+      "senses": "darkvision 60 ft",
+      "languages": "Ignan",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two touch attacks."
+        },
+        {
+          "name": "Touch",
+          "desc": "+6, 2d6+3 fire. Ignites target on hit."
+        }
+      ],
+      "description": "Living flame that ignites everything it touches."
+    },
+    {
+      "id": "flesh_golem",
+      "name": "Flesh Golem",
+      "cr": "5",
+      "type": "Construct",
+      "size": "Medium",
+      "ac": 9,
+      "hp": 93,
+      "speed": "30 ft",
+      "str": 19,
+      "dex": 9,
+      "con": 18,
+      "int": 6,
+      "wis": 10,
+      "cha": 5,
+      "damage_immunities": "lightning, poison; nonmagical bludgeoning/piercing/slashing",
+      "condition_immunities": "charmed, exhaustion, frightened, paralyzed, petrified, poisoned",
+      "senses": "darkvision 60 ft",
+      "languages": "understands creator's languages",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two slam attacks."
+        },
+        {
+          "name": "Slam",
+          "desc": "+7, 2d8+4 bludgeoning."
+        }
+      ],
+      "description": "Stitched corpses animated by lightning. Can go berserk below half HP."
+    },
+    {
+      "id": "frost_giant",
+      "name": "Frost Giant",
+      "cr": "8",
+      "type": "Giant",
+      "size": "Huge",
+      "ac": 15,
+      "hp": 138,
+      "speed": "40 ft",
+      "str": 23,
+      "dex": 9,
+      "con": 21,
+      "int": 9,
+      "wis": 10,
+      "cha": 12,
+      "damage_immunities": "cold",
+      "senses": "passive Perception 13",
+      "languages": "Giant",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two greataxe attacks."
+        },
+        {
+          "name": "Greataxe",
+          "desc": "+9, 3d12+6 slashing."
+        },
+        {
+          "name": "Rock",
+          "desc": "+9, 60/240 ft, 4d10+6 bludgeoning."
+        }
+      ],
+      "description": "Arctic giants who value physical strength above all."
+    },
+    {
+      "id": "gargoyle",
+      "name": "Gargoyle",
+      "cr": "2",
+      "type": "Elemental",
+      "size": "Medium",
+      "ac": 15,
+      "hp": 52,
+      "speed": "30 ft, fly 60 ft",
+      "str": 15,
+      "dex": 11,
+      "con": 16,
+      "int": 6,
+      "wis": 11,
+      "cha": 7,
+      "damage_immunities": "poison",
+      "condition_immunities": "exhaustion, petrified, poisoned",
+      "senses": "darkvision 60 ft",
+      "languages": "Terran",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Bite + claws."
+        },
+        {
+          "name": "Bite",
+          "desc": "+4, 1d6+2 piercing."
+        },
+        {
+          "name": "Claws",
+          "desc": "+4, 1d6+2 slashing."
+        }
+      ],
+      "description": "Living stone statues, nearly indistinguishable from mundane carvings."
+    },
+    {
+      "id": "ghost",
+      "name": "Ghost",
+      "cr": "4",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 11,
+      "hp": 45,
+      "speed": "fly 40 ft (hover)",
+      "str": 7,
+      "dex": 13,
+      "con": 10,
+      "int": 10,
+      "wis": 12,
+      "cha": 17,
+      "damage_immunities": "cold, necrotic, poison",
+      "condition_immunities": "charmed, exhaustion, frightened, grappled, paralyzed, petrified, poisoned, prone, restrained",
+      "senses": "darkvision 60 ft",
+      "languages": "languages known in life",
+      "actions": [
+        {
+          "name": "Withering Touch",
+          "desc": "+5, 4d6+3 necrotic."
+        },
+        {
+          "name": "Etherealness",
+          "desc": "Enter/exit Ethereal Plane."
+        },
+        {
+          "name": "Horrifying Visage",
+          "desc": "DC 13 WIS or frightened. Fail by 5+ = aged 1d4×10 years."
+        },
+        {
+          "name": "Possession (Recharge 6)",
+          "desc": "DC 13 CHA or possessed."
+        }
+      ],
+      "description": "Spirit bound to the mortal world by unfinished business."
+    },
+    {
+      "id": "ghoul",
+      "name": "Ghoul",
+      "cr": "1",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 12,
+      "hp": 22,
+      "speed": "30 ft",
+      "str": 13,
+      "dex": 15,
+      "con": 10,
+      "int": 7,
+      "wis": 10,
+      "cha": 6,
+      "damage_immunities": "poison",
+      "condition_immunities": "charmed, exhaustion, poisoned",
+      "senses": "darkvision 60 ft",
+      "languages": "Common",
+      "actions": [
+        {
+          "name": "Bite",
+          "desc": "+2, 2d6+2 piercing."
+        },
+        {
+          "name": "Claws",
+          "desc": "+4, 2d4+2 slashing. DC 10 CON or paralyzed 1 min (not elves/undead)."
+        }
+      ],
+      "description": "Undead with paralytic claws who hunger for flesh."
+    },
+    {
+      "id": "giant_spider",
+      "name": "Giant Spider",
+      "cr": "1",
+      "type": "Beast",
+      "size": "Large",
+      "ac": 14,
+      "hp": 26,
+      "speed": "30 ft, climb 30 ft",
+      "str": 14,
+      "dex": 16,
+      "con": 12,
+      "int": 2,
+      "wis": 11,
+      "cha": 4,
+      "skills": {
+        "Perception": "+3",
+        "Stealth": "+7"
+      },
+      "senses": "darkvision 60 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Bite",
+          "desc": "+5, 1d8+3 piercing + DC 11 CON 2d8 poison, paralyzed if 0 HP."
+        },
+        {
+          "name": "Web (Recharge 5-6)",
+          "desc": "+5, 30/60 ft, restrained (DC 12 STR escape)."
+        }
+      ],
+      "description": "Giant arachnids that restrain with webs and inject paralyzing venom."
+    },
+    {
+      "id": "gnoll",
+      "name": "Gnoll",
+      "cr": "1/2",
+      "type": "Humanoid",
+      "size": "Medium",
+      "ac": 15,
+      "hp": 22,
+      "speed": "30 ft",
+      "str": 14,
+      "dex": 12,
+      "con": 11,
+      "int": 6,
+      "wis": 10,
+      "cha": 7,
+      "senses": "darkvision 60 ft",
+      "languages": "Gnoll",
+      "actions": [
+        {
+          "name": "Bite",
+          "desc": "+4, 1d4+2 piercing."
+        },
+        {
+          "name": "Spear",
+          "desc": "+4, 20/60 ft, 1d6+2 piercing."
+        },
+        {
+          "name": "Longbow",
+          "desc": "+3, 150/600 ft, 1d8+1 piercing."
+        },
+        {
+          "name": "Rampage",
+          "desc": "Bonus action bite after reducing enemy to 0 HP."
+        }
+      ],
+      "description": "Hyena-headed humanoids on an endless hunt for flesh."
+    },
+    {
+      "id": "goblin",
+      "name": "Goblin",
+      "cr": "1/4",
+      "type": "Humanoid",
+      "size": "Small",
+      "ac": 15,
+      "hp": 7,
+      "speed": "30 ft",
+      "str": 8,
+      "dex": 14,
+      "con": 10,
+      "int": 10,
+      "wis": 8,
+      "cha": 8,
+      "skills": {
+        "Stealth": "+6"
+      },
+      "senses": "darkvision 60 ft",
+      "languages": "Common, Goblin",
+      "actions": [
+        {
+          "name": "Scimitar",
+          "desc": "+4, 1d6+2 slashing."
+        },
+        {
+          "name": "Shortbow",
+          "desc": "+4, 80/320 ft, 1d6+2 piercing."
+        }
+      ],
+      "description": "Nimble humanoids that use Disengage/Hide as bonus action."
+    },
+    {
+      "id": "green_hag",
+      "name": "Green Hag",
+      "cr": "3",
+      "type": "Fey",
+      "size": "Medium",
+      "ac": 17,
+      "hp": 82,
+      "speed": "30 ft",
+      "str": 18,
+      "dex": 12,
+      "con": 16,
+      "int": 13,
+      "wis": 14,
+      "cha": 14,
+      "senses": "darkvision 60 ft",
+      "languages": "Common, Draconic, Sylvan",
+      "actions": [
+        {
+          "name": "Claws",
+          "desc": "+6, 2d8+4 slashing."
+        },
+        {
+          "name": "Illusory Appearance",
+          "desc": "Disguise as another creature."
+        },
+        {
+          "name": "Invisible Passage",
+          "desc": "Turn invisible until attacking."
+        }
+      ],
+      "description": "Wicked fey who make dark bargains and torment communities."
+    },
+    {
+      "id": "griffon",
+      "name": "Griffon",
+      "cr": "2",
+      "type": "Monstrosity",
+      "size": "Large",
+      "ac": 12,
+      "hp": 59,
+      "speed": "30 ft, fly 80 ft",
+      "str": 18,
+      "dex": 15,
+      "con": 16,
+      "int": 2,
+      "wis": 13,
+      "cha": 8,
+      "skills": {
+        "Perception": "+5"
+      },
+      "senses": "darkvision 60 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Beak + claws."
+        },
+        {
+          "name": "Beak",
+          "desc": "+6, 1d10+4 piercing."
+        },
+        {
+          "name": "Claws",
+          "desc": "+6, 2d6+4 slashing."
+        }
+      ],
+      "description": "Lion-eagle hybrid that can serve as a mount."
+    },
+    {
+      "id": "harpy",
+      "name": "Harpy",
+      "cr": "1",
+      "type": "Monstrosity",
+      "size": "Medium",
+      "ac": 11,
+      "hp": 38,
+      "speed": "20 ft, fly 40 ft",
+      "str": 12,
+      "dex": 13,
+      "con": 12,
+      "int": 7,
+      "wis": 10,
+      "cha": 13,
+      "senses": "passive Perception 10",
+      "languages": "Common",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Claws + club."
+        },
+        {
+          "name": "Claws",
+          "desc": "+3, 2d4+1 slashing."
+        },
+        {
+          "name": "Club",
+          "desc": "+3, 1d4+1 bludgeoning."
+        },
+        {
+          "name": "Luring Song",
+          "desc": "DC 11 WIS or charmed, must move toward harpy."
+        }
+      ],
+      "description": "Winged monsters whose song lures victims to their deaths."
+    },
+    {
+      "id": "hell_hound",
+      "name": "Hell Hound",
+      "cr": "3",
+      "type": "Fiend",
+      "size": "Medium",
+      "ac": 15,
+      "hp": 45,
+      "speed": "50 ft",
+      "str": 17,
+      "dex": 12,
+      "con": 14,
+      "int": 6,
+      "wis": 13,
+      "cha": 6,
+      "damage_immunities": "fire",
+      "senses": "darkvision 60 ft",
+      "languages": "understands Infernal",
+      "actions": [
+        {
+          "name": "Bite",
+          "desc": "+5, 1d8+3 piercing + 2d6 fire."
+        },
+        {
+          "name": "Fire Breath (Recharge 5-6)",
+          "desc": "15-ft cone, DC 12 DEX, 6d6 fire."
+        }
+      ],
+      "description": "Fiendish hounds immune to fire with devastating breath attack."
+    },
+    {
+      "id": "hill_giant",
+      "name": "Hill Giant",
+      "cr": "5",
+      "type": "Giant",
+      "size": "Huge",
+      "ac": 13,
+      "hp": 105,
+      "speed": "40 ft",
+      "str": 21,
+      "dex": 8,
+      "con": 19,
+      "int": 5,
+      "wis": 9,
+      "cha": 6,
+      "senses": "passive Perception 12",
+      "languages": "Giant",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two greatclub attacks."
+        },
+        {
+          "name": "Greatclub",
+          "desc": "+8, 3d8+5 bludgeoning."
+        },
+        {
+          "name": "Rock",
+          "desc": "+8, 60/240 ft, 3d10+5 bludgeoning."
+        }
+      ],
+      "description": "Brutish giants who live to eat and bully."
+    },
+    {
+      "id": "hippogriff",
+      "name": "Hippogriff",
+      "cr": "1",
+      "type": "Monstrosity",
+      "size": "Large",
+      "ac": 11,
+      "hp": 19,
+      "speed": "40 ft, fly 60 ft",
+      "str": 17,
+      "dex": 13,
+      "con": 13,
+      "int": 2,
+      "wis": 12,
+      "cha": 8,
+      "skills": {
+        "Perception": "+5"
+      },
+      "senses": "passive Perception 15",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Beak + claws."
+        },
+        {
+          "name": "Beak",
+          "desc": "+5, 1d10+3 piercing."
+        },
+        {
+          "name": "Claws",
+          "desc": "+5, 2d6+3 slashing."
+        }
+      ],
+      "description": "Horse-eagle hybrid that can be tamed as a mount."
+    },
+    {
+      "id": "hobgoblin",
+      "name": "Hobgoblin",
+      "cr": "1/2",
+      "type": "Humanoid",
+      "size": "Medium",
+      "ac": 18,
+      "hp": 11,
+      "speed": "30 ft",
+      "str": 13,
+      "dex": 12,
+      "con": 12,
+      "int": 10,
+      "wis": 10,
+      "cha": 9,
+      "senses": "darkvision 60 ft",
+      "languages": "Common, Goblin",
+      "actions": [
+        {
+          "name": "Longsword",
+          "desc": "+3, 1d8+1 slashing."
+        },
+        {
+          "name": "Longbow",
+          "desc": "+3, 150/600 ft, 1d8+1 piercing."
+        }
+      ],
+      "description": "Militaristic goblinoids organized along strict military lines."
+    },
+    {
+      "id": "hydra",
+      "name": "Hydra",
+      "cr": "8",
+      "type": "Monstrosity",
+      "size": "Huge",
+      "ac": 15,
+      "hp": 172,
+      "speed": "30 ft, swim 30 ft",
+      "str": 20,
+      "dex": 12,
+      "con": 20,
+      "int": 2,
+      "wis": 10,
+      "cha": 7,
+      "skills": {
+        "Perception": "+6"
+      },
+      "senses": "darkvision 60 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "As many bite attacks as it has heads."
+        },
+        {
+          "name": "Bite",
+          "desc": "+8, 1d10+5 piercing per head."
+        }
+      ],
+      "description": "Multi-headed monster. Severed heads regrow (two per head) unless fire applied."
+    },
+    {
+      "id": "imp",
+      "name": "Imp",
+      "cr": "1",
+      "type": "Fiend",
+      "size": "Tiny",
+      "ac": 13,
+      "hp": 10,
+      "speed": "20 ft, fly 40 ft",
+      "str": 6,
+      "dex": 17,
+      "con": 13,
+      "int": 11,
+      "wis": 12,
+      "cha": 14,
+      "damage_immunities": "fire, poison",
+      "condition_immunities": "poisoned",
+      "senses": "darkvision 120 ft",
+      "languages": "Common, Infernal",
+      "actions": [
+        {
+          "name": "Sting",
+          "desc": "+5, 1d4+3 piercing + DC 11 CON 3d6 poison."
+        },
+        {
+          "name": "Shapechanger",
+          "desc": "Polymorph into rat/raven/spider."
+        }
+      ],
+      "description": "Cunning small devil serving as familiar or spy. Can turn invisible."
+    },
+    {
+      "id": "iron_golem",
+      "name": "Iron Golem",
+      "cr": "16",
+      "type": "Construct",
+      "size": "Large",
+      "ac": 20,
+      "hp": 210,
+      "speed": "30 ft",
+      "str": 24,
+      "dex": 9,
+      "con": 20,
+      "int": 3,
+      "wis": 11,
+      "cha": 1,
+      "damage_immunities": "fire, poison, psychic; nonmagical/non-adamantine bludgeoning/piercing/slashing",
+      "condition_immunities": "charmed, exhaustion, frightened, paralyzed, petrified, poisoned",
+      "senses": "darkvision 120 ft",
+      "languages": "understands creator's languages",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two melee attacks."
+        },
+        {
+          "name": "Slam",
+          "desc": "+13, 3d8+7 bludgeoning."
+        },
+        {
+          "name": "Sword",
+          "desc": "+13, 3d10+7 slashing."
+        },
+        {
+          "name": "Poison Breath (Recharge 6)",
+          "desc": "15-ft cone, DC 19 CON, 10d8 poison."
+        },
+        {
+          "name": "Fire Absorption",
+          "desc": "Fire damage heals golem instead."
+        }
+      ],
+      "description": "Most powerful standard golem, forged from solid iron."
+    },
+    {
+      "id": "knight",
+      "name": "Knight",
+      "cr": "3",
+      "type": "Humanoid",
+      "size": "Medium",
+      "ac": 18,
+      "hp": 52,
+      "speed": "30 ft",
+      "str": 16,
+      "dex": 11,
+      "con": 14,
+      "int": 11,
+      "wis": 11,
+      "cha": 15,
+      "senses": "passive Perception 10",
+      "languages": "any one",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two greatsword attacks."
+        },
+        {
+          "name": "Greatsword",
+          "desc": "+5, 2d6+3 slashing."
+        },
+        {
+          "name": "Heavy Crossbow",
+          "desc": "+2, 100/400 ft, 1d10 piercing."
+        },
+        {
+          "name": "Leadership (Recharges)",
+          "desc": "Nearby allies add 1d4 to attack or save."
+        }
+      ],
+      "reactions": [
+        {
+          "name": "Parry",
+          "desc": "+2 AC vs one melee attack."
+        }
+      ],
+      "description": "Disciplined warrior who inspires those around them."
+    },
+    {
+      "id": "kobold",
+      "name": "Kobold",
+      "cr": "1/8",
+      "type": "Humanoid",
+      "size": "Small",
+      "ac": 12,
+      "hp": 5,
+      "speed": "30 ft",
+      "str": 7,
+      "dex": 15,
+      "con": 9,
+      "int": 8,
+      "wis": 7,
+      "cha": 8,
+      "senses": "darkvision 60 ft",
+      "languages": "Common, Draconic",
+      "actions": [
+        {
+          "name": "Dagger",
+          "desc": "+4, 1d4+2 piercing."
+        },
+        {
+          "name": "Sling",
+          "desc": "+4, 30/120 ft, 1d4+2 bludgeoning."
+        }
+      ],
+      "description": "Small draconic humanoids who rely on pack tactics."
+    },
+    {
+      "id": "kraken",
+      "name": "Kraken",
+      "cr": "23",
+      "type": "Monstrosity",
+      "size": "Gargantuan",
+      "ac": 18,
+      "hp": 472,
+      "speed": "20 ft, swim 60 ft",
+      "str": 30,
+      "dex": 11,
+      "con": 25,
+      "int": 22,
+      "wis": 18,
+      "cha": 20,
+      "damage_immunities": "lightning; nonmagical bludgeoning/piercing/slashing",
+      "condition_immunities": "frightened, paralyzed",
+      "senses": "truesight 120 ft",
+      "languages": "all, telepathy 120 ft",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Three tentacle attacks or Fling."
+        },
+        {
+          "name": "Bite",
+          "desc": "+17, 3d8+10 piercing."
+        },
+        {
+          "name": "Tentacle",
+          "desc": "+17, 30 ft, 3d6+10 bludgeoning + grappled."
+        },
+        {
+          "name": "Lightning Storm",
+          "desc": "Three bolts, DC 23 DEX, 4d10 lightning each."
+        }
+      ],
+      "legendary_actions": [
+        {
+          "name": "Tentacle/Fling",
+          "desc": "One tentacle attack or Fling."
+        },
+        {
+          "name": "Ink Cloud",
+          "desc": "60-ft radius, DC 23 CON, 3d10 poison."
+        }
+      ],
+      "description": "Godlike sea monster, among the most powerful creatures in existence."
+    },
+    {
+      "id": "lich",
+      "name": "Lich",
+      "cr": "21",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 17,
+      "hp": 135,
+      "speed": "30 ft",
+      "str": 11,
+      "dex": 16,
+      "con": 16,
+      "int": 20,
+      "wis": 17,
+      "cha": 16,
+      "damage_immunities": "poison; nonmagical bludgeoning/piercing/slashing",
+      "condition_immunities": "charmed, exhaustion, frightened, paralyzed, poisoned",
+      "senses": "truesight 120 ft",
+      "languages": "Common + five others",
+      "actions": [
+        {
+          "name": "Paralyzing Touch",
+          "desc": "+12, 3d6 cold + DC 18 CON or paralyzed 1 min."
+        }
+      ],
+      "legendary_actions": [
+        {
+          "name": "Cantrip",
+          "desc": "Cast a cantrip."
+        },
+        {
+          "name": "Paralyzing Touch",
+          "desc": "Use Paralyzing Touch."
+        },
+        {
+          "name": "Frightening Gaze",
+          "desc": "DC 18 WIS or frightened 1 min."
+        },
+        {
+          "name": "Disrupt Life",
+          "desc": "20-ft radius, DC 18 CON, 6d6 necrotic."
+        }
+      ],
+      "description": "Undead wizard who achieved immortality by storing soul in a phylactery."
+    },
+    {
+      "id": "manticore",
+      "name": "Manticore",
+      "cr": "3",
+      "type": "Monstrosity",
+      "size": "Large",
+      "ac": 14,
+      "hp": 68,
+      "speed": "30 ft, fly 50 ft",
+      "str": 17,
+      "dex": 16,
+      "con": 17,
+      "int": 7,
+      "wis": 12,
+      "cha": 8,
+      "senses": "darkvision 60 ft",
+      "languages": "Common",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Bite + two claws or three tail spikes."
+        },
+        {
+          "name": "Bite",
+          "desc": "+5, 1d8+3 piercing."
+        },
+        {
+          "name": "Claw",
+          "desc": "+5, 1d6+3 slashing."
+        },
+        {
+          "name": "Tail Spike",
+          "desc": "+5, 100/200 ft, 1d8+3 piercing."
+        }
+      ],
+      "description": "Lion-human-dragon hybrid that can fire tail spikes."
+    },
+    {
+      "id": "medusa",
+      "name": "Medusa",
+      "cr": "6",
+      "type": "Monstrosity",
+      "size": "Medium",
+      "ac": 15,
+      "hp": 127,
+      "speed": "30 ft",
+      "str": 10,
+      "dex": 15,
+      "con": 16,
+      "int": 12,
+      "wis": 13,
+      "cha": 15,
+      "senses": "darkvision 60 ft",
+      "languages": "Common",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Snake hair + two shortswords."
+        },
+        {
+          "name": "Snake Hair",
+          "desc": "+4, 1d4+2 piercing + 4d6 poison."
+        },
+        {
+          "name": "Shortsword",
+          "desc": "+4, 1d6+2 piercing."
+        },
+        {
+          "name": "Petrifying Gaze",
+          "desc": "DC 14 CON or restrained; second fail = petrified."
+        }
+      ],
+      "description": "Snake-haired monster who petrifies with her gaze."
+    },
+    {
+      "id": "mimic",
+      "name": "Mimic",
+      "cr": "2",
+      "type": "Monstrosity",
+      "size": "Medium",
+      "ac": 12,
+      "hp": 58,
+      "speed": "15 ft",
+      "str": 17,
+      "dex": 12,
+      "con": 15,
+      "int": 5,
+      "wis": 13,
+      "cha": 8,
+      "damage_immunities": "acid",
+      "condition_immunities": "prone",
+      "senses": "darkvision 60 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Pseudopod",
+          "desc": "+5, 1d8+3 bludgeoning + adhesive."
+        },
+        {
+          "name": "Bite",
+          "desc": "+5, 1d8+3 piercing + 1d8 acid."
+        },
+        {
+          "name": "Shapechanger",
+          "desc": "Polymorph into any object."
+        }
+      ],
+      "description": "Shapeshifting predator that disguises as furniture or containers."
+    },
+    {
+      "id": "minotaur",
+      "name": "Minotaur",
+      "cr": "3",
+      "type": "Monstrosity",
+      "size": "Large",
+      "ac": 14,
+      "hp": 114,
+      "speed": "40 ft",
+      "str": 18,
+      "dex": 11,
+      "con": 16,
+      "int": 6,
+      "wis": 16,
+      "cha": 9,
+      "senses": "darkvision 60 ft",
+      "languages": "Abyssal",
+      "actions": [
+        {
+          "name": "Greataxe",
+          "desc": "+6, 2d12+4 slashing."
+        },
+        {
+          "name": "Gore",
+          "desc": "+6, 2d8+4 piercing. Charge 10 ft for +2d8 + DC 14 STR or prone."
+        }
+      ],
+      "description": "Bull-headed monster that never gets lost in mazes."
+    },
+    {
+      "id": "mummy",
+      "name": "Mummy",
+      "cr": "3",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 11,
+      "hp": 58,
+      "speed": "20 ft",
+      "str": 16,
+      "dex": 8,
+      "con": 15,
+      "int": 6,
+      "wis": 10,
+      "cha": 12,
+      "damage_vulnerabilities": "fire",
+      "damage_immunities": "necrotic, poison",
+      "condition_immunities": "charmed, exhaustion, frightened, paralyzed, poisoned",
+      "senses": "darkvision 60 ft",
+      "languages": "languages known in life",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Dreadful Glare + rotting fist."
+        },
+        {
+          "name": "Rotting Fist",
+          "desc": "+5, 2d6+3 bludgeoning + 3d6 necrotic. DC 12 CON or cursed with mummy rot."
+        },
+        {
+          "name": "Dreadful Glare",
+          "desc": "DC 11 WIS or frightened 1 min."
+        }
+      ],
+      "description": "Ancient cursed undead whose touch causes mummy rot."
+    },
+    {
+      "id": "orc",
+      "name": "Orc",
+      "cr": "1/2",
+      "type": "Humanoid",
+      "size": "Medium",
+      "ac": 13,
+      "hp": 15,
+      "speed": "30 ft",
+      "str": 16,
+      "dex": 12,
+      "con": 16,
+      "int": 7,
+      "wis": 11,
+      "cha": 10,
+      "senses": "darkvision 60 ft",
+      "languages": "Common, Orc",
+      "actions": [
+        {
+          "name": "Greataxe",
+          "desc": "+5, 1d12+3 slashing."
+        },
+        {
+          "name": "Javelin",
+          "desc": "+5, 30/120 ft, 1d6+3 piercing."
+        },
+        {
+          "name": "Aggressive",
+          "desc": "Bonus action: move toward hostile creature."
+        }
+      ],
+      "description": "Tribal humanoids that worship Gruumsh and value strength."
+    },
+    {
+      "id": "owlbear",
+      "name": "Owlbear",
+      "cr": "3",
+      "type": "Monstrosity",
+      "size": "Large",
+      "ac": 13,
+      "hp": 59,
+      "speed": "40 ft",
+      "str": 20,
+      "dex": 12,
+      "con": 17,
+      "int": 3,
+      "wis": 12,
+      "cha": 7,
+      "skills": {
+        "Perception": "+3"
+      },
+      "senses": "darkvision 60 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Beak + claws."
+        },
+        {
+          "name": "Beak",
+          "desc": "+7, 1d10+5 piercing."
+        },
+        {
+          "name": "Claws",
+          "desc": "+7, 2d8+5 slashing."
+        }
+      ],
+      "description": "Classic D&D hybrid of owl and bear - ferocious and territorial."
+    },
+    {
+      "id": "pit_fiend",
+      "name": "Pit Fiend",
+      "cr": "20",
+      "type": "Fiend",
+      "size": "Large",
+      "ac": 19,
+      "hp": 300,
+      "speed": "30 ft, fly 60 ft",
+      "str": 26,
+      "dex": 14,
+      "con": 24,
+      "int": 22,
+      "wis": 18,
+      "cha": 24,
+      "damage_immunities": "fire, poison",
+      "condition_immunities": "poisoned",
+      "senses": "truesight 120 ft",
+      "languages": "Infernal, telepathy 120 ft",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Bite + claw + mace + tail."
+        },
+        {
+          "name": "Bite",
+          "desc": "+14, 4d6+8 piercing + DC 21 CON poison."
+        },
+        {
+          "name": "Claw",
+          "desc": "+14, 2d8+8 slashing."
+        },
+        {
+          "name": "Mace",
+          "desc": "+14, 2d6+8 bludgeoning + 6d6 fire."
+        },
+        {
+          "name": "Tail",
+          "desc": "+14, 3d10+8 bludgeoning."
+        }
+      ],
+      "legendary_actions": [
+        {
+          "name": "Counterspell",
+          "desc": "Cast counterspell."
+        },
+        {
+          "name": "Fireball",
+          "desc": "Cast fireball."
+        },
+        {
+          "name": "Wall of Fire",
+          "desc": "Cast wall of fire."
+        }
+      ],
+      "description": "Generals and lords of the Nine Hells, among the most powerful devils."
+    },
+    {
+      "id": "purple_worm",
+      "name": "Purple Worm",
+      "cr": "15",
+      "type": "Monstrosity",
+      "size": "Gargantuan",
+      "ac": 18,
+      "hp": 247,
+      "speed": "50 ft, burrow 30 ft",
+      "str": 28,
+      "dex": 7,
+      "con": 22,
+      "int": 1,
+      "wis": 8,
+      "cha": 4,
+      "senses": "blindsight 30 ft, tremorsense 60 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Bite + tail stinger."
+        },
+        {
+          "name": "Bite",
+          "desc": "+14, 3d8+9 piercing. DC 19 DEX or swallowed."
+        },
+        {
+          "name": "Tail Stinger",
+          "desc": "+14, 3d6+9 piercing + DC 19 CON 12d6 poison."
+        }
+      ],
+      "description": "Enormous tunneling worm that can swallow entire parties."
+    },
+    {
+      "id": "roc",
+      "name": "Roc",
+      "cr": "11",
+      "type": "Monstrosity",
+      "size": "Gargantuan",
+      "ac": 15,
+      "hp": 248,
+      "speed": "20 ft, fly 120 ft",
+      "str": 28,
+      "dex": 10,
+      "con": 20,
+      "int": 3,
+      "wis": 10,
+      "cha": 9,
+      "skills": {
+        "Perception": "+4"
+      },
+      "senses": "passive Perception 14",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Beak + talons."
+        },
+        {
+          "name": "Beak",
+          "desc": "+13, 4d8+9 piercing."
+        },
+        {
+          "name": "Talons",
+          "desc": "+13, 4d6+9 slashing + grappled (DC 19)."
+        }
+      ],
+      "description": "Legendary mountain bird that can carry elephants."
+    },
+    {
+      "id": "shadow",
+      "name": "Shadow",
+      "cr": "1/2",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 12,
+      "hp": 16,
+      "speed": "40 ft",
+      "str": 6,
+      "dex": 14,
+      "con": 13,
+      "int": 6,
+      "wis": 10,
+      "cha": 8,
+      "damage_vulnerabilities": "radiant",
+      "damage_immunities": "necrotic, poison",
+      "condition_immunities": "exhaustion, frightened, grappled, paralyzed, petrified, poisoned, prone, restrained",
+      "senses": "darkvision 60 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Strength Drain",
+          "desc": "+4, 2d6+2 necrotic + 1d4 STR reduction. Creates new shadow if humanoid dies."
+        }
+      ],
+      "description": "Undead that drain strength, creating more shadows from victims."
+    },
+    {
+      "id": "skeleton",
+      "name": "Skeleton",
+      "cr": "1/4",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 13,
+      "hp": 13,
+      "speed": "30 ft",
+      "str": 10,
+      "dex": 14,
+      "con": 15,
+      "int": 6,
+      "wis": 8,
+      "cha": 5,
+      "damage_vulnerabilities": "bludgeoning",
+      "damage_immunities": "poison",
+      "condition_immunities": "exhaustion, poisoned",
+      "senses": "darkvision 60 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Shortsword",
+          "desc": "+4, 1d6+2 piercing."
+        },
+        {
+          "name": "Shortbow",
+          "desc": "+4, 80/320 ft, 1d6+2 piercing."
+        }
+      ],
+      "description": "Animated bones compelled by necromantic magic."
+    },
+    {
+      "id": "stone_giant",
+      "name": "Stone Giant",
+      "cr": "7",
+      "type": "Giant",
+      "size": "Huge",
+      "ac": 17,
+      "hp": 126,
+      "speed": "40 ft",
+      "str": 23,
+      "dex": 15,
+      "con": 20,
+      "int": 10,
+      "wis": 12,
+      "cha": 9,
+      "senses": "darkvision 60 ft",
+      "languages": "Giant",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two greatclub attacks."
+        },
+        {
+          "name": "Greatclub",
+          "desc": "+9, 3d8+6 bludgeoning."
+        },
+        {
+          "name": "Rock",
+          "desc": "+9, 60/240 ft, 4d10+6 bludgeoning. DC 17 STR or prone."
+        }
+      ],
+      "reactions": [
+        {
+          "name": "Rock Catching",
+          "desc": "DC 10 DEX save to catch incoming rock."
+        }
+      ],
+      "description": "Reclusive cave-dwelling giants, talented rock-throwers."
+    },
+    {
+      "id": "storm_giant",
+      "name": "Storm Giant",
+      "cr": "13",
+      "type": "Giant",
+      "size": "Huge",
+      "ac": 16,
+      "hp": 230,
+      "speed": "50 ft, swim 50 ft",
+      "str": 29,
+      "dex": 14,
+      "con": 20,
+      "int": 16,
+      "wis": 18,
+      "cha": 18,
+      "damage_immunities": "cold, lightning, thunder",
+      "senses": "darkvision 60 ft",
+      "languages": "Common, Giant",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two greatsword attacks."
+        },
+        {
+          "name": "Greatsword",
+          "desc": "+14, 6d6+9 slashing."
+        },
+        {
+          "name": "Rock",
+          "desc": "+14, 60/240 ft, 4d12+9 bludgeoning."
+        },
+        {
+          "name": "Lightning Strike (Recharge 5-6)",
+          "desc": "500 ft, 10-ft radius, DC 17 DEX, 12d8 lightning."
+        }
+      ],
+      "description": "Most powerful and wisest giants, lords of sky and sea."
+    },
+    {
+      "id": "tarrasque",
+      "name": "Tarrasque",
+      "cr": "30",
+      "type": "Monstrosity",
+      "size": "Gargantuan",
+      "ac": 25,
+      "hp": 676,
+      "speed": "40 ft",
+      "str": 30,
+      "dex": 11,
+      "con": 30,
+      "int": 3,
+      "wis": 11,
+      "cha": 11,
+      "damage_immunities": "fire, poison; nonmagical bludgeoning/piercing/slashing",
+      "condition_immunities": "charmed, frightened, paralyzed, poisoned",
+      "senses": "blindsight 120 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Frightful Presence + bite + two claws + horns + tail."
+        },
+        {
+          "name": "Bite",
+          "desc": "+19, 4d12+10 piercing + grappled."
+        },
+        {
+          "name": "Claw",
+          "desc": "+19, 4d8+10 slashing."
+        },
+        {
+          "name": "Horns",
+          "desc": "+19, 4d10+10 piercing."
+        },
+        {
+          "name": "Tail",
+          "desc": "+19, 4d6+10 bludgeoning."
+        }
+      ],
+      "legendary_actions": [
+        {
+          "name": "Attack",
+          "desc": "One claw or tail attack."
+        },
+        {
+          "name": "Move",
+          "desc": "Half speed."
+        },
+        {
+          "name": "Chomp",
+          "desc": "Bite or Swallow."
+        }
+      ],
+      "description": "The ultimate engine of destruction. Nearly impossible to permanently slay."
+    },
+    {
+      "id": "troll",
+      "name": "Troll",
+      "cr": "5",
+      "type": "Giant",
+      "size": "Large",
+      "ac": 15,
+      "hp": 84,
+      "speed": "30 ft",
+      "str": 18,
+      "dex": 13,
+      "con": 20,
+      "int": 7,
+      "wis": 9,
+      "cha": 7,
+      "senses": "darkvision 60 ft",
+      "languages": "Giant",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Bite + two claws."
+        },
+        {
+          "name": "Bite",
+          "desc": "+7, 1d6+4 piercing."
+        },
+        {
+          "name": "Claw",
+          "desc": "+7, 2d6+4 slashing."
+        }
+      ],
+      "description": "Regenerating monsters stopped only by fire and acid."
+    },
+    {
+      "id": "unicorn",
+      "name": "Unicorn",
+      "cr": "5",
+      "type": "Celestial",
+      "size": "Large",
+      "ac": 12,
+      "hp": 67,
+      "speed": "50 ft",
+      "str": 18,
+      "dex": 14,
+      "con": 15,
+      "int": 11,
+      "wis": 17,
+      "cha": 16,
+      "damage_immunities": "poison",
+      "condition_immunities": "charmed, paralyzed, poisoned",
+      "senses": "darkvision 60 ft",
+      "languages": "Celestial, Elvish, Sylvan, telepathy 60 ft",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Hooves + horn."
+        },
+        {
+          "name": "Hooves",
+          "desc": "+7, 2d6+4 bludgeoning."
+        },
+        {
+          "name": "Horn",
+          "desc": "+7, 1d8+4 piercing."
+        },
+        {
+          "name": "Healing Touch (3/Day)",
+          "desc": "Touch restores 2d8+2 HP, removes disease/poison."
+        },
+        {
+          "name": "Teleport (1/Day)",
+          "desc": "Teleport up to 1 mile with 3 willing creatures."
+        }
+      ],
+      "description": "Sacred celestial horse with healing horn, protects holy forests."
+    },
+    {
+      "id": "vampire",
+      "name": "Vampire",
+      "cr": "13",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 16,
+      "hp": 144,
+      "speed": "30 ft",
+      "str": 18,
+      "dex": 18,
+      "con": 18,
+      "int": 17,
+      "wis": 15,
+      "cha": 18,
+      "damage_resistances": "necrotic; nonmagical bludgeoning/piercing/slashing",
+      "senses": "darkvision 120 ft",
+      "languages": "languages known in life",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two attacks (one can be bite)."
+        },
+        {
+          "name": "Unarmed Strike",
+          "desc": "+9, 1d8+4 bludgeoning + grapple."
+        },
+        {
+          "name": "Bite",
+          "desc": "+9, 1d6+4 piercing + 3d6 necrotic. Reduces HP max."
+        },
+        {
+          "name": "Charm",
+          "desc": "DC 17 WIS or charmed 24h."
+        }
+      ],
+      "legendary_actions": [
+        {
+          "name": "Move",
+          "desc": "Move without provoking OA."
+        },
+        {
+          "name": "Unarmed Strike",
+          "desc": "One attack."
+        },
+        {
+          "name": "Bite",
+          "desc": "One bite attack."
+        }
+      ],
+      "description": "Powerful undead who drink blood and are destroyed by sunlight."
+    },
+    {
+      "id": "vampire_spawn",
+      "name": "Vampire Spawn",
+      "cr": "5",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 15,
+      "hp": 82,
+      "speed": "30 ft",
+      "str": 16,
+      "dex": 16,
+      "con": 16,
+      "int": 11,
+      "wis": 10,
+      "cha": 12,
+      "damage_resistances": "necrotic; nonmagical bludgeoning/piercing/slashing",
+      "senses": "darkvision 60 ft",
+      "languages": "languages known in life",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two attacks (one can be bite)."
+        },
+        {
+          "name": "Claws",
+          "desc": "+6, 2d4+3 slashing + grapple."
+        },
+        {
+          "name": "Bite",
+          "desc": "+6, 1d6+3 piercing + 2d6 necrotic."
+        }
+      ],
+      "description": "Lesser vampires serving their master's will."
+    },
+    {
+      "id": "water_elemental",
+      "name": "Water Elemental",
+      "cr": "5",
+      "type": "Elemental",
+      "size": "Large",
+      "ac": 14,
+      "hp": 114,
+      "speed": "30 ft, swim 90 ft",
+      "str": 18,
+      "dex": 14,
+      "con": 18,
+      "int": 5,
+      "wis": 10,
+      "cha": 8,
+      "damage_immunities": "poison",
+      "condition_immunities": "exhaustion, grappled, paralyzed, petrified, poisoned, prone, restrained, unconscious",
+      "senses": "darkvision 60 ft",
+      "languages": "Aquan",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two slam attacks."
+        },
+        {
+          "name": "Slam",
+          "desc": "+7, 2d8+4 bludgeoning."
+        },
+        {
+          "name": "Whelm (Recharge 4-6)",
+          "desc": "DC 15 STR or 2d8+4 bludgeoning + grappled + restrained + can't breathe."
+        }
+      ],
+      "description": "Living wave that engulfs and drowns victims."
+    },
+    {
+      "id": "werewolf",
+      "name": "Werewolf",
+      "cr": "3",
+      "type": "Humanoid",
+      "size": "Medium",
+      "ac": 11,
+      "hp": 58,
+      "speed": "30 ft (40 ft wolf form)",
+      "str": 15,
+      "dex": 13,
+      "con": 14,
+      "int": 10,
+      "wis": 11,
+      "cha": 10,
+      "damage_immunities": "nonmagical/non-silvered bludgeoning/piercing/slashing",
+      "senses": "passive Perception 14",
+      "languages": "Common",
+      "actions": [
+        {
+          "name": "Bite (Wolf/Hybrid)",
+          "desc": "+4, 1d8+2 piercing + DC 12 CON or lycanthropy."
+        },
+        {
+          "name": "Claws (Hybrid)",
+          "desc": "+4, 2d4+2 slashing."
+        },
+        {
+          "name": "Spear (Human)",
+          "desc": "+4, 20/60 ft, 1d6+2 piercing."
+        }
+      ],
+      "description": "Humanoid cursed to transform into a wolf under the full moon."
+    },
+    {
+      "id": "wight",
+      "name": "Wight",
+      "cr": "3",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 14,
+      "hp": 45,
+      "speed": "30 ft",
+      "str": 15,
+      "dex": 14,
+      "con": 16,
+      "int": 10,
+      "wis": 13,
+      "cha": 15,
+      "damage_immunities": "poison",
+      "condition_immunities": "exhaustion, poisoned",
+      "senses": "darkvision 60 ft",
+      "languages": "languages known in life",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Two longsword or two longbow attacks. One can be Life Drain."
+        },
+        {
+          "name": "Life Drain",
+          "desc": "+4, 1d6+2 necrotic + DC 13 CON or HP max reduced. Creates zombie on kill."
+        },
+        {
+          "name": "Longsword",
+          "desc": "+4, 1d8+2 slashing."
+        },
+        {
+          "name": "Longbow",
+          "desc": "+4, 150/600 ft, 1d8+2 piercing."
+        }
+      ],
+      "description": "Evil undead warrior who drains life and creates zombies from victims."
+    },
+    {
+      "id": "wolf",
+      "name": "Wolf",
+      "cr": "1/4",
+      "type": "Beast",
+      "size": "Medium",
+      "ac": 13,
+      "hp": 11,
+      "speed": "40 ft",
+      "str": 12,
+      "dex": 15,
+      "con": 12,
+      "int": 3,
+      "wis": 12,
+      "cha": 6,
+      "senses": "passive Perception 13",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Bite",
+          "desc": "+4, 2d4+2 piercing. DC 11 STR or prone."
+        }
+      ],
+      "description": "Pack predator with coordinated hunting tactics."
+    },
+    {
+      "id": "wraith",
+      "name": "Wraith",
+      "cr": "5",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 13,
+      "hp": 67,
+      "speed": "fly 60 ft (hover)",
+      "str": 6,
+      "dex": 16,
+      "con": 16,
+      "int": 12,
+      "wis": 14,
+      "cha": 15,
+      "damage_immunities": "necrotic, poison",
+      "condition_immunities": "charmed, exhaustion, grappled, paralyzed, petrified, poisoned, prone, restrained",
+      "senses": "darkvision 60 ft",
+      "languages": "languages known in life",
+      "actions": [
+        {
+          "name": "Life Drain",
+          "desc": "+6, 4d8+3 necrotic + DC 14 CON or HP max reduced."
+        },
+        {
+          "name": "Create Specter",
+          "desc": "Animate corpse as specter under wraith's control."
+        }
+      ],
+      "description": "Powerful incorporeal undead that drains life force."
+    },
+    {
+      "id": "wyvern",
+      "name": "Wyvern",
+      "cr": "6",
+      "type": "Dragon",
+      "size": "Large",
+      "ac": 13,
+      "hp": 110,
+      "speed": "20 ft, fly 80 ft",
+      "str": 19,
+      "dex": 10,
+      "con": 16,
+      "int": 5,
+      "wis": 12,
+      "cha": 6,
+      "senses": "darkvision 60 ft",
+      "languages": "–",
+      "actions": [
+        {
+          "name": "Multiattack",
+          "desc": "Bite + stinger."
+        },
+        {
+          "name": "Bite",
+          "desc": "+7, 2d6+4 piercing."
+        },
+        {
+          "name": "Claws",
+          "desc": "+7, 2d8+4 slashing."
+        },
+        {
+          "name": "Stinger",
+          "desc": "+7, 2d6+4 piercing + DC 15 CON 7d6 poison."
+        }
+      ],
+      "description": "Two-legged lesser dragon with venomous tail stinger."
+    },
+    {
+      "id": "zombie",
+      "name": "Zombie",
+      "cr": "1/4",
+      "type": "Undead",
+      "size": "Medium",
+      "ac": 8,
+      "hp": 22,
+      "speed": "20 ft",
+      "str": 13,
+      "dex": 6,
+      "con": 16,
+      "int": 3,
+      "wis": 6,
+      "cha": 5,
+      "damage_immunities": "poison",
+      "condition_immunities": "poisoned",
+      "senses": "darkvision 60 ft",
+      "languages": "understands languages in life",
+      "actions": [
+        {
+          "name": "Slam",
+          "desc": "+3, 1d6+1 bludgeoning."
+        }
+      ],
+      "description": "Shambling undead. Undying Fortitude: DC 5+damage CON save to survive at 1 HP instead of 0."
+    }
+  ]
+}

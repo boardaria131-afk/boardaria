@@ -1,317 +1,459 @@
 /**
- * levelup.js — Geführter Level-Up Assistent
- * Spieler wählt selbst: HP würfeln, neue Features, Spells, ASI/Feat
+ * levelup.js — Level-Up mit vollständigem Multiclassing-Support
+ * Unterstützt PHB Multiclassing-Regeln inkl. Voraussetzungen,
+ * Multiclass-Spell-Slots und Caster-Level-Berechnung
  */
 
 const LevelUpUI = (() => {
 
-  function getProfBonus(level) { return Math.ceil(level / 4) + 1; }
-  function getProficiencyBonus() { return getProfBonus(parseInt(Character.data.level)||1); }
+  // ── Caster-Level Berechnung ───────────────────────────────────────────────
+  const CASTER_WEIGHTS = {
+    full: 1.0, half: 0.5, third: 0.333, pact: 0, none: 0,
+  };
 
-  function getMod(score) { return Math.floor(((score||10)-10)/2); }
-
-  function getHitDie(classId) {
-    const cls = DnDData.getClassById(classId);
-    return cls?.hit_die || 8;
+  function getCasterLevel(classesArr, classesData) {
+    let total = 0;
+    let hasPact = false;
+    for (const c of classesArr) {
+      const cls = classesData[c.classId];
+      const type = cls?.caster_type || 'none';
+      if (type === 'pact') { hasPact = true; continue; }
+      if (type === 'full')  total += c.level;
+      if (type === 'half')  total += Math.floor(c.level / 2);
+      if (type === 'third') total += Math.floor(c.level / 3);
+    }
+    return { casterLevel: Math.floor(total), hasPact };
   }
 
-  function show() {
-    const char   = Character.data;
-    const oldLvl = parseInt(char.level) || 1;
-    const newLvl = oldLvl + 1;
+  function getMulticlassSlots(casterLevel, slotConfig) {
+    return slotConfig?.multiclass_caster?.[String(casterLevel)] || null;
+  }
 
-    if (newLvl > 20) { showToast('⚠ Level 20 ist das Maximum!'); return; }
+  // ── Voraussetzungen prüfen ────────────────────────────────────────────────
+  function checkMCRequirements(classId, abilities, classesData) {
+    const cls = classesData[classId];
+    const req = cls?.multiclass_req || {};
+    const msgs = [];
 
-    const cls    = DnDData.getClassById(char.classId);
-    const hitDie = getHitDie(char.classId);
-    const conMod = getMod(char.abilities?.con);
-    const isASI  = [4,8,12,16,19].includes(newLvl);
-    const newPB  = getProfBonus(newLvl);
-    const oldPB  = getProfBonus(oldLvl);
+    const AB_LABEL = { str:'STR', dex:'DEX', con:'CON', int:'INT', wis:'WIS', cha:'CHA' };
+    const hasOr = req.or;
 
-    // HP-Option
-    const avgHP  = Math.floor(hitDie / 2) + 1 + conMod;
+    for (const [stat, minVal] of Object.entries(req)) {
+      if (stat === 'or') continue;
+      const val = abilities?.[stat] || 10;
+      if (val < minVal) {
+        if (hasOr && (abilities?.[hasOr] || 10) >= minVal) continue;
+        msgs.push(`${AB_LABEL[stat]} ${minVal}+ (aktuell: ${val})`);
+      }
+    }
+    return msgs;
+  }
 
-    showModal(`⬆ Level Up: ${oldLvl} → ${newLvl}`, `
-      <div style="font-size:14px;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-          <span class="detail-tag" style="background:rgba(201,150,42,0.15);border-color:var(--gold);">
-            ${cls?.name || 'Klasse'} Level ${newLvl}
-          </span>
-          ${newPB > oldPB ? `<span class="detail-tag" style="background:rgba(34,197,94,0.15);border-color:#22c55e;color:#15803d;">
-            Kompetenzbonus: +${oldPB} → +${newPB}
-          </span>` : ''}
-          ${isASI ? `<span class="detail-tag" style="background:rgba(139,26,26,0.15);border-color:var(--blood);">
-            ASI oder Feat verfügbar!
-          </span>` : ''}
+  // ── Multiclass-Slot-Anzeige ───────────────────────────────────────────────
+  function renderMulticlassSlotInfo(classesArr, classesData, slotConfig) {
+    const { casterLevel, hasPact } = getCasterLevel(classesArr, classesData);
+    if (casterLevel === 0 && !hasPact) return '';
+
+    const slots = getMulticlassSlots(casterLevel, slotConfig);
+    if (!slots) return '';
+
+    const slotStr = slots.map((n,i) => n ? `${i+1}.Gr: ${n}` : '').filter(Boolean).join(' · ');
+    return `
+      <div style="background:rgba(139,26,26,0.08);border:1px solid rgba(139,26,26,0.2);
+        border-radius:6px;padding:8px 12px;margin-top:8px;">
+        <div style="font-family:var(--font-title);font-size:10px;color:var(--blood);
+          text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
+          ✨ Multiclass Spell Slots (Caster-Level ${casterLevel})
+        </div>
+        <div style="font-size:12px;color:var(--ink-light);">${slotStr}</div>
+        ${hasPact ? '<div style="font-size:11px;color:#8a7060;margin-top:3px;">+ Pakt-Slots (separat)</div>' : ''}
+      </div>
+    `;
+  }
+
+  // ── Hauptansicht ──────────────────────────────────────────────────────────
+  function renderLevelUpPanel() {
+    const container = document.getElementById('levelup-panel');
+    if (!container) return;
+
+    const char = Character.data;
+    const classes = char.classes || [];
+    const abilities = char.abilities || {};
+
+    // DnDData laden
+    const classesData = {};
+    DnDData.classes.forEach(c => classesData[c.id] = c);
+
+    const totalLevel = Character.getTotalLevel();
+    const profBonus  = Character.getProficiencyBonus();
+
+    container.innerHTML = `
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">⚔ Klassen & Level</div>
+
+        <!-- Aktuelle Klassen -->
+        <div id="mc-class-list" style="margin-bottom:12px;">
+          ${classes.length === 0
+            ? '<div style="color:#8a7060;font-style:italic;font-size:13px;">Noch keine Klasse gewählt</div>'
+            : classes.map((c, i) => renderClassRow(c, i, classesData, abilities, totalLevel)).join('')}
         </div>
 
-        <!-- Schritt 1: HP -->
-        <div class="lu-section" id="lu-hp-section">
-          <div class="lu-step">1</div>
-          <div style="flex:1;">
-            <div class="lu-title">Trefferpunkte</div>
-            <div style="font-size:13px;color:#8a7060;margin-bottom:8px;">
-              Würfle 1d${hitDie} + CON-Mod (${conMod>=0?'+':''}${conMod}) oder nimm den Durchschnitt
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button class="btn-primary" id="lu-roll-hp">
-                🎲 1d${hitDie} würfeln
-              </button>
-              <button class="btn-secondary" id="lu-avg-hp">
-                📊 Durchschnitt (+${avgHP} HP)
-              </button>
-            </div>
-            <div id="lu-hp-result" style="margin-top:8px;font-family:var(--font-title);font-size:14px;color:var(--blood);"></div>
+        <!-- Gesamt-Stats -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+          <div style="text-align:center;padding:8px 16px;background:rgba(255,255,255,0.5);
+            border:1px solid rgba(200,165,90,0.3);border-radius:6px;">
+            <div style="font-family:var(--font-title);font-size:9px;color:#8a7060;text-transform:uppercase;">Gesamtlevel</div>
+            <div style="font-family:var(--font-title);font-size:24px;font-weight:700;color:var(--ink);">${totalLevel}</div>
+          </div>
+          <div style="text-align:center;padding:8px 16px;background:rgba(255,255,255,0.5);
+            border:1px solid rgba(200,165,90,0.3);border-radius:6px;">
+            <div style="font-family:var(--font-title);font-size:9px;color:#8a7060;text-transform:uppercase;">Prof. Bonus</div>
+            <div style="font-family:var(--font-title);font-size:24px;font-weight:700;color:var(--gold);">+${profBonus}</div>
+          </div>
+          <div style="text-align:center;padding:8px 16px;background:rgba(255,255,255,0.5);
+            border:1px solid rgba(200,165,90,0.3);border-radius:6px;">
+            <div style="font-family:var(--font-title);font-size:9px;color:#8a7060;text-transform:uppercase;">HP Maximum</div>
+            <div style="font-family:var(--font-title);font-size:24px;font-weight:700;color:var(--blood-light);">${char.hp_max || '–'}</div>
           </div>
         </div>
 
-        <!-- Schritt 2: ASI / Feat -->
-        ${isASI ? `
-        <div class="lu-section" id="lu-asi-section">
-          <div class="lu-step">2</div>
-          <div style="flex:1;">
-            <div class="lu-title">Attributssteigerung oder Feat</div>
-            <div style="display:flex;gap:8px;margin-bottom:10px;">
-              <button class="btn-primary" id="lu-asi-btn">📈 Attribut steigern</button>
-              <button class="btn-secondary" id="lu-feat-btn">⭐ Feat wählen</button>
-            </div>
-            <div id="lu-asi-content"></div>
-          </div>
-        </div>` : ''}
+        ${renderMulticlassSlotInfo(classes, classesData, DnDData.slotConfig)}
 
-        <!-- Schritt 3: Neue Features -->
-        <div class="lu-section">
-          <div class="lu-step">${isASI ? 3 : 2}</div>
-          <div style="flex:1;">
-            <div class="lu-title">Neue Klassenmerkmale</div>
-            <div style="font-size:13px;color:#8a7060;margin-bottom:8px;">
-              Prüfe deine Klassen-Tabelle für neue Features auf Level ${newLvl}.
-              Füge sie manuell im Charakter-Tab hinzu.
-            </div>
-            ${cls?.subclasses?.length && newLvl === 3 ? `
-            <div style="background:rgba(201,150,42,0.1);border:1px solid var(--gold);border-radius:4px;padding:8px;margin-bottom:8px;">
-              <strong style="color:var(--gold);">🎓 Subklasse wählen!</strong>
-              <p style="font-size:12px;color:#8a7060;margin-top:4px;">
-                Auf Level 3 wählst du deine Subklasse. Gehe zum Tab "Klasse/Rasse" und wähle dort deine Subklasse aus.
-              </p>
-            </div>` : ''}
-            <div style="display:flex;gap:6px;flex-wrap:wrap;" id="lu-features-display">
-              ${(cls?.class_features?.filter(f => f.level === newLvl) || []).map(f => `
-                <span class="detail-tag">${f.name}</span>
-              `).join('') || '<span style="color:#8a7060;font-size:13px;font-style:italic;">Keine automatischen Features — prüfe dein Regelwerk</span>'}
-            </div>
-          </div>
-        </div>
-
-        <!-- Schritt 4: Spell Slots -->
-        <div class="lu-section">
-          <div class="lu-step">${isASI ? 4 : 3}</div>
-          <div style="flex:1;">
-            <div class="lu-title">Spell Slots & Zauber</div>
-            <div id="lu-spell-info" style="font-size:13px;color:#8a7060;"></div>
-          </div>
-        </div>
-
-        <!-- Fertig-Button -->
-        <div style="display:flex;gap:8px;margin-top:16px;">
-          <button class="btn-primary" id="lu-confirm" style="flex:1;">
-            ✅ Level Up abschließen (→ Level ${newLvl})
+        <!-- Buttons -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <button class="btn-primary" id="btn-levelup-existing" ${classes.length === 0 ? 'disabled' : ''}>
+            ⬆ Level aufsteigen
           </button>
-          <button class="btn-secondary" id="lu-cancel">Abbrechen</button>
+          <button class="btn-secondary" id="btn-multiclass-add" ${totalLevel >= 20 ? 'disabled' : ''}>
+            ➕ Neue Klasse hinzufügen
+          </button>
+          ${classes.length > 1 ? `
+          <button class="btn-secondary" id="btn-multiclass-remove">
+            ➖ Klasse entfernen
+          </button>` : ''}
         </div>
-        <div id="lu-error" style="color:var(--blood);font-size:12px;margin-top:6px;"></div>
+      </div>
+
+      <!-- Subklassen -->
+      <div class="card" id="mc-subclass-section">
+        <div class="card-title">🎓 Subklassen</div>
+        ${classes.length === 0
+          ? '<div style="color:#8a7060;font-style:italic;font-size:13px;">Erst eine Klasse wählen</div>'
+          : classes.map(c => renderSubclassSelector(c, classesData)).join('')}
+      </div>
+    `;
+
+    // Events
+    document.getElementById('btn-levelup-existing')?.addEventListener('click', showLevelUpExisting);
+    document.getElementById('btn-multiclass-add')?.addEventListener('click', showAddClass);
+    document.getElementById('btn-multiclass-remove')?.addEventListener('click', showRemoveClass);
+  }
+
+  function renderClassRow(c, idx, classesData, abilities, totalLevel) {
+    const cls = classesData[c.classId];
+    const hitDie = cls?.hit_die || 8;
+    const casterType = cls?.caster_type || 'none';
+    const casterLabel = {full:'Voller Zauberer',half:'Halber Zauberer',
+      third:'1/3 Zauberer',pact:'Pakt-Magie',none:'Nicht-Zauberer'}[casterType] || '';
+
+    return `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px;
+        background:rgba(255,255,255,0.5);border:1px solid rgba(200,165,90,0.3);
+        border-radius:6px;margin-bottom:6px;">
+        <div style="font-size:24px;">${cls?.icon || '⚔'}</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--font-title);font-size:14px;font-weight:700;color:var(--ink);">
+            ${cls?.name || c.classId}
+          </div>
+          <div style="font-size:12px;color:#8a7060;">
+            Level ${c.level} · d${hitDie} · ${casterLabel}
+          </div>
+        </div>
+        <div style="font-family:var(--font-title);font-size:28px;font-weight:800;color:var(--gold);">
+          ${c.level}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderSubclassSelector(c, classesData) {
+    const cls = classesData[c.classId];
+    if (!cls) return '';
+    const subclasses = cls.subclasses || [];
+    const scLevel = cls.subclass_level || 3;
+    const unlocked = c.level >= scLevel;
+
+    return `
+      <div style="margin-bottom:12px;">
+        <div style="font-family:var(--font-title);font-size:11px;color:var(--blood);
+          text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+          ${cls.icon || '⚔'} ${cls.name} — Subklasse
+          ${!unlocked ? `<span style="color:#8a7060;">(ab Level ${scLevel})</span>` : ''}
+        </div>
+        <select id="sc-select-${c.classId}" ${!unlocked ? 'disabled' : ''}
+          onchange="LevelUpUI.setSubclass('${c.classId}', this.value)"
+          style="width:100%;padding:8px;background:rgba(255,255,255,0.8);
+          border:1px solid rgba(200,165,90,0.4);border-radius:4px;
+          font-family:var(--font-title);font-size:12px;">
+          <option value="">– Keine Subklasse –</option>
+          ${subclasses.map(sc => `
+            <option value="${sc.id}" ${c.subclassId === sc.id ? 'selected' : ''}>
+              ${sc.name}
+            </option>`).join('')}
+        </select>
+      </div>
+    `;
+  }
+
+  // ── Level aufsteigen ──────────────────────────────────────────────────────
+  function showLevelUpExisting() {
+    const char = Character.data;
+    const classes = char.classes || [];
+    if (!classes.length) return;
+
+    const classesData = {};
+    DnDData.classes.forEach(c => classesData[c.id] = c);
+
+    const totalLevel = Character.getTotalLevel();
+    if (totalLevel >= 20) { showToast('⚠ Maximallevel 20 erreicht'); return; }
+
+    showModal('⬆ Level aufsteigen', `
+      <div style="font-size:13px;color:#8a7060;margin-bottom:12px;">
+        Gesamtlevel: ${totalLevel} → ${totalLevel + 1}
+      </div>
+
+      <div style="font-family:var(--font-title);font-size:11px;color:var(--blood);
+        text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
+        In welcher Klasse aufsteigen?
+      </div>
+
+      <div id="lu-class-options" style="display:flex;flex-direction:column;gap:6px;">
+        ${classes.map(c => {
+          const cls = classesData[c.classId];
+          const hitDie = cls?.hit_die || 8;
+          const conMod = Math.floor(((char.abilities?.con || 10) - 10) / 2);
+          const hpGain = `+1d${hitDie}+${conMod} HP`;
+          return `
+            <div class="lu-class-btn" data-classid="${c.classId}"
+              style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+              background:rgba(255,255,255,0.5);border:1px solid rgba(200,165,90,0.3);
+              border-radius:6px;cursor:pointer;transition:all 0.15s;">
+              <span style="font-size:22px;">${cls?.icon || '⚔'}</span>
+              <div style="flex:1;">
+                <div style="font-family:var(--font-title);font-size:13px;font-weight:700;">
+                  ${cls?.name} → Level ${c.level + 1}
+                </div>
+                <div style="font-size:11px;color:#8a7060;">${hpGain}</div>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+      <div id="lu-features" style="margin-top:10px;"></div>
+    `);
+
+    document.querySelectorAll('.lu-class-btn').forEach(btn => {
+      btn.addEventListener('mouseenter', () => btn.style.background = 'rgba(139,26,26,0.1)');
+      btn.addEventListener('mouseleave', () => btn.style.background = 'rgba(255,255,255,0.5)');
+      btn.addEventListener('click', () => performLevelUp(btn.dataset.classid, classesData));
+    });
+  }
+
+  function performLevelUp(classId, classesData) {
+    const char = Character.data;
+    const classes = char.classes || [];
+    const cIdx = classes.findIndex(c => c.classId === classId);
+    if (cIdx < 0) return;
+
+    const cls = classesData[classId];
+    const oldLevel = classes[cIdx].level;
+    const newLevel = oldLevel + 1;
+    classes[cIdx].level = newLevel;
+
+    // HP würfeln
+    const hitDie = cls?.hit_die || 8;
+    const conMod = Math.floor(((char.abilities?.con || 10) - 10) / 2);
+    const hpRoll = Math.floor(Math.random() * hitDie) + 1;
+    const hpGain = Math.max(1, hpRoll + conMod);
+    char.hp_max = (char.hp_max || 0) + hpGain;
+    char.hp_current = Math.min(char.hp_current || 0, char.hp_max);
+
+    // Kompatibilitäts-Felder aktualisieren
+    const primary = classes[0];
+    char.classId    = primary.classId;
+    char.level      = Character.getTotalLevel();
+    char.subclassId = primary.subclassId;
+    char.classes    = classes;
+
+    // Features für neues Level sammeln
+    const features = (cls?.features_detail || [])
+      .filter(f => f.level === newLevel)
+      .map(f => `${f.name}: ${f.description}`)
+      .slice(0, 3);
+
+    Character.save();
+    renderLevelUpPanel();
+    closeModal();
+
+    const rollInfo = `(W${hitDie}: ${hpRoll} + CON: ${conMod >= 0 ? '+' : ''}${conMod} = +${hpGain} HP)`;
+    showToast(`⬆ ${cls?.name} Level ${newLevel}! ${rollInfo}`);
+
+    if (features.length) {
+      setTimeout(() => showModal(`✨ Neue Features — ${cls?.name} ${newLevel}`, `
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${features.map(f => `
+            <div style="padding:8px 10px;background:rgba(201,150,42,0.05);
+              border:1px solid rgba(201,150,42,0.2);border-radius:4px;font-size:13px;
+              color:var(--ink);line-height:1.5;">${f}</div>
+          `).join('')}
+        </div>
+        <button class="btn-primary" onclick="closeModal()" style="width:100%;margin-top:10px;">Super!</button>
+      `), 300);
+    }
+  }
+
+  // ── Neue Klasse hinzufügen ────────────────────────────────────────────────
+  function showAddClass() {
+    const char = Character.data;
+    const abilities = char.abilities || {};
+    const existingClassIds = (char.classes || []).map(c => c.classId);
+    const classesData = {};
+    DnDData.classes.forEach(c => classesData[c.id] = c);
+
+    const available = DnDData.classes.filter(cls => !existingClassIds.includes(cls.id));
+
+    showModal('➕ Neue Klasse (Multiclassing)', `
+      <div style="font-size:12px;color:#8a7060;margin-bottom:12px;">
+        Wähle eine Klasse. Die Voraussetzungen müssen erfüllt sein.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;">
+        ${available.map(cls => {
+          const errors = checkMCRequirements(cls.id, abilities, classesData);
+          const ok = errors.length === 0;
+          return `
+            <div class="mc-add-btn" data-classid="${cls.id}" data-ok="${ok}"
+              style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+              background:${ok?'rgba(255,255,255,0.5)':'rgba(0,0,0,0.1)'};
+              border:1px solid ${ok?'rgba(200,165,90,0.3)':'rgba(0,0,0,0.1)'};
+              border-radius:6px;cursor:${ok?'pointer':'default'};opacity:${ok?1:0.5};">
+              <span style="font-size:22px;">${cls.icon || '⚔'}</span>
+              <div style="flex:1;">
+                <div style="font-family:var(--font-title);font-size:13px;font-weight:700;
+                  color:${ok?'var(--ink)':'#8a7060'};">${cls.name}</div>
+                <div style="font-size:11px;color:#8a7060;">
+                  ${ok ? `d${cls.hit_die} · ${cls.role || ''}` : `⚠ Voraussetzung: ${errors.join(', ')}`}
+                </div>
+              </div>
+              ${ok ? '<span style="color:var(--gold);font-size:16px;">›</span>' : ''}
+            </div>`;
+        }).join('')}
       </div>
     `);
 
-    let hpGain = 0;
-    let asiDone = !isASI; // wenn kein ASI, ist es "erledigt"
+    document.querySelectorAll('.mc-add-btn[data-ok="true"]').forEach(btn => {
+      btn.addEventListener('mouseenter', () => btn.style.background = 'rgba(139,26,26,0.1)');
+      btn.addEventListener('mouseleave', () => btn.style.background = 'rgba(255,255,255,0.5)');
+      btn.addEventListener('click', () => {
+        const classId = btn.dataset.classid;
+        const cls = classesData[classId];
+        const char = Character.data;
+        const conMod = Math.floor(((char.abilities?.con || 10) - 10) / 2);
+        const hp1 = Math.floor(Math.random() * (cls?.hit_die || 8)) + 1;
+        const hpGain = Math.max(1, hp1 + conMod);
 
-    // HP würfeln
-    document.getElementById('lu-roll-hp')?.addEventListener('click', () => {
-      const rolled = Math.floor(Math.random() * hitDie) + 1;
-      hpGain = Math.max(1, rolled + conMod);
-      document.getElementById('lu-hp-result').innerHTML =
-        `🎲 Gewürfelt: ${rolled} + CON ${conMod>=0?'+':''}${conMod} = <strong>+${hpGain} HP</strong>`;
-    });
+        char.classes = [...(char.classes || []), {
+          classId:    classId,
+          level:      1,
+          subclassId: null,
+        }];
+        char.hp_max     = (char.hp_max || 0) + hpGain;
+        char.level      = Character.getTotalLevel();
 
-    document.getElementById('lu-avg-hp')?.addEventListener('click', () => {
-      hpGain = avgHP;
-      document.getElementById('lu-hp-result').innerHTML =
-        `📊 Durchschnitt: +<strong>${hpGain} HP</strong>`;
-    });
-
-    // ASI
-    document.getElementById('lu-asi-btn')?.addEventListener('click', () => {
-      document.getElementById('lu-asi-content').innerHTML = `
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
-          ${['str','dex','con','int','wis','cha'].map(ab => {
-            const cur = char.abilities?.[ab] || 10;
-            const labels = {str:'Stärke',dex:'Geschick',con:'Konstitution',int:'Intelligenz',wis:'Weisheit',cha:'Charisma'};
-            return `
-              <div style="background:rgba(255,255,255,0.5);border:1px solid rgba(200,165,90,0.3);border-radius:4px;padding:8px;text-align:center;">
-                <div style="font-family:var(--font-title);font-size:9px;color:var(--blood);margin-bottom:3px;">${labels[ab]}</div>
-                <div style="font-family:var(--font-title);font-size:16px;font-weight:700;">${cur}</div>
-                <div style="display:flex;justify-content:center;gap:4px;margin-top:4px;">
-                  <button class="cs-btn cs-plus lu-asi-plus" data-ab="${ab}" data-cur="${cur}"
-                    ${cur >= 20 ? 'disabled style="opacity:0.3;"' : ''}>+</button>
-                </div>
-              </div>`;
-          }).join('')}
-        </div>
-        <div style="font-size:12px;color:#8a7060;margin-top:6px;" id="lu-asi-note">
-          Du kannst 2 verschiedene Attribute um je +1 oder ein Attribut um +2 steigern (max 20).
-        </div>
-      `;
-
-      let points = 2;
-      const pending = {};
-
-      document.querySelectorAll('.lu-asi-plus').forEach(btn => {
-        btn.addEventListener('click', () => {
-          if (points <= 0) { showToast('⚠ Keine Punkte mehr übrig'); return; }
-          const ab  = btn.dataset.ab;
-          const cur = parseInt(btn.dataset.cur) + (pending[ab] || 0);
-          if (cur >= 20) { showToast('⚠ Maximum ist 20'); return; }
-          pending[ab] = (pending[ab] || 0) + 1;
-          points--;
-          btn.dataset.cur = String(parseInt(btn.dataset.cur) + 1);
-          btn.closest('div').querySelector('div:nth-child(2)').textContent =
-            char.abilities?.[ab] + (pending[ab] || 0);
-          document.getElementById('lu-asi-note').textContent =
-            `${points} Punkt${points!==1?'e':''} verbleibend`;
-          if (points === 0) {
-            asiDone = true;
-            // Pending in pendingASI speichern
-            document.getElementById('lu-asi-btn').dataset.pending = JSON.stringify(pending);
-          }
-        });
+        Character.save();
+        renderLevelUpPanel();
+        closeModal();
+        showToast(`✅ ${cls?.name} Level 1 hinzugefügt! (+${hpGain} HP)`);
       });
     });
+  }
 
-    // Feat wählen
-    document.getElementById('lu-feat-btn')?.addEventListener('click', () => {
-      const feats = DnDData.feats || [];
-      document.getElementById('lu-asi-content').innerHTML = `
-        <div style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;">
-          ${feats.map(f => `
-            <div class="lu-feat-option" data-feat="${f.id}"
-              style="padding:6px 10px;background:rgba(255,255,255,0.5);border:1px solid rgba(200,165,90,0.3);
-                border-radius:4px;cursor:pointer;transition:all 0.15s;">
-              <div style="font-family:var(--font-title);font-size:12px;color:var(--blood);">${f.name}</div>
-              <div style="font-size:11px;color:#8a7060;">${(f.description||'').slice(0,80)}…</div>
-            </div>
-          `).join('')}
-        </div>
-        <div id="lu-feat-selected" style="font-size:12px;color:#8a7060;margin-top:6px;font-style:italic;">
-          Klicke auf einen Feat um ihn auszuwählen
-        </div>
-      `;
+  // ── Klasse entfernen ──────────────────────────────────────────────────────
+  function showRemoveClass() {
+    const char = Character.data;
+    const classes = char.classes || [];
+    if (classes.length <= 1) { showToast('⚠ Mindestens eine Klasse erforderlich'); return; }
+    const classesData = {};
+    DnDData.classes.forEach(c => classesData[c.id] = c);
 
-      document.querySelectorAll('.lu-feat-option').forEach(el => {
-        el.addEventListener('click', () => {
-          document.querySelectorAll('.lu-feat-option').forEach(e => e.style.borderColor = 'rgba(200,165,90,0.3)');
-          el.style.borderColor = 'var(--gold)';
-          el.style.background  = 'rgba(201,150,42,0.1)';
-          document.getElementById('lu-feat-selected').textContent = '✅ Gewählt: ' + el.querySelector('div').textContent;
-          document.getElementById('lu-feat-btn').dataset.featId = el.dataset.feat;
-          asiDone = true;
-        });
+    // Nur nicht-primäre Klassen entfernbar
+    const removable = classes.slice(1);
+
+    showModal('➖ Klasse entfernen', `
+      <div style="font-size:12px;color:#8a7060;margin-bottom:12px;">
+        ⚠ Die primäre Klasse (${classesData[classes[0].classId]?.name}) kann nicht entfernt werden.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${removable.map(c => {
+          const cls = classesData[c.classId];
+          return `
+            <div class="mc-remove-btn" data-classid="${c.classId}"
+              style="display:flex;align-items:center;gap:10px;padding:10px;
+              background:rgba(139,26,26,0.05);border:1px solid rgba(139,26,26,0.2);
+              border-radius:6px;cursor:pointer;">
+              <span style="font-size:22px;">${cls?.icon || '⚔'}</span>
+              <div style="flex:1;">
+                <div style="font-family:var(--font-title);font-size:13px;">${cls?.name} Level ${c.level}</div>
+              </div>
+              <span style="color:var(--blood);font-size:18px;">✕</span>
+            </div>`;
+        }).join('')}
+      </div>
+    `);
+
+    document.querySelectorAll('.mc-remove-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!confirm('Klasse wirklich entfernen?')) return;
+        const classId = btn.dataset.classid;
+        const cls = classesData[classId];
+        const removed = char.classes.find(c => c.classId === classId);
+        const hitDie = cls?.hit_die || 8;
+        const conMod = Math.floor(((char.abilities?.con || 10) - 10) / 2);
+        const avgHP = Math.ceil(hitDie/2) * (removed?.level || 1);
+
+        char.classes = char.classes.filter(c => c.classId !== classId);
+        char.hp_max  = Math.max(1, (char.hp_max || 10) - avgHP);
+        char.level   = Character.getTotalLevel();
+        char.classId = char.classes[0]?.classId;
+
+        Character.save();
+        renderLevelUpPanel();
+        closeModal();
+        showToast(`✅ ${cls?.name} entfernt`);
       });
     });
+  }
 
-    // Spell-Info
-    const spellInfo = document.getElementById('lu-spell-info');
-    if (spellInfo) {
-      const slots = DnDData.spellSlots;
-      const CASTER = {bard:'full_caster',cleric:'full_caster',druid:'full_caster',
-        sorcerer:'full_caster',wizard:'full_caster',paladin:'half_caster',ranger:'half_caster',
-        artificer:'artificer',warlock:'warlock'};
-      const cType = CASTER[char.classId];
-      if (cType && slots[cType]) {
-        const newSlots = slots[cType][String(newLvl)];
-        const oldSlots = slots[cType][String(oldLvl)];
-        if (newSlots && oldSlots) {
-          const added = Array.isArray(newSlots)
-            ? newSlots.map((n,i) => n - (oldSlots[i]||0)).filter(d=>d>0)
-            : null;
-          spellInfo.innerHTML = added?.length
-            ? `Neue Slots hinzugekommen: ${added.map((d,i)=>d>0?`+${d} (Grad ${i+1})`:'').filter(Boolean).join(', ')}`
-            : 'Keine neuen Spell Slots auf diesem Level.';
-        } else {
-          spellInfo.textContent = 'Prüfe deine Klassen-Tabelle für neue Spell Slots.';
-        }
-      } else {
-        spellInfo.textContent = 'Diese Klasse hat keine Spell Slots.';
-      }
-    }
-
-    // Level Up bestätigen
-    document.getElementById('lu-confirm')?.addEventListener('click', () => {
-      const errEl = document.getElementById('lu-error');
-      if (hpGain <= 0) { errEl.textContent = '❌ Bitte zuerst HP würfeln oder Durchschnitt wählen'; return; }
-
-      const updates = {
-        level:   newLvl,
-        hp_max:  (parseInt(char.hp_max) || 0) + hpGain,
-        hp_current: (parseInt(char.hp_current) || 0) + hpGain,
-      };
-
-      // ASI anwenden
-      const asiBtn = document.getElementById('lu-asi-btn');
-      if (asiBtn?.dataset.pending) {
-        try {
-          const pending = JSON.parse(asiBtn.dataset.pending);
-          const newAbilities = { ...(char.abilities || {}) };
-          Object.entries(pending).forEach(([ab, add]) => {
-            newAbilities[ab] = Math.min(20, (newAbilities[ab] || 10) + add);
-          });
-          updates.abilities = newAbilities;
-        } catch {}
-      }
-
-      // Feat anwenden
-      const featBtn = document.getElementById('lu-feat-btn');
-      if (featBtn?.dataset.featId) {
-        const featIds = [...(char.featIds || [])];
-        if (!featIds.includes(featBtn.dataset.featId)) featIds.push(featBtn.dataset.featId);
-        updates.featIds = featIds;
-      }
-
-      Character.update(updates);
+  // ── Subklasse setzen ──────────────────────────────────────────────────────
+  function setSubclass(classId, subclassId) {
+    const char = Character.data;
+    const c = (char.classes || []).find(c => c.classId === classId);
+    if (c) {
+      c.subclassId = subclassId || null;
+      // Kompatibilität: primäre Klasse
+      if (char.classes[0]?.classId === classId) char.subclassId = subclassId || null;
       Character.save();
-
-      // UI aktualisieren
-      document.getElementById('char-level')?.dispatchEvent(new Event('change'));
-      SpellSlotUI.renderSpellSlots();
-      CombatUI.update();
-
-      closeModal();
-      showToast(`🎉 Herzlichen Glückwunsch! ${cls?.name || 'Charakter'} ist jetzt Level ${newLvl}!`);
-    });
-
-    document.getElementById('lu-cancel')?.addEventListener('click', closeModal);
+      showToast(`✅ Subklasse gesetzt`);
+    }
   }
 
   function init() {
-    // Level-Up Button neben Level-Feld
-    const levelInput = document.getElementById('char-level');
-    if (!levelInput) return;
-
-    let btn = document.getElementById('btn-levelup');
-    if (!btn) {
-      btn = document.createElement('button');
-      btn.id = 'btn-levelup';
-      btn.className = 'btn-secondary';
-      btn.style.cssText = 'font-size:11px;padding:4px 10px;margin-left:6px;';
-      btn.title = 'Level Up Assistent';
-      btn.textContent = '⬆ Level Up';
-      levelInput.parentNode.appendChild(btn);
+    // Beim ersten Render: bestehende Charaktere migrieren
+    if (Character.data && !Character.data.classes) {
+      Character.migrateToMulticlass(Character.data);
     }
-    btn.addEventListener('click', show);
+    renderLevelUpPanel();
   }
 
-  return { init, show };
+  return { init, renderLevelUpPanel, setSubclass };
 })();
 
 window.LevelUpUI = LevelUpUI;

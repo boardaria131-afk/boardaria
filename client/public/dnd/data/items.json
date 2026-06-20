@@ -1,664 +1,4356 @@
 {
   "items": [
     {
-      "id": "longsword", "name": "Longsword", "type": "Weapon", "rarity": "Common",
-      "weight": "3 lb.", "cost": "15 gp", "damage": "1d8 slashing",
-      "properties": ["Versatile (1d10)"],
+      "id": "longsword",
+      "name": "Longsword",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "15 gp",
+      "damage": "1d8 slashing",
+      "properties": [
+        "Versatile (1d10)"
+      ],
       "description": "A versatile sword for one or two hands. Tempered steel blade, iron crossguard."
     },
     {
-      "id": "shortsword", "name": "Shortsword", "type": "Weapon", "rarity": "Common",
-      "weight": "2 lb.", "cost": "10 gp", "damage": "1d6 piercing",
-      "properties": ["Finesse", "Light"],
+      "id": "shortsword",
+      "name": "Shortsword",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "10 gp",
+      "damage": "1d6 piercing",
+      "properties": [
+        "Finesse",
+        "Light"
+      ],
       "description": "A light, finesse blade favored by rogues and duelists."
     },
     {
-      "id": "greatsword", "name": "Greatsword", "type": "Weapon", "rarity": "Common",
-      "weight": "6 lb.", "cost": "50 gp", "damage": "2d6 slashing",
-      "properties": ["Heavy", "Two-Handed"],
+      "id": "greatsword",
+      "name": "Greatsword",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "6 lb.",
+      "cost": "50 gp",
+      "damage": "2d6 slashing",
+      "properties": [
+        "Heavy",
+        "Two-Handed"
+      ],
       "description": "A massive two-handed sword capable of devastating cuts."
     },
     {
-      "id": "greataxe", "name": "Greataxe", "type": "Weapon", "rarity": "Common",
-      "weight": "7 lb.", "cost": "30 gp", "damage": "1d12 slashing",
-      "properties": ["Heavy", "Two-Handed"],
+      "id": "greataxe",
+      "name": "Greataxe",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "7 lb.",
+      "cost": "30 gp",
+      "damage": "1d12 slashing",
+      "properties": [
+        "Heavy",
+        "Two-Handed"
+      ],
       "description": "A massive two-handed axe. Preferred by barbarians and berserkers."
     },
     {
-      "id": "handaxe", "name": "Handaxe", "type": "Weapon", "rarity": "Common",
-      "weight": "2 lb.", "cost": "5 gp", "damage": "1d6 slashing",
-      "properties": ["Light", "Thrown (20/60)"],
+      "id": "handaxe",
+      "name": "Handaxe",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "5 gp",
+      "damage": "1d6 slashing",
+      "properties": [
+        "Light",
+        "Thrown (20/60)"
+      ],
       "description": "A small axe designed for melee or throwing."
     },
     {
-      "id": "battleaxe", "name": "Battleaxe", "type": "Weapon", "rarity": "Common",
-      "weight": "4 lb.", "cost": "10 gp", "damage": "1d8 slashing",
-      "properties": ["Versatile (1d10)"],
+      "id": "battleaxe",
+      "name": "Battleaxe",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "4 lb.",
+      "cost": "10 gp",
+      "damage": "1d8 slashing",
+      "properties": [
+        "Versatile (1d10)"
+      ],
       "description": "A single-headed axe, versatile for one or two hands."
     },
     {
-      "id": "dagger", "name": "Dagger", "type": "Weapon", "rarity": "Common",
-      "weight": "1 lb.", "cost": "2 gp", "damage": "1d4 piercing",
-      "properties": ["Finesse", "Light", "Thrown (20/60)"],
+      "id": "dagger",
+      "name": "Dagger",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "2 gp",
+      "damage": "1d4 piercing",
+      "properties": [
+        "Finesse",
+        "Light",
+        "Thrown (20/60)"
+      ],
       "description": "A simple blade easily concealed. Can be thrown."
     },
     {
-      "id": "rapier", "name": "Rapier", "type": "Weapon", "rarity": "Common",
-      "weight": "2 lb.", "cost": "25 gp", "damage": "1d8 piercing",
-      "properties": ["Finesse"],
+      "id": "rapier",
+      "name": "Rapier",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "25 gp",
+      "damage": "1d8 piercing",
+      "properties": [
+        "Finesse"
+      ],
       "description": "An elegant thrusting sword favored by duelists."
     },
     {
-      "id": "scimitar", "name": "Scimitar", "type": "Weapon", "rarity": "Common",
-      "weight": "3 lb.", "cost": "25 gp", "damage": "1d6 slashing",
-      "properties": ["Finesse", "Light"],
+      "id": "scimitar",
+      "name": "Scimitar",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "25 gp",
+      "damage": "1d6 slashing",
+      "properties": [
+        "Finesse",
+        "Light"
+      ],
       "description": "A curved sword with a single sharp edge."
     },
     {
-      "id": "warhammer", "name": "Warhammer", "type": "Weapon", "rarity": "Common",
-      "weight": "2 lb.", "cost": "15 gp", "damage": "1d8 bludgeoning",
-      "properties": ["Versatile (1d10)"],
+      "id": "warhammer",
+      "name": "Warhammer",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "15 gp",
+      "damage": "1d8 bludgeoning",
+      "properties": [
+        "Versatile (1d10)"
+      ],
       "description": "A sturdy hammer designed for battle, versatile one or two-handed."
     },
     {
-      "id": "maul", "name": "Maul", "type": "Weapon", "rarity": "Common",
-      "weight": "10 lb.", "cost": "10 gp", "damage": "2d6 bludgeoning",
-      "properties": ["Heavy", "Two-Handed"],
+      "id": "maul",
+      "name": "Maul",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "10 lb.",
+      "cost": "10 gp",
+      "damage": "2d6 bludgeoning",
+      "properties": [
+        "Heavy",
+        "Two-Handed"
+      ],
       "description": "A massive two-handed hammer that crushes armor and bone."
     },
     {
-      "id": "flail", "name": "Flail", "type": "Weapon", "rarity": "Common",
-      "weight": "2 lb.", "cost": "10 gp", "damage": "1d8 bludgeoning",
+      "id": "flail",
+      "name": "Flail",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "10 gp",
+      "damage": "1d8 bludgeoning",
       "properties": [],
       "description": "A handle with a spiked ball attached by a chain."
     },
     {
-      "id": "morningstar", "name": "Morningstar", "type": "Weapon", "rarity": "Common",
-      "weight": "4 lb.", "cost": "15 gp", "damage": "1d8 piercing",
+      "id": "morningstar",
+      "name": "Morningstar",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "4 lb.",
+      "cost": "15 gp",
+      "damage": "1d8 piercing",
       "properties": [],
       "description": "A spiked ball on a handle combining piercing and bludgeoning."
     },
     {
-      "id": "glaive", "name": "Glaive", "type": "Weapon", "rarity": "Common",
-      "weight": "6 lb.", "cost": "20 gp", "damage": "1d10 slashing",
-      "properties": ["Heavy", "Reach", "Two-Handed"],
+      "id": "glaive",
+      "name": "Glaive",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "6 lb.",
+      "cost": "20 gp",
+      "damage": "1d10 slashing",
+      "properties": [
+        "Heavy",
+        "Reach",
+        "Two-Handed"
+      ],
       "description": "A blade on a long pole, granting 10 ft reach."
     },
     {
-      "id": "halberd", "name": "Halberd", "type": "Weapon", "rarity": "Common",
-      "weight": "6 lb.", "cost": "20 gp", "damage": "1d10 slashing",
-      "properties": ["Heavy", "Reach", "Two-Handed"],
+      "id": "halberd",
+      "name": "Halberd",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "6 lb.",
+      "cost": "20 gp",
+      "damage": "1d10 slashing",
+      "properties": [
+        "Heavy",
+        "Reach",
+        "Two-Handed"
+      ],
       "description": "An axe-blade and spike on a long pole. 10 ft reach."
     },
     {
-      "id": "pike", "name": "Pike", "type": "Weapon", "rarity": "Common",
-      "weight": "18 lb.", "cost": "5 gp", "damage": "1d10 piercing",
-      "properties": ["Heavy", "Reach", "Two-Handed"],
+      "id": "pike",
+      "name": "Pike",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "18 lb.",
+      "cost": "5 gp",
+      "damage": "1d10 piercing",
+      "properties": [
+        "Heavy",
+        "Reach",
+        "Two-Handed"
+      ],
       "description": "A long thrusting spear. 10 ft reach."
     },
     {
-      "id": "spear", "name": "Spear", "type": "Weapon", "rarity": "Common",
-      "weight": "3 lb.", "cost": "1 gp", "damage": "1d6 piercing",
-      "properties": ["Thrown (20/60)", "Versatile (1d8)"],
+      "id": "spear",
+      "name": "Spear",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "1 gp",
+      "damage": "1d6 piercing",
+      "properties": [
+        "Thrown (20/60)",
+        "Versatile (1d8)"
+      ],
       "description": "A simple thrusting weapon, can be thrown."
     },
     {
-      "id": "quarterstaff", "name": "Quarterstaff", "type": "Weapon", "rarity": "Common",
-      "weight": "4 lb.", "cost": "2 sp", "damage": "1d6 bludgeoning",
-      "properties": ["Versatile (1d8)"],
+      "id": "quarterstaff",
+      "name": "Quarterstaff",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "4 lb.",
+      "cost": "2 sp",
+      "damage": "1d6 bludgeoning",
+      "properties": [
+        "Versatile (1d8)"
+      ],
       "description": "A wooden staff, versatile weapon for monks and druids."
     },
     {
-      "id": "club", "name": "Club", "type": "Weapon", "rarity": "Common",
-      "weight": "2 lb.", "cost": "1 sp", "damage": "1d4 bludgeoning",
-      "properties": ["Light"],
+      "id": "club",
+      "name": "Club",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "1 sp",
+      "damage": "1d4 bludgeoning",
+      "properties": [
+        "Light"
+      ],
       "description": "A simple wooden club. Light weapon."
     },
     {
-      "id": "whip", "name": "Whip", "type": "Weapon", "rarity": "Common",
-      "weight": "3 lb.", "cost": "2 gp", "damage": "1d4 slashing",
-      "properties": ["Finesse", "Reach"],
+      "id": "whip",
+      "name": "Whip",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "2 gp",
+      "damage": "1d4 slashing",
+      "properties": [
+        "Finesse",
+        "Reach"
+      ],
       "description": "A flexible weapon granting 10 ft reach. Finesse."
     },
     {
-      "id": "longbow", "name": "Longbow", "type": "Weapon", "rarity": "Common",
-      "weight": "2 lb.", "cost": "50 gp", "damage": "1d8 piercing",
-      "properties": ["Ammunition (150/600)", "Heavy", "Two-Handed"],
+      "id": "longbow",
+      "name": "Longbow",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "50 gp",
+      "damage": "1d8 piercing",
+      "properties": [
+        "Ammunition (150/600)",
+        "Heavy",
+        "Two-Handed"
+      ],
       "description": "A tall bow capable of launching arrows at great distance."
     },
     {
-      "id": "shortbow", "name": "Shortbow", "type": "Weapon", "rarity": "Common",
-      "weight": "2 lb.", "cost": "25 gp", "damage": "1d6 piercing",
-      "properties": ["Ammunition (80/320)", "Two-Handed"],
+      "id": "shortbow",
+      "name": "Shortbow",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "25 gp",
+      "damage": "1d6 piercing",
+      "properties": [
+        "Ammunition (80/320)",
+        "Two-Handed"
+      ],
       "description": "A smaller bow, easier to use in confined spaces."
     },
     {
-      "id": "hand_crossbow", "name": "Hand Crossbow", "type": "Weapon", "rarity": "Common",
-      "weight": "3 lb.", "cost": "75 gp", "damage": "1d6 piercing",
-      "properties": ["Ammunition (30/120)", "Light", "Loading"],
+      "id": "hand_crossbow",
+      "name": "Hand Crossbow",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "75 gp",
+      "damage": "1d6 piercing",
+      "properties": [
+        "Ammunition (30/120)",
+        "Light",
+        "Loading"
+      ],
       "description": "A compact crossbow that can be wielded in one hand."
     },
     {
-      "id": "heavy_crossbow", "name": "Heavy Crossbow", "type": "Weapon", "rarity": "Common",
-      "weight": "18 lb.", "cost": "50 gp", "damage": "1d10 piercing",
-      "properties": ["Ammunition (100/400)", "Heavy", "Loading", "Two-Handed"],
+      "id": "heavy_crossbow",
+      "name": "Heavy Crossbow",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "18 lb.",
+      "cost": "50 gp",
+      "damage": "1d10 piercing",
+      "properties": [
+        "Ammunition (100/400)",
+        "Heavy",
+        "Loading",
+        "Two-Handed"
+      ],
       "description": "A powerful crossbow with devastating bolt force."
     },
     {
-      "id": "net", "name": "Net", "type": "Weapon", "rarity": "Common",
-      "weight": "3 lb.", "cost": "1 gp", "damage": "–",
-      "properties": ["Thrown (5/15)", "Special"],
+      "id": "net",
+      "name": "Net",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "1 gp",
+      "damage": "–",
+      "properties": [
+        "Thrown (5/15)",
+        "Special"
+      ],
       "description": "A large net thrown at a creature. On hit: restrained. STR DC 10 to escape."
     },
     {
-      "id": "leather_armor", "name": "Leather Armor", "type": "Armor", "rarity": "Common",
-      "weight": "10 lb.", "cost": "10 gp", "ac": "11 + DEX",
-      "properties": ["Light Armor"],
+      "id": "leather_armor",
+      "name": "Leather Armor",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "10 lb.",
+      "cost": "10 gp",
+      "ac": "11 + DEX",
+      "properties": [
+        "Light Armor"
+      ],
       "description": "Boiled leather breastplate and shoulder guards. Most basic protection."
     },
     {
-      "id": "studded_leather", "name": "Studded Leather", "type": "Armor", "rarity": "Common",
-      "weight": "13 lb.", "cost": "45 gp", "ac": "12 + DEX",
-      "properties": ["Light Armor"],
+      "id": "studded_leather",
+      "name": "Studded Leather",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "13 lb.",
+      "cost": "45 gp",
+      "ac": "12 + DEX",
+      "properties": [
+        "Light Armor"
+      ],
       "description": "Leather reinforced with close-set rivets. Favored by rogues."
     },
     {
-      "id": "hide_armor", "name": "Hide Armor", "type": "Armor", "rarity": "Common",
-      "weight": "12 lb.", "cost": "10 gp", "ac": "12 + DEX (max 2)",
-      "properties": ["Medium Armor"],
+      "id": "hide_armor",
+      "name": "Hide Armor",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "12 lb.",
+      "cost": "10 gp",
+      "ac": "12 + DEX (max 2)",
+      "properties": [
+        "Medium Armor"
+      ],
       "description": "Crude armor from thick animal hides. Common among barbarian tribes."
     },
     {
-      "id": "chain_shirt", "name": "Chain Shirt", "type": "Armor", "rarity": "Common",
-      "weight": "20 lb.", "cost": "50 gp", "ac": "13 + DEX (max 2)",
-      "properties": ["Medium Armor"],
+      "id": "chain_shirt",
+      "name": "Chain Shirt",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "20 lb.",
+      "cost": "50 gp",
+      "ac": "13 + DEX (max 2)",
+      "properties": [
+        "Medium Armor"
+      ],
       "description": "A shirt of interlocking metal rings worn under outer clothing."
     },
     {
-      "id": "scale_mail", "name": "Scale Mail", "type": "Armor", "rarity": "Common",
-      "weight": "45 lb.", "cost": "50 gp", "ac": "14 + DEX (max 2)",
-      "properties": ["Medium Armor", "Stealth Disadvantage"],
+      "id": "scale_mail",
+      "name": "Scale Mail",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "45 lb.",
+      "cost": "50 gp",
+      "ac": "14 + DEX (max 2)",
+      "properties": [
+        "Medium Armor",
+        "Stealth Disadvantage"
+      ],
       "description": "Coat and leggings of overlapping metal scales over padding."
     },
     {
-      "id": "breastplate", "name": "Breastplate", "type": "Armor", "rarity": "Common",
-      "weight": "20 lb.", "cost": "400 gp", "ac": "14 + DEX (max 2)",
-      "properties": ["Medium Armor"],
+      "id": "breastplate",
+      "name": "Breastplate",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "20 lb.",
+      "cost": "400 gp",
+      "ac": "14 + DEX (max 2)",
+      "properties": [
+        "Medium Armor"
+      ],
       "description": "A fitted metal chest piece, comfortable enough to avoid stealth penalties."
     },
     {
-      "id": "half_plate", "name": "Half Plate", "type": "Armor", "rarity": "Common",
-      "weight": "40 lb.", "cost": "750 gp", "ac": "15 + DEX (max 2)",
-      "properties": ["Medium Armor", "Stealth Disadvantage"],
+      "id": "half_plate",
+      "name": "Half Plate",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "40 lb.",
+      "cost": "750 gp",
+      "ac": "15 + DEX (max 2)",
+      "properties": [
+        "Medium Armor",
+        "Stealth Disadvantage"
+      ],
       "description": "Metal plates covering most of the body. Leaves legs relatively unprotected."
     },
     {
-      "id": "ring_mail", "name": "Ring Mail", "type": "Armor", "rarity": "Common",
-      "weight": "40 lb.", "cost": "30 gp", "ac": "14",
-      "properties": ["Heavy Armor", "Stealth Disadvantage"],
+      "id": "ring_mail",
+      "name": "Ring Mail",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "40 lb.",
+      "cost": "30 gp",
+      "ac": "14",
+      "properties": [
+        "Heavy Armor",
+        "Stealth Disadvantage"
+      ],
       "description": "Leather with heavy rings sewn on. Inferior to chain mail."
     },
     {
-      "id": "chain_mail", "name": "Chain Mail", "type": "Armor", "rarity": "Common",
-      "weight": "55 lb.", "cost": "75 gp", "ac": "16",
-      "properties": ["Heavy Armor", "Str 13 required", "Stealth Disadvantage"],
+      "id": "chain_mail",
+      "name": "Chain Mail",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "55 lb.",
+      "cost": "75 gp",
+      "ac": "16",
+      "properties": [
+        "Heavy Armor",
+        "Str 13 required",
+        "Stealth Disadvantage"
+      ],
       "description": "Interlocking metal rings. Standard armor for many fighters and clerics."
     },
     {
-      "id": "splint_armor", "name": "Splint Armor", "type": "Armor", "rarity": "Common",
-      "weight": "60 lb.", "cost": "200 gp", "ac": "17",
-      "properties": ["Heavy Armor", "Str 15 required", "Stealth Disadvantage"],
+      "id": "splint_armor",
+      "name": "Splint Armor",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "60 lb.",
+      "cost": "200 gp",
+      "ac": "17",
+      "properties": [
+        "Heavy Armor",
+        "Str 15 required",
+        "Stealth Disadvantage"
+      ],
       "description": "Narrow vertical strips of metal riveted to backing of leather and chain mail."
     },
     {
-      "id": "plate_armor", "name": "Plate Armor", "type": "Armor", "rarity": "Common",
-      "weight": "65 lb.", "cost": "1500 gp", "ac": "18",
-      "properties": ["Heavy Armor", "Str 15 required", "Stealth Disadvantage"],
+      "id": "plate_armor",
+      "name": "Plate Armor",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "65 lb.",
+      "cost": "1500 gp",
+      "ac": "18",
+      "properties": [
+        "Heavy Armor",
+        "Str 15 required",
+        "Stealth Disadvantage"
+      ],
       "description": "Interlocking metal plates covering the entire body. The best non-magical armor."
     },
     {
-      "id": "shield", "name": "Shield", "type": "Armor", "rarity": "Common",
-      "weight": "6 lb.", "cost": "10 gp", "ac": "+2",
-      "properties": ["Shield"],
+      "id": "shield",
+      "name": "Shield",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "6 lb.",
+      "cost": "10 gp",
+      "ac": "+2",
+      "properties": [
+        "Shield"
+      ],
       "description": "A wood or metal shield carried in one hand. +2 AC."
     },
     {
-      "id": "potion_healing", "name": "Potion of Healing", "type": "Potion", "rarity": "Common",
-      "weight": "0.5 lb.", "cost": "50 gp", "effect": "Heals 2d4+2 HP",
-      "properties": ["Consumable"],
+      "id": "potion_healing",
+      "name": "Potion of Healing",
+      "type": "Potion",
+      "rarity": "Common",
+      "weight": "0.5 lb.",
+      "cost": "50 gp",
+      "effect": "Heals 2d4+2 HP",
+      "properties": [
+        "Consumable"
+      ],
       "description": "A vial of magical red fluid. Drinking takes an action. Heals 2d4+2 hit points."
     },
     {
-      "id": "potion_greater_healing", "name": "Potion of Greater Healing", "type": "Potion", "rarity": "Uncommon",
-      "weight": "0.5 lb.", "cost": "150 gp", "effect": "Heals 4d4+4 HP",
-      "properties": ["Consumable"],
+      "id": "potion_greater_healing",
+      "name": "Potion of Greater Healing",
+      "type": "Potion",
+      "rarity": "Uncommon",
+      "weight": "0.5 lb.",
+      "cost": "150 gp",
+      "effect": "Heals 4d4+4 HP",
+      "properties": [
+        "Consumable"
+      ],
       "description": "A potent healing potion glowing with vibrant red light. Heals 4d4+4 HP."
     },
     {
-      "id": "potion_superior_healing", "name": "Potion of Superior Healing", "type": "Potion", "rarity": "Rare",
-      "weight": "0.5 lb.", "cost": "450 gp", "effect": "Heals 8d4+8 HP",
-      "properties": ["Consumable"],
+      "id": "potion_superior_healing",
+      "name": "Potion of Superior Healing",
+      "type": "Potion",
+      "rarity": "Rare",
+      "weight": "0.5 lb.",
+      "cost": "450 gp",
+      "effect": "Heals 8d4+8 HP",
+      "properties": [
+        "Consumable"
+      ],
       "description": "A gleaming orange potion. Heals 8d4+8 hit points."
     },
     {
-      "id": "potion_supreme_healing", "name": "Potion of Supreme Healing", "type": "Potion", "rarity": "Very Rare",
-      "weight": "0.5 lb.", "cost": "1350 gp", "effect": "Heals 10d4+20 HP",
-      "properties": ["Consumable"],
+      "id": "potion_supreme_healing",
+      "name": "Potion of Supreme Healing",
+      "type": "Potion",
+      "rarity": "Very Rare",
+      "weight": "0.5 lb.",
+      "cost": "1350 gp",
+      "effect": "Heals 10d4+20 HP",
+      "properties": [
+        "Consumable"
+      ],
       "description": "A brilliant red potion. Heals 10d4+20 hit points."
     },
     {
-      "id": "potion_poison", "name": "Potion of Poison", "type": "Potion", "rarity": "Uncommon",
-      "weight": "0.5 lb.", "cost": "100 gp", "effect": "3d6 poison dmg, poisoned condition",
-      "properties": ["Consumable"],
+      "id": "potion_poison",
+      "name": "Potion of Poison",
+      "type": "Potion",
+      "rarity": "Uncommon",
+      "weight": "0.5 lb.",
+      "cost": "100 gp",
+      "effect": "3d6 poison dmg, poisoned condition",
+      "properties": [
+        "Consumable"
+      ],
       "description": "Looks like a healing potion. CON save DC 13 or 3d6 poison damage and poisoned for 1 hour."
     },
     {
-      "id": "potion_giant_strength", "name": "Potion of Giant Strength (Hill)", "type": "Potion", "rarity": "Uncommon",
-      "weight": "0.5 lb.", "cost": "200 gp", "effect": "STR becomes 21 for 1 hour",
-      "properties": ["Consumable"],
+      "id": "potion_giant_strength",
+      "name": "Potion of Giant Strength (Hill)",
+      "type": "Potion",
+      "rarity": "Uncommon",
+      "weight": "0.5 lb.",
+      "cost": "200 gp",
+      "effect": "STR becomes 21 for 1 hour",
+      "properties": [
+        "Consumable"
+      ],
       "description": "STR score becomes 21 for 1 hour (if not already higher)."
     },
     {
-      "id": "potion_flying", "name": "Potion of Flying", "type": "Potion", "rarity": "Very Rare",
-      "weight": "0.5 lb.", "cost": "500 gp", "effect": "Fly speed 60 ft for 1 hour",
-      "properties": ["Consumable"],
+      "id": "potion_flying",
+      "name": "Potion of Flying",
+      "type": "Potion",
+      "rarity": "Very Rare",
+      "weight": "0.5 lb.",
+      "cost": "500 gp",
+      "effect": "Fly speed 60 ft for 1 hour",
+      "properties": [
+        "Consumable"
+      ],
       "description": "Grants fly speed equal to walking speed (min 60 ft) for 1 hour."
     },
     {
-      "id": "potion_invisibility", "name": "Potion of Invisibility", "type": "Potion", "rarity": "Very Rare",
-      "weight": "0.5 lb.", "cost": "180 gp", "effect": "Invisible for 1 hour",
-      "properties": ["Consumable"],
+      "id": "potion_invisibility",
+      "name": "Potion of Invisibility",
+      "type": "Potion",
+      "rarity": "Very Rare",
+      "weight": "0.5 lb.",
+      "cost": "180 gp",
+      "effect": "Invisible for 1 hour",
+      "properties": [
+        "Consumable"
+      ],
       "description": "Grants invisibility for 1 hour. Ends when you attack or cast a spell."
     },
     {
-      "id": "potion_speed", "name": "Potion of Speed", "type": "Potion", "rarity": "Very Rare",
-      "weight": "0.5 lb.", "cost": "400 gp", "effect": "Haste for 1 minute",
-      "properties": ["Consumable"],
+      "id": "potion_speed",
+      "name": "Potion of Speed",
+      "type": "Potion",
+      "rarity": "Very Rare",
+      "weight": "0.5 lb.",
+      "cost": "400 gp",
+      "effect": "Haste for 1 minute",
+      "properties": [
+        "Consumable"
+      ],
       "description": "Grants the effects of the Haste spell for 1 minute."
     },
     {
-      "id": "antitoxin", "name": "Antitoxin", "type": "Potion", "rarity": "Common",
-      "weight": "—", "cost": "50 gp", "effect": "Advantage on CON saves vs. poison for 1 hour",
-      "properties": ["Consumable"],
+      "id": "antitoxin",
+      "name": "Antitoxin",
+      "type": "Potion",
+      "rarity": "Common",
+      "weight": "—",
+      "cost": "50 gp",
+      "effect": "Advantage on CON saves vs. poison for 1 hour",
+      "properties": [
+        "Consumable"
+      ],
       "description": "A vial of liquid that neutralizes poison. Advantage on CON saves vs. poison for 1 hour."
     },
     {
-      "id": "bag_of_holding", "name": "Bag of Holding", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "15 lb.", "cost": "—",
-      "properties": ["Magical"],
+      "id": "bag_of_holding",
+      "name": "Bag of Holding",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "15 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "Holds up to 500 lbs / 64 cubic feet despite weighing only 15 lbs. Retrieving an item takes an action."
     },
     {
-      "id": "bag_of_tricks_gray", "name": "Bag of Tricks (Gray)", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "0.5 lb.", "cost": "—",
-      "properties": ["Magical"],
+      "id": "bag_of_tricks_gray",
+      "name": "Bag of Tricks (Gray)",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "0.5 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "Pull a fuzzy ball to conjure a random beast (weasel → giant black bear). 3 uses per dawn."
     },
     {
-      "id": "rope_hempen", "name": "Hempen Rope (50 ft.)", "type": "Adventuring Gear", "rarity": "Common",
-      "weight": "10 lb.", "cost": "1 gp",
+      "id": "rope_hempen",
+      "name": "Hempen Rope (50 ft.)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "10 lb.",
+      "cost": "1 gp",
       "properties": [],
       "description": "50 feet of stout rope. 2 HP, burst with DC 17 STR check."
     },
     {
-      "id": "rope_silk", "name": "Silk Rope (50 ft.)", "type": "Adventuring Gear", "rarity": "Common",
-      "weight": "5 lb.", "cost": "10 gp",
+      "id": "rope_silk",
+      "name": "Silk Rope (50 ft.)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "10 gp",
       "properties": [],
       "description": "50 feet of light, strong silk rope. Easier to climb than hemp."
     },
     {
-      "id": "thieves_tools", "name": "Thieves' Tools", "type": "Tool", "rarity": "Common",
-      "weight": "1 lb.", "cost": "25 gp",
+      "id": "thieves_tools",
+      "name": "Thieves' Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "25 gp",
       "properties": [],
       "description": "File, lock picks, small mirror, scissors, pliers. Required to pick locks or disarm traps."
     },
     {
-      "id": "healer_kit", "name": "Healer's Kit", "type": "Adventuring Gear", "rarity": "Common",
-      "weight": "3 lb.", "cost": "5 gp",
-      "properties": ["10 uses"],
+      "id": "healer_kit",
+      "name": "Healer's Kit",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "5 gp",
+      "properties": [
+        "10 uses"
+      ],
       "description": "Bandages, salves, splints. Use an action to stabilize a dying creature (no Medicine check needed). 10 uses."
     },
     {
-      "id": "spellbook", "name": "Spellbook", "type": "Arcane Focus", "rarity": "Common",
-      "weight": "3 lb.", "cost": "50 gp",
-      "properties": ["Focus"],
+      "id": "spellbook",
+      "name": "Spellbook",
+      "type": "Arcane Focus",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "50 gp",
+      "properties": [
+        "Focus"
+      ],
       "description": "100 vellum pages. Essential for wizards. Each page glows faintly with arcane ink."
     },
     {
-      "id": "component_pouch", "name": "Component Pouch", "type": "Arcane Focus", "rarity": "Common",
-      "weight": "2 lb.", "cost": "25 gp",
-      "properties": ["Focus"],
+      "id": "component_pouch",
+      "name": "Component Pouch",
+      "type": "Arcane Focus",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "25 gp",
+      "properties": [
+        "Focus"
+      ],
       "description": "A pouch of spell components. Can replace material components without a listed cost."
     },
     {
-      "id": "arcane_focus_orb", "name": "Arcane Focus (Orb)", "type": "Arcane Focus", "rarity": "Common",
-      "weight": "3 lb.", "cost": "20 gp",
-      "properties": ["Focus"],
+      "id": "arcane_focus_orb",
+      "name": "Arcane Focus (Orb)",
+      "type": "Arcane Focus",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "20 gp",
+      "properties": [
+        "Focus"
+      ],
       "description": "A glass or crystal orb used as a spellcasting focus."
     },
     {
-      "id": "arcane_focus_staff", "name": "Arcane Focus (Staff)", "type": "Arcane Focus", "rarity": "Common",
-      "weight": "4 lb.", "cost": "5 gp",
-      "properties": ["Focus", "Versatile (1d6)"],
+      "id": "arcane_focus_staff",
+      "name": "Arcane Focus (Staff)",
+      "type": "Arcane Focus",
+      "rarity": "Common",
+      "weight": "4 lb.",
+      "cost": "5 gp",
+      "properties": [
+        "Focus",
+        "Versatile (1d6)"
+      ],
       "description": "A wooden staff that also functions as a quarterstaff."
     },
     {
-      "id": "holy_symbol", "name": "Holy Symbol", "type": "Divine Focus", "rarity": "Common",
-      "weight": "1 lb.", "cost": "5 gp",
-      "properties": ["Focus"],
+      "id": "holy_symbol",
+      "name": "Holy Symbol",
+      "type": "Divine Focus",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "5 gp",
+      "properties": [
+        "Focus"
+      ],
       "description": "An amulet, embossed shield, or other holy symbol for clerics and paladins."
     },
     {
-      "id": "druidic_focus", "name": "Druidic Focus (Staff)", "type": "Divine Focus", "rarity": "Common",
-      "weight": "4 lb.", "cost": "5 gp",
-      "properties": ["Focus"],
+      "id": "druidic_focus",
+      "name": "Druidic Focus (Staff)",
+      "type": "Divine Focus",
+      "rarity": "Common",
+      "weight": "4 lb.",
+      "cost": "5 gp",
+      "properties": [
+        "Focus"
+      ],
       "description": "A yew wand or wooden staff carved with natural symbols. Used by druids."
     },
     {
-      "id": "lantern_bullseye", "name": "Bullseye Lantern", "type": "Adventuring Gear", "rarity": "Common",
-      "weight": "2 lb.", "cost": "10 gp",
+      "id": "lantern_bullseye",
+      "name": "Bullseye Lantern",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "10 gp",
       "properties": [],
       "description": "Sheds bright light in a 60 ft cone, dim light 60 ft beyond. Burns 6 hours per flask of oil."
     },
     {
-      "id": "torch", "name": "Torch", "type": "Adventuring Gear", "rarity": "Common",
-      "weight": "1 lb.", "cost": "1 cp",
-      "properties": ["Consumable"],
+      "id": "torch",
+      "name": "Torch",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "1 cp",
+      "properties": [
+        "Consumable"
+      ],
       "description": "Bright light 20 ft, dim light 20 ft. Burns 1 hour. Can deal 1 fire damage on hit."
     },
     {
-      "id": "tinderbox", "name": "Tinderbox", "type": "Adventuring Gear", "rarity": "Common",
-      "weight": "1 lb.", "cost": "5 sp",
+      "id": "tinderbox",
+      "name": "Tinderbox",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "5 sp",
       "properties": [],
       "description": "Steel, flint, tinder for lighting fires. Takes 1 action (bonus action with proficiency)."
     },
     {
-      "id": "grappling_hook", "name": "Grappling Hook", "type": "Adventuring Gear", "rarity": "Common",
-      "weight": "4 lb.", "cost": "2 gp",
+      "id": "grappling_hook",
+      "name": "Grappling Hook",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "4 lb.",
+      "cost": "2 gp",
       "properties": [],
       "description": "A metal hook for scaling walls or attaching ropes. Throw with an action."
     },
     {
-      "id": "caltrops", "name": "Caltrops (bag of 20)", "type": "Adventuring Gear", "rarity": "Common",
-      "weight": "2 lb.", "cost": "1 gp",
+      "id": "caltrops",
+      "name": "Caltrops (bag of 20)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "1 gp",
       "properties": [],
       "description": "Scatter as an action over 5 ft square. Creatures moving through make DC 15 DEX save or stop (1 piercing, speed halved for 1 minute)."
     },
     {
-      "id": "ball_bearings", "name": "Ball Bearings (1000)", "type": "Adventuring Gear", "rarity": "Common",
-      "weight": "2 lb.", "cost": "1 gp",
+      "id": "ball_bearings",
+      "name": "Ball Bearings (1000)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "1 gp",
       "properties": [],
       "description": "Scatter as an action over 10 ft square. Creatures crossing must make DC 10 DEX save or fall prone."
     },
     {
-      "id": "ring_protection", "name": "Ring of Protection", "type": "Ring", "rarity": "Rare",
-      "weight": "—", "cost": "—", "effect": "+1 AC and saving throws",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "ring_protection",
+      "name": "Ring of Protection",
+      "type": "Ring",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "effect": "+1 AC and saving throws",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "+1 bonus to AC and all saving throws while wearing this ring."
     },
     {
-      "id": "ring_spell_storing", "name": "Ring of Spell Storing", "type": "Ring", "rarity": "Rare",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "ring_spell_storing",
+      "name": "Ring of Spell Storing",
+      "type": "Ring",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "Stores up to 5 levels of spells. Any creature can cast stored spells using your spell save DC."
     },
     {
-      "id": "ring_evasion", "name": "Ring of Evasion", "type": "Ring", "rarity": "Rare",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement", "3 charges"],
+      "id": "ring_evasion",
+      "name": "Ring of Evasion",
+      "type": "Ring",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement",
+        "3 charges"
+      ],
       "description": "When you fail a DEX save: expend 1 charge to succeed instead. Regains 1d3 charges at dawn."
     },
     {
-      "id": "cloak_elvenkind", "name": "Cloak of Elvenkind", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "cloak_elvenkind",
+      "name": "Cloak of Elvenkind",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "Hood up: disadvantage on Perception (sight) against you, you have advantage on Stealth checks."
     },
     {
-      "id": "cloak_protection", "name": "Cloak of Protection", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "cloak_protection",
+      "name": "Cloak of Protection",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "+1 AC and +1 to all saving throws."
     },
     {
-      "id": "cloak_displacement", "name": "Cloak of Displacement", "type": "Wondrous Item", "rarity": "Rare",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "cloak_displacement",
+      "name": "Cloak of Displacement",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "Attackers have disadvantage on first attack each turn. Disabled if you take damage until your next turn."
     },
     {
-      "id": "boots_elvenkind", "name": "Boots of Elvenkind", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical"],
+      "id": "boots_elvenkind",
+      "name": "Boots of Elvenkind",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "Your footsteps make no sound. Advantage on Stealth checks that rely on moving silently."
     },
     {
-      "id": "boots_speed", "name": "Boots of Speed", "type": "Wondrous Item", "rarity": "Rare",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "boots_speed",
+      "name": "Boots of Speed",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "Bonus action: double walking speed, attackers have disadvantage on opportunity attacks. Ends as bonus action."
     },
     {
-      "id": "boots_striding", "name": "Boots of Striding and Springing", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "boots_striding",
+      "name": "Boots of Striding and Springing",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "Speed becomes 30 ft if lower. Jump distance tripled."
     },
     {
-      "id": "gauntlets_ogre", "name": "Gauntlets of Ogre Power", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "gauntlets_ogre",
+      "name": "Gauntlets of Ogre Power",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "STR becomes 19 while wearing (if not already higher)."
     },
     {
-      "id": "gloves_thievery", "name": "Gloves of Thievery", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical"],
+      "id": "gloves_thievery",
+      "name": "Gloves of Thievery",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "Invisible while worn. +5 to Sleight of Hand and to open locks with thieves' tools."
     },
     {
-      "id": "amulet_health", "name": "Amulet of Health", "type": "Wondrous Item", "rarity": "Rare",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "amulet_health",
+      "name": "Amulet of Health",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "CON score becomes 19 while wearing (if not already higher)."
     },
     {
-      "id": "amulet_proof_poison", "name": "Amulet of Proof against Detection", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "amulet_proof_poison",
+      "name": "Amulet of Proof against Detection",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "Hidden from divination magic and can't be targeted by scrying sensors."
     },
     {
-      "id": "headband_intellect", "name": "Headband of Intellect", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "headband_intellect",
+      "name": "Headband of Intellect",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "INT becomes 19 while wearing (if not already higher)."
     },
     {
-      "id": "periapt_wisdom", "name": "Periapt of Wisdom", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "periapt_wisdom",
+      "name": "Periapt of Wisdom",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "WIS becomes 19 while wearing (if not already higher)."
     },
     {
-      "id": "stone_good_luck", "name": "Stone of Good Luck (Luckstone)", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "stone_good_luck",
+      "name": "Stone of Good Luck (Luckstone)",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "+1 to ability checks and saving throws while on your person."
     },
     {
-      "id": "flame_tongue", "name": "Flame Tongue", "type": "Weapon", "rarity": "Rare",
-      "weight": "3 lb.", "cost": "—", "damage": "1d8 + 2d6 fire slashing",
-      "properties": ["Magical", "Requires Attunement", "Versatile"],
+      "id": "flame_tongue",
+      "name": "Flame Tongue",
+      "type": "Weapon",
+      "rarity": "Rare",
+      "weight": "3 lb.",
+      "cost": "—",
+      "damage": "1d8 + 2d6 fire slashing",
+      "properties": [
+        "Magical",
+        "Requires Attunement",
+        "Versatile"
+      ],
       "description": "Command word ignites the blade: +2d6 fire damage, bright light 40 ft, dim 40 ft. Bonus action to extinguish."
     },
     {
-      "id": "sword_sharpness", "name": "Sword of Sharpness", "type": "Weapon", "rarity": "Very Rare",
-      "weight": "3 lb.", "cost": "—", "damage": "Slashing weapon +1",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "sword_sharpness",
+      "name": "Sword of Sharpness",
+      "type": "Weapon",
+      "rarity": "Very Rare",
+      "weight": "3 lb.",
+      "cost": "—",
+      "damage": "Slashing weapon +1",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "+1 attack/damage. On 20: +14 slashing damage, sever a limb on max damage. Objects: automatically max damage on damage dice."
     },
     {
-      "id": "vorpal_sword", "name": "Vorpal Sword", "type": "Weapon", "rarity": "Legendary",
-      "weight": "3 lb.", "cost": "—", "damage": "Slashing weapon +3",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "vorpal_sword",
+      "name": "Vorpal Sword",
+      "type": "Weapon",
+      "rarity": "Legendary",
+      "weight": "3 lb.",
+      "cost": "—",
+      "damage": "Slashing weapon +3",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "+3 attack/damage. Ignore slashing resistance. On 20: decapitate (instant kill for most creatures)."
     },
     {
-      "id": "staff_power", "name": "Staff of Power", "type": "Staff", "rarity": "Very Rare",
-      "weight": "4 lb.", "cost": "—",
-      "properties": ["Magical", "Requires Attunement (Sorcerer/Warlock/Wizard)", "20 charges"],
+      "id": "staff_power",
+      "name": "Staff of Power",
+      "type": "Staff",
+      "rarity": "Very Rare",
+      "weight": "4 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement (Sorcerer/Warlock/Wizard)",
+        "20 charges"
+      ],
       "description": "+2 attack/damage as quarterstaff, +2 AC/saves/spell attacks. 20 charges for 10 spells. Regains 2d8+4 per dawn."
     },
     {
-      "id": "staff_striking", "name": "Staff of Striking", "type": "Staff", "rarity": "Very Rare",
-      "weight": "4 lb.", "cost": "—",
-      "properties": ["Magical", "Requires Attunement", "10 charges"],
+      "id": "staff_striking",
+      "name": "Staff of Striking",
+      "type": "Staff",
+      "rarity": "Very Rare",
+      "weight": "4 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement",
+        "10 charges"
+      ],
       "description": "+3 to attack/damage. Spend 1-3 charges for +1d6 force damage per charge (max +3d6 per hit)."
     },
     {
-      "id": "wand_magic_missiles", "name": "Wand of Magic Missiles", "type": "Wand", "rarity": "Uncommon",
-      "weight": "1 lb.", "cost": "—",
-      "properties": ["Magical", "7 charges"],
+      "id": "wand_magic_missiles",
+      "name": "Wand of Magic Missiles",
+      "type": "Wand",
+      "rarity": "Uncommon",
+      "weight": "1 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "7 charges"
+      ],
       "description": "7 charges. Expend 1-3 charges to cast Magic Missile at 1st-3rd level. Regains 1d6+1 per dawn."
     },
     {
-      "id": "wand_fireballs", "name": "Wand of Fireballs", "type": "Wand", "rarity": "Rare",
-      "weight": "1 lb.", "cost": "—",
-      "properties": ["Magical", "Requires Attunement (Spellcaster)", "7 charges"],
+      "id": "wand_fireballs",
+      "name": "Wand of Fireballs",
+      "type": "Wand",
+      "rarity": "Rare",
+      "weight": "1 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement (Spellcaster)",
+        "7 charges"
+      ],
       "description": "7 charges. Expend 1-3 charges to cast Fireball at 3rd-5th level. Regains 1d6+1 per dawn."
     },
     {
-      "id": "wand_war_mage", "name": "Wand of the War Mage +1", "type": "Wand", "rarity": "Uncommon",
-      "weight": "1 lb.", "cost": "—",
-      "properties": ["Magical", "Requires Attunement (Spellcaster)"],
+      "id": "wand_war_mage",
+      "name": "Wand of the War Mage +1",
+      "type": "Wand",
+      "rarity": "Uncommon",
+      "weight": "1 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement (Spellcaster)"
+      ],
       "description": "+1 to spell attack rolls. Ignore half cover when making spell attacks."
     },
     {
-      "id": "pearl_power", "name": "Pearl of Power", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement (Spellcaster)"],
+      "id": "pearl_power",
+      "name": "Pearl of Power",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement (Spellcaster)"
+      ],
       "description": "As an action once per dawn: regain one expended spell slot of 3rd level or lower."
     },
     {
-      "id": "necklace_fireballs", "name": "Necklace of Fireballs", "type": "Wondrous Item", "rarity": "Rare",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "3d6 beads"],
+      "id": "necklace_fireballs",
+      "name": "Necklace of Fireballs",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "3d6 beads"
+      ],
       "description": "Beads that can be thrown (60 ft) or launched to detonate as Fireball (4d6 per bead, 8d6 for two, etc.)."
     },
     {
-      "id": "immovable_rod", "name": "Immovable Rod", "type": "Rod", "rarity": "Uncommon",
-      "weight": "2 lb.", "cost": "—",
-      "properties": ["Magical"],
+      "id": "immovable_rod",
+      "name": "Immovable Rod",
+      "type": "Rod",
+      "rarity": "Uncommon",
+      "weight": "2 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "Button locks the rod in space — immovable, holds up to 8000 lbs. Can support itself horizontally."
     },
     {
-      "id": "portable_hole", "name": "Portable Hole", "type": "Wondrous Item", "rarity": "Rare",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical"],
+      "id": "portable_hole",
+      "name": "Portable Hole",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "6 ft diameter extradimensional space, 10 ft deep. Opening is 6 ft across. Do not combine with Bag of Holding!"
     },
     {
-      "id": "hat_disguise", "name": "Hat of Disguise", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "hat_disguise",
+      "name": "Hat of Disguise",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "At will: cast Disguise Self (concentration not required). Illusion ends if hat is removed."
     },
     {
-      "id": "goggles_night", "name": "Goggles of Night", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical"],
+      "id": "goggles_night",
+      "name": "Goggles of Night",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "Darkvision 60 ft. If you already have darkvision, adds 60 ft to its range."
     },
     {
-      "id": "eversmoking_bottle", "name": "Eversmoking Bottle", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "1 lb.", "cost": "—",
-      "properties": ["Magical"],
+      "id": "eversmoking_bottle",
+      "name": "Eversmoking Bottle",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "1 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "Uncork to fill 60 ft radius with smoke (heavily obscured) in 1 minute. Lasts until corked (10 min to clear)."
     },
     {
-      "id": "rope_entanglement", "name": "Rope of Entanglement", "type": "Wondrous Item", "rarity": "Rare",
-      "weight": "3 lb.", "cost": "—",
-      "properties": ["Magical"],
+      "id": "rope_entanglement",
+      "name": "Rope of Entanglement",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "3 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "As an action: 30 ft rope restrains one Large or smaller creature. STR DC 15 to escape."
     },
     {
-      "id": "sending_stones", "name": "Sending Stones", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Pair"],
+      "id": "sending_stones",
+      "name": "Sending Stones",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Pair"
+      ],
       "description": "A pair of stones. Cast Sending (25 words) to the other stone's holder once per dawn."
     },
     {
-      "id": "winged_boots", "name": "Winged Boots", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "winged_boots",
+      "name": "Winged Boots",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "Fly speed = walking speed. 4 hours flight per day (minimum 1 minute increments). Recharges at dawn."
     },
     {
-      "id": "figurine_golden_lions", "name": "Figurine of Wondrous Power (Golden Lions)", "type": "Wondrous Item", "rarity": "Rare",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical"],
+      "id": "figurine_golden_lions",
+      "name": "Figurine of Wondrous Power (Golden Lions)",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "Two golden lions. Throw to become Large lions (use lion stat block) for up to 1 hour. Recharges in 7 days."
     },
     {
-      "id": "deck_illusions", "name": "Deck of Illusions", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "34 cards"],
+      "id": "deck_illusions",
+      "name": "Deck of Illusions",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "34 cards"
+      ],
       "description": "Draw a card and throw on a surface to create a lifelike illusion (monster, person, etc.). Illusion lasts until dispelled or card retrieved."
     },
     {
-      "id": "mystery_key", "name": "Mystery Key", "type": "Wondrous Item", "rarity": "Common",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical"],
+      "id": "mystery_key",
+      "name": "Mystery Key",
+      "type": "Wondrous Item",
+      "rarity": "Common",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "5% chance to open any lock it touches. If it fails to open a lock, that lock can never be opened by this key."
     },
     {
-      "id": "dark_shard_amulet", "name": "Dark Shard Amulet", "type": "Wondrous Item", "rarity": "Common",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement (Warlock)"],
+      "id": "dark_shard_amulet",
+      "name": "Dark Shard Amulet",
+      "type": "Wondrous Item",
+      "rarity": "Common",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement (Warlock)"
+      ],
       "description": "Can use as an arcane focus. Cast one warlock cantrip you don't know 1/dawn (CHA check DC 10 or suffer 1d6 psychic)."
     },
     {
-      "id": "alchemy_jug", "name": "Alchemy Jug", "type": "Wondrous Item", "rarity": "Uncommon",
-      "weight": "12 lb.", "cost": "—",
-      "properties": ["Magical"],
+      "id": "alchemy_jug",
+      "name": "Alchemy Jug",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "12 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "Produces one of 13 substances per day (water, wine, acid, oil, honey, mayonnaise, etc.) with spoken command."
     },
     {
-      "id": "apparatus_crab", "name": "Apparatus of Kwalish", "type": "Wondrous Item", "rarity": "Legendary",
-      "weight": "500 lb.", "cost": "—",
-      "properties": ["Magical"],
+      "id": "apparatus_crab",
+      "name": "Apparatus of Kwalish",
+      "type": "Wondrous Item",
+      "rarity": "Legendary",
+      "weight": "500 lb.",
+      "cost": "—",
+      "properties": [
+        "Magical"
+      ],
       "description": "A watertight iron barrel that transforms into a giant mechanical crab. Holds 2 Medium creatures. 10 levers control movement, claws, and ports."
     },
     {
-      "id": "arrow_slaying", "name": "Arrow of Slaying", "type": "Weapon", "rarity": "Very Rare",
-      "weight": "0.05 lb.", "cost": "—", "damage": "1d6 + 3d10 extra",
-      "properties": ["Magical", "Consumable", "Ammunition"],
+      "id": "arrow_slaying",
+      "name": "Arrow of Slaying",
+      "type": "Weapon",
+      "rarity": "Very Rare",
+      "weight": "0.05 lb.",
+      "cost": "—",
+      "damage": "1d6 + 3d10 extra",
+      "properties": [
+        "Magical",
+        "Consumable",
+        "Ammunition"
+      ],
       "description": "Targets specific creature type. On hit: +6d10 damage. CON DC 17 or drop to 0 HP."
     },
     {
-      "id": "holy_avenger", "name": "Holy Avenger", "type": "Weapon", "rarity": "Legendary",
-      "weight": "3 lb.", "cost": "—", "damage": "Sword +3",
-      "properties": ["Magical", "Requires Attunement (Paladin)"],
+      "id": "holy_avenger",
+      "name": "Holy Avenger",
+      "type": "Weapon",
+      "rarity": "Legendary",
+      "weight": "3 lb.",
+      "cost": "—",
+      "damage": "Sword +3",
+      "properties": [
+        "Magical",
+        "Requires Attunement (Paladin)"
+      ],
       "description": "+3 sword. +2d10 radiant vs. undead/fiends. While drawn: 30 ft aura of advantage on saves vs. spells for you and allies."
     },
     {
-      "id": "mace_disruption", "name": "Mace of Disruption", "type": "Weapon", "rarity": "Rare",
-      "weight": "4 lb.", "cost": "—", "damage": "1d6 + 1d6 radiant",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "mace_disruption",
+      "name": "Mace of Disruption",
+      "type": "Weapon",
+      "rarity": "Rare",
+      "weight": "4 lb.",
+      "cost": "—",
+      "damage": "1d6 + 1d6 radiant",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "+1d6 radiant vs. fiends and undead. Undead hit: WIS DC 15 or frightened. If undead has 25 HP or fewer after hit: destroyed."
     },
     {
-      "id": "belt_giant_strength", "name": "Belt of Giant Strength (Hill)", "type": "Wondrous Item", "rarity": "Rare",
-      "weight": "—", "cost": "—", "effect": "STR becomes 21",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "belt_giant_strength",
+      "name": "Belt of Giant Strength (Hill)",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "effect": "STR becomes 21",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "STR score becomes 21 while wearing (if not already higher). Hill giant strength."
     },
     {
-      "id": "ioun_stone_reserve", "name": "Ioun Stone (Reserve)", "type": "Wondrous Item", "rarity": "Rare",
-      "weight": "—", "cost": "—",
-      "properties": ["Magical", "Requires Attunement"],
+      "id": "ioun_stone_reserve",
+      "name": "Ioun Stone (Reserve)",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "—",
+      "cost": "—",
+      "properties": [
+        "Magical",
+        "Requires Attunement"
+      ],
       "description": "Orbits your head. Stores up to 3 spell levels. Recover stored spells as a bonus action."
+    },
+    {
+      "id": "javelin",
+      "name": "Javelin",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "5 sp",
+      "damage": "1d6 piercing",
+      "properties": [
+        "Thrown (range 30/120)"
+      ],
+      "description": "A light spear designed for throwing."
+    },
+    {
+      "id": "light_hammer",
+      "name": "Light Hammer",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "2 gp",
+      "damage": "1d4 bludgeoning",
+      "properties": [
+        "Light",
+        "Thrown (range 20/60)"
+      ],
+      "description": "A small one-handed hammer, easy to throw."
+    },
+    {
+      "id": "sickle",
+      "name": "Sickle",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "1 gp",
+      "damage": "1d4 slashing",
+      "properties": [
+        "Light"
+      ],
+      "description": "A curved blade favored by druids and farmers."
+    },
+    {
+      "id": "dart",
+      "name": "Dart",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "1/4 lb.",
+      "cost": "5 cp",
+      "damage": "1d4 piercing",
+      "properties": [
+        "Finesse",
+        "Thrown (range 20/60)"
+      ],
+      "description": "A small weighted projectile thrown by hand."
+    },
+    {
+      "id": "sling",
+      "name": "Sling",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "1 sp",
+      "damage": "1d4 bludgeoning",
+      "properties": [
+        "Ammunition (range 30/120)"
+      ],
+      "description": "A simple leather strap used to hurl stones."
+    },
+    {
+      "id": "crossbow_light",
+      "name": "Crossbow, Light",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "25 gp",
+      "damage": "1d8 piercing",
+      "properties": [
+        "Ammunition (range 80/320)",
+        "Loading",
+        "Two-handed"
+      ],
+      "description": "A light crossbow firing bolts, requires both hands and time to reload."
+    },
+    {
+      "id": "war_pick",
+      "name": "War Pick",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "5 gp",
+      "damage": "1d8 piercing",
+      "properties": [],
+      "description": "A pick designed to puncture armor."
+    },
+    {
+      "id": "lance",
+      "name": "Lance",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "6 lb.",
+      "cost": "10 gp",
+      "damage": "1d12 piercing",
+      "properties": [
+        "Reach",
+        "Special"
+      ],
+      "description": "You have disadvantage when you use a lance to attack a creature within 5 feet of you. A lance requires two hands to wield when you aren't mounted."
+    },
+    {
+      "id": "trident",
+      "name": "Trident",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "4 lb.",
+      "cost": "5 gp",
+      "damage": "1d6 piercing",
+      "properties": [
+        "Thrown (range 20/60)",
+        "Versatile (1d8)"
+      ],
+      "description": "A three-pronged spear favored by sailors and aquatic creatures."
+    },
+    {
+      "id": "war_hammer",
+      "name": "Warhammer",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "15 gp",
+      "damage": "1d8 bludgeoning",
+      "properties": [
+        "Versatile (1d10)"
+      ],
+      "description": "A heavy hammer designed for war."
+    },
+    {
+      "id": "blowgun",
+      "name": "Blowgun",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "10 gp",
+      "damage": "1 piercing",
+      "properties": [
+        "Ammunition (range 25/100)",
+        "Loading"
+      ],
+      "description": "A tube that fires small needles when blown into."
+    },
+    {
+      "id": "crossbow_hand",
+      "name": "Crossbow, Hand",
+      "type": "Weapon",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "75 gp",
+      "damage": "1d6 piercing",
+      "properties": [
+        "Ammunition (range 30/120)",
+        "Light",
+        "Loading"
+      ],
+      "description": "A compact crossbow that can be used one-handed."
+    },
+    {
+      "id": "padded_armor",
+      "name": "Padded Armor",
+      "type": "Armor",
+      "rarity": "Common",
+      "weight": "8 lb.",
+      "cost": "5 gp",
+      "damage": "AC 11 + DEX modifier",
+      "properties": [
+        "Light",
+        "Stealth disadvantage"
+      ],
+      "description": "Quilted layers of cloth and batting provide minimal protection but allow full mobility."
+    },
+    {
+      "id": "spiked_armor",
+      "name": "Spiked Armor",
+      "type": "Armor",
+      "rarity": "Uncommon",
+      "weight": "45 lb.",
+      "cost": "500 gp",
+      "damage": "AC 18, bonus 1d4 piercing on grapple",
+      "properties": [
+        "Heavy",
+        "STR 15",
+        "Stealth disadvantage"
+      ],
+      "description": "Plate armor covered in dangerous spikes, dealing damage to anyone who tries to grapple the wearer."
+    },
+    {
+      "id": "acid_vial",
+      "name": "Acid (vial)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "25 gp",
+      "damage": "2d6 acid",
+      "properties": [
+        "Thrown (range 20 ft)"
+      ],
+      "description": "As an action, you can splash the contents of this vial onto a creature within 5 feet of you or throw it up to 20 feet, dealing 2d6 acid damage on a hit."
+    },
+    {
+      "id": "alchemists_fire",
+      "name": "Alchemist's Fire (flask)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "50 gp",
+      "damage": "1d4 fire (then 1d4/turn)",
+      "properties": [
+        "Thrown (range 20 ft)"
+      ],
+      "description": "This sticky, adhesive fluid ignites when exposed to air. As an action, you can throw this flask up to 20 feet, shattering it on impact. Each creature within 5 feet of the point where it lands must make a DEX saving throw, taking 1d4 fire damage on a failed save."
+    },
+    {
+      "id": "antitoxin_vial",
+      "name": "Antitoxin (vial)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "50 gp",
+      "damage": "",
+      "properties": [
+        "Advantage on poison saves for 1 hour"
+      ],
+      "description": "A creature that drinks this vial of liquid gains advantage on saving throws against poison for 1 hour."
+    },
+    {
+      "id": "backpack",
+      "name": "Backpack",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "2 gp",
+      "damage": "",
+      "properties": [
+        "Holds 1 cubic foot / 30 lbs"
+      ],
+      "description": "A leather pack with straps that allow it to be carried on someone's back."
+    },
+    {
+      "id": "bedroll",
+      "name": "Bedroll",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "7 lb.",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A simple sleeping mat and blanket for resting outdoors."
+    },
+    {
+      "id": "bell",
+      "name": "Bell",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A small bell that can be rung to make a sound."
+    },
+    {
+      "id": "blanket",
+      "name": "Blanket",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "5 sp",
+      "damage": "",
+      "properties": [],
+      "description": "A simple wool blanket."
+    },
+    {
+      "id": "block_and_tackle",
+      "name": "Block and Tackle",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [
+        "Quadruples lifting capacity"
+      ],
+      "description": "A set of pulleys with a cable that can be used to lift heavy objects."
+    },
+    {
+      "id": "book",
+      "name": "Book",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "25 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A book might contain poetry, historical accounts, manuals, or maps."
+    },
+    {
+      "id": "bucket",
+      "name": "Bucket",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "5 cp",
+      "damage": "",
+      "properties": [],
+      "description": "A simple wooden or metal bucket."
+    },
+    {
+      "id": "candle",
+      "name": "Candle",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "1 cp",
+      "damage": "",
+      "properties": [
+        "Sheds dim light 5 ft, 1 hour duration"
+      ],
+      "description": "A simple wax candle."
+    },
+    {
+      "id": "chain_10ft",
+      "name": "Chain (10 ft)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "10 lb.",
+      "cost": "5 gp",
+      "damage": "",
+      "properties": [
+        "DC 20 to break"
+      ],
+      "description": "A 10-foot length of metal chain. Has a 20 STR or 25 STR with proficiency in Smith's Tools to break."
+    },
+    {
+      "id": "chalk",
+      "name": "Chalk (1 piece)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "1 cp",
+      "damage": "",
+      "properties": [],
+      "description": "A piece of soft chalk for marking surfaces."
+    },
+    {
+      "id": "climbers_kit",
+      "name": "Climber's Kit",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "12 lb.",
+      "cost": "25 gp",
+      "damage": "",
+      "properties": [
+        "Special climbing gear"
+      ],
+      "description": "A climber's kit includes special pitons, boot tips, gloves, and a harness. You can use it as an action to anchor yourself; while anchored, you can't fall more than 25 feet from the point where you anchored."
+    },
+    {
+      "id": "crowbar",
+      "name": "Crowbar",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "2 gp",
+      "damage": "",
+      "properties": [
+        "Advantage on STR checks requiring leverage"
+      ],
+      "description": "Using a crowbar grants advantage to STR checks where the crowbar's leverage can be applied."
+    },
+    {
+      "id": "fishing_tackle",
+      "name": "Fishing Tackle",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "4 lb.",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [],
+      "description": "This kit includes a wooden rod, silken line, corkwood bobbers, lead sinkers, hooks, and a creel."
+    },
+    {
+      "id": "glass_bottle",
+      "name": "Glass Bottle",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "2 gp",
+      "damage": "",
+      "properties": [
+        "Holds 1.5 pints"
+      ],
+      "description": "A simple glass bottle for liquids."
+    },
+    {
+      "id": "hammer",
+      "name": "Hammer",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A simple tool for driving nails or stakes."
+    },
+    {
+      "id": "hammer_sledge",
+      "name": "Sledgehammer",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "10 lb.",
+      "cost": "2 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A large two-handed hammer used for breaking objects."
+    },
+    {
+      "id": "holy_water",
+      "name": "Holy Water (flask)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "25 gp",
+      "damage": "2d6 radiant (vs fiends/undead)",
+      "properties": [
+        "Thrown (range 20 ft)"
+      ],
+      "description": "As an action, you can splash the contents of this flask onto a creature within 5 feet of you or throw it up to 20 feet, shattering on impact. Make a ranged attack against a fiend or undead, dealing 2d6 radiant damage on a hit."
+    },
+    {
+      "id": "hunting_trap",
+      "name": "Hunting Trap",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "25 lb.",
+      "cost": "5 gp",
+      "damage": "1d4 piercing",
+      "properties": [
+        "DEX save or restrained"
+      ],
+      "description": "When you set it, this trap forms a saw-toothed steel ring that snaps shut when a creature steps on a pressure plate in the center. The trap is affixed by a heavy chain to an immobile object."
+    },
+    {
+      "id": "ink_vial",
+      "name": "Ink (1 oz. bottle)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "10 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A small bottle of ink used for writing."
+    },
+    {
+      "id": "ladder",
+      "name": "Ladder (10 ft)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "25 lb.",
+      "cost": "1 sp",
+      "damage": "",
+      "properties": [],
+      "description": "A simple 10-foot wooden ladder."
+    },
+    {
+      "id": "lamp",
+      "name": "Lamp",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "5 sp",
+      "damage": "",
+      "properties": [
+        "Sheds bright light 15 ft, dim 30 ft"
+      ],
+      "description": "A lamp that burns oil to produce a steady light."
+    },
+    {
+      "id": "lock",
+      "name": "Lock",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "10 gp",
+      "damage": "",
+      "properties": [
+        "DC 15 to pick"
+      ],
+      "description": "A simple metal lock with a key. A creature proficient with thieves' tools can pick this lock with a successful DC 15 DEX check."
+    },
+    {
+      "id": "magnifying_glass",
+      "name": "Magnifying Glass",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "100 gp",
+      "damage": "",
+      "properties": [
+        "Advantage on visual investigation"
+      ],
+      "description": "This lens allows a closer look at small objects. It's also useful as a magnifying glass for fire-starting and grants advantage on any ability check made to appraise or inspect an item that is small or contains fine detail."
+    },
+    {
+      "id": "manacles",
+      "name": "Manacles",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "6 lb.",
+      "cost": "2 gp",
+      "damage": "",
+      "properties": [
+        "DC 20 to escape (DC 25 with tools)"
+      ],
+      "description": "These metal restraints can bind a Small or Medium creature, but they have a Strength score of 20."
+    },
+    {
+      "id": "mess_kit",
+      "name": "Mess Kit",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "2 sp",
+      "damage": "",
+      "properties": [],
+      "description": "A tin box containing a cup and simple cutlery."
+    },
+    {
+      "id": "mirror_steel",
+      "name": "Mirror, Steel",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1/2 lb.",
+      "cost": "5 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A small polished steel hand mirror."
+    },
+    {
+      "id": "oil_flask",
+      "name": "Oil (flask)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "1 sp",
+      "damage": "5 fire (thrown)",
+      "properties": [
+        "Fuels lamps for 6 hours"
+      ],
+      "description": "Oil usually comes in a clay flask that holds 1 pint. As an action, you can splash the oil in this flask onto a creature within 5 feet of you or throw it up to 20 feet, dealing 5 fire damage if ignited."
+    },
+    {
+      "id": "paper_sheet",
+      "name": "Paper (1 sheet)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "2 sp",
+      "damage": "",
+      "properties": [],
+      "description": "A sheet of paper for writing."
+    },
+    {
+      "id": "parchment_sheet",
+      "name": "Parchment (1 sheet)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "1 sp",
+      "damage": "",
+      "properties": [],
+      "description": "A sheet of treated animal hide for writing."
+    },
+    {
+      "id": "perfume_vial",
+      "name": "Perfume (vial)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "5 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A small vial of fragrant perfume."
+    },
+    {
+      "id": "pick_miners",
+      "name": "Miner's Pick",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "10 lb.",
+      "cost": "2 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A heavy pick used for digging through rock and earth."
+    },
+    {
+      "id": "piton",
+      "name": "Piton",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1/4 lb.",
+      "cost": "5 cp",
+      "damage": "",
+      "properties": [],
+      "description": "A metal spike that can be driven into rock or wood to anchor a rope."
+    },
+    {
+      "id": "pole_10ft",
+      "name": "Pole (10 ft)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "7 lb.",
+      "cost": "5 cp",
+      "damage": "",
+      "properties": [],
+      "description": "A simple wooden pole, useful for probing for traps or measuring distances."
+    },
+    {
+      "id": "pot_iron",
+      "name": "Pot, Iron",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "10 lb.",
+      "cost": "2 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A heavy iron pot for cooking over a fire."
+    },
+    {
+      "id": "pouch",
+      "name": "Pouch",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "5 sp",
+      "damage": "",
+      "properties": [
+        "Holds 1/5 cubic foot / 6 lbs"
+      ],
+      "description": "A cloth or leather pouch for small items."
+    },
+    {
+      "id": "quiver",
+      "name": "Quiver",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [
+        "Holds up to 20 arrows"
+      ],
+      "description": "A leather case for arrows or bolts."
+    },
+    {
+      "id": "ram_portable",
+      "name": "Ram, Portable",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "35 lb.",
+      "cost": "4 gp",
+      "damage": "",
+      "properties": [
+        "+4 to Strength checks to break doors"
+      ],
+      "description": "You can use a portable ram to break down doors. When using it to force open a door, you gain a +4 bonus to Strength checks."
+    },
+    {
+      "id": "sack",
+      "name": "Sack",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1/2 lb.",
+      "cost": "1 cp",
+      "damage": "",
+      "properties": [
+        "Holds 1 cubic foot / 30 lbs"
+      ],
+      "description": "A simple cloth sack."
+    },
+    {
+      "id": "scale_merchant",
+      "name": "Scale, Merchant's",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "5 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A small scale with a set of weights, used to determine the exact value of coins and precious metals."
+    },
+    {
+      "id": "sealing_wax",
+      "name": "Sealing Wax",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "5 sp",
+      "damage": "",
+      "properties": [],
+      "description": "Wax used to seal letters and packages."
+    },
+    {
+      "id": "shovel",
+      "name": "Shovel",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "2 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A simple digging tool."
+    },
+    {
+      "id": "signal_whistle",
+      "name": "Signal Whistle",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "5 cp",
+      "damage": "",
+      "properties": [],
+      "description": "A small whistle that produces a loud, sharp tone."
+    },
+    {
+      "id": "signet_ring",
+      "name": "Signet Ring",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "5 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A ring bearing a family crest or personal sigil, used to seal documents."
+    },
+    {
+      "id": "soap",
+      "name": "Soap",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "2 cp",
+      "damage": "",
+      "properties": [],
+      "description": "A bar of soap."
+    },
+    {
+      "id": "spellbook_blank",
+      "name": "Spellbook (blank)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "50 gp",
+      "damage": "",
+      "properties": [
+        "100 pages"
+      ],
+      "description": "Essential for Wizards, this leather-bound book has 100 blank vellum pages suitable for recording spells."
+    },
+    {
+      "id": "spike_iron",
+      "name": "Iron Spikes (10)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A set of 10 iron spikes."
+    },
+    {
+      "id": "spyglass",
+      "name": "Spyglass",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "1000 gp",
+      "damage": "",
+      "properties": [
+        "Doubles viewing distance"
+      ],
+      "description": "Objects viewed through a spyglass are magnified to twice their size."
+    },
+    {
+      "id": "tent",
+      "name": "Tent, Two-Person",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "20 lb.",
+      "cost": "2 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A simple canvas tent sleeping two."
+    },
+    {
+      "id": "vial_empty",
+      "name": "Vial (empty)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [
+        "Holds 4 ounces"
+      ],
+      "description": "A small glass vial for storing liquids."
+    },
+    {
+      "id": "waterskin",
+      "name": "Waterskin",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "5 lb. (full)",
+      "cost": "2 sp",
+      "damage": "",
+      "properties": [
+        "Holds 4 pints"
+      ],
+      "description": "A leather pouch for carrying liquids."
+    },
+    {
+      "id": "whetstone",
+      "name": "Whetstone",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "1 cp",
+      "damage": "",
+      "properties": [],
+      "description": "A stone used for sharpening blades."
+    },
+    {
+      "id": "alchemists_supplies",
+      "name": "Alchemist's Supplies",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "8 lb.",
+      "cost": "50 gp",
+      "damage": "",
+      "properties": [
+        "For brewing potions"
+      ],
+      "description": "These supplies include the items needed to identify or create alchemical substances and to apply alchemical effects to weapons or other objects."
+    },
+    {
+      "id": "brewers_supplies",
+      "name": "Brewer's Supplies",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "9 lb.",
+      "cost": "20 gp",
+      "damage": "",
+      "properties": [],
+      "description": "This set of equipment is used to brew ale, beer, mead, and other fermented drinks."
+    },
+    {
+      "id": "calligraphers_supplies",
+      "name": "Calligrapher's Supplies",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "10 gp",
+      "damage": "",
+      "properties": [],
+      "description": "This set of supplies includes ink, a quill, and parchment, all used for elegant writing."
+    },
+    {
+      "id": "carpenters_tools",
+      "name": "Carpenter's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "6 lb.",
+      "cost": "8 gp",
+      "damage": "",
+      "properties": [],
+      "description": "These tools include saws, hammers, nails, chisels, and other implements for working with wood."
+    },
+    {
+      "id": "cartographers_tools",
+      "name": "Cartographer's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "6 lb.",
+      "cost": "15 gp",
+      "damage": "",
+      "properties": [],
+      "description": "These tools include the items needed to make accurate maps."
+    },
+    {
+      "id": "cobblers_tools",
+      "name": "Cobbler's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "5 gp",
+      "damage": "",
+      "properties": [],
+      "description": "These tools include the items needed to repair and craft shoes and boots."
+    },
+    {
+      "id": "cooks_utensils",
+      "name": "Cook's Utensils",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "8 lb.",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [],
+      "description": "This set of utensils includes the items needed to prepare and serve a variety of meals."
+    },
+    {
+      "id": "disguise_kit",
+      "name": "Disguise Kit",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "25 gp",
+      "damage": "",
+      "properties": [
+        "For Deception checks to disguise"
+      ],
+      "description": "This pouch of cosmetics, hair dye, and small props lets you create disguises that change your physical appearance."
+    },
+    {
+      "id": "forgery_kit",
+      "name": "Forgery Kit",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "15 gp",
+      "damage": "",
+      "properties": [
+        "For forging documents"
+      ],
+      "description": "This small box contains everything you need to create forged documents."
+    },
+    {
+      "id": "glassblowers_tools",
+      "name": "Glassblower's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "30 gp",
+      "damage": "",
+      "properties": [],
+      "description": "These tools include the items needed to fabricate glass items."
+    },
+    {
+      "id": "herbalism_kit",
+      "name": "Herbalism Kit",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "5 gp",
+      "damage": "",
+      "properties": [
+        "For identifying plants, antitoxin, potions of healing"
+      ],
+      "description": "This kit contains the items needed to create antitoxin and potions of healing."
+    },
+    {
+      "id": "jewelers_tools",
+      "name": "Jeweler's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "25 gp",
+      "damage": "",
+      "properties": [],
+      "description": "These tools include the items needed to work with gems and precious metals."
+    },
+    {
+      "id": "leatherworkers_tools",
+      "name": "Leatherworker's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "5 gp",
+      "damage": "",
+      "properties": [],
+      "description": "These tools include the items needed to work leather into useful items."
+    },
+    {
+      "id": "masons_tools",
+      "name": "Mason's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "8 lb.",
+      "cost": "10 gp",
+      "damage": "",
+      "properties": [],
+      "description": "These tools include the items needed to work with stone."
+    },
+    {
+      "id": "navigators_tools",
+      "name": "Navigator's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "25 gp",
+      "damage": "",
+      "properties": [
+        "For plotting courses"
+      ],
+      "description": "This set of instruments is used for navigation at sea."
+    },
+    {
+      "id": "painters_supplies",
+      "name": "Painter's Supplies",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "10 gp",
+      "damage": "",
+      "properties": [],
+      "description": "This collection of supplies includes the items needed to create a painting or fresco."
+    },
+    {
+      "id": "poisoners_kit",
+      "name": "Poisoner's Kit",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "50 gp",
+      "damage": "",
+      "properties": [
+        "For making poisons"
+      ],
+      "description": "A poisoner's kit includes the vials, chemicals, and other equipment necessary for the creation of poisons."
+    },
+    {
+      "id": "potters_tools",
+      "name": "Potter's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "10 gp",
+      "damage": "",
+      "properties": [],
+      "description": "These tools include the items needed to fashion clay into pots, bowls, and other items."
+    },
+    {
+      "id": "smiths_tools",
+      "name": "Smith's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "8 lb.",
+      "cost": "20 gp",
+      "damage": "",
+      "properties": [],
+      "description": "These tools include the items needed to work metal into useful items."
+    },
+    {
+      "id": "tinkers_tools",
+      "name": "Tinker's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "10 lb.",
+      "cost": "50 gp",
+      "damage": "",
+      "properties": [
+        "Build small mechanical devices"
+      ],
+      "description": "These tools are used to repair (and create) all manner of mechanical objects."
+    },
+    {
+      "id": "weavers_tools",
+      "name": "Weaver's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [],
+      "description": "These tools include the items needed to fashion cloth into useful items."
+    },
+    {
+      "id": "woodcarvers_tools",
+      "name": "Woodcarver's Tools",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "5 lb.",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [],
+      "description": "These tools include the items needed to carve figures, idols, and other wooden items."
+    },
+    {
+      "id": "dice_set",
+      "name": "Dice Set",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "1 sp",
+      "damage": "",
+      "properties": [
+        "Gaming set"
+      ],
+      "description": "A simple set of gaming dice."
+    },
+    {
+      "id": "playing_cards",
+      "name": "Playing Card Set",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "–",
+      "cost": "5 sp",
+      "damage": "",
+      "properties": [
+        "Gaming set"
+      ],
+      "description": "A standard deck of playing cards."
+    },
+    {
+      "id": "musical_lute",
+      "name": "Lute",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "35 gp",
+      "damage": "",
+      "properties": [
+        "Musical instrument"
+      ],
+      "description": "A stringed instrument with a pear-shaped body."
+    },
+    {
+      "id": "musical_flute",
+      "name": "Flute",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "2 gp",
+      "damage": "",
+      "properties": [
+        "Musical instrument"
+      ],
+      "description": "A simple wind instrument."
+    },
+    {
+      "id": "musical_drum",
+      "name": "Drum",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "3 lb.",
+      "cost": "6 gp",
+      "damage": "",
+      "properties": [
+        "Musical instrument"
+      ],
+      "description": "A percussion instrument."
+    },
+    {
+      "id": "musical_horn",
+      "name": "Horn",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "2 lb.",
+      "cost": "3 gp",
+      "damage": "",
+      "properties": [
+        "Musical instrument"
+      ],
+      "description": "A brass or animal-horn wind instrument."
+    },
+    {
+      "id": "musical_viol",
+      "name": "Viol",
+      "type": "Tool",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "30 gp",
+      "damage": "",
+      "properties": [
+        "Musical instrument"
+      ],
+      "description": "A bowed stringed instrument."
+    },
+    {
+      "id": "ammo_arrows",
+      "name": "Arrows (20)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A bundle of 20 arrows for a bow."
+    },
+    {
+      "id": "ammo_bolts",
+      "name": "Crossbow Bolts (20)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1.5 lb.",
+      "cost": "1 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A case of 20 crossbow bolts."
+    },
+    {
+      "id": "ammo_bullets_sling",
+      "name": "Sling Bullets (20)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1.5 lb.",
+      "cost": "4 cp",
+      "damage": "",
+      "properties": [],
+      "description": "A pouch of 20 lead sling bullets."
+    },
+    {
+      "id": "ammo_blowgun_needles",
+      "name": "Blowgun Needles (50)",
+      "type": "Adventuring Gear",
+      "rarity": "Common",
+      "weight": "1 lb.",
+      "cost": "5 gp",
+      "damage": "",
+      "properties": [],
+      "description": "A case of 50 small needles for a blowgun."
+    },
+    {
+      "id": "adamantine_armor",
+      "name": "Adamantine Armor",
+      "type": "Armor",
+      "rarity": "Uncommon",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "Critical hits become normal hits",
+      "properties": [
+        "Medium or heavy armor only"
+      ],
+      "description": "This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any critical hit against you becomes a normal hit."
+    },
+    {
+      "id": "ammunition_plus1",
+      "name": "Ammunition, +1",
+      "type": "Weapon",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "+1 to attack and damage rolls",
+      "properties": [
+        "Magic ammunition"
+      ],
+      "description": "You have a +1 bonus to attack and damage rolls made with this magic ammunition. Once it hits a target, the ammunition is no longer magical."
+    },
+    {
+      "id": "bag_devouring",
+      "name": "Bag of Devouring",
+      "type": "Wondrous Item",
+      "rarity": "Very Rare",
+      "weight": "15 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Destroys contents over time"
+      ],
+      "description": "This bag superficially resembles a Bag of Holding but is actually a feeding orifice for a gigantic extradimensional creature. Anything placed in the bag is sucked into this creature's gullet and is gone forever."
+    },
+    {
+      "id": "bead_force",
+      "name": "Bead of Force",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "5d4 force",
+      "properties": [
+        "Sphere of force when thrown"
+      ],
+      "description": "This small black sphere measures 3/4 of an inch in diameter and weighs an ounce. When thrown up to 60 feet, it creates a sphere of force for 1 minute. A creature in the sphere's space when it appears must succeed on a DEX saving throw or take 5d4 force damage."
+    },
+    {
+      "id": "berserker_axe",
+      "name": "Berserker Axe",
+      "type": "Weapon",
+      "rarity": "Rare",
+      "weight": "4 lb.",
+      "cost": "–",
+      "damage": "As axe + Rage effects",
+      "properties": [
+        "Requires Attunement",
+        "Cursed"
+      ],
+      "description": "You gain resistance to bludgeoning, piercing, and slashing damage while you hold this magic axe. While attuned to the axe, you must use it to make any attacks you make with a weapon, and if you start your turn holding it, the GM rolls a d6, and on a 1 you go berserk."
+    },
+    {
+      "id": "boots_levitation",
+      "name": "Boots of Levitation",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Cast Levitate on self"
+      ],
+      "description": "While you wear these boots, you can use an action to cast the Levitate spell on yourself. The spell lasts as long as you wear these boots."
+    },
+    {
+      "id": "boots_winterlands",
+      "name": "Boots of the Winterlands",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Cold resistance"
+      ],
+      "description": "These boots are lined with fur. While wearing them, you gain the following benefits: cold resistance, comfortable in temperatures below 0°F, and walk across icy surfaces without needing to make ability checks to do so."
+    },
+    {
+      "id": "bracers_archery",
+      "name": "Bracers of Archery",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "+2 damage with ranged weapon attacks using bows",
+      "properties": [
+        "Requires Attunement",
+        "Proficiency with longbows/shortbows"
+      ],
+      "description": "While wearing these bracers, you gain proficiency with the longbow and shortbow, and you gain a +2 bonus to damage rolls on ranged attacks made with such weapons."
+    },
+    {
+      "id": "bracers_defense",
+      "name": "Bracers of Defense",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "+2 AC if not wearing armor or shield",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "While wearing these bracers, you gain a +2 bonus to AC if you are wearing no armor and using no shield."
+    },
+    {
+      "id": "brooch_shielding",
+      "name": "Brooch of Shielding",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "Immune to Magic Missile, resistance to force",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "This brooch is a small silver pin. While wearing it, you have resistance to force damage, and you are immune to the spell Magic Missile."
+    },
+    {
+      "id": "broom_flying",
+      "name": "Broom of Flying",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Flying speed 50 ft"
+      ],
+      "description": "This wooden broom, which weighs 3 pounds, functions like a Mundane broom until you stand astride it and speak its command word. It then hovers and can be ridden in the air. It has a flying speed of 50 feet and can carry up to 400 pounds."
+    },
+    {
+      "id": "candle_invocation",
+      "name": "Candle of Invocation",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Enhances spellcasting in aligned region"
+      ],
+      "description": "This slender taper is engraved with a symbol of a deity or pantheon and is consecrated to an alignment that is the same as one of its bearer's alignment components. While lit, the candle creates a 60-foot-radius sphere of light. Special bonuses apply if the candle is lit in its aligned region."
+    },
+    {
+      "id": "cape_mountebank",
+      "name": "Cape of the Mountebank",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Cast Dimension Door once per day"
+      ],
+      "description": "This cape smells faintly of brimstone. While wearing it, you can use it to cast the Dimension Door spell as an action. This property of the cape can't be used again until the next dawn."
+    },
+    {
+      "id": "carpet_flying",
+      "name": "Carpet of Flying",
+      "type": "Wondrous Item",
+      "rarity": "Very Rare",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Flying speed 80 ft"
+      ],
+      "description": "You can speak the carpet's command word and command the carpet to fly through the air. It can carry up to 400 pounds at a flying speed of 80 feet, or up to 800 pounds at a flying speed of 60 feet."
+    },
+    {
+      "id": "censer_summon",
+      "name": "Censer of Controlling Air Elementals",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Summon air elemental"
+      ],
+      "description": "While you hold this 6-inch censer, you can use an action to speak its command word and summon an air elemental, as if you had cast the Conjure Elemental spell. The censer can't be used this way again until the next dawn."
+    },
+    {
+      "id": "chime_opening",
+      "name": "Chime of Opening",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Open locks/doors remotely"
+      ],
+      "description": "This hollow metal tube measures about 1 foot long and weighs 1 pound. You can strike it as an action, pointing it at an object within 120 feet that can be opened, such as a door, chest, or shackle. The chime issues a clear tone, and one lock or latch on the object opens."
+    },
+    {
+      "id": "cloak_arachnida",
+      "name": "Cloak of Arachnida",
+      "type": "Wondrous Item",
+      "rarity": "Very Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Spider climb, web, poison resistance"
+      ],
+      "description": "This fine garment is made of black silk interwoven with faint traces of spidersilk. While wearing it, you gain spider climb (climbing speed equal to your walking speed), poison resistance, and the ability to cast Web once per long rest."
+    },
+    {
+      "id": "cloak_manta_ray",
+      "name": "Cloak of the Manta Ray",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Swim speed 60 ft, water breathing"
+      ],
+      "description": "While wearing this cloak with its hood up, you can breathe underwater, and you have a swimming speed of 60 feet."
+    },
+    {
+      "id": "crystal_ball",
+      "name": "Crystal Ball",
+      "type": "Wondrous Item",
+      "rarity": "Very Rare",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Scrying"
+      ],
+      "description": "This crystal ball is about 6 inches in diameter. While touching it, you can cast the Scrying spell with it (save DC 17) without expending a spell slot or material components."
+    },
+    {
+      "id": "cube_force",
+      "name": "Cube of Force",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "1/2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Create force barrier"
+      ],
+      "description": "This cube is about an inch across. Each face has a distinct marking on it. When activated, the cube creates an invisible barrier in the shape of a cube, 15 feet on a side. The barrier blocks specified effects depending on the chosen mode."
+    },
+    {
+      "id": "decanter_endless_water",
+      "name": "Decanter of Endless Water",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Produces water on command"
+      ],
+      "description": "This stoppered flask sloshes when shaken, as if it contains water. The decanter has three settings: Stream, Fountain, and Geyser. Speak a command word and aim the nozzle to produce water."
+    },
+    {
+      "id": "dimensional_shackles",
+      "name": "Dimensional Shackles",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Prevent extradimensional escape"
+      ],
+      "description": "These shackles can bind a creature of Huge size or smaller. Manacles open into a hoop and snap shut once they are around a limb. They're impervious to all damage and to teleportation and extradimensional travel of the creature wearing them."
+    },
+    {
+      "id": "dust_disappearance",
+      "name": "Dust of Disappearance",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Invisibility for those covered"
+      ],
+      "description": "Found in a small packet, this powder resembles very fine sand. There is enough of it for one use. When you throw the dust into the air, it settles over you and other creatures within 10 feet, turning them invisible for 2d4 minutes."
+    },
+    {
+      "id": "dust_sneezing",
+      "name": "Dust of Sneezing and Choking",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "Incapacitated, suffocation",
+      "properties": [
+        "Cursed"
+      ],
+      "description": "This packet of dust resembles dust of disappearance. If thrown, each creature within 30 feet of where the dust hits must succeed on a CON saving throw or become unable to breathe, regurgitating and reflexively sneezing, and become incapacitated for 1 minute."
+    },
+    {
+      "id": "efreeti_bottle",
+      "name": "Efreeti Bottle",
+      "type": "Wondrous Item",
+      "rarity": "Very Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Summon Efreeti servant"
+      ],
+      "description": "This painted brass bottle weighs 1 pound. When you open the bottle, you can speak the command word to summon the efreeti contained within it. The efreeti appears in an unoccupied space as close to the bottle as possible and serves you for one hour."
+    },
+    {
+      "id": "elven_chain",
+      "name": "Elven Chain",
+      "type": "Armor",
+      "rarity": "Rare",
+      "weight": "20 lb.",
+      "cost": "–",
+      "damage": "AC 13 + DEX modifier",
+      "properties": [
+        "Counts as light armor",
+        "Medium armor proficiency required"
+      ],
+      "description": "You gain a +1 bonus to AC while you wear this armor. You can wear this armor and gain its normal benefits even if you have only proficiency with light armor."
+    },
+    {
+      "id": "eyes_charming",
+      "name": "Eyes of Charming",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Cast Charm Person"
+      ],
+      "description": "These crystal lenses fit over the eyes. They have 3 charges. While wearing them, you can expend 1 charge as an action to cast the Charm Person spell from them (save DC 13). The lenses regain all expended charges daily at dawn."
+    },
+    {
+      "id": "eyes_eagle",
+      "name": "Eyes of the Eagle",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Advantage on sight-based Perception"
+      ],
+      "description": "These crystal lenses fit over the eyes. They have 3 charges. While wearing them, you can use an action and expend 1 charge to cast the Clairvoyance spell from them, with the sensor created in the air within 30 feet of you. Also grants advantage on Wisdom (Perception) checks that rely on sight."
+    },
+    {
+      "id": "feather_token",
+      "name": "Feather Token",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Various: Anchor, Bird, Fan, Swan Boat, Tree, Whip"
+      ],
+      "description": "This tiny object resembles a feather. Each type of token (Anchor, Bird, Fan, Swan Boat, Tree, or Whip) produces a different magical effect when used, such as summoning a giant eagle or creating a sailing ship."
+    },
+    {
+      "id": "folding_boat",
+      "name": "Folding Boat",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "4 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Three forms: chest, rowboat, ship"
+      ],
+      "description": "This object appears as a wooden box that measures 12 inches by 6 inches by 6 inches. It weighs 4 pounds and floats. It can be picked up and carried like any other object. The box is a magic item that can be transformed into a boat or a ship."
+    },
+    {
+      "id": "frost_brand",
+      "name": "Frost Brand Sword",
+      "type": "Weapon",
+      "rarity": "Very Rare",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "+1d6 cold",
+      "properties": [
+        "Requires Attunement",
+        "Cold immunity",
+        "Extinguishes flames"
+      ],
+      "description": "You have resistance to fire damage while you wield this magic sword. The sword's runes glow with frost, and the weapon deals an extra 1d6 cold damage to any target it hits. Also, while you hold it, it sheds bright light in a 10-foot radius and dim light for an additional 10 feet."
+    },
+    {
+      "id": "gauntlets_skill",
+      "name": "Gauntlets of Skill",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Proficiency in one skill"
+      ],
+      "description": "These gauntlets give you proficiency in one skill of your choice that uses STR, DEX, or CON. If you're already proficient with the chosen skill, your proficiency bonus is doubled for any ability check you make with it."
+    },
+    {
+      "id": "giant_slayer",
+      "name": "Giant Slayer Sword",
+      "type": "Weapon",
+      "rarity": "Rare",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "+1d6 vs giants, prone on hit",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon. When you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 STR saving throw or fall prone."
+    },
+    {
+      "id": "globe_blades",
+      "name": "Globe of Invulnerability (item)",
+      "type": "Wondrous Item",
+      "rarity": "Legendary",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Cast Globe of Invulnerability"
+      ],
+      "description": "While holding this glass orb, you can use an action to cast the Globe of Invulnerability spell from it, without using a spell slot. This property can't be used again until the next dawn."
+    },
+    {
+      "id": "helm_brilliance",
+      "name": "Helm of Brilliance",
+      "type": "Wondrous Item",
+      "rarity": "Very Rare",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "+special based on gem",
+      "properties": [
+        "Requires Attunement",
+        "Set with gems"
+      ],
+      "description": "This dazzling helm is set with 1d10 each of brilliants, diamonds, opals, and rubies (totaling 40 gems). You can use an action to speak this item's command word, which causes the gems to glow brightly. Gems can be expended for various spell effects."
+    },
+    {
+      "id": "helm_comprehending",
+      "name": "Helm of Comprehending Languages",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Comprehend Languages at will"
+      ],
+      "description": "While wearing this helm, you can read any language that you see and understand any spoken language that you hear, as if affected by the Comprehend Languages spell."
+    },
+    {
+      "id": "helm_telepathy",
+      "name": "Helm of Telepathy",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Telepathy 30 ft"
+      ],
+      "description": "While wearing this helm, you can use an action to read the surface thoughts of one creature within 60 feet. You can communicate telepathically with that creature for as long as it remains within 1 mile of you."
+    },
+    {
+      "id": "horn_blasting",
+      "name": "Horn of Blasting",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "5d6 thunder",
+      "properties": [
+        "1d4-1 uses per day"
+      ],
+      "description": "You can use an action to speak this horn's command word and then blow the horn, which creates a deafening blast of sound that deals 5d6 thunder damage to all creatures in a 30-foot cone."
+    },
+    {
+      "id": "horn_valhalla",
+      "name": "Horn of Valhalla",
+      "type": "Wondrous Item",
+      "rarity": "varies",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Summon spectral warriors"
+      ],
+      "description": "This horn appears as a normal drinking horn. Five variants of the horn exist, with rarities depending on their type. When you blow the horn, a number of spectral warriors appear in unoccupied spaces near you and fight for you."
+    },
+    {
+      "id": "iron_bands_binding",
+      "name": "Iron Bands of Binding",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "6 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Restrains a creature"
+      ],
+      "description": "This rounded iron cylinder is about a foot long. When you use an action to throw it at a Huge or smaller creature, the cylinder bursts into a network of meshing bands that can restrain the target. The target must make a DEX saving throw."
+    },
+    {
+      "id": "javelin_lightning",
+      "name": "Javelin of Lightning",
+      "type": "Weapon",
+      "rarity": "Uncommon",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "4d6 lightning, 120 ft line",
+      "properties": [
+        "Becomes mundane after use"
+      ],
+      "description": "This javelin is a magic weapon. When you throw it and speak its command word, it transforms into a bolt of lightning, forming a line 5 feet wide that extends out from you to a target within 120 feet, dealing 4d6 lightning damage."
+    },
+    {
+      "id": "luck_blade",
+      "name": "Luck Blade",
+      "type": "Weapon",
+      "rarity": "Legendary",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "+1, Wish spells",
+      "properties": [
+        "Requires Attunement",
+        "+1 saving throws"
+      ],
+      "description": "You gain a +1 bonus to attack and damage rolls made with this magic sword. While the sword is on your person, you also gain a +1 bonus to saving throws. The sword has 1d4-1 charges. Expend a charge to reroll any roll just made before resolving it. If no charges remain, you can use the sword to cast Wish."
+    },
+    {
+      "id": "manual_golems_clay",
+      "name": "Manual of Golems, Clay",
+      "type": "Wondrous Item",
+      "rarity": "Very Rare",
+      "weight": "10 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Create golem"
+      ],
+      "description": "This tome contains information and incantations necessary to make a particular type of golem. To craft the golem, you must spend 65 days and 65,000 gp creating a body for the golem."
+    },
+    {
+      "id": "mantle_spell_resistance",
+      "name": "Mantle of Spell Resistance",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Advantage on saves vs spells"
+      ],
+      "description": "You have advantage on saving throws against spells while you wear this cloak."
+    },
+    {
+      "id": "mirror_life_trapping",
+      "name": "Mirror of Life Trapping",
+      "type": "Wondrous Item",
+      "rarity": "Very Rare",
+      "weight": "50 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Traps creatures"
+      ],
+      "description": "When this 4-foot-by-8-foot mirror is viewed indirectly, it appears to contain a separate plane of existence. If a creature looks into the mirror directly, the mirror's magic activates, and the creature must succeed on a CHA save or be trapped inside one of twelve extradimensional cells."
+    },
+    {
+      "id": "nine_lives_stealer",
+      "name": "Nine Lives Stealer Sword",
+      "type": "Weapon",
+      "rarity": "Very Rare",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "+2, slay on crit",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "You gain a +2 bonus to attack and damage rolls made with this magic weapon. The sword has 1d8+1 charges. If you score a critical hit against a creature that has fewer than 100 hit points, it must succeed on a DC 15 CON saving throw or be slain instantly, and one charge is expended."
+    },
+    {
+      "id": "oil_etherealness",
+      "name": "Oil of Etherealness",
+      "type": "Adventuring Gear",
+      "rarity": "Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Cast Etherealness for 1 hour"
+      ],
+      "description": "The oil in this clay vessel can cover a Medium or smaller creature, granting the effect of the Etherealness spell for 1 hour."
+    },
+    {
+      "id": "oil_sharpness",
+      "name": "Oil of Sharpness",
+      "type": "Adventuring Gear",
+      "rarity": "Very Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "+3 to attack and damage",
+      "properties": [
+        "One weapon use"
+      ],
+      "description": "This clear, gelatinous oil sharpens the edge of a weapon. Applying it takes 1 minute. Once applied, the oil coats one slashing or piercing weapon, granting a +3 bonus to attack and damage rolls until the weapon is cleaned."
+    },
+    {
+      "id": "oil_slipperiness",
+      "name": "Oil of Slipperiness",
+      "type": "Adventuring Gear",
+      "rarity": "Uncommon",
+      "weight": "1/2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Cast Freedom of Movement or grease"
+      ],
+      "description": "This sticky black unguent is thick and heavy in its container, but it flows quickly when poured. The oil can be used in one of two ways: poured on yourself for the effect of the Freedom of Movement spell for 8 hours, or poured on the ground as the Grease spell."
+    },
+    {
+      "id": "pearl_oyster",
+      "name": "Pearl of the Sirines",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Water breathing, swim speed"
+      ],
+      "description": "While this pearl is on your person, you can breathe underwater, and you have a swimming speed equal to your walking speed."
+    },
+    {
+      "id": "periapt_health",
+      "name": "Periapt of Health",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Immune to disease"
+      ],
+      "description": "You are immune to contracting any disease while you wear this pendant. If you are already infected with a disease, the effects of the disease are suppressed while you wear the pendant."
+    },
+    {
+      "id": "periapt_proof_against_poison",
+      "name": "Periapt of Proof against Poison",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Immune to poison"
+      ],
+      "description": "While wearing this pendant, you are immune to poison damage and the poisoned condition. The pendant's magic neutralizes ingested poisons; you can use an action to administer this benefit to a creature that is poisoned by something it ate."
+    },
+    {
+      "id": "pipes_haunting",
+      "name": "Pipes of Haunting",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Frightened effect"
+      ],
+      "description": "You must be proficient with wind instruments to use these pipes. They have 3 charges. As an action, you can expend 1 charge to play them and create an eerie, spectral sound. Each creature within 30 feet that hears it must succeed on a WIS saving throw or become frightened of you for 1 minute."
+    },
+    {
+      "id": "pipes_pan",
+      "name": "Pipes of the Sewers",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Summon rats"
+      ],
+      "description": "While you are attuned to these pipes, giant rats and other rats have an instinctive urge not to harm you. As an action, you can play the pipes and summon swarms of rats, provided that any rats are within 600 feet of you."
+    },
+    {
+      "id": "plate_etherealness",
+      "name": "Plate Armor of Etherealness",
+      "type": "Armor",
+      "rarity": "Legendary",
+      "weight": "65 lb.",
+      "cost": "–",
+      "damage": "AC 18",
+      "properties": [
+        "Requires Attunement",
+        "Cast Etherealness"
+      ],
+      "description": "While wearing this armor, you can speak its command word as an action to cast the Etherealness spell on yourself. The plate armor's magic gives off a faint, multicolored shimmer when this property is activated."
+    },
+    {
+      "id": "quaal_feather_token",
+      "name": "Quaal's Feather Token",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Various magical effects"
+      ],
+      "description": "Each type of token (Anchor, Bird, Fan, Swan Boat, Tree, Whip) is a small object that resembles a feather, used to produce a particular magical effect."
+    },
+    {
+      "id": "quiver_ehlonna",
+      "name": "Quiver of Ehlonna",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Holds extra ammo, weapons, gear"
+      ],
+      "description": "Each of the quiver's three compartments connects to an extradimensional space that allows the quiver to hold numerous items while never weighing more than 2 pounds: one holds up to 60 arrows/bolts/similar, one holds up to 18 javelins/items 4 ft or smaller, and one holds up to 6 weapons up to 6 ft long."
+    },
+    {
+      "id": "rapier_sea",
+      "name": "Rapier of Life Stealing",
+      "type": "Weapon",
+      "rarity": "Rare",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "+1, extra 3d6 necrotic on crit",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon. When you attack a creature with this weapon and roll a 20 on the attack roll, that target takes an extra 3d6 necrotic damage, and you gain temporary hit points equal to the necrotic damage dealt."
+    },
+    {
+      "id": "ring_animal_influence",
+      "name": "Ring of Animal Influence",
+      "type": "Ring",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Charm/Fear/Speak with Animals"
+      ],
+      "description": "This ring is engraved with the image of an animal—a cat, songbird, or snake. The ring has 3 charges. While wearing the ring, you can expend 1 charge as an action to cast one of three spells: Calm Emotions (cat), Charm Monster (songbird), or Fear (snake), each targeted at beasts."
+    },
+    {
+      "id": "ring_djinni",
+      "name": "Ring of Djinni Summoning",
+      "type": "Ring",
+      "rarity": "Legendary",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Summon Djinni"
+      ],
+      "description": "While wearing this ring, you can speak its command word as an action to call forth a particular djinni from the Elemental Plane of Air. The djinni remains for as long as you continue to wear the ring or until it drops to 0 hit points."
+    },
+    {
+      "id": "ring_feather_falling",
+      "name": "Ring of Feather Falling",
+      "type": "Ring",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Cast Feather Fall reflexively"
+      ],
+      "description": "When you fall while wearing this ring, you descend 60 feet per round and take no damage from falling."
+    },
+    {
+      "id": "ring_free_action",
+      "name": "Ring of Free Action",
+      "type": "Ring",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Immune to restraint/speed reduction"
+      ],
+      "description": "While you wear this ring, difficult terrain doesn't cost you extra movement. In addition, magic can neither reduce your speed nor cause you to be paralyzed or restrained."
+    },
+    {
+      "id": "ring_jumping",
+      "name": "Ring of Jumping",
+      "type": "Ring",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Cast Jump at will"
+      ],
+      "description": "While wearing this ring, you can cast the Jump spell from it as a bonus action at will, but can target only yourself."
+    },
+    {
+      "id": "ring_mind_shielding",
+      "name": "Ring of Mind Shielding",
+      "type": "Ring",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Immune to telepathy/mind-reading"
+      ],
+      "description": "While wearing this ring, you are immune to magic that allows other creatures to read your thoughts, determine whether you are lying, know your alignment, or know your creature type. Creatures can telepathically communicate with you only if you allow it."
+    },
+    {
+      "id": "ring_regeneration",
+      "name": "Ring of Regeneration",
+      "type": "Ring",
+      "rarity": "Very Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Regain 1d6 HP per 10 minutes"
+      ],
+      "description": "While wearing this ring, you regain 1d6 hit points every 10 minutes, provided that you have at least 1 hit point. If you lose a body part, the ring causes the missing part to regrow and return to full functionality after 1d6+1 days."
+    },
+    {
+      "id": "ring_resistance",
+      "name": "Ring of Resistance",
+      "type": "Ring",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Resistance to one damage type"
+      ],
+      "description": "You have resistance to one damage type while wearing this ring. The GM chooses the type or determines it randomly."
+    },
+    {
+      "id": "ring_shooting_stars",
+      "name": "Ring of Shooting Stars",
+      "type": "Ring",
+      "rarity": "Very Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "4d6 force",
+      "properties": [
+        "Requires Attunement",
+        "Multiple light-based effects"
+      ],
+      "description": "This ring is made from silver mithral and adorned with a tiny star sapphire. It has charges, and you regain expended charges daily at dawn. The ring grants several spell-like effects related to light: light, faerie fire, Dancing Lights, and Wall of Light."
+    },
+    {
+      "id": "ring_spell_turning",
+      "name": "Ring of Spell Turning",
+      "type": "Ring",
+      "rarity": "Legendary",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Reflects spells"
+      ],
+      "description": "While wearing this ring, you have advantage on saving throws against any spell that targets you specifically (not in an area). In addition, if you roll a 20 for that save and the spell is 7th level or lower, the spell has no effect on you and instead targets the caster."
+    },
+    {
+      "id": "ring_telekinesis",
+      "name": "Ring of Telekinesis",
+      "type": "Ring",
+      "rarity": "Very Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Cast Telekinesis at will"
+      ],
+      "description": "While wearing this ring, you can cast the Telekinesis spell at will, but you can target only objects that aren't being worn or carried."
+    },
+    {
+      "id": "ring_three_wishes",
+      "name": "Ring of Three Wishes",
+      "type": "Ring",
+      "rarity": "Legendary",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "3 charges of Wish"
+      ],
+      "description": "While wearing this ring, you can expend 1 of its 3 charges to cast Wish from it. The ring becomes nonmagical when you expend the last charge."
+    },
+    {
+      "id": "ring_warmth",
+      "name": "Ring of Warmth",
+      "type": "Ring",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Cold resistance, comfortable temperature"
+      ],
+      "description": "This ring's gem radiates a faint warmth. The ring grants resistance to cold damage while worn, and you are comfortable in temperatures as low as -50°F."
+    },
+    {
+      "id": "ring_water_walking",
+      "name": "Ring of Water Walking",
+      "type": "Ring",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Walk on liquid surfaces"
+      ],
+      "description": "While wearing this ring, you can stand on and move across any liquid surface, such as water, acid, mud, snow, quicksand, or lava, as if it were solid ground."
+    },
+    {
+      "id": "robe_archmagi",
+      "name": "Robe of the Archmagi",
+      "type": "Wondrous Item",
+      "rarity": "Legendary",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement (Sorcerer/Warlock/Wizard)",
+        "AC 15+DEX"
+      ],
+      "description": "This elegant garment is made from exquisite cloth and adorned with runes. The robe is decorated in a color that corresponds with an alignment: white for good, gray for neutral, or black for evil. AC = 15+DEX mod, resistance to spell damage, +2 to spell save DC and attack rolls."
+    },
+    {
+      "id": "robe_eyes",
+      "name": "Robe of Eyes",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Truesight 120 ft, vulnerable to gaze attacks"
+      ],
+      "description": "This robe is adorned with eye-shaped patterns. While wearing it, you have truesight out to a range of 120 feet, except that you can see through 3 feet of wood or dirt, but not metal or stone."
+    },
+    {
+      "id": "robe_scintillating",
+      "name": "Robe of Scintillating Colors",
+      "type": "Wondrous Item",
+      "rarity": "Very Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Cast Color Spray-like effect"
+      ],
+      "description": "This robe has 3 charges. While wearing it, you can use an action and expend 1 charge to create a flashing display of color around yourself. Each creature within 30 feet that can see you must succeed on a WIS save or become blinded for 1 minute."
+    },
+    {
+      "id": "robe_stars",
+      "name": "Robe of Stars",
+      "type": "Wondrous Item",
+      "rarity": "Very Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Resistance to piercing, cast Magic Missile"
+      ],
+      "description": "This black or dark blue robe is embroidered with small white or silver stars. You gain a +1 bonus to saving throws while you wear this robe. Six stars, one on each side of the robe's chest area, are particularly large. While wearing the robe, you can use an action to remove one of these stars and cause it to disappear, then choose to either cast Magic Missile or vanish for 8 hours (resting on the Astral Plane)."
+    },
+    {
+      "id": "rod_absorption",
+      "name": "Rod of Absorption",
+      "type": "Rod",
+      "rarity": "Very Rare",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Absorb spell levels"
+      ],
+      "description": "This rod has 50 charges. While holding it, you can use a reaction to absorb a spell that is targeting only you. The spell has no effect, and the rod absorbs the spell's energy, gaining a number of charges equal to the absorbed spell's level."
+    },
+    {
+      "id": "rod_alertness",
+      "name": "Rod of Alertness",
+      "type": "Rod",
+      "rarity": "Very Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Bonus to initiative, Perception"
+      ],
+      "description": "This rod has a flat, knuckle-shaped head, and a haft made of dense, magically reinforced wood. While carrying or wielding the rod, you gain a +1 bonus to attack rolls and saving throws, immunity to being surprised, and a +5 bonus to initiative."
+    },
+    {
+      "id": "rod_lordly_might",
+      "name": "Rod of Lordly Might",
+      "type": "Rod",
+      "rarity": "Legendary",
+      "weight": "10 lb.",
+      "cost": "–",
+      "damage": "6d8 / weapon properties",
+      "properties": [
+        "Requires Attunement (STR)",
+        "Multiple weapon forms"
+      ],
+      "description": "This rod has six different magical effects, depending on whether you transform it into a mace, axe, sword, flail, spear, or remain in basic rod form. It also has a button that drains youth from a creature you touch."
+    },
+    {
+      "id": "rod_pact_keeper",
+      "name": "Rod of the Pact Keeper",
+      "type": "Rod",
+      "rarity": "varies",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement (Warlock)",
+        "Bonus to spell save DC and attack rolls"
+      ],
+      "description": "While holding this rod, you gain a +1, +2, or +3 bonus (depending on rarity) to spell attack rolls and to the saving throw DCs of your warlock spells. In addition, you can use the rod to cast one of your known warlock spells without expending a spell slot."
+    },
+    {
+      "id": "rope_climbing",
+      "name": "Rope of Climbing",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Self-animating, 60 ft"
+      ],
+      "description": "This 60-foot length of silk rope weighs 3 pounds and can hold up to 3,000 pounds. As an action, you can speak a command word to make one end of the rope move on its own, and the rope can wiggle, coil, and tie itself."
+    },
+    {
+      "id": "scarab_protection",
+      "name": "Scarab of Protection",
+      "type": "Wondrous Item",
+      "rarity": "Legendary",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Resistance + saving throw bonuses"
+      ],
+      "description": "This bejeweled beetle, carved from horn, jade, or other material, grants a +5 bonus to saving throws against spells and other magical effects when worn. Once before crumbling to ash, it can intercept and negate a spell that would deal damage."
+    },
+    {
+      "id": "scimitar_speed",
+      "name": "Scimitar of Speed",
+      "type": "Weapon",
+      "rarity": "Very Rare",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "+2, +2 AC, bonus action attack",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "This scimitar is a magic weapon. You gain a +2 bonus to attack and damage rolls made with this weapon. In addition, you can take a bonus action on each of your turns to make one attack with the scimitar."
+    },
+    {
+      "id": "shield_attraction",
+      "name": "Shield of Missile Attraction",
+      "type": "Armor",
+      "rarity": "Rare",
+      "weight": "6 lb.",
+      "cost": "–",
+      "damage": "AC +2",
+      "properties": [
+        "Requires Attunement",
+        "Attracts ranged attacks, cursed"
+      ],
+      "description": "You gain a +2 bonus to AC while wielding this shield, as well as resistance to damage from ranged weapon attacks. The shield's curse causes ranged attacks to be drawn to it, often hitting you when they would otherwise have missed."
+    },
+    {
+      "id": "slippers_spider_climbing",
+      "name": "Slippers of Spider Climbing",
+      "type": "Wondrous Item",
+      "rarity": "Uncommon",
+      "weight": "1/4 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Spider climb"
+      ],
+      "description": "While you wear these particular slippers, you can move up, down, and across vertical surfaces and upside down along ceilings, while leaving your hands free."
+    },
+    {
+      "id": "spell_scroll",
+      "name": "Spell Scroll",
+      "type": "Wondrous Item",
+      "rarity": "varies",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Single-use, cast spell without slot"
+      ],
+      "description": "A spell scroll bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can read the scroll and cast its spell without providing any material components. Otherwise, the scroll is unintelligible."
+    },
+    {
+      "id": "staff_charming",
+      "name": "Staff of Charming",
+      "type": "Staff",
+      "rarity": "Uncommon",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Cast Charm Person, Comprehend Languages, Friends"
+      ],
+      "description": "While holding this staff, you can use an action to expend 1 of its 3 charges to cast Charm Person, Comprehend Languages, or Friends from it. The staff regains 1d3 expended charges daily at dawn."
+    },
+    {
+      "id": "staff_fire",
+      "name": "Staff of Fire",
+      "type": "Staff",
+      "rarity": "Very Rare",
+      "weight": "4 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement (Druid/Sorcerer/Warlock/Wizard)",
+        "Fire resistance, Burning Hands/Fireball/Wall of Fire"
+      ],
+      "description": "While holding this staff, you have resistance to fire damage. The staff has 10 charges. While holding it, you can expend charges to cast Burning Hands (1 charge), Fireball (1 charge), or Wall of Fire (2 charges)."
+    },
+    {
+      "id": "staff_flowers",
+      "name": "Staff of the Woodlands",
+      "type": "Staff",
+      "rarity": "Rare",
+      "weight": "4 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement (Druid)",
+        "Animal Friendship, Awaken, Barkskin, etc."
+      ],
+      "description": "This staff can be wielded as a magic quarterstaff that grants a +2 bonus to attack and damage rolls made with it. While holding it, you can use an action to cast one of the following spells from it, expending charges: Animal Friendship, Awaken, Barkskin, Locate Animals or Plants, Pass without Trace, Speak with Animals, Speak with Plants, and Wall of Thorns."
+    },
+    {
+      "id": "staff_frost",
+      "name": "Staff of Frost",
+      "type": "Staff",
+      "rarity": "Very Rare",
+      "weight": "4 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement (Druid/Sorcerer/Warlock/Wizard)",
+        "Cold resistance, Cone of Cold/Fog Cloud/Ice Storm/Wall of Ice"
+      ],
+      "description": "While holding this staff, you have resistance to cold damage. The staff has 10 charges. While holding it, you can expend charges to cast Cone of Cold (1 charge), Fog Cloud (1 charge), Ice Storm (2 charges), or Wall of Ice (2 charges)."
+    },
+    {
+      "id": "staff_healing",
+      "name": "Staff of Healing",
+      "type": "Staff",
+      "rarity": "Rare",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Cure Wounds, Lesser Restoration, Mass Cure Wounds"
+      ],
+      "description": "This staff has 10 charges. While holding it, you can use an action to expend charges to cast Cure Wounds (1 charge per spell level, up to 4th), Lesser Restoration (2 charges), or Mass Cure Wounds (5 charges)."
+    },
+    {
+      "id": "staff_swarming_insects",
+      "name": "Staff of Swarming Insects",
+      "type": "Staff",
+      "rarity": "Rare",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "3d6",
+      "properties": [
+        "Requires Attunement",
+        "Conjure Animals (insects), Giant Insect"
+      ],
+      "description": "This staff has 10 charges and regains 1d6+4 expended charges daily at dawn. While holding it, you can use an action to expend 1 charge and create a swarm of harmless, biting, buzzing insects in a 30-foot cube within 60 feet of you for 10 minutes."
+    },
+    {
+      "id": "staff_thunder",
+      "name": "Staff of Thunder and Lightning",
+      "type": "Staff",
+      "rarity": "Very Rare",
+      "weight": "4 lb.",
+      "cost": "–",
+      "damage": "2d6 thunder / 4d6+3d6 lightning",
+      "properties": [
+        "Requires Attunement",
+        "Thunderwave/Lightning Bolt/Call Lightning"
+      ],
+      "description": "This staff can be wielded as a magic quarterstaff that grants a +1 bonus to attack and damage rolls made with it. While you hold it, you can use an action to cause one of three magical effects: Lightning Strike, Thunderclap, or Thunder and Lightning combined."
+    },
+    {
+      "id": "staff_withering",
+      "name": "Staff of Withering",
+      "type": "Staff",
+      "rarity": "Rare",
+      "weight": "2 lb.",
+      "cost": "–",
+      "damage": "2d10 necrotic + reduced max HP",
+      "properties": [
+        "Requires Attunement (Bard/Cleric/Druid/Warlock/Wizard)"
+      ],
+      "description": "This staff has 3 charges and regains 1d3 expended charges daily at dawn. While holding it, you can use an action to expend 1 charge to make a melee spell attack against a creature within 5 feet. On a hit, the target takes 2d10 necrotic damage, and its hit point maximum is reduced by an amount equal to the damage taken."
+    },
+    {
+      "id": "sun_blade",
+      "name": "Sun Blade",
+      "type": "Weapon",
+      "rarity": "Rare",
+      "weight": "3 lb.",
+      "cost": "–",
+      "damage": "+2, 1d8 radiant",
+      "properties": [
+        "Requires Attunement",
+        "Light source"
+      ],
+      "description": "This item appears to be a longsword hilt. While grasping the hilt, you can use a bonus action to cause a blade of pure radiance to spring into existence, or make the blade disappear. You gain a +2 bonus to attack and damage rolls made with this magic weapon, which deals radiant damage instead of slashing."
+    },
+    {
+      "id": "talisman_pure_good",
+      "name": "Talisman of Pure Good",
+      "type": "Wondrous Item",
+      "rarity": "Legendary",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement (Good alignment)",
+        "Once-per-day spell empowerment"
+      ],
+      "description": "This sacred relic is a fist-sized smooth stone, often with a symbol of good etched into its surface. While carrying the talisman, a creature of good alignment gains a +2 bonus to spell attack rolls and the saving throw DCs of its spells."
+    },
+    {
+      "id": "tome_clear_mind",
+      "name": "Tome of Clear Thought",
+      "type": "Wondrous Item",
+      "rarity": "Very Rare",
+      "weight": "5 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Permanent +2 INT"
+      ],
+      "description": "Reading this book takes 48 hours spread over 6 days. At the end, your INT score increases by 2, as does your maximum for that score. The tome then loses its magic but regains it in a century."
+    },
+    {
+      "id": "trident_fish_command",
+      "name": "Trident of Fish Command",
+      "type": "Weapon",
+      "rarity": "Uncommon",
+      "weight": "4 lb.",
+      "cost": "–",
+      "damage": "As trident",
+      "properties": [
+        "Requires Attunement",
+        "Charm/Calm fish-like creatures"
+      ],
+      "description": "This trident is a magic weapon. While holding it, you can use an action to cast one of the following spells (using your spellcasting ability if you have one, or INT otherwise): Animal Friendship (fish only), Dominate Beast (water beasts only), or Speak with Animals (water-breathing only)."
+    },
+    {
+      "id": "vicious_weapon",
+      "name": "Vicious Weapon",
+      "type": "Weapon",
+      "rarity": "Rare",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "+7 extra on crit",
+      "properties": [],
+      "description": "This weapon is forged from a special alloy. When you roll a 20 on an attack roll made with this magic weapon, the target takes an extra 7 damage of the weapon's type."
+    },
+    {
+      "id": "wand_binding",
+      "name": "Wand of Binding",
+      "type": "Wand",
+      "rarity": "Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Cast Hold Monster"
+      ],
+      "description": "This wand has 7 charges. While holding it, you can use an action and expend 1 or more of its charges to cast the Hold Monster spell from it with a save DC of 17. For 1 additional charge, you can target one additional creature."
+    },
+    {
+      "id": "wand_enemy_detection",
+      "name": "Wand of Enemy Detection",
+      "type": "Wand",
+      "rarity": "Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Detect creatures hostile to you"
+      ],
+      "description": "This wand has 3 charges. While holding it, you can expend 1 charge as an action to cast the spell Detect Evil and Good from it, but the spell senses only creatures that mean you harm."
+    },
+    {
+      "id": "wand_lightning_bolts",
+      "name": "Wand of Lightning Bolts",
+      "type": "Wand",
+      "rarity": "Very Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "8d6 lightning",
+      "properties": [
+        "Requires Attunement",
+        "7 charges"
+      ],
+      "description": "This wand has 7 charges. While holding it, you can use an action to expend 1 or more of its charges to cast the Lightning Bolt spell from it. For each additional charge you expend beyond the first, the damage increases by 1d6."
+    },
+    {
+      "id": "wand_paralysis",
+      "name": "Wand of Paralysis",
+      "type": "Wand",
+      "rarity": "Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Paralyze creature"
+      ],
+      "description": "This wand has 7 charges. You can use an action to expend 1 charge from the wand and cause a paralyzing ray to streak from the tip toward a creature you can see within 60 feet. The target must succeed on a CON saving throw or be paralyzed for 1 minute."
+    },
+    {
+      "id": "wand_polymorph",
+      "name": "Wand of Polymorph",
+      "type": "Wand",
+      "rarity": "Very Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Cast Polymorph"
+      ],
+      "description": "This wand has 7 charges. While holding it, you can use an action and expend 1 charge to cast Polymorph from it. The wand regains 1d6+1 expended charges daily at dawn."
+    },
+    {
+      "id": "wand_secrets",
+      "name": "Wand of Secrets",
+      "type": "Wand",
+      "rarity": "Uncommon",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Detect secret doors/passages within 30 ft"
+      ],
+      "description": "This wand has 3 charges. While holding it, you can expend 1 charge as an action to cast the Detect Magic spell from it. As long as the wand has charges, it pulses faintly and shines dimly if a secret door, trap, or hidden compartment is within 30 feet."
+    },
+    {
+      "id": "wand_web",
+      "name": "Wand of Web",
+      "type": "Wand",
+      "rarity": "Uncommon",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Requires Attunement",
+        "Cast Web"
+      ],
+      "description": "This wand has 7 charges. While holding it, you can use an action to expend 1 charge to cast the Web spell from it (save DC 15). The wand regains 1d6+1 expended charges daily at dawn."
+    },
+    {
+      "id": "wand_wonder",
+      "name": "Wand of Wonder",
+      "type": "Wand",
+      "rarity": "Rare",
+      "weight": "1 lb.",
+      "cost": "–",
+      "damage": "varies",
+      "properties": [
+        "Requires Attunement",
+        "Random magical effects"
+      ],
+      "description": "This wand has 7 charges. While holding it, you can use an action to expend 1 charge and target a creature, object, or point of origin within 120 feet. Roll a d100 and consult the table to discover what effect occurs."
+    },
+    {
+      "id": "weapon_plus1",
+      "name": "Weapon, +1",
+      "type": "Weapon",
+      "rarity": "Uncommon",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "+1 to attack and damage rolls",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "You have a +1 bonus to attack and damage rolls made with this magic weapon."
+    },
+    {
+      "id": "weapon_plus2",
+      "name": "Weapon, +2",
+      "type": "Weapon",
+      "rarity": "Rare",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "+2 to attack and damage rolls",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "You have a +2 bonus to attack and damage rolls made with this magic weapon."
+    },
+    {
+      "id": "weapon_plus3",
+      "name": "Weapon, +3",
+      "type": "Weapon",
+      "rarity": "Very Rare",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "+3 to attack and damage rolls",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "You have a +3 bonus to attack and damage rolls made with this magic weapon."
+    },
+    {
+      "id": "armor_plus1",
+      "name": "Armor, +1",
+      "type": "Armor",
+      "rarity": "Rare",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "+1 AC",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "You have a +1 bonus to AC while wearing this armor."
+    },
+    {
+      "id": "armor_plus2",
+      "name": "Armor, +2",
+      "type": "Armor",
+      "rarity": "Very Rare",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "+2 AC",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "You have a +2 bonus to AC while wearing this armor."
+    },
+    {
+      "id": "armor_plus3",
+      "name": "Armor, +3",
+      "type": "Armor",
+      "rarity": "Legendary",
+      "weight": "varies",
+      "cost": "–",
+      "damage": "+3 AC",
+      "properties": [
+        "Requires Attunement"
+      ],
+      "description": "You have a +3 bonus to AC while wearing this armor."
+    },
+    {
+      "id": "shield_plus1",
+      "name": "Shield, +1",
+      "type": "Armor",
+      "rarity": "Uncommon",
+      "weight": "6 lb.",
+      "cost": "–",
+      "damage": "AC +3 total",
+      "properties": [
+        "+1 to AC bonus"
+      ],
+      "description": "While holding this shield, you have a +1 bonus to AC. This bonus is in addition to the shield's normal bonus to AC."
+    },
+    {
+      "id": "shield_plus2",
+      "name": "Shield, +2",
+      "type": "Armor",
+      "rarity": "Rare",
+      "weight": "6 lb.",
+      "cost": "–",
+      "damage": "AC +4 total",
+      "properties": [
+        "+2 to AC bonus"
+      ],
+      "description": "While holding this shield, you have a +2 bonus to AC. This bonus is in addition to the shield's normal bonus to AC."
+    },
+    {
+      "id": "shield_plus3",
+      "name": "Shield, +3",
+      "type": "Armor",
+      "rarity": "Very Rare",
+      "weight": "6 lb.",
+      "cost": "–",
+      "damage": "AC +5 total",
+      "properties": [
+        "+3 to AC bonus"
+      ],
+      "description": "While holding this shield, you have a +3 bonus to AC. This bonus is in addition to the shield's normal bonus to AC."
+    },
+    {
+      "id": "potion_climbing",
+      "name": "Potion of Climbing",
+      "type": "Potion",
+      "rarity": "Common",
+      "weight": "1/2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Climbing speed = walking speed for 1 hour"
+      ],
+      "description": "When you drink this potion, you gain a climbing speed equal to your walking speed for 1 hour. During this time, you have advantage on STR (Athletics) checks made to climb."
+    },
+    {
+      "id": "potion_diminution",
+      "name": "Potion of Diminution",
+      "type": "Potion",
+      "rarity": "Rare",
+      "weight": "1/2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Shrink size for 1d4 hours"
+      ],
+      "description": "When you drink this potion, you shrink in size, along with anything you are wearing or carrying, until you use an action to dismiss the spell or until 1d4 hours have elapsed."
+    },
+    {
+      "id": "potion_fire_breath",
+      "name": "Potion of Fire Breath",
+      "type": "Potion",
+      "rarity": "Uncommon",
+      "weight": "1/2 lb.",
+      "cost": "–",
+      "damage": "4d6 fire",
+      "properties": [
+        "3 charges, breathe fire 30 ft cone"
+      ],
+      "description": "This potion seethes and smokes as if boiling. When you drink it, you can use a bonus action to exhale fire at a target within 30 feet of you, dealing 4d6 fire damage on a failed DEX save. This potion's magic permits a total of 3 uses."
+    },
+    {
+      "id": "potion_gaseous_form",
+      "name": "Potion of Gaseous Form",
+      "type": "Potion",
+      "rarity": "Rare",
+      "weight": "1/2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Cast Gaseous Form for 1 hour"
+      ],
+      "description": "When you drink this potion, you become gaseous for 1 hour, as though under the effect of the Gaseous Form spell."
+    },
+    {
+      "id": "potion_growth",
+      "name": "Potion of Growth",
+      "type": "Potion",
+      "rarity": "Uncommon",
+      "weight": "1/2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Enlarge for 1d4 hours"
+      ],
+      "description": "When you drink this potion, you grow to twice your size for 1d4 hours, as if affected by the Enlarge/Reduce spell."
+    },
+    {
+      "id": "potion_heroism",
+      "name": "Potion of Heroism",
+      "type": "Potion",
+      "rarity": "Rare",
+      "weight": "1/2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "10 temp HP, immune to fear, cast Bless"
+      ],
+      "description": "When you drink this potion, you gain 10 temporary hit points that last for 1 hour. For the same duration, you are under the effect of the Bless spell and immune to being frightened."
+    },
+    {
+      "id": "potion_mind_reading",
+      "name": "Potion of Mind Reading",
+      "type": "Potion",
+      "rarity": "Rare",
+      "weight": "1/2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Cast Detect Thoughts for 1 hour"
+      ],
+      "description": "When you drink this potion, you can read the surface thoughts of creatures within 30 feet of you for the next hour, as if you were under the effects of the Detect Thoughts spell."
+    },
+    {
+      "id": "potion_resistance",
+      "name": "Potion of Resistance",
+      "type": "Potion",
+      "rarity": "Uncommon",
+      "weight": "1/2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Resistance to one damage type for 1 hour"
+      ],
+      "description": "When you drink this potion, you gain resistance to one type of damage for 1 hour. The GM chooses the type or determines it randomly."
+    },
+    {
+      "id": "potion_water_breathing",
+      "name": "Potion of Water Breathing",
+      "type": "Potion",
+      "rarity": "Uncommon",
+      "weight": "1/2 lb.",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "Breathe underwater for 1 hour"
+      ],
+      "description": "You can breathe underwater for 1 hour after drinking this potion."
+    },
+    {
+      "id": "scroll_protection",
+      "name": "Scroll of Protection",
+      "type": "Wondrous Item",
+      "rarity": "Rare",
+      "weight": "–",
+      "cost": "–",
+      "damage": "",
+      "properties": [
+        "10 ft radius ward vs creature type"
+      ],
+      "description": "This scroll bears a magic formula that creates a special ward against a particular type of creature: aberrations, beasts, celestials, elementals, fey, fiends, or undead. While the spell is active, creatures of the specified type have disadvantage on attack rolls against you, and you can add 1d4 to any saving throw against the spells and other magical effects of such creatures."
     }
   ]
 }

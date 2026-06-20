@@ -4,6 +4,34 @@
 
 const SpellSlotUI = (() => {
 
+  // Multiclass Spell Slots berechnen
+  function calcMulticlassSlots(char, slotConfig) {
+    const classes = char.classes || [];
+    if (classes.length <= 1) return null; // Kein Multiclass = normale Slots
+
+    const classesData = {};
+    DnDData.classes.forEach(c => classesData[c.id] = c);
+
+    let casterLevel = 0;
+    let hasPact = false;
+
+    for (const c of classes) {
+      const cls = classesData[c.classId];
+      const type = cls?.caster_type || 'none';
+      if (type === 'full')  casterLevel += c.level;
+      if (type === 'half')  casterLevel += Math.floor(c.level / 2);
+      if (type === 'third') casterLevel += Math.floor(c.level / 3);
+      if (type === 'pact')  hasPact = true;
+    }
+
+    casterLevel = Math.floor(casterLevel);
+    if (casterLevel === 0) return null;
+
+    const slots = slotConfig?.multiclass_caster?.[String(casterLevel)] || null;
+    return { slots, casterLevel, hasPact };
+  }
+
+
   // Klassen → Caster-Typ Mapping
   const CASTER_TYPE = {
     bard:             'full_caster',

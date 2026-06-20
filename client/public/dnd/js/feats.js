@@ -5,8 +5,6 @@
 const FeatsUI = (() => {
   let _selected = null;
 
-  const TIER_COLOR = { S:'#c9962a', A:'#22c55e', B:'#3b82f6', C:'#9ca3af', D:'#ef4444' };
-
   function init() {
     populateFilters();
     renderList();
@@ -26,25 +24,20 @@ const FeatsUI = (() => {
 
   function bindSearch() {
     document.getElementById('feat-search')?.addEventListener('input', renderList);
-    document.getElementById('feat-filter-tier')?.addEventListener('change', renderList);
+    document.getElementById('feat-filter-category')?.addEventListener('change', renderList);
     document.getElementById('feat-filter-tag')?.addEventListener('change', renderList);
   }
 
   function filtered() {
     const q    = (document.getElementById('feat-search')?.value || '').toLowerCase();
-    const tier = document.getElementById('feat-filter-tier')?.value;
+    const category = document.getElementById('feat-filter-category')?.value;
     const tag  = document.getElementById('feat-filter-tag')?.value;
     return DnDData.feats.filter(f => {
       if (q    && !f.name.toLowerCase().includes(q) && !f.description.toLowerCase().includes(q)) return false;
-      if (tier && f.tier !== tier) return false;
+      if (category && f.category !== category) return false;
       if (tag  && !(f.tags||[]).includes(tag)) return false;
       return true;
     });
-  }
-
-  function tierBadge(tier) {
-    const color = TIER_COLOR[tier] || '#9ca3af';
-    return `<span style="background:${color}22;border:1px solid ${color};color:${color};font-family:var(--font-title);font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;flex-shrink:0;">${tier}</span>`;
   }
 
   function renderList() {
@@ -63,7 +56,7 @@ const FeatsUI = (() => {
       const div = document.createElement('div');
       div.className = 'list-item' + (feat.id === _selected ? ' selected' : '');
       div.innerHTML = `
-        ${tierBadge(feat.tier || '?')}
+        ${feat.category ? `<span class="detail-tag" style="font-size:9px;flex-shrink:0;">${feat.category}</span>` : ''}
         <span class="list-item-name">${feat.name}</span>
         ${feat.prerequisite ? `<span class="list-item-tag" style="font-size:10px;" title="Voraussetzung: ${feat.prerequisite}">⚠</span>` : ''}
         ${owned ? '<span style="color:#2c5a2c;font-size:12px;flex-shrink:0;">✓</span>' : ''}
@@ -94,13 +87,11 @@ const FeatsUI = (() => {
     const container = document.getElementById('feat-detail');
     if (!container) return;
     const owned = (Character.data.featIds || []).includes(feat.id);
-    const tierColor = TIER_COLOR[feat.tier] || '#9ca3af';
-
     container.innerHTML = `
       <div class="detail-content">
         <h2>${feat.name}</h2>
         <div class="detail-tags">
-          <span class="detail-tag" style="border-color:${tierColor};color:${tierColor};font-weight:700;">Tier ${feat.tier || '?'}</span>
+${feat.category ? `<span class="detail-tag" style="background:rgba(201,150,42,0.1);">${feat.category}</span>` : ''}
           ${(feat.tags||[]).map(t=>`<span class="detail-tag">${t}</span>`).join('')}
           ${feat.prerequisite ? `<span class="detail-tag" style="border-color:orange;color:#a06010;">⚠ ${feat.prerequisite}</span>` : ''}
         </div>

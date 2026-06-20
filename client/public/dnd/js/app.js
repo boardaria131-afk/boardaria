@@ -628,6 +628,8 @@ function startApp(user) {
   FeatsUI.init();
   SpellSlotUI.init();
   CombatUI.init();
+  if (typeof ConditionsUI !== 'undefined') ConditionsUI.init();
+  if (typeof BestiaryUI !== 'undefined') BestiaryUI.init();
   updatePassiveStats();
   ConditionsUI.init();
   SummaryUI.init();

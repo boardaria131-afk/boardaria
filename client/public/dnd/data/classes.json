@@ -30,7 +30,6 @@
             "Mindless Rage",
             "Intimidating Presence"
           ],
-          "tier": "C",
           "role": "DPS",
           "features_detail": [
             {
@@ -64,7 +63,6 @@
             "Totem Spirit",
             "Aspect of the Beast"
           ],
-          "tier": "S",
           "role": "Tank",
           "features_detail": [
             {
@@ -103,13 +101,11 @@
             "Spirit Shield",
             "Consult the Spirits"
           ],
-          "tier": "A",
           "role": "Tank/Support"
         },
         {
           "id": "storm_herald",
           "name": "Storm Herald",
-          "tier": "B",
           "role": "DPS",
           "description": "Aura damage that scales with level but remains inconsistent. Tundra, Desert, and Sea auras offer different elemental riders.",
           "features": [],
@@ -139,7 +135,6 @@
         {
           "id": "zealot",
           "name": "Zealot",
-          "tier": "A",
           "role": "DPS/Tank",
           "description": "High damage bonus and extremely hard to kill — Rage Beyond Death lets you stay at 0 HP without death saves while raging.",
           "features": [],
@@ -174,7 +169,6 @@
         {
           "id": "beast",
           "name": "Beast",
-          "tier": "A",
           "role": "DPS/Tank",
           "description": "Strong natural weapon scaling. Bestial Soul options provide claws, bite, and tail — good damage and bonus mobility.",
           "features": []
@@ -182,7 +176,6 @@
         {
           "id": "battlerager",
           "name": "Battlerager",
-          "tier": "D",
           "role": "Tank",
           "description": "Weak scaling melee tank. Very limited — spiky armor adds minor damage but falls off quickly at higher levels.",
           "features": [],
@@ -212,7 +205,6 @@
         {
           "id": "wild_magic",
           "name": "Wild Magic",
-          "tier": "B",
           "role": "DPS",
           "description": "Random magical surges on rage — mixed value. Unpredictable but some effects are very powerful if they proc at the right time.",
           "features": [],
@@ -244,7 +236,23 @@
             }
           ]
         }
-      ]
+      ],
+      "multiclass_req": {
+        "str": 13
+      },
+      "multiclass_profs": {
+        "armor": [
+          "light",
+          "medium",
+          "shields"
+        ],
+        "weapons": [
+          "simple",
+          "martial"
+        ]
+      },
+      "hit_die": 12,
+      "caster_type": null
     },
     {
       "id": "bard",
@@ -275,7 +283,6 @@
             "Cutting Words",
             "Additional Magical Secrets"
           ],
-          "tier": "S",
           "role": "Support/Control",
           "features_detail": [
             {
@@ -310,7 +317,6 @@
             "Extra Attack",
             "Battle Magic"
           ],
-          "tier": "B",
           "role": "Support/DPS",
           "features_detail": [
             {
@@ -344,7 +350,6 @@
             "Fighting Style",
             "Blade Flourish"
           ],
-          "tier": "A",
           "role": "DPS",
           "features_detail": [
             {
@@ -377,7 +382,6 @@
         {
           "id": "glamour",
           "name": "Glamour",
-          "tier": "A",
           "role": "Support",
           "description": "Strong party repositioning via Mantle of Inspiration. Enthralling Performance grants crowd control in social situations.",
           "features": [],
@@ -407,7 +411,6 @@
         {
           "id": "whispers",
           "name": "Whispers",
-          "tier": "B",
           "role": "DPS",
           "description": "Burst psychic damage via Psychic Blades plus fear mechanics. Strong against single targets but heavily resource dependent.",
           "features": []
@@ -415,7 +418,6 @@
         {
           "id": "creation",
           "name": "Creation",
-          "tier": "A",
           "role": "Support",
           "description": "Object creation utility via Performance of Creation. Mote of Potential augments Bardic Inspiration with powerful effects.",
           "features": []
@@ -423,7 +425,6 @@
         {
           "id": "eloquence",
           "name": "Eloquence",
-          "tier": "S",
           "role": "Support/Control",
           "description": "Best social + control bard. Unsettling Words lowers saving throws, and Unfailing Inspiration ensures dice are never wasted.",
           "features": []
@@ -431,7 +432,6 @@
         {
           "id": "college_of_spirits",
           "name": "College of Spirits",
-          "tier": "C",
           "role": "Support/Control/Utility",
           "description": "Ghost-story themed bard using Tales from Beyond to randomly generate powerful effects — healing, damage, or control based on die roll.",
           "features": []
@@ -439,12 +439,23 @@
         {
           "id": "dance",
           "name": "Dance",
-          "tier": "A",
           "role": "Support",
           "description": "Highly mobile bard buffing allies through movement and melee synergy. Strong party enabler but not top raw power.",
           "features": []
         }
-      ]
+      ],
+      "multiclass_req": {
+        "cha": 13
+      },
+      "multiclass_profs": {
+        "armor": [
+          "light"
+        ],
+        "weapons": [],
+        "skills": 1
+      },
+      "hit_die": 8,
+      "caster_type": "full"
     },
     {
       "id": "cleric",
@@ -475,7 +486,6 @@
             "Preserve Life",
             "Blessed Healer"
           ],
-          "tier": "B",
           "role": "Support",
           "features_detail": [
             {
@@ -519,7 +529,6 @@
             "Radiance of the Dawn",
             "Corona of Light"
           ],
-          "tier": "A-",
           "role": "DPS",
           "features_detail": [
             {
@@ -562,7 +571,6 @@
             "Invoke Duplicity",
             "Cloak of Shadows"
           ],
-          "tier": "B",
           "role": "Control",
           "features_detail": [
             {
@@ -601,7 +609,6 @@
             "Guided Strike",
             "War God's Blessing"
           ],
-          "tier": "B",
           "role": "DPS",
           "features_detail": [
             {
@@ -634,7 +641,6 @@
         {
           "id": "twilight",
           "name": "Twilight",
-          "tier": "S",
           "role": "Support/Tank",
           "description": "One of the strongest subclasses in the game. Twilight Sanctuary grants temp HP or ends charm/fear every turn in a 30 ft radius.",
           "features": []
@@ -642,7 +648,6 @@
         {
           "id": "order",
           "name": "Order",
-          "tier": "A",
           "role": "Support",
           "description": "Action economy manipulation. Voice of Authority lets an ally attack whenever you cast a spell on them — excellent synergy.",
           "features": []
@@ -650,7 +655,6 @@
         {
           "id": "grave",
           "name": "Grave",
-          "tier": "A",
           "role": "Support",
           "description": "Prevents death and stabilizes the party. Path to the Grave doubles the next damage instance on a creature — deadly with smites.",
           "features": []
@@ -658,7 +662,6 @@
         {
           "id": "peace",
           "name": "Peace",
-          "tier": "S",
           "role": "Support",
           "description": "Broken-level party buffs. Emboldening Bond adds 1d4 to attacks and saves for multiple allies — permanently active.",
           "features": []
@@ -666,7 +669,6 @@
         {
           "id": "arcana",
           "name": "Arcana",
-          "tier": "A",
           "role": "Control",
           "description": "Wizard-like spell access. Arcane Mastery at level 17 grants access to extremely powerful wizard spells.",
           "features": []
@@ -674,7 +676,6 @@
         {
           "id": "knowledge",
           "name": "Knowledge",
-          "tier": "B",
           "role": "Utility",
           "description": "Skill-heavy but weak combat. Visions of the Past and Potent Spellcasting offer utility but limited combat contribution.",
           "features": [],
@@ -709,7 +710,6 @@
         {
           "id": "tempest",
           "name": "Tempest",
-          "tier": "A",
           "role": "DPS",
           "description": "Burst lightning damage. Destructive Wrath maximizes thunder/lightning damage — paired with Call Lightning for massive burst.",
           "features": [],
@@ -749,7 +749,6 @@
         {
           "id": "forge",
           "name": "Forge",
-          "tier": "A-",
           "role": "Tank/Support",
           "description": "Extremely durable buffer. Soul of the Forge grants +1 AC in heavy armor and resistance to fire — strong early and late game.",
           "features": []
@@ -757,7 +756,6 @@
         {
           "id": "death",
           "name": "Death",
-          "tier": "B",
           "role": "DPS",
           "description": "Necrotic niche damage. Reaper lets cantrips hit two targets and Indestructible forms of Undead are strong for DM characters.",
           "features": []
@@ -765,7 +763,6 @@
         {
           "id": "nature",
           "name": "Nature",
-          "tier": "C",
           "role": "Utility",
           "description": "Weak druid-like cleric. Limited domain spells and features don't offer strong enough return compared to other cleric options.",
           "features": [],
@@ -802,7 +799,20 @@
             }
           ]
         }
-      ]
+      ],
+      "multiclass_req": {
+        "wis": 13
+      },
+      "multiclass_profs": {
+        "armor": [
+          "light",
+          "medium",
+          "shields"
+        ],
+        "weapons": []
+      },
+      "hit_die": 8,
+      "caster_type": "full"
     },
     {
       "id": "druid",
@@ -833,7 +843,6 @@
             "Circular Forms",
             "Elemental Wild Shape"
           ],
-          "tier": "S",
           "role": "Tank/DPS",
           "features_detail": [
             {
@@ -873,7 +882,6 @@
             "Land's Stride",
             "Nature's Sanctuary"
           ],
-          "tier": "B",
           "role": "Control",
           "features_detail": [
             {
@@ -901,7 +909,6 @@
         {
           "id": "stars",
           "name": "Stars",
-          "tier": "S",
           "role": "Control/DPS",
           "description": "Very flexible and strong. Starry Form grants Archer (bonus ranged attacks), Chalice (bonus healing), or Dragon (concentration boost).",
           "features": []
@@ -909,7 +916,6 @@
         {
           "id": "shepherd",
           "name": "Shepherd",
-          "tier": "S",
           "role": "Support",
           "description": "Summon scaling is extremely strong. Faithful Summons and Speech of the Woods with Aura of the Guardian make summons unkillable.",
           "features": []
@@ -917,7 +923,6 @@
         {
           "id": "spores",
           "name": "Spores",
-          "tier": "A",
           "role": "DPS/Tank",
           "description": "Melee hybrid with Halo of Spores damage and Symbiotic Entity granting temp HP equal to 4× Wild Shape uses.",
           "features": [],
@@ -952,7 +957,6 @@
         {
           "id": "wildfire",
           "name": "Wildfire",
-          "tier": "B+",
           "role": "DPS/Support",
           "description": "Mobility + damage + healing. Enhanced Bond boosts spell damage and healing, and Wildfire Spirit offers consistent teleportation.",
           "features": []
@@ -960,12 +964,24 @@
         {
           "id": "dreams",
           "name": "Dreams",
-          "tier": "C",
           "role": "Support",
           "description": "Healing and mobility via Hearth of Moonlight and Balm of the Summer Court. Mechanically weak compared to other druid options.",
           "features": []
         }
-      ]
+      ],
+      "multiclass_req": {
+        "wis": 13
+      },
+      "multiclass_profs": {
+        "armor": [
+          "light",
+          "medium",
+          "shields"
+        ],
+        "weapons": []
+      },
+      "hit_die": 8,
+      "caster_type": "full"
     },
     {
       "id": "fighter",
@@ -998,7 +1014,6 @@
             "Additional Fighting Style",
             "Superior Critical"
           ],
-          "tier": "C",
           "role": "DPS",
           "features_detail": [
             {
@@ -1038,7 +1053,6 @@
             "Know Your Enemy",
             "Relentless"
           ],
-          "tier": "S",
           "role": "Control/DPS",
           "features_detail": [
             {
@@ -1078,7 +1092,6 @@
             "War Magic",
             "Eldritch Strike"
           ],
-          "tier": "A",
           "role": "Tank/Utility",
           "features_detail": [
             {
@@ -1116,7 +1129,6 @@
         {
           "id": "rune_knight",
           "name": "Rune Knight",
-          "tier": "S",
           "role": "Tank/Control",
           "description": "Huge utility and scaling. Runes grant diverse benefits — Giant's Might enlarges you for extra damage and grapple advantage.",
           "features": []
@@ -1124,7 +1136,6 @@
         {
           "id": "echo_knight",
           "name": "Echo Knight",
-          "tier": "S",
           "role": "Tank/DPS/Control",
           "description": "Extremely strong battlefield manipulation using an echo clone to extend reach, create extra attacks, and provide teleportation-like positioning.",
           "features": []
@@ -1132,7 +1143,6 @@
         {
           "id": "cavalier",
           "name": "Cavalier",
-          "tier": "A",
           "role": "Tank",
           "description": "Strong protector via Unwavering Mark — attacks against marked targets provoke a bonus attack from you. Great on mounted builds.",
           "features": []
@@ -1140,7 +1150,6 @@
         {
           "id": "samurai",
           "name": "Samurai",
-          "tier": "A",
           "role": "DPS",
           "description": "Burst advantage engine. Fighting Spirit grants advantage and temp HP three times per day, and Rapid Strike enables extra attack for damage.",
           "features": []
@@ -1148,7 +1157,6 @@
         {
           "id": "psi_warrior",
           "name": "Psi Warrior",
-          "tier": "B",
           "role": "Control/DPS",
           "description": "Psionic versatility. Telekinetic Adept and Psionic Strike add psychic damage and forced movement — interesting but resource-limited.",
           "features": []
@@ -1156,7 +1164,6 @@
         {
           "id": "purple_dragon_knight_banneret",
           "name": "Purple Dragon Knight (Banneret)",
-          "tier": "C",
           "role": "Support/Tank",
           "description": "Fighter subclass focused on battlefield leadership and ally support, but mechanically underpowered compared to other Fighter archetypes.",
           "features": []
@@ -1164,12 +1171,28 @@
         {
           "id": "arcane_archer",
           "name": "Arcane Archer",
-          "tier": "C",
           "role": "DPS",
           "description": "Limited uses and weak scaling. Arcane Shot options are creative but running out of uses mid-combat is a frequent problem.",
           "features": []
         }
-      ]
+      ],
+      "multiclass_req": {
+        "str": 13,
+        "or": "dex"
+      },
+      "multiclass_profs": {
+        "armor": [
+          "light",
+          "medium",
+          "shields"
+        ],
+        "weapons": [
+          "simple",
+          "martial"
+        ]
+      },
+      "hit_die": 10,
+      "caster_type": "third"
     },
     {
       "id": "monk",
@@ -1202,7 +1225,6 @@
             "Tranquility",
             "Quivering Palm"
           ],
-          "tier": "B",
           "role": "Control/DPS",
           "features_detail": [
             {
@@ -1237,7 +1259,6 @@
             "Cloak of Shadows",
             "Opportunist"
           ],
-          "tier": "A",
           "role": "Utility",
           "features_detail": [
             {
@@ -1270,7 +1291,6 @@
             "Disciple of the Elements",
             "Elemental Disciplines"
           ],
-          "tier": "C",
           "role": "DPS",
           "features_detail": [
             {
@@ -1298,7 +1318,6 @@
         {
           "id": "mercy",
           "name": "Mercy",
-          "tier": "S",
           "role": "Healer/Control",
           "description": "Hybrid DPS and Healer. Hands of Harm adds necrotic damage, Hands of Healing cures conditions, and Visage of the Hand grants fear and blind.",
           "features": []
@@ -1306,7 +1325,6 @@
         {
           "id": "way_of_the_long_death",
           "name": "Way of the Long Death",
-          "tier": "A",
           "role": "Tank/DPS/Control",
           "description": "Survivability focused. Touch of Death grants temp HP on kills, Mastery of Death prevents death once per ki, Hour of Reaping frightens all nearby enemies.",
           "features": []
@@ -1314,7 +1332,6 @@
         {
           "id": "kensei",
           "name": "Kensei",
-          "tier": "A",
           "role": "DPS",
           "description": "Weapon monk scaling. Agile Parry adds +2 AC with unarmed strike, and Sharpen the Blade stacks magic bonuses on chosen weapons.",
           "features": []
@@ -1322,7 +1339,6 @@
         {
           "id": "astral_self",
           "name": "Astral Self",
-          "tier": "A",
           "role": "DPS/Control",
           "description": "Strong scaling astral arms extend reach and grant extra attack. Visage of the Astral Self grants darkvision and intimidation advantage.",
           "features": []
@@ -1330,7 +1346,6 @@
         {
           "id": "way_of_the_ascendant_dragon",
           "name": "Way of the Ascendant Dragon",
-          "tier": "A",
           "role": "DPS/Control/Mobility",
           "description": "Dragon-themed monk that replaces unarmed strike damage with elemental breath effects, provides flight and mobility scaling, and enhances battlefield control.",
           "features": []
@@ -1338,7 +1353,6 @@
         {
           "id": "sun_soul",
           "name": "Sun Soul",
-          "tier": "B",
           "role": "DPS",
           "description": "Ranged monk option. Radiant Sun Bolt adds a ranged attack option but ki costs for Searing Arc Strike make it less efficient.",
           "features": []
@@ -1346,12 +1360,23 @@
         {
           "id": "drunken_master",
           "name": "Drunken Master",
-          "tier": "B",
           "role": "Utility",
           "description": "Mobility trickery. Drunken Technique adds disengage and bonus movement on Flurry of Blows — fun but not top-tier damage.",
           "features": []
         }
-      ]
+      ],
+      "multiclass_req": {
+        "dex": 13,
+        "wis": 13
+      },
+      "multiclass_profs": {
+        "weapons": [
+          "simple",
+          "shortswords"
+        ]
+      },
+      "hit_die": 8,
+      "caster_type": null
     },
     {
       "id": "paladin",
@@ -1385,7 +1410,6 @@
             "Aura of Devotion",
             "Holy Nimbus"
           ],
-          "tier": "B",
           "role": "DPS/Tank",
           "features_detail": [
             {
@@ -1425,7 +1449,6 @@
             "Aura of Warding",
             "Undying Sentinel"
           ],
-          "tier": "B",
           "role": "Tank/Support",
           "features_detail": [
             {
@@ -1465,7 +1488,6 @@
             "Relentless Avenger",
             "Soul of Vengeance"
           ],
-          "tier": "S",
           "role": "DPS",
           "features_detail": [
             {
@@ -1498,7 +1520,6 @@
         {
           "id": "redemption",
           "name": "Redemption",
-          "tier": "A",
           "role": "Support",
           "description": "Damage mitigation via Aura of the Guardian absorbs damage for allies. Pacifism restrictions are limiting but the defensive power is real.",
           "features": []
@@ -1506,7 +1527,6 @@
         {
           "id": "oathbreaker",
           "name": "Oathbreaker",
-          "tier": "S",
           "role": "Control",
           "description": "Extremely strong dark-themed paladin with necrotic damage, fear control, undead synergy, and high burst smite potential. Requires DM approval.",
           "features": []
@@ -1514,7 +1534,6 @@
         {
           "id": "oath_of_the_noble_genies",
           "name": "Oath of the Noble Genies",
-          "tier": "S",
           "role": "Control",
           "description": "Extremely strong elemental paladin with high mobility, flexible resistances, and strong smite augmentation. Level 20 capstone grants pseudo-wish for saving rolls.",
           "features": []
@@ -1522,7 +1541,6 @@
         {
           "id": "crown",
           "name": "Crown",
-          "tier": "A",
           "role": "Tank/Support",
           "description": "Strong defender via Champion Challenge — forces enemies to attack you instead of allies. Divine Allegiance absorbs ally damage.",
           "features": []
@@ -1530,7 +1548,6 @@
         {
           "id": "conquest",
           "name": "Conquest",
-          "tier": "A",
           "role": "Control",
           "description": "Fear lockdown. Aura of Conquest deals psychic damage and reduces speed to 0 for frightened creatures — devastating with fear spells.",
           "features": []
@@ -1538,7 +1555,6 @@
         {
           "id": "watchers",
           "name": "Watchers",
-          "tier": "A",
           "role": "Support/Control",
           "description": "Anti-magic support. Aura of the Sentinel adds proficiency bonus to initiative and Vigilant Rebuke counterspells as a reaction.",
           "features": []
@@ -1546,12 +1562,28 @@
         {
           "id": "glory",
           "name": "Glory",
-          "tier": "B",
           "role": "DPS",
           "description": "Mobility focus. Inspiring Smite distributes temp HP after smites and Peerless Athlete grants athletics/acrobatics advantage — solid but not top tier.",
           "features": []
         }
-      ]
+      ],
+      "multiclass_req": {
+        "str": 13,
+        "cha": 13
+      },
+      "multiclass_profs": {
+        "armor": [
+          "light",
+          "medium",
+          "shields"
+        ],
+        "weapons": [
+          "simple",
+          "martial"
+        ]
+      },
+      "hit_die": 10,
+      "caster_type": "half"
     },
     {
       "id": "ranger",
@@ -1584,7 +1616,6 @@
             "Multiattack",
             "Superior Hunter's Defense"
           ],
-          "tier": "B",
           "role": "DPS",
           "features_detail": [
             {
@@ -1619,7 +1650,6 @@
             "Bestial Fury",
             "Share Spells"
           ],
-          "tier": "C",
           "role": "DPS",
           "features_detail": [
             {
@@ -1647,7 +1677,6 @@
         {
           "id": "gloom_stalker",
           "name": "Gloom Stalker",
-          "tier": "S",
           "role": "DPS",
           "description": "Best ambush subclass. Dread Ambusher adds extra attack and damage on turn 1, Umbral Sight grants invisible-in-darkness, Stalker's Flurry prevents misses.",
           "features": []
@@ -1655,7 +1684,6 @@
         {
           "id": "swarmkeeper",
           "name": "Swarmkeeper",
-          "tier": "A",
           "role": "Control",
           "description": "Battlefield manipulation. Gathered Swarm deals bonus damage and forces movement — push enemies off ledges or pull allies to safety.",
           "features": []
@@ -1663,7 +1691,6 @@
         {
           "id": "drakewarden",
           "name": "Drakewarden",
-          "tier": "S",
           "role": "DPS/Tank",
           "description": "Strong drake companion with scaling resistances. Drake gains flight at level 7 and shares resistances with the ranger — very strong scaling.",
           "features": []
@@ -1671,7 +1698,6 @@
         {
           "id": "horizon_walker",
           "name": "Horizon Walker",
-          "tier": "A",
           "role": "DPS/Utility",
           "description": "Mobility and planar damage. Planar Warrior adds force damage, Ethereal Step grants misty step as a bonus action — strong positioning.",
           "features": []
@@ -1679,7 +1705,6 @@
         {
           "id": "fey_wanderer",
           "name": "Fey Wanderer",
-          "tier": "A",
           "role": "Support",
           "description": "Charm and combat mix. Dreadful Strikes adds psychic damage, and Beguiling Twist redirects charm/fear effects against the caster.",
           "features": []
@@ -1687,12 +1712,29 @@
         {
           "id": "monster_slayer",
           "name": "Monster Slayer",
-          "tier": "B",
           "role": "DPS",
           "description": "Situational. Slayer's Prey adds extra damage on first hit per turn, and Magic-User's Nemesis counters spellcasters — niche but functional.",
           "features": []
         }
-      ]
+      ],
+      "multiclass_req": {
+        "dex": 13,
+        "wis": 13
+      },
+      "multiclass_profs": {
+        "armor": [
+          "light",
+          "medium",
+          "shields"
+        ],
+        "weapons": [
+          "simple",
+          "martial"
+        ],
+        "skills": 1
+      },
+      "hit_die": 10,
+      "caster_type": "half"
     },
     {
       "id": "rogue",
@@ -1724,7 +1766,6 @@
             "Supreme Sneak",
             "Use Magic Device"
           ],
-          "tier": "S",
           "role": "Utility",
           "features_detail": [
             {
@@ -1765,7 +1806,6 @@
             "Imposter",
             "Death Strike"
           ],
-          "tier": "A",
           "role": "DPS",
           "features_detail": [
             {
@@ -1805,7 +1845,6 @@
             "Magical Ambush",
             "Versatile Trickster"
           ],
-          "tier": "A",
           "role": "Control/Utility",
           "features_detail": [
             {
@@ -1838,7 +1877,6 @@
         {
           "id": "swashbuckler",
           "name": "Swashbuckler",
-          "tier": "A",
           "role": "DPS",
           "description": "Strong duelist. Fancy Footwork prevents opportunity attacks after melee, Panache grants charmed condition, Solo Sneak Attack enables Sneak without ally.",
           "features": []
@@ -1846,7 +1884,6 @@
         {
           "id": "soulknife",
           "name": "Soulknife",
-          "tier": "S",
           "role": "DPS/Utility",
           "description": "Psionic reliability. Psychic Blades always work (no ammunition), Psi-Powered Leap grants flight, and Rend Mind can paralyze on hit.",
           "features": []
@@ -1854,7 +1891,6 @@
         {
           "id": "phantom",
           "name": "Phantom",
-          "tier": "B",
           "role": "DPS",
           "description": "Strong scaling necrotic damage from Wails from the Grave — hits a second target for half Sneak Attack damage, excellent against groups.",
           "features": []
@@ -1862,7 +1898,6 @@
         {
           "id": "mastermind",
           "name": "Mastermind",
-          "tier": "D",
           "role": "Support",
           "description": "Tactical but niche. Master of Tactics lets you Help from 30 ft away but the overall feature set is weak compared to other rogue options.",
           "features": []
@@ -1870,7 +1905,6 @@
         {
           "id": "inquisitive",
           "name": "Inquisitive",
-          "tier": "D",
           "role": "Utility",
           "description": "Detection specialist. Insightful Fighting grants Sneak Attack without ally but requires a bonus action check — unreliable in fast combat.",
           "features": []
@@ -1878,12 +1912,29 @@
         {
           "id": "scout",
           "name": "Scout",
-          "tier": "A",
           "role": "Utility/DPS",
           "description": "Mobility and exploration. Skirmisher lets you move as a reaction when an enemy ends their turn nearby, Survivalist grants expertise in Nature/Survival.",
           "features": []
         }
-      ]
+      ],
+      "multiclass_req": {
+        "dex": 13
+      },
+      "multiclass_profs": {
+        "armor": [
+          "light"
+        ],
+        "weapons": [
+          "simple",
+          "hand crossbows",
+          "longswords",
+          "rapiers",
+          "shortswords"
+        ],
+        "skills": 1
+      },
+      "hit_die": 8,
+      "caster_type": "third"
     },
     {
       "id": "sorcerer",
@@ -1916,7 +1967,6 @@
             "Dragon Wings",
             "Draconic Presence"
           ],
-          "tier": "B",
           "role": "DPS/Tank",
           "features_detail": [
             {
@@ -1957,7 +2007,6 @@
             "Controlled Chaos",
             "Spell Bombardment"
           ],
-          "tier": "B",
           "role": "DPS",
           "features_detail": [
             {
@@ -1990,7 +2039,6 @@
         {
           "id": "divine_soul",
           "name": "Divine Soul",
-          "tier": "S",
           "role": "Support/DPS",
           "description": "Best spell flexibility. Access to the entire Cleric spell list combined with Sorcerer's Metamagic makes this the most versatile healing caster.",
           "features": []
@@ -1998,7 +2046,6 @@
         {
           "id": "aberrant_mind",
           "name": "Aberrant Mind",
-          "tier": "S",
           "role": "Control",
           "description": "Best psionic caster. Telepathic Speech, free subtle-spelled psychic spells, and Warping Implosion at level 18 for massive forced movement.",
           "features": []
@@ -2006,7 +2053,6 @@
         {
           "id": "clockwork_soul",
           "name": "Clockwork Soul",
-          "tier": "S",
           "role": "Support/Control",
           "description": "Extremely optimized spell list from Mechanus. Restore Balance removes advantage/disadvantage and Trance of Order makes attacks never miss at level 18.",
           "features": []
@@ -2014,7 +2060,6 @@
         {
           "id": "shadow",
           "name": "Shadow",
-          "tier": "A",
           "role": "Control",
           "description": "Darkness synergy. Eyes of the Dark creates a magical darkness only you can see through, Hound of Ill Omen imposes disadvantage on saves.",
           "features": [],
@@ -2044,12 +2089,19 @@
         {
           "id": "storm",
           "name": "Storm",
-          "tier": "B",
           "role": "DPS",
           "description": "Mobility and lightning. Tempestuous Magic lets you fly 10 ft as a bonus action after a spell, and Storm's Fury reflects lightning on attackers.",
           "features": []
         }
-      ]
+      ],
+      "multiclass_req": {
+        "cha": 13
+      },
+      "multiclass_profs": {
+        "weapons": []
+      },
+      "hit_die": 6,
+      "caster_type": "full"
     },
     {
       "id": "warlock",
@@ -2081,7 +2133,6 @@
             "Beguiling Defenses",
             "Dark Delirium"
           ],
-          "tier": "B",
           "role": "Control",
           "features_detail": [
             {
@@ -2116,7 +2167,6 @@
             "Fiendish Resilience",
             "Hurl Through Hell"
           ],
-          "tier": "A",
           "role": "DPS",
           "features_detail": [
             {
@@ -2151,7 +2201,6 @@
             "Thought Shield",
             "Create Thrall"
           ],
-          "tier": "B",
           "role": "Control",
           "features_detail": [
             {
@@ -2179,7 +2228,6 @@
         {
           "id": "genie",
           "name": "Genie",
-          "tier": "S",
           "role": "DPS/Utility",
           "description": "Extremely flexible patron power. Genie's Vessel grants a rest space, Sanctuary vessel buff, and elemental damage augmentation — top tier utility.",
           "features": []
@@ -2187,7 +2235,6 @@
         {
           "id": "celestial",
           "name": "Celestial",
-          "tier": "B",
           "role": "Support",
           "description": "Healing warlock. Healing Light pool grants dice-based healing, and Radiant Soul adds radiant damage to fire/radiant spells — unique support role.",
           "features": []
@@ -2195,7 +2242,6 @@
         {
           "id": "hexblade",
           "name": "Hexblade",
-          "tier": "S",
           "role": "DPS/Tank",
           "description": "Top-tier melee warlock. Hexblade's Curse adds proficiency bonus to damage and crits, Hex Warrior uses CHA for weapon attacks, grants medium armor.",
           "features": []
@@ -2203,7 +2249,6 @@
         {
           "id": "fathomless",
           "name": "Fathomless",
-          "tier": "A",
           "role": "Control",
           "description": "Water and tentacle battlefield control. Tentacle of the Deeps deals cold damage and reduces speed by 10 ft on hit — strong zone control.",
           "features": []
@@ -2211,12 +2256,24 @@
         {
           "id": "undead",
           "name": "Undead",
-          "tier": "A",
           "role": "Control",
           "description": "Form of Dread grants temp HP, fear on hits, and immunity to fear — strong control and durability with excellent sustained fight presence.",
           "features": []
         }
-      ]
+      ],
+      "multiclass_req": {
+        "cha": 13
+      },
+      "multiclass_profs": {
+        "armor": [
+          "light"
+        ],
+        "weapons": [
+          "simple"
+        ]
+      },
+      "hit_die": 8,
+      "caster_type": "pact"
     },
     {
       "id": "wizard",
@@ -2248,7 +2305,6 @@
             "Projected Ward",
             "Improved Abjuration"
           ],
-          "tier": "B",
           "role": "Tank",
           "features_detail": [
             {
@@ -2288,7 +2344,6 @@
             "Benign Transposition",
             "Focused Conjuration"
           ],
-          "tier": "B",
           "role": "Control"
         },
         {
@@ -2301,7 +2356,6 @@
             "Expert Divination",
             "The Third Eye"
           ],
-          "tier": "S",
           "role": "Control",
           "features_detail": [
             {
@@ -2341,7 +2395,6 @@
             "Instinctive Charm",
             "Alter Memories"
           ],
-          "tier": "A",
           "role": "Control"
         },
         {
@@ -2354,7 +2407,6 @@
             "Potent Cantrip",
             "Empowered Evocation"
           ],
-          "tier": "A",
           "role": "DPS",
           "features_detail": [
             {
@@ -2394,7 +2446,6 @@
             "Malleable Illusions",
             "Illusory Self"
           ],
-          "tier": "A",
           "role": "Control",
           "features_detail": [
             {
@@ -2434,7 +2485,6 @@
             "Undead Thralls",
             "Inured to Undeath"
           ],
-          "tier": "B",
           "role": "DPS",
           "features_detail": [
             {
@@ -2474,7 +2524,6 @@
             "Transmuter's Stone",
             "Shapechanger"
           ],
-          "tier": "D",
           "role": "Utility",
           "features_detail": [
             {
@@ -2507,7 +2556,6 @@
         {
           "id": "bladesinging",
           "name": "Bladesinging",
-          "tier": "A",
           "role": "Tank/DPS",
           "description": "Top melee wizard. Bladesong adds INT to AC, concentration saves, and speed — enables melee combat with full wizard spell progression.",
           "features": []
@@ -2515,7 +2563,6 @@
         {
           "id": "time",
           "name": "Time",
-          "tier": "S",
           "role": "Control",
           "description": "Specializes in time manipulation. Can alter dice rolls, control initiative, freeze enemies or allies temporally, and store spells via Arcane Abeyance.",
           "features": []
@@ -2523,7 +2570,6 @@
         {
           "id": "scribe_wizard",
           "name": "Scribe Wizard",
-          "tier": "B",
           "role": "Utility",
           "description": "Specializes in magical writing and flexible spell adaptation. Awakened Spellbook allows swapping damage types, efficient ritual casting, and spell storage.",
           "features": []
@@ -2531,7 +2577,6 @@
         {
           "id": "war_magic",
           "name": "War Magic",
-          "tier": "A",
           "role": "Tank/Control",
           "description": "Initiative bonus and defensive reactions. Arcane Deflection grants +2 AC or +4 saves as a reaction — excellent defensive reliability at any level.",
           "features": []
@@ -2539,12 +2584,19 @@
         {
           "id": "graviturgy_wizard",
           "name": "Graviturgy wizard",
-          "tier": "B",
           "role": "Control",
           "description": "Specializes in gravity effects — alter weight, pull or push enemies, and control positioning. Gravity Well and Violent Attraction enhance movement control.",
           "features": []
         }
-      ]
+      ],
+      "multiclass_req": {
+        "int": 13
+      },
+      "multiclass_profs": {
+        "weapons": []
+      },
+      "hit_die": 6,
+      "caster_type": "full"
     },
     {
       "id": "artificer",
@@ -2572,7 +2624,6 @@
         {
           "id": "alchemist",
           "name": "Alchemist",
-          "tier": "C",
           "role": "Support/Healer",
           "description": "Situational healing and buffs with weak scaling compared to other subclasses. Experimental Elixirs are random but can produce powerful effects.",
           "features": [],
@@ -2607,7 +2658,6 @@
         {
           "id": "artillerist",
           "name": "Artillerist",
-          "tier": "A",
           "role": "Ranged DPS/Support",
           "description": "Strong turret-based damage and area control. Eldritch Cannon offers Flamethrower, Force Ballista, or Protector options with solid scaling.",
           "features": []
@@ -2615,7 +2665,6 @@
         {
           "id": "armorer",
           "name": "Armorer",
-          "tier": "A",
           "role": "Tank/Utility",
           "description": "Highly versatile armor modes — Guardian for melee tank or Infiltrator for stealth ranged. Excellent defense, flexibility, and mobility options.",
           "features": []
@@ -2623,7 +2672,6 @@
         {
           "id": "battle_smith",
           "name": "Battle Smith",
-          "tier": "S",
           "role": "Tank/DPS",
           "description": "Top-tier subclass. Steel Defender provides free damage and reactions, Battle Ready uses INT for weapon attacks, and scaling makes it consistently powerful.",
           "features": []
@@ -2631,12 +2679,27 @@
         {
           "id": "cartagropher",
           "name": "Cartagropher",
-          "tier": "A",
           "role": "Utility",
           "description": "Exploration and mapping focused subclass with strong out-of-combat utility and unique terrain interaction abilities.",
           "features": []
         }
-      ]
+      ],
+      "multiclass_req": {
+        "int": 13
+      },
+      "multiclass_profs": {
+        "armor": [
+          "light",
+          "medium",
+          "shields"
+        ],
+        "weapons": [
+          "simple"
+        ],
+        "tools": 1
+      },
+      "hit_die": 8,
+      "caster_type": "half"
     }
   ]
 }

@@ -17,7 +17,40 @@ const Character = (() => {
     return 'local'; // noch kein Login — temporär
   }
 
-  // Wird von Auth nach erfolgreichem Login aufgerufen
+  // ── Migration: altes Format → Multiclass-Format ─────────────────────────
+  function migrateToMulticlass(char) {
+    if (char.classes && Array.isArray(char.classes)) return char; // bereits neu
+    // Altes Format: {classId, level, subclassId} → neu: {classes: [{classId, level, subclassId}]}
+    if (char.classId) {
+      char.classes = [{
+        classId:    char.classId,
+        level:      char.level || 1,
+        subclassId: char.subclassId || null,
+      }];
+      // Alte Felder behalten für Kompatibilität (werden dynamisch abgeleitet)
+    }
+    if (!char.classes) char.classes = [];
+    return char;
+  }
+
+  // Hilfsfunktionen für Multiclass-Zugriff
+  function getPrimaryClass() {
+    const d = _data;
+    if (d.classes && d.classes.length) return d.classes[0];
+    return { classId: d.classId, level: d.level || 1, subclassId: d.subclassId };
+  }
+
+  function getTotalLevel() {
+    const d = _data;
+    if (d.classes && d.classes.length) return d.classes.reduce((s, c) => s + (c.level || 1), 0);
+    return d.level || 1;
+  }
+
+  function getProficiencyBonus() {
+    return Math.ceil(getTotalLevel() / 4) + 1;
+  }
+
+  // ── Wird von Auth nach erfolgreichem Login aufgerufen ───────────────────
   function setUserContext(user) {
     if (!user || !user.id) {
       _cachedUid = null; // Reset bei Logout
@@ -119,7 +152,9 @@ const Character = (() => {
     try {
       const activeId = localStorage.getItem(STORAGE_KEY());
       if (!activeId) return false;
-      return loadFromRoster(activeId);
+      const result = loadFromRoster(activeId);
+      if (result) _data = migrateToMulticlass(_data); // Auto-Migration
+      return result;
     } catch(e) { return false; }
   }
 
