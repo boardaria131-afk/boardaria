@@ -35,13 +35,13 @@ const Character = (() => {
 
   // Hilfsfunktionen für Multiclass-Zugriff
   function getPrimaryClass() {
-    const d = _data;
+    const d = _char;
     if (d.classes && d.classes.length) return d.classes[0];
     return { classId: d.classId, level: d.level || 1, subclassId: d.subclassId };
   }
 
   function getTotalLevel() {
-    const d = _data;
+    const d = _char;
     if (d.classes && d.classes.length) return d.classes.reduce((s, c) => s + (c.level || 1), 0);
     return d.level || 1;
   }
@@ -53,7 +53,7 @@ const Character = (() => {
   // ── Wird von Auth nach erfolgreichem Login aufgerufen ───────────────────
   function setUserContext(user) {
     if (!user || !user.id) {
-      _cachedUid = null; // Reset bei Logout
+      _cachedUid = null;
       return;
     }
     _cachedUid = user.isGuest ? 'guest_' + user.id : 'u_' + user.id;
@@ -153,7 +153,7 @@ const Character = (() => {
       const activeId = localStorage.getItem(STORAGE_KEY());
       if (!activeId) return false;
       const result = loadFromRoster(activeId);
-      if (result) _data = migrateToMulticlass(_data); // Auto-Migration
+      if (result) _char = migrateToMulticlass(_char); // Auto-Migration
       return result;
     } catch(e) { return false; }
   }
