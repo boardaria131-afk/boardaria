@@ -56,6 +56,36 @@ const SummaryUI = (() => {
         <button class="btn-secondary" id="btn-print-summary" style="font-size:11px;">🖨️ Drucken</button>
       </div>
 
+      <!-- Spielbereit-Status -->
+      <div id="ready-status-card" style="
+        margin-bottom:12px;padding:12px 16px;border-radius:8px;
+        background:${char.readyStatus==='ready'?'rgba(74,222,128,0.08)':'rgba(251,191,36,0.08)'};
+        border:2px solid ${char.readyStatus==='ready'?'rgba(74,222,128,0.5)':'rgba(251,191,36,0.5)'};
+        display:flex;align-items:flex-start;gap:12px;">
+        <!-- Toggle Button -->
+        <button id="btn-toggle-ready"
+          style="flex-shrink:0;padding:8px 16px;border-radius:20px;cursor:pointer;
+          font-family:var(--font-title);font-size:12px;letter-spacing:0.5px;
+          border:2px solid ${char.readyStatus==='ready'?'rgba(74,222,128,0.7)':'rgba(251,191,36,0.7)'};
+          background:${char.readyStatus==='ready'?'rgba(74,222,128,0.15)':'rgba(251,191,36,0.15)'};
+          color:${char.readyStatus==='ready'?'#4ade80':'#fbbf24'};">
+          ${char.readyStatus==='ready'?'✅ Spielbereit':'⏳ Nicht spielbereit'}
+        </button>
+        <!-- Notizfeld -->
+        <div style="flex:1;">
+          <div style="font-family:var(--font-title);font-size:10px;color:#8a7060;
+            text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">
+            ${char.readyStatus==='ready'?'Bereit für die Session!':'Was fehlt noch?'}
+          </div>
+          <textarea id="ready-notes" placeholder="${char.readyStatus==='ready'?'Alles bereit ✓':'z.B. Attribute auswürfeln, Hintergrund finalisieren...'}"
+            style="width:100%;min-height:48px;background:rgba(255,255,255,0.6);
+            border:1px solid rgba(200,165,90,0.3);border-radius:4px;
+            font-family:var(--font-body);font-size:13px;padding:6px 8px;
+            resize:vertical;color:var(--ink);"
+          >${char.readyNotes||''}</textarea>
+        </div>
+      </div>
+
       <div class="summary-grid">
 
         <!-- Kopf -->

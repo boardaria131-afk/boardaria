@@ -370,6 +370,12 @@ function renderRosterModal() {
               <div style="flex:1;">
                 <div style="font-family:var(--font-title);font-size:13px;font-weight:600;color:var(--ink);">
                   ${isActive?'▶ ':''}${c.name||'Unbenannt'}
+                  <span style="font-size:10px;padding:1px 6px;border-radius:8px;margin-left:4px;
+                    background:${c.readyStatus==='ready'?'rgba(74,222,128,0.15)':'rgba(251,191,36,0.1)'};
+                    border:1px solid ${c.readyStatus==='ready'?'rgba(74,222,128,0.4)':'rgba(251,191,36,0.3)'};
+                    color:${c.readyStatus==='ready'?'#4ade80':'#fbbf24'};">
+                    ${c.readyStatus==='ready'?'✅':'⏳'}
+                  </span>
                   ${isActive?'<span style="font-size:10px;color:var(--blood);"> (aktiv)</span>':''}
                   ${isShared?'<span style="font-size:10px;color:#15803d;"> · 🌐</span>':''}
                 </div>

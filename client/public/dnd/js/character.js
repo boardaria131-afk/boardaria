@@ -108,6 +108,8 @@ const Character = (() => {
       notes:     '',
       rulesetId: '5e',
       created:   new Date().toISOString(),
+      readyStatus: 'not_ready',  // 'ready' | 'not_ready'
+      readyNotes:  '',           // Was noch fehlt
     };
   }
 
