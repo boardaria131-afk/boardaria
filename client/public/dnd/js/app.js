@@ -334,6 +334,10 @@ function initPersistence() {
     if (typeof HomebrewUI !== 'undefined') HomebrewUI.showOverview();
   });
 
+  document.getElementById('btn-dndb-import')?.addEventListener('click', () => {
+    if (typeof DnDBImport !== 'undefined') DnDBImport.showImportDialog();
+  });
+
   document.getElementById('btn-export-pdf')?.addEventListener('click', () => {
     PdfExport.generate();
   });
